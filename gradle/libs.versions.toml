@@ -2,7 +2,7 @@
 # Android & Jetpack
 #agp = "8.4.1"
 #agp = "8.9.0"
-androidGradlePlugin = "8.11.1"
+androidGradlePlugin = "8.13.0"
 androidTools = "31.11.1"
 
 # Kotlin & Coroutines
