@@ -1,0 +1,27 @@
+complexity:
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreAnnotated: [ 'Parcelize', 'Composable' ]
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 40
+    thresholdInClasses: 30
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    thresholdInEnums: 20
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreLocalVariableDeclaration: true
+  UnusedPrivateMember:
+    ignoreAnnotated: [ 'Preview', 'PreviewLightDark' ]
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: [ 'Composable' ]
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9]*'
