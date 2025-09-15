@@ -32,4 +32,16 @@ abstract class LanguagesModule {
     @Binds
     @IntoSet
     abstract fun bindGradleGroovyLanguageServer(server: GradleGroovyLanguageServer): LanguageServerDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindJsonLanguageServer(server: JsonLanguageServer): LanguageServerDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindGitLanguageServer(server: GitLanguageServer): LanguageServerDefinition
+
+    @Binds
+    @IntoSet
+    abstract fun bindPropertiesLanguageServer(server: PropertiesLanguageServer): LanguageServerDefinition
 }
