@@ -22,37 +22,45 @@ plugins {
     alias(libs.plugins.ktlint) apply false
 }
 
+buildscript {
+    dependencies {
+        classpath(libs.gradle.build)
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.spotless.plugin)
+    }
+}
+
 fun Project.configureBaseExtension() {
-  extensions.findByType(BaseExtension::class)?.run {
-    compileSdkVersion(35)
+    extensions.findByType(BaseExtension::class)?.run {
+        compileSdkVersion(35)
 
-    defaultConfig {
-      minSdk = 28
-      targetSdk = 35
-      versionCode = 100
-      versionName = "1.0.0"
-    }
+        defaultConfig {
+            minSdk = 28
+            targetSdk = 35
+            versionCode = 100
+            versionName = "1.0.0"
+        }
 
-    compileOptions {
-      sourceCompatibility = JavaVersion.VERSION_17
-      targetCompatibility = JavaVersion.VERSION_17
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
     }
-  }
 }
 
 subprojects {
-  plugins.withId("com.android.application") { configureBaseExtension() }
-  plugins.withId("com.android.library") { configureBaseExtension() }
+    plugins.withId("com.android.application") { configureBaseExtension() }
+    plugins.withId("com.android.library") { configureBaseExtension() }
 
-  tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-      apiVersion = KotlinVersion.KOTLIN_2_0
-      languageVersion = KotlinVersion.KOTLIN_2_0
-      jvmTarget = JvmTarget.JVM_17
-      jvmTargetValidationMode = JvmTargetValidationMode.WARNING
-      freeCompilerArgs.add("-Xjvm-default=all")
+    tasks.withType<KotlinCompile>().configureEach {
+        compilerOptions {
+            apiVersion = KotlinVersion.KOTLIN_2_0
+            languageVersion = KotlinVersion.KOTLIN_2_0
+            jvmTarget = JvmTarget.JVM_17
+            jvmTargetValidationMode = JvmTargetValidationMode.WARNING
+            freeCompilerArgs.add("-Xjvm-default=all")
+        }
     }
-  }
 }
 
 tasks.register<Delete>("clean") { delete(rootProject.layout.buildDirectory) }
