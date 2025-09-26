@@ -35,8 +35,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+      #- name: Copy CI gradle.properties
+      #  run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
         
       - name: Give permission to executable
         run: chmod +x gradlew
