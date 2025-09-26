@@ -70,7 +70,7 @@ firebase-bom = "33.10.0"
 jgit = "6.9.0.20240305-r"
 
 coil = "2.7.0"
-koin = "4.0.1"
+koin = "4.1.1"
 koin-compose = "4.0.0"
 simple-yaml = "1.8.4"
 
