@@ -42,7 +42,7 @@ androidx-test-ext-truth = "1.6.0"
 # test libraries
 test-junit = "4.13.2"
 test-mockk = "1.13.13"
-test-coroutines-flow = "1.1.0"
+test-coroutines-flow = "1.2.1"
 # android test libraries
 
 junit-version = "1.2.1"
