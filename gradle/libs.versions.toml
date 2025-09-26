@@ -64,7 +64,7 @@ retrofit = "2.9.0"
 room = "2.4.3"
 
 # Firebase
-firebase-bom = "33.10.0"
+firebase-bom = "34.3.0"
 
 # Sonstige
 jgit = "6.9.0.20240305-r"
