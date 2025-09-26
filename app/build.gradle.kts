@@ -1,11 +1,11 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.mobileide.android.application)
-    alias(libs.plugins.mobileide.android.compose)
-    alias(libs.plugins.mobileide.android.hilt)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.detekt)
+    id("mobileide.application.compose")
+    id("mobileide.code.quality")
+    id("mobileide.gradle.versions")
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
