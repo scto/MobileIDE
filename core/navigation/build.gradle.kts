@@ -1,10 +1,11 @@
 plugins {
-    alias(libs.plugins.mobileide.android.library)
-    alias(libs.plugins.mobileide.android.compose)
+    id("mobileide.library.compose")
+    id("mobileide.code.quality")
+    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.mobileide.navigation"
+    namespace = "com.mobileide.core.navigation"
 }
 
 dependencies {
@@ -12,12 +13,5 @@ dependencies {
     implementation(project(":core:di"))
     implementation(project(":feature:home"))
     implementation(project(":feature:onboarding"))
-    implementation(project(":feature:people:profile"))
-    implementation(project(":feature:people:list"))
-    implementation(project(":feature:chat:list"))
-    implementation(project(":feature:user:profile"))
-    implementation(project(":feature:subscription"))
-
-
     api(libs.androidx.navigation.compose)
 }

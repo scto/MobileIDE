@@ -1,7 +1,5 @@
 plugins {
-    alias(libs.plugins.mobileide.android.library)
-    alias(libs.plugins.mobileide.android.compose)
-    alias(libs.plugins.mobileide.android.hilt)
+    id("mobileide.library.compose")
 }
 
 android {
@@ -11,8 +9,10 @@ android {
 dependencies {
     api(project(":core:analytics"))
     implementation(libs.coil)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui.tooling.preview)
+    api(platform(libs.androidx.compose.bom))
+    api(libs.bundles.androidx.compose)
+    
+    //implementation(libs.androidx.compose.ui)
+    //implementation(libs.androidx.compose.material3)
+    //implementation(libs.androidx.compose.ui.tooling.preview)
 }

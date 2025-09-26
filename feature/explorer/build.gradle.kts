@@ -5,15 +5,16 @@ plugins {
 }
 
 android {
-    namespace = "com.mobileide.explorer"
+    namespace = "com.mobileide.feature.explorer"
 }
 
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(libs.androidx.core.ktx)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
+    
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
 }

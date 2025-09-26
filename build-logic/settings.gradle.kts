@@ -1,3 +1,4 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 dependencyResolutionManagement {
     repositories {
         google()
@@ -11,4 +12,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "build-logic"
+
 include(":convention")

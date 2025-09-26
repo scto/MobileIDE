@@ -35,9 +35,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Copy CI gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+        
       - name: Give permission to executable
         run: chmod +x gradlew
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses || true
+        
       - name: Generate APK
         run: ./gradlew assemble${{ matrix.build-type }}
 

@@ -1,16 +1,17 @@
 plugins {
-    id("com.mobileide.android.library")
-    id("com.mobileide.android.hilt")
+    alias(libs.plugins.mobileide.android.library)
+    alias(libs.plugins.mobileide.android.hilt)
 }
 
 android {
-    namespace = "com.mobileide.git"
+    namespace = "com.mobileide.feature.git"
 }
 
 dependencies {
     implementation(project(":core:common"))
     implementation(libs.androidx.core.ktx)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
+    
     implementation(libs.eclipse.jgit)
 }
