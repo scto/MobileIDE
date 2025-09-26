@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.mobileide.android.library)
+    id("mobileide.library")
 }
 
 android {

@@ -1,10 +1,15 @@
 plugins {
-    id("com.mobileide.jvm.library") // Ein neues Convention Plugin für reine Kotlin-Module
+    alias(libs.plugins.mobileide.android.library)
+    //alias(libs.plugins.mobileide.jvm.library)
+    alias(libs.plugins.mobileide.android.hilt)
+}
+
+android {
+    namespace = "com.mobileide.core.lsp-client"
 }
 
 dependencies {
     // Coroutines & Serialization
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.bundles.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization.json)
 }
-

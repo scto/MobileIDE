@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.mobileide.home"
+    namespace = "com.mobileide.feature.home"
 }
 
 dependencies {
@@ -14,8 +14,8 @@ dependencies {
     implementation(project(":core:ui"))
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
     
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)

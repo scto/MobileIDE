@@ -1,17 +1,21 @@
 [versions]
 # Android & Jetpack
 #agp = "8.4.1"
+#applicationPlugin = "8.5"
 #agp = "8.9.0"
 androidGradlePlugin = "8.11.1"
 androidTools = "31.11.1"
-
+gradle_versions = "0.44.0"
 # Kotlin & Coroutines
 kotlin = "2.2.0"
 #kotlin = "2.1.10"
 #kotlin = "1.9.23"
+#kotlin = "1.9.23"
+
 kotlin-compose-compiler = "1.5.11"
-kotlinx-serializationJson = "1.6.3"
+kotlinx-serializationJson = "1.7.3"
 kotlinx-coroutines = "1.10.2"
+#coroutines = "1.8.0"
 
 androidx-core-ktx = "1.15.0"
 androidx-annotation = "1.9.1"
@@ -23,9 +27,11 @@ androidx-window = "1.4.0"
 androidx-datastore = "1.1.7"
 androidx-navigation = "2.9.2"
 androidx-activity-compose = "1.10.1"
+androidx-appcompat = "1.6.1"
 androidx-compose-bom = "2025.07.00"
 androidx-hilt = "1.2.0"
 androidx-material3 = "1.3.1"
+androidx-material = "1.7.0"
 
 androidx-test-core = "1.6.1"
 androidx-test-rules = "1.6.1"
@@ -39,16 +45,16 @@ test-mockk = "1.13.13"
 test-coroutines-flow = "1.1.0"
 # android test libraries
 
-junit = "1.2.1"
+junit-version = "1.2.1"
 espresso-core = "3.6.1"
+junit = "4.13.2"
+junit-jupiter = "RELEASE"
 
 google-ksp = "2.2.0-2.0.2"
 google-dagger = "2.56.2"
-detekt = "1.23.8"
 mockk = "1.14.5"
 
-#google-services = "4.4.2"
-
+google-services = "4.4.2"
 plugin-crashlytics = "3.0.3"
 plugin-performance = "1.4.2"
 plugin-protobuf = "0.9.4"
@@ -62,19 +68,42 @@ firebase-bom = "33.10.0"
 
 # Sonstige
 jgit = "6.9.0.20240305-r"
-timber = "5.0.1"
+
 coil = "2.7.0"
 koin = "4.0.1"
 koin-compose = "4.0.0"
+simple-yaml = "1.8.4"
+
+jetbrains-annotations = "26.0.2"
 
 # 3rd party libs
 lottie = "6.1.0"
 desugaring = "2.1.5"
 treeview = "1.0.2"
 
+pf4j = "3.11.1"
+pf4jUpdate = "3.9.0"
+
+kotlin-logging = "3.0.4"
+#slf4j = "2.0.6"
+slf4j = "2.0.13"
+timber = "5.0.1"
+
+byteBuddy = "1.14.17"
+shadowPlugin = "8.1.1"
+
+ktlint_jlleitschuh = "11.0.0"
+#ktlint_jlleitschuh = "13.1.0"
+detekt = "1.20.0"
+#detekt = "1.23.8"
+spotless = "6.4.2"
+#spotless = "6.25.0"
+ktlint = "0.45.2"
+
 [libraries]
 # Android & Kotlin
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidx-annotation" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidx-browser" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidx-datastore" }
@@ -84,18 +113,35 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-savedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
+androidx-material = "com.google.android.material:material:1.7.0"
 androidx-palette-ktx = { group = "androidx.palette", name = "palette-ktx", version.ref = "androidx-palette-ktx" }
 androidx-savedstate = { group = "androidx.savedstate", name = "savedstate", version.ref = "androidx-savedstate" }
 androidx-window = { group = "androidx.window", name = "window", version.ref = "androidx-window" }
 androidx-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugaring" }
-accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 
+# Accompanist
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+accompanist_pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanist" }
+accompanist_pager_indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
+accompanist_insets = { module = "com.google.accompanist:accompanist-insets", version.ref = "accompanist" }
+accompanist_navigation_material = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
+accompanist_navigation_animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
+accompanist_ui_controller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
+
+# Kotlin
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-ext = { module = "org.jetbrains.kotlin:kotlin-android-extensions", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-serialization-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serializationJson" }
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version.ref = "jetbrains-annotations" }
 
 # Compose
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidx-compose-bom" }
+androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "kotlin-compose-compiler" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime" }
 androidx-compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
@@ -109,13 +155,14 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-material3-window-size-class = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidx-hilt" }
-
 
 # DI
 # Koin for dependency injection
@@ -126,6 +173,7 @@ koin-compose-navigation = { module = "io.insert-koin:koin-androidx-compose-navig
 koin-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 koin-test-junit = { module = "io.insert-koin:koin-test-junit4", version.ref = "koin" }
+
 # Dagger for dependency injection
 dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "google-dagger" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "google-dagger" }
@@ -138,17 +186,13 @@ coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 treeview = { module = "com.github.AfigAliyev:TreeView", version.ref = "treeview" }
 
-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
-
 # test libraries
 test-junit = { module = "junit:junit", version.ref = "test-junit" }
 test-kotlin = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 test-kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 test-mockk = { module = "io.mockk:mockk", version.ref = "test-mockk" }
-
 mockk-unit = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-instrumentation = { module = "io.mockk:mockk-android", version.ref = "mockk" }
-
 test-coroutines-flow = { module = "app.cash.turbine:turbine", version.ref = "test-coroutines-flow" }
 
 # Android test libraries
@@ -156,10 +200,16 @@ androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-te
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidx-test-rules" }
 androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "androidx-test-uiautomator" }
-androidx-test-ext-junit = { module = "androidx.test.ext:junit-ktx", version.ref = "androidx-test-ext-junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-ext-junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "androidx-test-ext-junit" }
 androidx-test-ext-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-ext-truth" }
+androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+
+simple-yaml = { group = "com.github.Carleslc.Simple-YAML", name = "Simple-Yaml", version.ref = "simple-yaml" }
+simple-configuration = { group = "com.github.Carleslc.Simple-YAML", name = "Simple-Configuration", version.ref = "simple-yaml" }
 
 #3rd party libs
 lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
@@ -171,6 +221,23 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-performance = { module = "com.google.firebase:firebase-perf" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 
+# Internes Projektmodul für die API
+#plugin-api = { group = "com.mobileide.core", name = "plugin-api", version.ref = "kotlin" } # Version ist hier Platzhalter, da es ein Projektmodul ist
+
+# PF4J
+pf4j-core = { group = "org.pf4j", name = "pf4j", version.ref = "pf4j" }
+pf4j-update = { group = "org.pf4j", name = "pf4j-update", version.ref = "pf4jUpdate" }
+
+# Logging
+# Loggers
+kotlin-logging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Byte Buddy Agent
+bytebuddy-agent = { group = "net.bytebuddy", name = "byte-buddy-agent", version.ref = "byteBuddy" }
+bytebuddy-core = { group = "net.bytebuddy", name = "byte-buddy", version.ref = "byteBuddy" }
+
 # Dependencies of the included build-logic
 android-gradle-api = { group = "com.android.tools.build", name = "gradle-api", version.ref = "androidGradlePlugin" }
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
@@ -179,10 +246,29 @@ compose-gradle-plugin = { group = "org.jetbrains.kotlin", name = "compose-compil
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradle-plugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "google-ksp" }
 hilt-gradle-plugin = { group = "com.google.dagger", name = "hilt-android-gradle-plugin", version.ref = "google-dagger" }
+spotless-gradlePlugin = { group = "com.diffplug.spotless", name = "spotless-gradle-plugin", version.ref = "spotless" }
+detekt-gradlePlugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+ktlint-gradlePlugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlint_jlleitschuh" }
+gradle_versions_plugin = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "gradle_versions" }
 
 [bundles]
-kotlinx-coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
-#androidx-lifecycle = ["androidx-lifecycle-viewmodel-ktx", "androidx-lifecycle-livedata-ktx", "androidx-lifecycle-viewmodel-savedstate", "androidx-lifecycle-compose"]
+kotlinx-coroutines = [
+    "kotlinx-coroutines-core",
+    "kotlinx-coroutines-android"
+]
+androidx-lifecycle = [
+    "androidx-lifecycle-viewmodel-ktx",
+    "androidx-lifecycle-livedata-ktx",
+    "androidx-lifecycle-viewmodel-savedstate",
+    "androidx-lifecycle-viewmodel-compose"
+]
+androidx_ui = [
+    "androidx_activity_compose",
+    "androidx_core_ktx",
+    "androidx_appcompat",
+    "androidx_material",
+    "androidx_lifecycle_ktx"
+]
 androidx-compose = [
     "androidx-compose-runtime",
     "androidx-compose-ui",
@@ -191,24 +277,56 @@ androidx-compose = [
     "androidx-compose-material-icons-extended",
     "androidx-compose-runtime-livedata",
     "androidx-compose-ui-tooling",
+    "androidx-compose-ui-tooling-preview",
     "androidx-activity-compose",
     "androidx-compose-material3"
 ]
+firebase = [
+    "firebase-crashlytics",
+    "firebase-analytics",
+    "firebase-performance",
+    "firebase-messaging",
+]
+koin = [
+    "koin-core",
+    "koin-android",
+    "koin-compose",
+    "koin-compose-navigation"
+]
+test-koin = [
+    "koin-test",
+    "koin-test-junit"
+]
+test-common = [
+    "test-junit",
+    "test-kotlin",
+    "test-kotlin-coroutines",
+    "test-mockk",
+    "test-coroutines-flow"
+]
+test-android = [
+    "androidx-ui-test-junit4",
+    "androidx-test-runner"
+]
+logging = [
+    "slf4j-simple",
+    "kotlin-logging",
+    "timber"
+]
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
-android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-jetbrains-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
-google-hilt = { id = "com.google.dagger.hilt.android", version.ref = "google-dagger" }
+jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin_serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint_jlleitschuh" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-
-mobileide-android-application = { id = "mobileide.android.application", version = "unspecified" }
-mobileide-android-compose = { id = "mobileide.android.compose", version = "unspecified" }
-mobileide-android-hilt = { id = "mobileide.android.hilt", version = "unspecified" }
-mobileide-android-library = { id = "mobileide.android.library", version = "unspecified" }
-mobileide-android-test = { id = "mobileide.android.test", version = "unspecified" }
-mobileide-jvm-library = { id = "mobileide.jvm.library", version = "unspecified" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+gradle_versions = { id = "com.github.ben-manes.versions", version.ref = "gradle_versions" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "google-dagger" }
+#detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadowPlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+#ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+#spotless = { id = "com.diffplug.spotless", version.ref = "spotless"}
+crashlytics = "com.google.firebase.crashlytics:3.0.1"
+firebase-perf = "com.google.firebase.firebase-perf:1.4.2"

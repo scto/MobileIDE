@@ -1,0 +1,26 @@
+[
+    {
+        "id": "sample-plugin",
+        "description": "Ein Beispiel-Plugin",
+        "provider": "mobile-ide-core",
+        "releases": [
+            {
+                "version": "1.1.0",
+                "date": "2025-09-20T10:00:00+0000",
+                "url": "./sample-plugin-1.1.0.zip"
+            }
+        ]
+    },
+    {
+        "id": "another-plugin",
+        "description": "Ein weiteres Plugin",
+        "provider": "PluginDev",
+        "releases": [
+            {
+                "version": "1.0.0",
+                "date": "2025-09-19T12:00:00+0000",
+                "url": "./another-plugin-1.0.0.zip"
+            }
+        ]
+    }
+]

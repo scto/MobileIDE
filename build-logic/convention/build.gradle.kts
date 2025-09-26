@@ -1,10 +1,17 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
 }
 
 group = "com.mobileide.buildlogic"
+
+repositories {
+    google()
+    gradlePluginPortal()
+    mavenCentral()
+}
 
 // Configure the build-logic plugins to target JDK 17
 // This matches the JDK used to build the project, and is not related to what is running on device.
@@ -19,50 +26,44 @@ kotlin {
     }
 }
 
-dependencies {
-    compileOnly(libs.android.gradle.plugin)
-    compileOnly(libs.android.tools.common)
-    compileOnly(libs.compose.gradle.plugin)
-    compileOnly(libs.kotlin.gradle.plugin)
-    compileOnly(libs.ksp.gradle.plugin)
-    compileOnly(libs.hilt.gradle.plugin)
-    // Accessing the Version Catalog in convention plugins according to
-    // https://github.com/gradle/gradle/issues/15383#issuecomment-779893192
-    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
-}
-
-tasks {
-    validatePlugins {
-        enableStricterValidation = true
-        failOnWarning = true
-    }
-}
-
 gradlePlugin {
-    plugins {
-        register("androidApplication") {
-            id = "mobileide.android.application"
-            implementationClass = "AndroidApplicationConventionPlugin"
-        }
-        register("androidCompose") {
-            id = "mobileide.android.compose"
-            implementationClass = "AndroidComposeConventionPlugin"
-        }
-        register("androidLibrary") {
-            id = "mobileide.android.library"
-            implementationClass = "AndroidLibraryConventionPlugin"
-        }
-        register("androidTest") {
-            id = "mobileide.android.test"
-            implementationClass = "AndroidTestConventionPlugin"
-        }
-        register("androidHilt") {
-            id = "mobileide.android.hilt"
-            implementationClass = "AndroidHiltConventionPlugin"
-        }
-        register("jvmLibrary") {
-            id = "mobileide.jvm.library"
-            implementationClass = "JvmLibraryConventionPlugin"
-        }
+    plugins.register("android-application-compose-plugin") {
+        id = "mobileide.application.compose"
+        implementationClass = "AndroidApplicationComposePlugin"
     }
+
+    plugins.register("android-application-plugin") {
+        id = "mobileide.application"
+        implementationClass = "AndroidApplicationPlugin"
+    }
+
+    plugins.register("android-library-compose-plugin") {
+        id = "mobileide.library.compose"
+        implementationClass = "AndroidLibraryComposePlugin"
+    }
+
+    plugins.register("android-library-plugin") {
+        id = "mobileide.library"
+        implementationClass = "AndroidLibraryPlugin"
+    }
+
+    plugins.register("code-quality-plugin") {
+        id = "mobileide.code.quality"
+        implementationClass = "CodeQualityPlugin"
+    }
+
+    plugins.register("gradle-versions-plguin") {
+        id = "mobileide.gradle.versions"
+        implementationClass = "GradleVersionPlugin"
+    }
+}
+dependencies {
+    implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.gradle.build)
+    implementation(libs.kotlin.stdlib)
+
+    implementation(libs.detekt.plugin)
+    implementation(libs.spotless.plugin)
+    implementation(libs.ktlint.jlleitschuh.plugin)
+    implementation(libs.gradle.versions.plugin)
 }

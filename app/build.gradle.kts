@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.mobileide.android.application)
     alias(libs.plugins.mobileide.android.compose)
     alias(libs.plugins.mobileide.android.hilt)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.detekt)
 }
 
@@ -12,7 +13,12 @@ android {
 
     defaultConfig {
         val commit = getGitCommit()
-        
+        /*
+        val githubToken = getSecretProperty("VCSPACE_TOKEN")
+        val clientId = getSecretProperty("CLIENT_ID")
+        val clientSecret = getSecretProperty("CLIENT_SECRET")
+        val callbackUrl = getSecretProperty("OAUTH_REDIRECT_URL")
+        */
         applicationId = "com.mobileide"
         versionCode = 1
         versionName = "1.0"
@@ -20,6 +26,12 @@ android {
         vectorDrawables.useSupportLibrary = true
 
         buildConfigField("String", "GIT_COMMIT", "\"$commit\"")
+        /*
+        buildConfigField("String", "GITHUB_TOKEN", "\"$githubToken\"")
+        buildConfigField("String", "CLIENT_ID", "\"$clientId\"")
+        buildConfigField("String", "CLIENT_SECRET", "\"$clientSecret\"")
+        buildConfigField("String", "OAUTH_REDIRECT_URL", "\"$callbackUrl\"")
+        */
     }
 
     signingConfigs {
@@ -75,6 +87,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        compose = true
     }
 }
 
@@ -84,6 +97,8 @@ detekt {
 }
 
 dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    
     implementation(project(":core:common"))
     implementation(project(":core:data"))
     implementation(project(":core:di"))
@@ -141,4 +156,13 @@ fun getGitCommit(): String {
     } catch (_: Exception) {
         ""
     }
+}
+
+private fun getSecretProperty(name: String): String {
+    val file = project.rootProject.file("token.properties")
+
+    return if (file.exists()) {
+        val properties = Properties().also { it.load(file.inputStream()) }
+        properties.getProperty(name) ?: ""
+    } else ""
 }
