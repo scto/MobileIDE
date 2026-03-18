@@ -23,6 +23,15 @@ fun EditorScreen(
     filePath: String?
 ) {
     val state by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            val message = it
+            viewModel.onEvent(EditorEvent.DismissError)
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     LaunchedEffect(filePath) {
         filePath?.let {
@@ -33,6 +42,7 @@ fun EditorScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(state.activeFile?.path?.substringAfterLast('/') ?: "Editor") },
