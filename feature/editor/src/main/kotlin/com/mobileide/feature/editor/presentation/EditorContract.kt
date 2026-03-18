@@ -24,7 +24,8 @@ data class EditorState(
     val diagnostics: Map<String, List<Diagnostic>> = emptyMap(), // Diagnostics pro Dateipfad
     val completionItems: List<CompletionItem> = emptyList(),
     val searchTerm: String = "",
-    val showSearchBar: Boolean = false
+    val showSearchBar: Boolean = false,
+    val error: String? = null
 ) {
     /**
      * Gibt die aktuell aktive Datei zurück.
@@ -50,4 +51,5 @@ sealed interface EditorEvent {
     data class SearchTermChanged(val term: String) : EditorEvent
     object ToggleSearchBar : EditorEvent
     object FileSaved : EditorEvent
+    object DismissError : EditorEvent
 }

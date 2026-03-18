@@ -34,6 +34,7 @@ class EditorViewModel @Inject constructor(
             is EditorEvent.ToggleSearchBar -> _state.update { it.copy(showSearchBar = !it.showSearchBar) }
             is EditorEvent.SearchTermChanged -> _state.update { it.copy(searchTerm = event.term) }
             is EditorEvent.FileSaved -> saveFile()
+            is EditorEvent.DismissError -> _state.update { it.copy(error = null) }
         }
     }
 
@@ -60,8 +61,7 @@ class EditorViewModel @Inject constructor(
                     initializeLspSession(filePath)
                 }
                 .onFailure { error ->
-                    // TODO: Fehler dem Nutzer anzeigen
-                     _state.update { it.copy(isLoading = false) }
+                    _state.update { it.copy(isLoading = false, error = error.message ?: "Unknown error occurred while reading file") }
                 }
         }
     }
@@ -111,10 +111,11 @@ class EditorViewModel @Inject constructor(
                  fileRepository.saveFile(fileToSave.path, fileToSave.content)
                      .onSuccess {
                          // TODO: Erfolgsmeldung anzeigen (z.B. Snackbar)
+                         _state.update { it.copy(error = null) }
                          println("Datei ${fileToSave.path} gespeichert!")
                      }
-                     .onFailure {
-                         // TODO: Fehlermeldung anzeigen
+                     .onFailure { error ->
+                         _state.update { it.copy(error = error.message ?: "Unknown error occurred while saving file") }
                      }
             }
         }
