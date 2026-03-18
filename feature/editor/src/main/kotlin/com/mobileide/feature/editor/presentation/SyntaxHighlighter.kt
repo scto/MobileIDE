@@ -9,12 +9,16 @@ import androidx.compose.ui.text.withStyle
 
 val kotlinKeywords = setOf("fun", "val", "var", "if", "else", "when", "return", "class", "import", "package", "private", "public", "internal", "override")
 
+private val keywordRegex = "\\b(${kotlinKeywords.joinToString("|")})\\b".toRegex()
+private val stringRegex = "\".*?\"".toRegex()
+private val commentRegex = "//.*".toRegex()
+private val annotationRegex = "@[A-Za-z]+".toRegex()
+
 fun highlightSyntax(code: String): AnnotatedString {
     return buildAnnotatedString {
         append(code)
         
         // Keywords
-        val keywordRegex = "\\b(${kotlinKeywords.joinToString("|")})\\b".toRegex()
         keywordRegex.findAll(code).forEach { match ->
             addStyle(
                 style = SpanStyle(color = Color(0xFFCF86E8), fontWeight = FontWeight.Bold),
@@ -24,7 +28,6 @@ fun highlightSyntax(code: String): AnnotatedString {
         }
         
         // String Literale
-        val stringRegex = "\".*?\"".toRegex()
         stringRegex.findAll(code).forEach { match ->
             addStyle(
                 style = SpanStyle(color = Color(0xFF6A8759)),
@@ -34,7 +37,6 @@ fun highlightSyntax(code: String): AnnotatedString {
         }
 
         // Kommentare
-        val commentRegex = "//.*".toRegex()
         commentRegex.findAll(code).forEach { match ->
             addStyle(
                 style = SpanStyle(color = Color.Gray),
@@ -44,7 +46,6 @@ fun highlightSyntax(code: String): AnnotatedString {
         }
         
         // Annotationen
-        val annotationRegex = "@[A-Za-z]+".toRegex()
         annotationRegex.findAll(code).forEach { match ->
             addStyle(
                 style = SpanStyle(color = Color(0xFFBBB529)),
