@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MobileIDE – Adaptive Icon Foreground Layer
+  ─────────────────────────────────────────────────────────────────────────────
+  References the pre-rendered foreground PNG asset (4 coloured cards +
+  dark centre square + "Mobile IDE" text + "</>" code symbol).
+
+  The adaptive icon system clips this layer to the launcher shape
+  (circle, squircle, rounded square, etc.).
+
+  Safe zone: all meaningful content sits within the central 72dp × 72dp
+  area of the 108dp canvas to prevent clipping on all launcher shapes.
+
+  Referenced by:
+    mipmap-anydpi-v26/ic_launcher.xml
+    mipmap-anydpi-v26/ic_launcher_round.xml
+    drawable/ic_launcher_adaptive.xml
+
+  To replace with a vector drawable: swap the <bitmap> for a <vector>
+  element referencing @drawable/ic_launcher_fg_vector.
+-->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_launcher_fg_asset"
+    android:gravity="fill"
+    android:tileMode="disabled" />

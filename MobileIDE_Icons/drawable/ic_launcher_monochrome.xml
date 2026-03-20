@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MobileIDE – Adaptive Icon Monochrome Layer  (Android 13 / API 33+)
+  ─────────────────────────────────────────────────────────────────────────────
+  White-on-transparent silhouette used by the Android 13 "themed icon" system.
+  The system tints this layer with the user's wallpaper accent colour.
+
+  Spec:
+    • Single-colour artwork (white or black mask)
+    • System applies its own tint at runtime
+    • Canvas: 108dp × 108dp  (same as foreground)
+    • Safe zone: 72dp × 72dp central area
+
+  Referenced by:
+    mipmap-anydpi-v26/ic_launcher.xml   (<monochrome> element)
+    mipmap-anydpi-v26/ic_launcher_round.xml
+-->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_launcher_mono_asset"
+    android:gravity="fill"
+    android:tileMode="disabled" />

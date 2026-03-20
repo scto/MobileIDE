@@ -1,168 +1,166 @@
-import java.util.Properties
-
 plugins {
-    id("mobileide.application.compose")
-    id("mobileide.code.quality")
-    id("mobileide.gradle.versions")
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.dokka)
 }
 
 android {
-    namespace = "com.mobileide"
+    namespace  = libs.versions.applicationId.get()
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        val commit = getGitCommit()
-        /*
-        val githubToken = getSecretProperty("VCSPACE_TOKEN")
-        val clientId = getSecretProperty("CLIENT_ID")
-        val clientSecret = getSecretProperty("CLIENT_SECRET")
-        val callbackUrl = getSecretProperty("OAUTH_REDIRECT_URL")
-        */
-        applicationId = "com.mobileide"
-        versionCode = 1
-        versionName = "1.0"
-        
-        vectorDrawables.useSupportLibrary = true
-
-        buildConfigField("String", "GIT_COMMIT", "\"$commit\"")
-        /*
-        buildConfigField("String", "GITHUB_TOKEN", "\"$githubToken\"")
-        buildConfigField("String", "CLIENT_ID", "\"$clientId\"")
-        buildConfigField("String", "CLIENT_SECRET", "\"$clientSecret\"")
-        buildConfigField("String", "OAUTH_REDIRECT_URL", "\"$callbackUrl\"")
-        */
+        applicationId = libs.versions.applicationId.get()
+        minSdk        = libs.versions.minSdk.get().toInt()
+        targetSdk     = libs.versions.targetSdk.get().toInt()
+        versionCode   = libs.versions.versionCode.get().toInt()
+        versionName   = libs.versions.versionName.get()
     }
 
-    signingConfigs {
-        create("general") {
-            storeFile = file("test.keystore")
-            keyAlias = "test"
-            keyPassword = "teixeira0x"
-            storePassword = "teixeira0x"
-        }
-    }
-    
     buildTypes {
         release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("general")
+            isMinifyEnabled   = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
         debug {
-            applicationIdSuffix = ".debug"
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("general")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            isDebuggable = true
         }
     }
-    
+
+    compileOptions {
+        sourceCompatibility            = JavaVersion.VERSION_17
+        targetCompatibility            = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
+    }
+
     kotlin {
-        jvmToolchain(17)
-    }
-    
-    compileOptions { isCoreLibraryDesugaringEnabled = true }
-
-    packaging {
-        resources.excludes.addAll(
-            arrayOf(
-                "META-INF/README.md",
-                "META-INF/CHANGES",
-                "bundle.properties",
-                "plugin.properties"
-            )
-        )
-    }
-
-    lint {
-        abortOnError = false
-        disable += listOf("MaterialDesignInsteadOrbitDesign")
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        }
     }
 
     buildFeatures {
+        compose     = true
         buildConfig = true
-        compose = true
+    }
+
+    // Required for Sora Editor's textmate grammar files
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+        }
     }
 }
 
-detekt {
-    config.setFrom("$projectDir/../config/detekt/detekt.yml")
-    buildUponDefaultConfig = true
+// ─────────────────────────────────────────────────────────────────────────────
+// Dokka 2.x — API documentation with Mermaid diagram support
+//
+// Generate:
+//   ./gradlew :app:dokkaHtml   →  app/build/dokka/html/
+//   ./gradlew :app:dokkaGfm    →  app/build/dokka/gfm/
+// ─────────────────────────────────────────────────────────────────────────────
+
+dokka {
+    moduleName.set("MobileIDE")
+    moduleVersion.set(libs.versions.versionName.get())
+
+    dokkaSourceSets.configureEach {
+
+        displayName.set("MobileIDE")
+
+        // Do not warn about undocumented members
+        reportUndocumented.set(false)
+
+        // Include deprecated members in output
+        skipDeprecated.set(false)
+
+        // External API links — makes types clickable in the generated HTML
+        externalDocumentationLinks.create("android") {
+            url.set(uri("https://developer.android.com/reference/"))
+            packageListUrl.set(uri("https://developer.android.com/reference/androidx/package-list"))
+        }
+
+        externalDocumentationLinks.create("kotlin-stdlib") {
+            url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/"))
+        }
+
+        externalDocumentationLinks.create("compose") {
+            url.set(uri("https://developer.android.com/reference/kotlin/androidx/compose/"))
+            packageListUrl.set(uri("https://developer.android.com/reference/kotlin/androidx/compose/package-list"))
+        }
+
+        externalDocumentationLinks.create("sora-editor") {
+            url.set(uri("https://rosemoe.github.io/sora-editor/"))
+        }
+
+        // Module-level documentation entry page
+        includes.from(project.file("dokka/module.md"))
+
+        // Source root
+        sourceRoots.from(file("src/main/java"))
+
+        // Per-package options — Dokka 2.x uses perPackageOption { } (singular)
+        perPackageOption {
+            matchingRegex.set("com\\.mobileide\\.app\\.ui\\.screens.*")
+            suppress.set(false)
+            skipDeprecated.set(false)
+        }
+    }
+
+    pluginsConfiguration.html {
+        footerMessage.set(
+            "© MobileIDE — Built with Kotlin ${libs.versions.kotlin.get()} · Dokka ${libs.versions.dokka.get()}"
+        )
+    }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Dependencies
+// ─────────────────────────────────────────────────────────────────────────────
+
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:di"))
-    implementation(project(":core:lsp-client"))
-    implementation(project(":core:navigation"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:util"))
-    
-    implementation(project(":feature:debug"))
-    implementation(project(":feature:editor"))
-    implementation(project(":feature:explorer"))
-    implementation(project(":feature:git"))
-    implementation(project(":feature:gradle"))
-    implementation(project(":feature:home"))
-    implementation(project(":feature:languages"))
-    implementation(project(":feature:onboarding"))
-    implementation(project(":feature:projectpicker"))
-    implementation(project(":feature:settings"))
-    implementation(project(":feature:sidepanel"))
-    implementation(project(":feature:svgtoavd"))
-    implementation(project(":feature:templates"))
-    implementation(project(":feature:terminal"))
-    implementation(project(":feature:termux"))
-    implementation(project(":feature:xmltocompose"))
-    
+    // Dokka: Mermaid diagram rendering inside KDoc comments
+    dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:${libs.versions.dokkaMermaid.get()}")
+
+    // ── Core ─────────────────────────────────────────────────────────────────
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
+    // ── Compose ──────────────────────────────────────────────────────────────
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation.compose)
-    
-    implementation(libs.timber)
-    
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Permissions
-    implementation(libs.accompanist.permissions)
-    
-    coreLibraryDesugaring(libs.androidx.desugar)
-}
+    // ── Async & Storage ──────────────────────────────────────────────────────
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.datastore.preferences)
 
-fun getGitCommit(): String {
-    return try {
-        val commit = providers.exec {
-            commandLine("git", "rev-parse", "--short", "HEAD")
-        }.standardOutput.asText.get().trim()
-        println("Git commit: $commit")
-        commit
-    } catch (_: Exception) {
-        ""
-    }
-}
+    // ── Sora Editor ──────────────────────────────────────────────────────────
+    implementation(libs.sora.editor)
+    implementation(libs.sora.language.textmate)
+    implementation(libs.sora.language.java)
 
-private fun getSecretProperty(name: String): String {
-    val file = project.rootProject.file("token.properties")
+    // ── Splash Screen ────────────────────────────────────────────────────────
+    implementation(libs.androidx.core.splashscreen)
 
-    return if (file.exists()) {
-        val properties = Properties().also { it.load(file.inputStream()) }
-        properties.getProperty(name) ?: ""
-    } else ""
+    // ── Theme system ─────────────────────────────────────────────────────────
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.android.material:material:1.12.0")
+
+    // ── Debug ────────────────────────────────────────────────────────────────
+    debugImplementation(libs.androidx.ui.tooling)
 }

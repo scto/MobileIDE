@@ -1,0 +1,4 @@
+<resources>
+    <!-- Landscape: more horizontal room — increase FAB margin -->
+    <dimen name="fab_margin">48dp</dimen>
+</resources>
