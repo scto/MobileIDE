@@ -1,2 +1,0 @@
-# Simple run of the Detekt check as the Gradle plugin
-./gradlew detekt

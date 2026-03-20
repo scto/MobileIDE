@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MobileIDE – Adaptive Icon FOREGROUND Layer
+  Canvas: 108dp × 108dp adaptive icon canvas (safe zone: 72dp centre)
+  Background: transparent — overlays ic_launcher_background
+  Used by: mipmap-anydpi-v26/ic_launcher.xml  +  ic_launcher_round.xml
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <defs>
+    <filter id="card-shadow" x="-12%" y="-12%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2.5"
+                    flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="center-glow" x="-6%" y="-6%" width="112%" height="112%">
+      <feGaussianBlur stdDeviation="0.8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── 4 rotated cards ─────────────────────────────────────────────── -->
+
+  <!-- Top-right — Electric Blue — +25° -->
+  <g transform="rotate(25, 54, 54)">
+    <rect x="38" y="9" width="40" height="40" rx="9" ry="9"
+          fill="#0082FF" opacity="0.95" filter="url(#card-shadow)"/>
+  </g>
+
+  <!-- Top-left — Neon Teal — -25° -->
+  <g transform="rotate(-25, 54, 54)">
+    <rect x="30" y="9" width="40" height="40" rx="9" ry="9"
+          fill="#00D2C8" opacity="0.95" filter="url(#card-shadow)"/>
+  </g>
+
+  <!-- Bottom-left — Deep Violet — +18° -->
+  <g transform="rotate(18, 54, 54)">
+    <rect x="30" y="59" width="40" height="40" rx="9" ry="9"
+          fill="#8232FF" opacity="0.95" filter="url(#card-shadow)"/>
+  </g>
+
+  <!-- Bottom-right — Vivid Green — -18° -->
+  <g transform="rotate(-18, 54, 54)">
+    <rect x="38" y="59" width="40" height="40" rx="9" ry="9"
+          fill="#32D25A" opacity="0.95" filter="url(#card-shadow)"/>
+  </g>
+
+  <!-- ── Dark centre square ──────────────────────────────────────────── -->
+  <rect x="32" y="32" width="44" height="44" rx="9" ry="9"
+        fill="#16162A" filter="url(#center-glow)"/>
+  <rect x="32" y="32" width="44" height="44" rx="9" ry="9"
+        fill="none" stroke="#37376A" stroke-width="0.5"/>
+
+  <!-- ── </> symbol ──────────────────────────────────────────────────── -->
+  <text x="54" y="48"
+        font-family="'Courier New', monospace"
+        font-size="8" font-weight="700"
+        text-anchor="middle" fill="#50A0FF" letter-spacing="0.5">
+    &lt;/&gt;
+  </text>
+
+  <!-- ── "Mobile" text ───────────────────────────────────────────────── -->
+  <text x="54" y="58"
+        font-family="'Arial', sans-serif"
+        font-size="7.5" font-weight="400"
+        text-anchor="middle" fill="#D2DAFF">
+    Mobile
+  </text>
+
+  <!-- ── "IDE" text ──────────────────────────────────────────────────── -->
+  <text x="54" y="70"
+        font-family="'Arial', sans-serif"
+        font-size="12" font-weight="800"
+        text-anchor="middle" fill="#FFFFFF" letter-spacing="1">
+    IDE
+  </text>
+</svg>
