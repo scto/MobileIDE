@@ -20,7 +20,7 @@ navigationCompose    = "2.9.7"
 viewmodelCompose     = "2.9.1"
 coroutines           = "1.10.2"
 coil                 = "2.7.0"
-datastorePrefs       = "1.1.4"
+datastorePrefs       = "1.2.1"
 
 # ── Sora Editor ───────────────────────────────────────────────────────────────
 soraEditor           = "0.23.6"
