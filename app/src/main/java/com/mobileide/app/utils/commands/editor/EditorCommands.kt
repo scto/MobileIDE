@@ -130,17 +130,6 @@ class ToggleWordWrapCommand(ctx: CommandContext) : EditorCommand(ctx) {
     }
 }
 
-// ── Duplicate Line ────────────────────────────────────────────────────────────
-class DuplicateLineCommand(ctx: CommandContext) : EditorCommand(ctx) {
-    override val id = "editor.duplicate_line"
-    override fun getLabel() = "Duplicate Line"
-    override fun getIcon() = AppIconType.VectorIcon(Icons.Default.ContentCopy)
-    override val defaultKeybinds = KeyCombination(KeyEvent.KEYCODE_D, ctrl = true)
-    override fun action(editorActionContext: EditorActionContext) {
-        editorActionContext.editor.duplicateLine()
-    }
-}
-
 // ── Upper Case ────────────────────────────────────────────────────────────────
 class UpperCaseCommand(ctx: CommandContext) : EditorCommand(ctx) {
     override val id = "editor.uppercase"
