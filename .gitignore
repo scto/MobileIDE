@@ -89,3 +89,4 @@ lint/tmp/
 .acside/
 .acside/editor/
 .aider*
+app/build/
