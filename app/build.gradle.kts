@@ -163,4 +163,7 @@ dependencies {
 
     // ── Debug ────────────────────────────────────────────────────────────────
     debugImplementation(libs.androidx.ui.tooling)
+
+    // ── Testing ──────────────────────────────────────────────────────────────
+    testImplementation("junit:junit:4.13.2")
 }

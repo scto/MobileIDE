@@ -77,70 +77,69 @@ class Editor @JvmOverloads constructor(
             updateColors { scheme ->
                 fun s(color: Int, vararg ids: Int) =
                     ids.forEach { scheme.setColor(it, color) }
-                val E = EditorColorScheme
 
                     // ── Transparency fix ──────────────────────────────────────
-                    scheme.setColor(E.HIGHLIGHTED_DELIMITERS_UNDERLINE, Color.TRANSPARENT)
+                    scheme.setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_UNDERLINE, Color.TRANSPARENT)
 
                     // ── Background ────────────────────────────────────────────
-                    s(editorBackground, E.WHOLE_BACKGROUND)
+                    s(editorBackground, EditorColorScheme.WHOLE_BACKGROUND)
 
                     // ── Gutter / line numbers ─────────────────────────────────
-                    s(gutterColor, E.LINE_NUMBER_BACKGROUND)
-                    s(surfaceContainer, E.LINE_NUMBER_PANEL)
-                    s(alpha(onSurface, 0.5f), E.LINE_NUMBER)
-                    s(colorPrimary, E.LINE_NUMBER_CURRENT)
-                    s(dividerColor, E.LINE_DIVIDER)
+                    s(gutterColor, EditorColorScheme.LINE_NUMBER_BACKGROUND)
+                    s(surfaceContainer, EditorColorScheme.LINE_NUMBER_PANEL)
+                    s(alpha(onSurface, 0.5f), EditorColorScheme.LINE_NUMBER)
+                    s(colorPrimary, EditorColorScheme.LINE_NUMBER_CURRENT)
+                    s(dividerColor, EditorColorScheme.LINE_DIVIDER)
 
                     // ── Current line ──────────────────────────────────────────
-                    s(currentLine, E.CURRENT_LINE)
+                    s(currentLine, EditorColorScheme.CURRENT_LINE)
 
                     // ── Selection ─────────────────────────────────────────────
-                    s(handleColor, E.SELECTION_HANDLE, E.SELECTION_INSERT)
-                    s(selectionBg, E.SELECTED_TEXT_BACKGROUND, E.MATCHED_TEXT_BACKGROUND)
+                    s(handleColor, EditorColorScheme.SELECTION_HANDLE, EditorColorScheme.SELECTION_INSERT)
+                    s(selectionBg, EditorColorScheme.SELECTED_TEXT_BACKGROUND, EditorColorScheme.MATCHED_TEXT_BACKGROUND)
 
                     // ── Scrollbars ────────────────────────────────────────────
-                    s(alpha(onSurface, 0.0f), E.SCROLL_BAR_TRACK)
-                    s(scrollThumb, E.SCROLL_BAR_THUMB)
-                    s(scrollThumbPressed, E.SCROLL_BAR_THUMB_PRESSED)
+                    s(alpha(onSurface, 0.0f), EditorColorScheme.SCROLL_BAR_TRACK)
+                    s(scrollThumb, EditorColorScheme.SCROLL_BAR_THUMB)
+                    s(scrollThumbPressed, EditorColorScheme.SCROLL_BAR_THUMB_PRESSED)
 
                     // ── Block / indent lines ──────────────────────────────────
-                    s(alpha(colorPrimary, 0.6f), E.BLOCK_LINE_CURRENT)
-                    s(alpha(onSurface, 0.2f), E.BLOCK_LINE)
-                    s(nonPrintable, E.NON_PRINTABLE_CHAR)
+                    s(alpha(colorPrimary, 0.6f), EditorColorScheme.BLOCK_LINE_CURRENT)
+                    s(alpha(onSurface, 0.2f), EditorColorScheme.BLOCK_LINE)
+                    s(nonPrintable, EditorColorScheme.NON_PRINTABLE_CHAR)
 
                     // ── Autocomplete popup ────────────────────────────────────
-                    s(surface, E.COMPLETION_WND_BACKGROUND, E.COMPLETION_WND_CORNER)
-                    s(highSurfaceContainer, E.COMPLETION_WND_ITEM_CURRENT)
-                    s(onSurface, E.COMPLETION_WND_TEXT_PRIMARY)
-                    s(alpha(onSurface, 0.6f), E.COMPLETION_WND_TEXT_SECONDARY)
+                    s(surface, EditorColorScheme.COMPLETION_WND_BACKGROUND, EditorColorScheme.COMPLETION_WND_CORNER)
+                    s(highSurfaceContainer, EditorColorScheme.COMPLETION_WND_ITEM_CURRENT)
+                    s(onSurface, EditorColorScheme.COMPLETION_WND_TEXT_PRIMARY)
+                    s(alpha(onSurface, 0.6f), EditorColorScheme.COMPLETION_WND_TEXT_SECONDARY)
 
                     // ── Diagnostic tooltip ────────────────────────────────────
-                    s(surface, E.DIAGNOSTIC_TOOLTIP_BACKGROUND)
-                    s(onSurface, E.DIAGNOSTIC_TOOLTIP_BRIEF_MSG)
-                    s(alpha(onSurface, 0.7f), E.DIAGNOSTIC_TOOLTIP_DETAILED_MSG)
-                    s(colorPrimary, E.DIAGNOSTIC_TOOLTIP_ACTION)
+                    s(surface, EditorColorScheme.DIAGNOSTIC_TOOLTIP_BACKGROUND)
+                    s(onSurface, EditorColorScheme.DIAGNOSTIC_TOOLTIP_BRIEF_MSG)
+                    s(alpha(onSurface, 0.7f), EditorColorScheme.DIAGNOSTIC_TOOLTIP_DETAILED_MSG)
+                    s(colorPrimary, EditorColorScheme.DIAGNOSTIC_TOOLTIP_ACTION)
 
                     // ── Signature help popup ──────────────────────────────────
-                    s(surface, E.SIGNATURE_BACKGROUND)
-                    s(onSurface, E.SIGNATURE_TEXT_NORMAL)
-                    s(colorPrimary, E.SIGNATURE_TEXT_HIGHLIGHTED_PARAMETER)
+                    s(surface, EditorColorScheme.SIGNATURE_BACKGROUND)
+                    s(onSurface, EditorColorScheme.SIGNATURE_TEXT_NORMAL)
+                    s(colorPrimary, EditorColorScheme.SIGNATURE_TEXT_HIGHLIGHTED_PARAMETER)
 
                     // ── Bracket / delimiter highlighting ──────────────────────
-                    s(colorPrimary, E.HIGHLIGHTED_DELIMITERS_FOREGROUND)
+                    s(colorPrimary, EditorColorScheme.HIGHLIGHTED_DELIMITERS_FOREGROUND)
 
                     // ── Problems ──────────────────────────────────────────────
-                    s(errorColor, E.PROBLEM_ERROR)
-                    s(warningColor, E.PROBLEM_WARNING)
-                    s(colorSecondary, E.PROBLEM_TYPO)
+                    s(errorColor, EditorColorScheme.PROBLEM_ERROR)
+                    s(warningColor, EditorColorScheme.PROBLEM_WARNING)
+                    s(colorSecondary, EditorColorScheme.PROBLEM_TYPO)
 
                     // ── Inlay hints ───────────────────────────────────────────
                     // Inlay hint constants only exist in Sora ≥ 0.23.x
                     runCatching {
                         val fgField = EditorColorScheme::class.java.getField("TEXT_INLAY_HINT_FOREGROUND")
                         val bgField = EditorColorScheme::class.java.getField("TEXT_INLAY_HINT_BACKGROUND")
-                        setColor(fgField.getInt(null), inlayHintFg)
-                        setColor(bgField.getInt(null), inlayHintBg)
+                        scheme.setColor(fgField.getInt(null), inlayHintFg)
+                        scheme.setColor(bgField.getInt(null), inlayHintBg)
                     }
 
                     // ── Snippet highlights ────────────────────────────────────
