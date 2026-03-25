@@ -45,6 +45,14 @@ data class WorkspaceState(
     val editorStickyScroll: Boolean       = false,
     val editorHighlightLine: Boolean      = true,
     val editorFontPath: String            = "fonts/JetBrainsMono-Regular.ttf",
+    val editorLineSpacing: Float          = 1.2f,
+    val editorDeleteMultiSpaces: Boolean  = true,
+    val editorCursorAnimation: Boolean    = true,
+    val editorShowWhitespace: Boolean     = false,
+    val editorAutoCloseTag: Boolean       = true,
+    val editorBulletContinuation: Boolean = true,
+    val editorAutoSave: Boolean           = true,
+    val editorFormatOnSave: Boolean       = false,
     // Onboarding — only true when ALL required permissions are granted
     val onboardingComplete: Boolean       = false,
     // Per-permission saved state
@@ -70,7 +78,15 @@ class WorkspaceManager(private val context: Context) {
         private val K_ED_INDENT       = booleanPreferencesKey("ed_indent")
         private val K_ED_STICKY       = booleanPreferencesKey("ed_sticky")
         private val K_ED_HIGHLIGHT    = booleanPreferencesKey("ed_highlight")
-        private val K_ED_FONT_PATH    = stringPreferencesKey("ed_font_path")
+        private val K_ED_FONT_PATH      = stringPreferencesKey("ed_font_path")
+        private val K_ED_LINE_SPACING   = floatPreferencesKey("ed_line_spacing")
+        private val K_ED_DELETE_MULTI   = booleanPreferencesKey("ed_delete_multi")
+        private val K_ED_CURSOR_ANIM    = booleanPreferencesKey("ed_cursor_anim")
+        private val K_ED_WHITESPACE     = booleanPreferencesKey("ed_whitespace")
+        private val K_ED_AUTO_CLOSE_TAG = booleanPreferencesKey("ed_auto_close_tag")
+        private val K_ED_BULLET_CONT    = booleanPreferencesKey("ed_bullet_cont")
+        private val K_ED_AUTO_SAVE      = booleanPreferencesKey("ed_auto_save")
+        private val K_ED_FORMAT_SAVE    = booleanPreferencesKey("ed_format_save")
         private val K_ONBOARDING      = booleanPreferencesKey("onboarding_done")
         // Per-permission keys
         private val K_PERM_STORAGE    = booleanPreferencesKey("perm_storage")
@@ -111,7 +127,15 @@ class WorkspaceManager(private val context: Context) {
                 editorAutoIndent       = p[K_ED_INDENT]       ?: true,
                 editorStickyScroll     = p[K_ED_STICKY]       ?: false,
                 editorHighlightLine    = p[K_ED_HIGHLIGHT]    ?: true,
-                editorFontPath         = p[K_ED_FONT_PATH]  ?: "fonts/JetBrainsMono-Regular.ttf",
+                editorFontPath         = p[K_ED_FONT_PATH]      ?: "fonts/JetBrainsMono-Regular.ttf",
+                editorLineSpacing      = p[K_ED_LINE_SPACING]   ?: 1.2f,
+                editorDeleteMultiSpaces = p[K_ED_DELETE_MULTI]  ?: true,
+                editorCursorAnimation  = p[K_ED_CURSOR_ANIM]    ?: true,
+                editorShowWhitespace   = p[K_ED_WHITESPACE]     ?: false,
+                editorAutoCloseTag     = p[K_ED_AUTO_CLOSE_TAG] ?: true,
+                editorBulletContinuation = p[K_ED_BULLET_CONT]  ?: true,
+                editorAutoSave         = p[K_ED_AUTO_SAVE]      ?: true,
+                editorFormatOnSave     = p[K_ED_FORMAT_SAVE]    ?: false,
                 onboardingComplete     = p[K_ONBOARDING]      ?: false,
                 permissions            = perms
             )
@@ -172,7 +196,15 @@ class WorkspaceManager(private val context: Context) {
             p[K_ED_INDENT]       = settings.autoIndent
             p[K_ED_STICKY]       = settings.stickyScroll
             p[K_ED_HIGHLIGHT]    = settings.highlightCurrentLine
-            p[K_ED_FONT_PATH]    = settings.fontPath
+            p[K_ED_FONT_PATH]      = settings.fontPath
+            p[K_ED_LINE_SPACING]   = settings.lineSpacing
+            p[K_ED_DELETE_MULTI]   = settings.deleteMultiSpaces
+            p[K_ED_CURSOR_ANIM]    = settings.cursorAnimation
+            p[K_ED_WHITESPACE]     = settings.showWhitespace
+            p[K_ED_AUTO_CLOSE_TAG] = settings.autoCloseTag
+            p[K_ED_BULLET_CONT]    = settings.bulletContinuation
+            p[K_ED_AUTO_SAVE]      = settings.autoSave
+            p[K_ED_FORMAT_SAVE]    = settings.formatOnSave
         }
     }
 
