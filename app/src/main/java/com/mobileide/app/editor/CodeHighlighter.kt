@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.mobileide.app.data.Language
 import com.mobileide.app.ui.theme.ActiveTheme
-import com.mobileide.app.utils.SCOPE_MAP
+import com.mobileide.app.utils.TextMateSetup
 
 private const val TAG = "CodeHighlighter"
 
@@ -60,5 +60,5 @@ object CodeHighlighter {
     }
 }
 
-/** Map a [Language] to its primary TextMate scope string via the shared [SCOPE_MAP]. */
-private fun Language.toTextmateScope(): String? = SCOPE_MAP[this]
+/** Map a [Language] to its primary TextMate scope string via the shared [TextMateSetup.SCOPE_MAP]. */
+private fun Language.toTextmateScope(): String? = TextMateSetup.SCOPE_MAP[this]
