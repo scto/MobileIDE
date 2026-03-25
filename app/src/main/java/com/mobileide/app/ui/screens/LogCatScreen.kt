@@ -80,8 +80,7 @@ fun LogCatScreen(vm: IDEViewModel) {
     LaunchedEffect(isRunning) {
         if (!isRunning) return@LaunchedEffect
         try {
-            val process = ProcessBuilder("sh", "-c",
-                "logcat -v threadtime 2>&1 | head -1000")
+            val process = ProcessBuilder("logcat", "-v", "threadtime", "-t", "1000")
                 .redirectErrorStream(true)
                 .start()
             val reader = process.inputStream.bufferedReader()

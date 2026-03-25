@@ -94,14 +94,14 @@ fun DiffViewerScreen(vm: IDEViewModel) {
         val path = project?.path ?: return
         isLoading = true
         scope.launch(Dispatchers.IO) {
-            val cmd = when (diffMode) {
-                DiffMode.STAGED   -> "git -C '$path' diff --cached"
-                DiffMode.UNSTAGED -> "git -C '$path' diff"
-                DiffMode.HEAD     -> "git -C '$path' diff HEAD~1 HEAD"
-                DiffMode.LAST     -> "git -C '$path' show --format='' HEAD"
+            val args = when (diffMode) {
+                DiffMode.STAGED   -> listOf("git", "-C", path, "diff", "--cached")
+                DiffMode.UNSTAGED -> listOf("git", "-C", path, "diff")
+                DiffMode.HEAD     -> listOf("git", "-C", path, "diff", "HEAD~1", "HEAD")
+                DiffMode.LAST     -> listOf("git", "-C", path, "show", "--format=", "HEAD")
             }
             val result = try {
-                ProcessBuilder("sh", "-c", cmd).redirectErrorStream(true)
+                ProcessBuilder(args).redirectErrorStream(true)
                     .start().inputStream.bufferedReader().readText()
             } catch (e: Exception) { "Error: ${e.message}" }
             val parsed = DiffParser.parse(result)
