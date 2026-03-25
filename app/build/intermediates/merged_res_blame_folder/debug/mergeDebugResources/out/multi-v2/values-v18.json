@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.mobileide.app-mergeDebugResources-2:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "/home/jules/.gradle/caches/8.10.2/transforms/0230d306cec192c9c13d935b84495626/transformed/appcompat-1.6.1/res/values-v18/values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}
