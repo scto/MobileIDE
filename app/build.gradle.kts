@@ -37,11 +37,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-        }
     }
 
     buildFeatures {
@@ -163,4 +158,8 @@ dependencies {
 
     // ── Debug ────────────────────────────────────────────────────────────────
     debugImplementation(libs.androidx.ui.tooling)
+}
+
+dependencies {
+    testImplementation("junit:junit:4.13.2")
 }
