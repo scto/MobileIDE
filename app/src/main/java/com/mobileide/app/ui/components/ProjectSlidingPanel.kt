@@ -220,7 +220,7 @@ private fun PanelHeader(
         // Tab row: Project | AndroidPE | RKB Data
         Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            PanelTab.values().forEach { tab ->
+            PanelTab.entries.forEach { tab ->
                 val isActive = tab == selectedTab
                 Surface(
                     onClick = { onTabSelect(tab) },
@@ -270,7 +270,7 @@ private fun PanelHeader(
                 }
                 DropdownMenu(expanded = showViewMenu,
                     onDismissRequest = { onViewMenuToggle() }) {
-                    ExplorerViewMode.values().forEach { mode ->
+                    ExplorerViewMode.entries.forEach { mode ->
                         DropdownMenuItem(
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
