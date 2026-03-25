@@ -239,6 +239,10 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
     init {
         Logger.info(LogTag.VIEW_MODEL, "IDEViewModel created")
         loadProjects()
+        initializeWorkspace()
+    }
+
+    private fun initializeWorkspace() {
         viewModelScope.launch {
             val ws = workspace.load()
             _onboardingComplete.value = ws.onboardingComplete
