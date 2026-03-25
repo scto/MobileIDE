@@ -158,7 +158,7 @@ androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-compose-material3-window-size-class = { group = "androidx.compose.material3", name = "material3-window-size-class" }
+androidx-compose-material3-window-size-windowclass = { group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-navigation" }
@@ -263,11 +263,11 @@ androidx-lifecycle = [
     "androidx-lifecycle-viewmodel-compose"
 ]
 androidx_ui = [
-    "androidx_activity_compose",
-    "androidx_core_ktx",
-    "androidx_appcompat",
-    "androidx_material",
-    "androidx_lifecycle_ktx"
+    "androidx-activity-compose",
+    "androidx-core-ktx",
+    "androidx-appcompat",
+    "androidx-material",
+    "androidx-lifecycle-runtime-ktx"
 ]
 androidx-compose = [
     "androidx-compose-runtime",
@@ -321,7 +321,7 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint_jlleitsch
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 gradle_versions = { id = "com.github.ben-manes.versions", version.ref = "gradle_versions" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "google-dagger" }
 #detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadowPlugin" }
