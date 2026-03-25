@@ -3,13 +3,13 @@ package com.mobileide.app.editor
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.util.AttributeSet
-import com.mobileide.app.editor.intelligent.IntelligentFeatureRegistry
 import com.mobileide.app.ui.theme.currentM3Theme
 import com.mobileide.app.utils.EditorSettings
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.component.EditorAutoCompletion
+import com.mobileide.app.ui.theme.EditorColor
+import com.mobileide.app.ui.theme.applyTo
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,69 +18,29 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * MobileIDE's custom [CodeEditor] subclass.
+ * MobileIDE's [CodeEditor] subclass.
  *
- * Responsibilities:
- * - Apply Material3 theme colours to the Sora editor chrome via [setThemeColors].
- * - Apply user [EditorSettings] (tab size, word-wrap, font, …) via [applyEditorSettings].
- * - Load / cache custom fonts via [FontCache].
- * - Register intelligent editing features (auto-close tag, bullet continuation).
- * - Expose helpers for text selection and custom text-action buttons.
+ * Applies Material3 colours + installed M3-theme token overrides to every
+ * available [EditorColorScheme] slot in a single [setThemeColors] call.
  */
-@Suppress("NOTHING_TO_INLINE")
-class Editor : CodeEditor {
+class Editor @JvmOverloads constructor(
+    context: Context,
+) : CodeEditor(context) {
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    private val scope = CoroutineScope(Dispatchers.Main)
 
-    private val scope = CoroutineScope(Dispatchers.Default)
-
-    /** Current line-ending mode (default LF). */
-    var lineEnding: LineEnding = LineEnding.LF
-
-    /** Whether to insert a trailing newline on save. */
-    var insertFinalNewline: Boolean = false
-
-    /** Whether to strip trailing whitespace on save. */
-    var trimTrailingWhitespace: Boolean = false
-
-    init {
-        applyFont(context)
-        getComponent(EditorAutoCompletion::class.java).setEnabledAnimation(true)
-
-        // Wire up intelligent-feature events
-        IntelligentFeatureRegistry.allFeatures.forEach { feature ->
-            // Key and content events are handled via subscribeEvent in feature impls
-            // (See IntelligentFeature for the hook API)
-        }
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        runCatching { scope.cancel() }
     }
 
     // ── Theme colours ─────────────────────────────────────────────────────────
 
     /**
-     * Apply Material3-derived colours to the Sora editor chrome.
+     * Apply all available [EditorColorScheme] slots from Material3 colours,
+     * then overlay any per-theme [EditorColor] overrides from the active M3 theme.
      *
-     * This is called every time the active Material3 theme or dark-mode state
-     * changes. It also picks up any [currentM3Theme] editor-colour overrides
-     * that were defined in a user-installed theme JSON.
-     *
-     * @param isDarkMode            Whether dark mode is active.
-     * @param editorBackground      Whole editor background (ARGB int).
-     * @param surfaceContainer      Used for popup / completion-window backgrounds.
-     * @param surface               Secondary surface (hover, diagnostic tooltips).
-     * @param onSurface             Text / icon colours on surface.
-     * @param highSurfaceContainer  Highlighted item in the completion window.
-     * @param colorPrimary          Primary accent: delimiters, highlighted text.
-     * @param colorPrimaryContainer (reserved for future use)
-     * @param colorSecondary        (reserved for future use)
-     * @param secondaryContainer    (reserved for future use)
-     * @param selectionBg           Selection / match highlight background.
-     * @param handleColor           Selection handles.
-     * @param gutterColor           Line-number strip background.
-     * @param currentLine           Current-line highlight.
-     * @param dividerColor          Line divider and popup borders.
-     * @param errorColor            Error underline / problem indicator.
+     * Parameters map to M3 colour roles; alpha helpers are used for derived slots.
      */
     fun setThemeColors(
         isDarkMode:           Boolean,
@@ -99,103 +59,194 @@ class Editor : CodeEditor {
         currentLine:          Int,
         dividerColor:         Int,
         errorColor:           Int,
+        warningColor:         Int   = Color.parseColor("#E5C07B"),
+        scrollThumb:          Int   = alpha(onSurface, 0.3f),
+        scrollThumbPressed:   Int   = alpha(onSurface, 0.5f),
+        inlayHintFg:          Int   = alpha(onSurface, 0.5f),
+        inlayHintBg:          Int   = alpha(surfaceContainer, 0.7f),
+        nonPrintable:         Int   = alpha(onSurface, 0.25f),
+        matchedBg:            Int   = alpha(colorPrimary, 0.15f),
+        snippetEditing:       Int   = alpha(colorPrimaryContainer, 0.6f),
+        snippetRelated:       Int   = alpha(colorPrimaryContainer, 0.3f),
+        snippetInactive:      Int   = alpha(surfaceContainer, 0.5f),
+        textHighlight:        Int   = alpha(colorPrimary, 0.25f),
+        textHighlightStrong:  Int   = alpha(colorPrimary, 0.4f),
     ) {
-        updateColors { scheme ->
-            with(scheme) {
-                fun EditorColorScheme.setColors(color: Int, vararg ids: Int) =
-                    ids.forEach { setColor(it, color) }
+        // Rebuild scheme in background, apply on Main
+        scope.launch(Dispatchers.IO) {
+            updateColors { scheme ->
+                fun s(color: Int, vararg ids: Int) =
+                    ids.forEach { scheme.setColor(it, color) }
+                val E = EditorColorScheme
 
-                setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_UNDERLINE, Color.TRANSPARENT)
+                    // ── Transparency fix ──────────────────────────────────────
+                    scheme.setColor(E.HIGHLIGHTED_DELIMITERS_UNDERLINE, Color.TRANSPARENT)
 
-                setColors(editorBackground,
-                    EditorColorScheme.WHOLE_BACKGROUND)
+                    // ── Background ────────────────────────────────────────────
+                    s(editorBackground, E.WHOLE_BACKGROUND)
 
-                setColors(surfaceContainer,
-                    EditorColorScheme.COMPLETION_WND_BACKGROUND,
-                    EditorColorScheme.DIAGNOSTIC_TOOLTIP_BACKGROUND,
-                    EditorColorScheme.SIGNATURE_BACKGROUND,
-                    EditorColorScheme.LINE_NUMBER_PANEL)
+                    // ── Gutter / line numbers ─────────────────────────────────
+                    s(gutterColor, E.LINE_NUMBER_BACKGROUND)
+                    s(surfaceContainer, E.LINE_NUMBER_PANEL)
+                    s(alpha(onSurface, 0.5f), E.LINE_NUMBER)
+                    s(colorPrimary, E.LINE_NUMBER_CURRENT)
+                    s(dividerColor, E.LINE_DIVIDER)
 
-                setColors(highSurfaceContainer,
-                    EditorColorScheme.COMPLETION_WND_ITEM_CURRENT)
+                    // ── Current line ──────────────────────────────────────────
+                    s(currentLine, E.CURRENT_LINE)
 
-                setColors(dividerColor,
-                    EditorColorScheme.COMPLETION_WND_CORNER,
-                    EditorColorScheme.LINE_DIVIDER)
+                    // ── Selection ─────────────────────────────────────────────
+                    s(handleColor, E.SELECTION_HANDLE, E.SELECTION_INSERT)
+                    s(selectionBg, E.SELECTED_TEXT_BACKGROUND, E.MATCHED_TEXT_BACKGROUND)
 
-                setColors(onSurface,
-                    EditorColorScheme.LINE_NUMBER,
-                    EditorColorScheme.LINE_NUMBER_CURRENT,
-                    EditorColorScheme.COMPLETION_WND_TEXT_PRIMARY,
-                    EditorColorScheme.COMPLETION_WND_TEXT_SECONDARY,
-                    EditorColorScheme.DIAGNOSTIC_TOOLTIP_BRIEF_MSG,
-                    EditorColorScheme.DIAGNOSTIC_TOOLTIP_DETAILED_MSG,
-                    EditorColorScheme.SIGNATURE_TEXT_NORMAL)
+                    // ── Scrollbars ────────────────────────────────────────────
+                    s(alpha(onSurface, 0.0f), E.SCROLL_BAR_TRACK)
+                    s(scrollThumb, E.SCROLL_BAR_THUMB)
+                    s(scrollThumbPressed, E.SCROLL_BAR_THUMB_PRESSED)
 
-                setColors(handleColor,
-                    EditorColorScheme.SELECTION_HANDLE)
+                    // ── Block / indent lines ──────────────────────────────────
+                    s(alpha(colorPrimary, 0.6f), E.BLOCK_LINE_CURRENT)
+                    s(alpha(onSurface, 0.2f), E.BLOCK_LINE)
+                    s(nonPrintable, E.NON_PRINTABLE_CHAR)
 
-                setColors(selectionBg,
-                    EditorColorScheme.SELECTION_INSERT,
-                    EditorColorScheme.SELECTED_TEXT_BACKGROUND,
-                    EditorColorScheme.MATCHED_TEXT_BACKGROUND)
+                    // ── Autocomplete popup ────────────────────────────────────
+                    s(surface, E.COMPLETION_WND_BACKGROUND, E.COMPLETION_WND_CORNER)
+                    s(highSurfaceContainer, E.COMPLETION_WND_ITEM_CURRENT)
+                    s(onSurface, E.COMPLETION_WND_TEXT_PRIMARY)
+                    s(alpha(onSurface, 0.6f), E.COMPLETION_WND_TEXT_SECONDARY)
 
-                setColors(colorPrimary,
-                    EditorColorScheme.HIGHLIGHTED_DELIMITERS_FOREGROUND,
-                    EditorColorScheme.SIGNATURE_TEXT_HIGHLIGHTED_PARAMETER,
-                    EditorColorScheme.DIAGNOSTIC_TOOLTIP_ACTION)
+                    // ── Diagnostic tooltip ────────────────────────────────────
+                    s(surface, E.DIAGNOSTIC_TOOLTIP_BACKGROUND)
+                    s(onSurface, E.DIAGNOSTIC_TOOLTIP_BRIEF_MSG)
+                    s(alpha(onSurface, 0.7f), E.DIAGNOSTIC_TOOLTIP_DETAILED_MSG)
+                    s(colorPrimary, E.DIAGNOSTIC_TOOLTIP_ACTION)
 
-                setColors(alpha(onSurface, 0.6f), EditorColorScheme.BLOCK_LINE_CURRENT)
-                setColors(alpha(onSurface, 0.4f),
-                    EditorColorScheme.NON_PRINTABLE_CHAR,
-                    EditorColorScheme.BLOCK_LINE)
-                setColors(alpha(onSurface, 0.3f), EditorColorScheme.SCROLL_BAR_THUMB)
-                setColors(alpha(onSurface, 0.2f), EditorColorScheme.SCROLL_BAR_THUMB_PRESSED)
+                    // ── Signature help popup ──────────────────────────────────
+                    s(surface, E.SIGNATURE_BACKGROUND)
+                    s(onSurface, E.SIGNATURE_TEXT_NORMAL)
+                    s(colorPrimary, E.SIGNATURE_TEXT_HIGHLIGHTED_PARAMETER)
 
-                setColors(currentLine, EditorColorScheme.CURRENT_LINE)
-                setColors(gutterColor, EditorColorScheme.LINE_NUMBER_BACKGROUND)
-                setColors(errorColor,  EditorColorScheme.PROBLEM_ERROR)
+                    // ── Bracket / delimiter highlighting ──────────────────────
+                    s(colorPrimary, E.HIGHLIGHTED_DELIMITERS_FOREGROUND)
 
-                // Apply any per-colour overrides from the user's installed M3 theme
-                val editorColors = if (isDarkMode)
-                    currentM3Theme.value?.darkEditorColors
-                else
-                    currentM3Theme.value?.lightEditorColors
+                    // ── Problems ──────────────────────────────────────────────
+                    s(errorColor, E.PROBLEM_ERROR)
+                    s(warningColor, E.PROBLEM_WARNING)
+                    s(colorSecondary, E.PROBLEM_TYPO)
 
-                editorColors?.forEach { (key, color) -> setColor(key, color) }
+                    // ── Inlay hints ───────────────────────────────────────────
+                    // Inlay hint constants only exist in Sora ≥ 0.23.x
+                    runCatching {
+                        val fgField = EditorColorScheme::class.java.getField("TEXT_INLAY_HINT_FOREGROUND")
+                        val bgField = EditorColorScheme::class.java.getField("TEXT_INLAY_HINT_BACKGROUND")
+                        setColor(fgField.getInt(null), inlayHintFg)
+                        setColor(bgField.getInt(null), inlayHintBg)
+                    }
+
+                    // ── Snippet highlights ────────────────────────────────────
+                    runCatching {
+                        s(snippetEditing,  EditorColorScheme::class.java.getField("SNIPPET_BACKGROUND_EDITING").getInt(null))
+                        s(snippetRelated,  EditorColorScheme::class.java.getField("SNIPPET_BACKGROUND_RELATED").getInt(null))
+                        s(snippetInactive, EditorColorScheme::class.java.getField("SNIPPET_BACKGROUND_INACTIVE").getInt(null))
+                    }
+
+                    // ── Text highlight ────────────────────────────────────────
+                    runCatching {
+                        s(textHighlight,       EditorColorScheme::class.java.getField("TEXT_HIGHLIGHT_BACKGROUND").getInt(null))
+                        s(alpha(colorPrimary, 0.6f), EditorColorScheme::class.java.getField("TEXT_HIGHLIGHT_BORDER").getInt(null))
+                        s(textHighlightStrong, EditorColorScheme::class.java.getField("TEXT_HIGHLIGHT_STRONG_BACKGROUND").getInt(null))
+                        s(colorPrimary,        EditorColorScheme::class.java.getField("TEXT_HIGHLIGHT_STRONG_BORDER").getInt(null))
+                    }
+
+                    // ── Static span ───────────────────────────────────────────
+                    runCatching {
+                        s(alpha(colorPrimaryContainer, 0.5f), EditorColorScheme::class.java.getField("STATIC_SPAN_BACKGROUND").getInt(null))
+                        s(colorPrimary, EditorColorScheme::class.java.getField("STATIC_SPAN_FOREGROUND").getInt(null))
+                    }
+
+                    // ── Side block line ───────────────────────────────────────
+                    runCatching {
+                        s(dividerColor, EditorColorScheme::class.java.getField("SIDE_BLOCK_LINE").getInt(null))
+                    }
+
+                    // ── Sticky scroll divider ─────────────────────────────────
+                    runCatching {
+                        s(dividerColor, EditorColorScheme::class.java.getField("STICKY_SCROLL_DIVIDER").getInt(null))
+                    }
+
+                    // ── Underline / strikethrough ─────────────────────────────
+                    runCatching {
+                        s(colorPrimary, EditorColorScheme::class.java.getField("UNDERLINE").getInt(null))
+                        s(errorColor,   EditorColorScheme::class.java.getField("STRIKETHROUGH").getInt(null))
+                    }
+
+                    // ── Hard-wrap marker ──────────────────────────────────────
+                    runCatching {
+                        s(dividerColor, EditorColorScheme::class.java.getField("HARD_WRAP_MARKER").getInt(null))
+                    }
+
+                    // ── Current row border ────────────────────────────────────
+                    runCatching {
+                        s(colorSecondary, EditorColorScheme::class.java.getField("CURRENT_ROW_BORDER").getInt(null))
+                    }
+
+                    // ── Apply per-colour overrides from the installed M3 theme ─
+                    val editorColors = if (isDarkMode)
+                        currentM3Theme.value?.darkEditorColors
+                    else
+                        currentM3Theme.value?.lightEditorColors
+                    editorColors?.applyTo(scheme)
             }
         }
     }
 
-    // ── Editor settings ───────────────────────────────────────────────────────
+    // ── Settings ──────────────────────────────────────────────────────────────
 
-    /**
-     * Apply [EditorSettings] to this editor instance.
-     * Safe to call on the main thread at any time.
-     */
     fun applyEditorSettings(settings: EditorSettings) {
-        tabWidth                  = settings.tabSize
-        props.deleteMultiSpaces   = settings.tabSize
-        isLineNumberEnabled       = settings.showLineNumbers
+        // ── Text ─────────────────────────────────────────────────────────────
         setTextSize(settings.fontSize)
-        isWordwrap                = settings.wordWrap
-        props.autoIndent          = settings.autoIndent
-        props.stickyScroll        = settings.stickyScroll
-        props.symbolPairAutoCompletion = settings.bracketAutoClose
+        lineSpacingMultiplier              = settings.lineSpacing
+
+        // ── Indentation ───────────────────────────────────────────────────────
+        tabWidth                           = settings.tabSize
+        props.deleteMultiSpaces            = settings.tabSize
+        props.deleteEmptyLineFast          = settings.deleteMultiSpaces
+
+        // ── Display ───────────────────────────────────────────────────────────
+        isLineNumberEnabled                = settings.showLineNumbers
+        isWordwrap                         = settings.wordWrap
+
+        // ── Behaviour ─────────────────────────────────────────────────────────
+        props.autoIndent                   = settings.autoIndent
+        props.stickyScroll                 = settings.stickyScroll
+        props.symbolPairAutoCompletion     = settings.bracketAutoClose
+        props.useICULibToSelectWords       = true
         getComponent(EditorAutoCompletion::class.java)?.isEnabled = settings.autoComplete
-        lineSpacingMultiplier     = 1.2f   // comfortable default; expose if needed
-        lineNumberMarginLeft      = 9f
+
+        // ── Cursor animation (top-level CodeEditor property) ──────────────────
+        isCursorAnimationEnabled           = settings.cursorAnimation
+
+        // ── Whitespace rendering ──────────────────────────────────────────────
+        nonPrintablePaintingFlags = if (settings.showWhitespace) {
+            FLAG_DRAW_WHITESPACE_LEADING  or
+            FLAG_DRAW_WHITESPACE_INNER    or
+            FLAG_DRAW_WHITESPACE_TRAILING or
+            FLAG_DRAW_TAB_SAME_AS_SPACE
+        } else 0
+
+        // ── Hardware keyboard ─────────────────────────────────────────────────
+        isDisableSoftKbdIfHardKbdAvailable = true
+
+        lineNumberMarginLeft = 9f
     }
+
+    fun applyFontFromSettings(context: Context, settings: EditorSettings) =
+        applyFont(context, settings.fontPath, isAsset = true)
 
     // ── Language ──────────────────────────────────────────────────────────────
 
-    /**
-     * Set the TextMate language for [textmateScope].
-     * Adds keyword completions if [KeywordManager] has them for this scope.
-     */
     suspend fun setLanguage(textmateScope: String) {
         val language = LanguageManager.createLanguage(context, textmateScope)
-        // Keyword completions
         KeywordManager.getKeywords(textmateScope)?.let { kw ->
             language.setCompleterKeywords(kw.toTypedArray())
         }
@@ -204,15 +255,6 @@ class Editor : CodeEditor {
 
     // ── Font ──────────────────────────────────────────────────────────────────
 
-    /**
-     * Apply the editor font.  Falls back to [Typeface.MONOSPACE] if no custom
-     * font is configured or the asset cannot be loaded.
-     *
-     * Extend this when a font-settings feature is added:
-     * ```kotlin
-     * applyFont(context, fontPath = prefs.fontPath, isAsset = prefs.isFontAsset)
-     * ```
-     */
     fun applyFont(
         context: Context,
         fontPath: String = DEFAULT_FONT_PATH,
@@ -226,62 +268,23 @@ class Editor : CodeEditor {
         }.onFailure { it.printStackTrace() }
     }
 
-    /** Apply font from [settings]. Called when editor settings change. */
-    fun applyFontFromSettings(context: Context, settings: com.mobileide.app.utils.EditorSettings) {
-        applyFont(context, settings.fontPath, isAsset = true)
-    }
-
-    // ── Text actions ──────────────────────────────────────────────────────────
-
-    // TextActionItem API is not available in Sora 0.23.4
-    // registerTextAction / unregisterTextAction removed
-
     // ── Selection ─────────────────────────────────────────────────────────────
 
-    /** Return the currently selected text, or null if nothing is selected. */
-    fun getSelectedText(): String? {
-        if (!isTextSelected) return null
-        return text.substring(cursorRange.startIndex, cursorRange.endIndex)
-    }
+    fun getSelectedText(): String? =
+        if (isTextSelected) text.substring(cursorRange.startIndex, cursorRange.endIndex) else null
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    // ── Internal ──────────────────────────────────────────────────────────────
 
-    override fun release() {
-        scope.cancel()
-        super.release()
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private fun alpha(color: Int, factor: Float): Int {
-        val a = ((Color.alpha(color) * factor).toInt()).coerceIn(0, 255)
-        return Color.argb(a, Color.red(color), Color.green(color), Color.blue(color))
-    }
-
-    /**
-     * Apply [block] to the current scheme immediately, then rebuild the full
-     * TextMate scheme on IO and re-apply on Main.
-     *
-     * This two-phase approach avoids a visible flash: the colours are applied
-     * synchronously for instant feedback, then the fully rebuilt TextMate scheme
-     * (with correct token colours) replaces it asynchronously.
-     */
     private fun updateColors(block: (EditorColorScheme) -> Unit) {
-        // Phase 1: immediate synchronous patch
-        block(colorScheme)
+        val scheme = colorScheme
+        block(scheme)
+        colorScheme = scheme
+    }
 
-        // Phase 2: async rebuild with full TextMate token colours
-        scope.launch(Dispatchers.IO) {
-            val isDark = resources.configuration.uiMode and
-                android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
-                android.content.res.Configuration.UI_MODE_NIGHT_YES
-            val newScheme = EditorThemeManager.createColorScheme(context, isDark)
-            withContext(Dispatchers.Main) {
-                colorScheme = newScheme
-                block(newScheme)
-            }
+    companion object {
+        private fun alpha(color: Int, alpha: Float): Int {
+            val a = (alpha * 255).toInt().coerceIn(0, 255)
+            return (color and 0x00FFFFFF) or (a shl 24)
         }
     }
-
-    // DEFAULT_FONT_PATH is defined in TextMateConstants.kt
 }

@@ -8,25 +8,25 @@ versionCode    = "1"
 versionName    = "1.0"
 
 # ── Build toolchain ───────────────────────────────────────────────────────────
-agp    = "8.13.2"
-kotlin = "2.3.20"
+agp    = "8.11.1"
+kotlin = "2.2.0"
 
 # ── AndroidX ──────────────────────────────────────────────────────────────────
-coreKtx              = "1.18.0"
-lifecycleRuntimeKtx  = "2.10.0"
-activityCompose      = "1.13.0"
-composeBom           = "2026.03.00"
-navigationCompose    = "2.9.7"
-viewmodelCompose     = "2.10.0"
+coreKtx              = "1.16.0"
+lifecycleRuntimeKtx  = "2.9.1"
+activityCompose      = "1.10.1"
+composeBom           = "2025.05.01"
+navigationCompose    = "2.9.0"
+viewmodelCompose     = "2.9.1"
 coroutines           = "1.10.2"
 coil                 = "2.7.0"
-datastorePrefs       = "1.2.1"
+datastorePrefs       = "1.1.4"
 
 # ── Sora Editor ───────────────────────────────────────────────────────────────
-soraEditor           = "0.23.6"
+soraEditor           = "0.23.5"
 
 # ── Other ─────────────────────────────────────────────────────────────────────
-splashscreen         = "1.2.0"
+splashscreen         = "1.0.1"
 
 # ── Documentation ────────────────────────────────────────────────────────────
 dokka                = "2.1.0"

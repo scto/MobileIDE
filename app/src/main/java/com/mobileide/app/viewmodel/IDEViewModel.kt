@@ -262,6 +262,14 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
                 stickyScroll         = ws.editorStickyScroll,
                 highlightCurrentLine = ws.editorHighlightLine,
                 fontPath             = ws.editorFontPath,
+                lineSpacing          = ws.editorLineSpacing,
+                deleteMultiSpaces    = ws.editorDeleteMultiSpaces,
+                cursorAnimation      = ws.editorCursorAnimation,
+                showWhitespace       = ws.editorShowWhitespace,
+                autoCloseTag         = ws.editorAutoCloseTag,
+                bulletContinuation   = ws.editorBulletContinuation,
+                autoSave             = ws.editorAutoSave,
+                formatOnSave         = ws.editorFormatOnSave,
             )
             // Navigate: show onboarding if not complete OR required permissions missing
             val requiredOk = ws.permissions.allGranted
@@ -650,5 +658,10 @@ enum class Screen {
     GIT, LOGCAT, DEPENDENCIES, RUN_CONFIG,
     PROJECT_SEARCH, GRADLE_TASKS, DIFF_VIEWER, PROJECT_STATS,
     TODO_PANEL, PACKAGE_MANAGER, KEYBOARD_HELP, SETUP_WIZARD,
-    LOG_VIEWER, APP_THEME
+    LOG_VIEWER, APP_THEME,
+    // ── Settings sub-screens ──────────────────────────────────────────────────
+    SETTINGS_EDITOR, SETTINGS_THEME, SETTINGS_KEYBINDS,
+    SETTINGS_LANGUAGE, SETTINGS_LSP, SETTINGS_RUNNERS,
+    SETTINGS_GIT, SETTINGS_TERMINAL, SETTINGS_EXTENSION,
+    SETTINGS_DEBUG, SETTINGS_SUPPORT, SETTINGS_ABOUT,
 }

@@ -21,6 +21,19 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mobileide.app.ui.screens.*
+import com.mobileide.app.ui.screens.settings.SettingsScreen
+import com.mobileide.app.ui.screens.settings.about.AboutScreen
+import com.mobileide.app.ui.screens.settings.debugOptions.DebugOptionsScreen
+import com.mobileide.app.ui.screens.settings.editor.EditorSettingsScreen as SettingsEditorScreen
+import com.mobileide.app.ui.screens.settings.extension.ExtensionScreen
+import com.mobileide.app.ui.screens.settings.git.GitSettingsScreen
+import com.mobileide.app.ui.screens.settings.keybinds.KeybindsScreen
+import com.mobileide.app.ui.screens.settings.language.LanguageScreen
+import com.mobileide.app.ui.screens.settings.lsp.LspScreen
+import com.mobileide.app.ui.screens.settings.runners.RunnersScreen
+import com.mobileide.app.ui.screens.settings.support.SupportScreen
+import com.mobileide.app.ui.screens.settings.terminal.TerminalSettingsScreen
+import com.mobileide.app.ui.screens.settings.theme.ThemeScreen
 import com.mobileide.app.utils.commands.CommandRegistry
 import com.mobileide.app.ui.theme.*
 import com.mobileide.app.viewmodel.IDEViewModel
@@ -86,6 +99,7 @@ fun MobileIDEApp() {
                     Screen.TERMINAL        -> slideInVertically { it }         togetherWith slideOutVertically { -it }
                     Screen.SETTINGS        -> slideInHorizontally { -it }      togetherWith slideOutHorizontally { it }
                     Screen.EDITOR_SETTINGS -> slideInHorizontally { it }       togetherWith slideOutHorizontally { -it }
+
                     Screen.GIT             -> slideInVertically { -it }        togetherWith slideOutVertically { it }
                     Screen.LOGCAT          -> slideInHorizontally { it }       togetherWith slideOutHorizontally { -it }
                     Screen.DEPENDENCIES    -> slideInHorizontally { it }       togetherWith slideOutHorizontally { -it }
@@ -101,6 +115,18 @@ fun MobileIDEApp() {
                     Screen.DEV_SETTINGS    -> slideInHorizontally { it }       togetherWith slideOutHorizontally { -it }
                     Screen.LOG_VIEWER      -> slideInVertically { it }         togetherWith slideOutVertically { -it }
                     Screen.APP_THEME       -> slideInHorizontally { -it }      togetherWith slideOutHorizontally { it }
+                    Screen.SETTINGS_EDITOR   -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_THEME    -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_KEYBINDS -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_LANGUAGE -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_LSP      -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_RUNNERS  -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_GIT      -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_TERMINAL -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_EXTENSION-> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_DEBUG    -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_SUPPORT  -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
+                    Screen.SETTINGS_ABOUT    -> slideInHorizontally { it }  togetherWith slideOutHorizontally { -it }
                 }
             },
             label = "nav"
@@ -110,8 +136,8 @@ fun MobileIDEApp() {
                 Screen.HOME            -> HomeScreen(vm)
                 Screen.EDITOR          -> EditorScreen(vm)
                 Screen.TERMINAL        -> TerminalScreen(vm)
-                Screen.SETTINGS        -> SettingsScreen(vm)
-                Screen.EDITOR_SETTINGS -> EditorSettingsScreen(vm)
+                Screen.SETTINGS        -> com.mobileide.app.ui.screens.settings.SettingsScreen(vm)
+                Screen.EDITOR_SETTINGS -> SettingsEditorScreen(vm)
                 Screen.GIT             -> GitScreen(vm)
                 Screen.LOGCAT          -> LogCatScreen(vm)
                 Screen.DEPENDENCIES    -> DependencyScreen(vm)
@@ -127,6 +153,18 @@ fun MobileIDEApp() {
                 Screen.DEV_SETTINGS    -> DevSettingsScreen(vm)
                 Screen.LOG_VIEWER      -> LogViewerScreen(vm)
                 Screen.APP_THEME       -> AppThemeScreen(vm)
+                Screen.SETTINGS_EDITOR   -> SettingsEditorScreen(vm)
+                Screen.SETTINGS_THEME    -> ThemeScreen(vm)
+                Screen.SETTINGS_KEYBINDS -> KeybindsScreen(vm)
+                Screen.SETTINGS_LANGUAGE -> LanguageScreen(vm)
+                Screen.SETTINGS_LSP      -> LspScreen(vm)
+                Screen.SETTINGS_RUNNERS  -> RunnersScreen(vm)
+                Screen.SETTINGS_GIT      -> GitSettingsScreen(vm)
+                Screen.SETTINGS_TERMINAL -> TerminalSettingsScreen(vm)
+                Screen.SETTINGS_EXTENSION-> ExtensionScreen(vm)
+                Screen.SETTINGS_DEBUG    -> DebugOptionsScreen(vm)
+                Screen.SETTINGS_SUPPORT  -> SupportScreen(vm)
+                Screen.SETTINGS_ABOUT    -> AboutScreen(vm)
             }
         }
 
