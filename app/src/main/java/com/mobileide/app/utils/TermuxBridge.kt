@@ -27,6 +27,44 @@ class TermuxBridge(private val context: Context) {
         context.packageManager.getPackageInfo(TERMUX_PACKAGE, 0); true
     } catch (_: Exception) { false }
 
+    fun executeStream(commandArgs: List<String>, workingDir: String = TERMUX_HOME): Flow<TerminalLine> = flow {
+        val commandStr = commandArgs.joinToString(" ")
+        Logger.info(LogTag.TERMUX, "exec: $commandStr")
+        Logger.info(LogTag.TERMUX, "execute: $commandStr")
+        Logger.info(LogTag.TERMUX, "execute: $commandStr")
+        emit(TerminalLine("$ $commandStr", LineType.INPUT))
+        try {
+            val process = ProcessBuilder(commandArgs)
+                .directory(File(workingDir))
+                .redirectErrorStream(true)
+                .apply {
+                    environment().apply {
+                        put("HOME",             TERMUX_HOME)
+                        put("PREFIX",           TERMUX_PREFIX)
+                        put("PATH",             "$TERMUX_PREFIX/bin:$TERMUX_PREFIX/bin/applets:/usr/bin:/bin")
+                        put("LD_LIBRARY_PATH",  "$TERMUX_PREFIX/lib")
+                        put("LANG",             "en_US.UTF-8")
+                        put("JAVA_HOME",        "$TERMUX_PREFIX/opt/openjdk")
+                        put("GRADLE_USER_HOME", "$TERMUX_HOME/.gradle")
+                        put("ANDROID_HOME",     "$TERMUX_HOME/android-sdk")
+                        put("TERM",             "xterm-256color")
+                    }
+                }.start()
+
+            val stdout = BufferedReader(InputStreamReader(process.inputStream))
+            var line: String?
+            while (stdout.readLine().also { line = it } != null) {
+                emit(TerminalLine(line!!, detectType(line!!)))
+            }
+            val exit = process.waitFor()
+            if (exit == 0) { Logger.success(LogTag.TERMUX, "exit 0: $commandStr"); emit(TerminalLine("✓ Exited with code 0", LineType.SUCCESS)) }
+            else { Logger.error(LogTag.TERMUX, "exit $exit: $commandStr"); emit(TerminalLine("✗ Exited with code $exit", LineType.ERROR)) }
+        } catch (e: Exception) {
+            Logger.error(LogTag.TERMUX, "executeStream error: ${e.message}", e.toString())
+            emit(TerminalLine("Error: ${e.message}", LineType.ERROR))
+        }
+    }.flowOn(Dispatchers.IO)
+
     fun executeStream(command: String, workingDir: String = TERMUX_HOME): Flow<TerminalLine> = flow {
         Logger.info(LogTag.TERMUX, "exec: $command")
         Logger.info(LogTag.TERMUX, "execute: $command")
@@ -76,13 +114,13 @@ class TermuxBridge(private val context: Context) {
     }
 
     fun gradleBuild(projectPath: String) =
-        executeStream("cd '$projectPath' && gradle assembleDebug 2>&1", projectPath)
+        executeStream(listOf("gradle", "assembleDebug"), projectPath)
 
     fun gradleClean(projectPath: String) =
-        executeStream("cd '$projectPath' && gradle clean 2>&1", projectPath)
+        executeStream(listOf("gradle", "clean"), projectPath)
 
     fun installApk(apkPath: String) =
-        executeStream("am install -r '$apkPath' 2>&1")
+        executeStream(listOf("am", "install", "-r", apkPath))
 
     fun checkJava()   = executeStream("java -version 2>&1 && javac -version 2>&1")
     fun checkGradle() = executeStream("gradle --version 2>&1")
