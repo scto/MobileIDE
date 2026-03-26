@@ -29,12 +29,18 @@ fun SettingsScreen(vm: IDEViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // ── Editor ────────────────────────────────────────────────────────
+
+            // ── Editor selection ─────────────────────────────────────────────
             SettingsSection("Editor")
             SettingsGroup {
-                SettingsNavItem(Icons.Default.Code,   "Editor",  "Aussehen, Verhalten, Schriftarten, Drawer",       { vm.navigate(Screen.SETTINGS_EDITOR) })
-                SettingsNavItem(Icons.Default.Palette,"Themen",  "App-Farbthema, Material You, AMOLED",              { vm.navigate(Screen.SETTINGS_THEME) })
-                SettingsNavItem(Icons.Default.Keyboard,"Tastenkombinationen", "Hardware-Tastaturkürzel konfigurieren", { vm.navigate(Screen.SETTINGS_KEYBINDS) })
+                SettingsNavItem(Icons.Default.Code,    "Editor auswählen",
+                    "MobileIDE Editor oder Feature Editor",           { vm.navigate(Screen.SETTINGS_EDITOR_SELECT) })
+                SettingsNavItem(Icons.Default.Tune,    "Editor",
+                    "Aussehen, Verhalten, Schriftarten, Drawer",      { vm.navigate(Screen.SETTINGS_EDITOR) })
+                SettingsNavItem(Icons.Default.Palette, "Themen",
+                    "App-Farbthema, Material You, AMOLED",            { vm.navigate(Screen.SETTINGS_THEME) })
+                SettingsNavItem(Icons.Default.Keyboard,"Tastenkombinationen",
+                    "Hardware-Tastaturkürzel konfigurieren",           { vm.navigate(Screen.SETTINGS_KEYBINDS) })
             }
 
             // ── Code & Language ───────────────────────────────────────────────

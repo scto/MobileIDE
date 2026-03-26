@@ -1,0 +1,58 @@
+name: Aider AI Assistant (Gemini)
+
+# Ermöglicht das manuelle Starten des Workflows mit Eingabeparametern
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Der Prompt für Aider (z.B. "Füge eine neue Kotlin Data Class für Benutzer hinzu")'
+        required: true
+        type: string
+
+# Wichtig: Der Workflow benötigt Schreibrechte, um die Änderungen pushen zu dürfen
+permissions:
+  contents: write
+
+jobs:
+  run-aider:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Quellcode auschecken
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Aider profitiert von der gesamten Git-Historie, um den Kontext besser zu verstehen
+          fetch-depth: 0 
+
+      # 2. Python Umgebung aufsetzen (Aider ist in Python geschrieben)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Aider installieren
+      - name: Install Aider
+        run: pip install aider-chat
+
+      # 4. Git konfigurieren, damit Aider im Namen eines Bots commiten kann
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # 5. Aider mit Gemini und dem übergebenen Prompt ausführen
+      - name: Run Aider
+        env:
+          # Hier wird der Google API Key aus den GitHub Secrets geladen
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # --model sagt Aider, dass Gemini genutzt werden soll
+          # --message übergibt den Prompt
+          # --yes bestätigt eventuelle Nachfragen von Aider automatisch (non-interactive mode)
+          aider --model gemini/gemini-2.5-pro --message "${{ inputs.prompt }}" --yes
+
+      # 6. Änderungen zurück ins Repository pushen
+      # (Aider erstellt den Commit automatisch anhand der gemachten Änderungen)
+      - name: Push changes
+        run: git push
