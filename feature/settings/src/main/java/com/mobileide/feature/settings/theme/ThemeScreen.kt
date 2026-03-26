@@ -1,6 +1,5 @@
 package com.mobileide.feature.settings.theme
 
-import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

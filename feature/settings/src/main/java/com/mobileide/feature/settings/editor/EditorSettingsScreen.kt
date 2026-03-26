@@ -18,14 +18,14 @@ fun EditorSettingsScreen(
     val settings by viewModel.editorSettings.collectAsState()
 
     // Using local state to handle sliders/toggles before saving
-    var fontSize by remember(settings.fontSize) { mutableStateOf(settings.fontSize) }
-    var tabSize by remember(settings.tabSize) { mutableStateOf(settings.tabSize.toFloat()) }
-    var showLineNumbers by remember(settings.showLineNumbers) { mutableStateOf(settings.showLineNumbers) }
-    var wordWrap by remember(settings.wordWrap) { mutableStateOf(settings.wordWrap) }
-    var autoComplete by remember(settings.autoComplete) { mutableStateOf(settings.autoComplete) }
-    var autoIndent by remember(settings.autoIndent) { mutableStateOf(settings.autoIndent) }
-    var stickyScroll by remember(settings.stickyScroll) { mutableStateOf(settings.stickyScroll) }
-    var highlightLine by remember(settings.highlightLine) { mutableStateOf(settings.highlightLine) }
+    var localFontSize by remember(settings.fontSize) { mutableStateOf(settings.fontSize) }
+    var localTabSize by remember(settings.tabSize) { mutableStateOf(settings.tabSize.toFloat()) }
+    var localShowLineNumbers by remember(settings.showLineNumbers) { mutableStateOf(settings.showLineNumbers) }
+    var localWordWrap by remember(settings.wordWrap) { mutableStateOf(settings.wordWrap) }
+    var localAutoComplete by remember(settings.autoComplete) { mutableStateOf(settings.autoComplete) }
+    var localAutoIndent by remember(settings.autoIndent) { mutableStateOf(settings.autoIndent) }
+    var localStickyScroll by remember(settings.stickyScroll) { mutableStateOf(settings.stickyScroll) }
+    var localHighlightLine by remember(settings.highlightLine) { mutableStateOf(settings.highlightLine) }
 
     Scaffold(
         topBar = {
@@ -33,7 +33,10 @@ fun EditorSettingsScreen(
                 title = { Text("Editor Settings") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        // Use a standard back icon here
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
@@ -45,54 +48,54 @@ fun EditorSettingsScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text("Font Size: ${fontSize.toInt()}")
+            Text("Font Size: ${localFontSize.toInt()}")
             Slider(
-                value = fontSize,
-                onValueChange = { fontSize = it },
-                onValueChangeFinished = { viewModel.updateFontSize(fontSize) },
+                value = localFontSize,
+                onValueChange = { localFontSize = it },
+                onValueChangeFinished = { viewModel.updateFontSize(localFontSize) },
                 valueRange = 8f..32f
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Tab Size: ${tabSize.toInt()}")
+            Text("Tab Size: ${localTabSize.toInt()}")
             Slider(
-                value = tabSize,
-                onValueChange = { tabSize = it },
-                onValueChangeFinished = { viewModel.updateTabSize(tabSize.toInt()) },
+                value = localTabSize,
+                onValueChange = { localTabSize = it },
+                onValueChangeFinished = { viewModel.updateTabSize(localTabSize.toInt()) },
                 valueRange = 2f..8f,
                 steps = 6
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsToggle("Show Line Numbers", showLineNumbers) {
-                showLineNumbers = it
+            SettingsToggle("Show Line Numbers", localShowLineNumbers) {
+                localShowLineNumbers = it
                 viewModel.updateShowLineNumbers(it)
             }
 
-            SettingsToggle("Word Wrap", wordWrap) {
-                wordWrap = it
+            SettingsToggle("Word Wrap", localWordWrap) {
+                localWordWrap = it
                 viewModel.updateWordWrap(it)
             }
 
-            SettingsToggle("Auto Complete", autoComplete) {
-                autoComplete = it
+            SettingsToggle("Auto Complete", localAutoComplete) {
+                localAutoComplete = it
                 viewModel.updateAutoComplete(it)
             }
 
-            SettingsToggle("Auto Indent", autoIndent) {
-                autoIndent = it
+            SettingsToggle("Auto Indent", localAutoIndent) {
+                localAutoIndent = it
                 viewModel.updateAutoIndent(it)
             }
 
-            SettingsToggle("Sticky Scroll", stickyScroll) {
-                stickyScroll = it
+            SettingsToggle("Sticky Scroll", localStickyScroll) {
+                localStickyScroll = it
                 viewModel.updateStickyScroll(it)
             }
 
-            SettingsToggle("Highlight Current Line", highlightLine) {
-                highlightLine = it
+            SettingsToggle("Highlight Current Line", localHighlightLine) {
+                localHighlightLine = it
                 viewModel.updateHighlightLine(it)
             }
         }
