@@ -27,6 +27,7 @@ import com.mobileide.app.logger.Logger
 import com.mobileide.app.logger.LogTag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import com.mobileide.feature.settings.app.EditorPreference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -180,6 +181,13 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
         _cpCommands.value    = CommandRegistry.allCommands
         _cpVisible.value     = true
     }
+
+
+    // ── Editor preference ─────────────────────────────────────────────────────
+    private val _preferredEditor = MutableStateFlow(EditorPreference.MOBILEIDE)
+    val preferredEditor: StateFlow<EditorPreference> = _preferredEditor
+
+    fun setPreferredEditor(pref: EditorPreference) { _preferredEditor.value = pref }
 
     fun dismissCommandPalette() {
         _cpVisible.value = false
@@ -668,4 +676,6 @@ enum class Screen {
     SETTINGS_LANGUAGE, SETTINGS_LSP, SETTINGS_RUNNERS,
     SETTINGS_GIT, SETTINGS_TERMINAL, SETTINGS_EXTENSION,
     SETTINGS_DEBUG, SETTINGS_SUPPORT, SETTINGS_ABOUT,
+    SETTINGS_EDITOR_SELECT,  // choose between editors
+    FEATURE_EDITOR,          // :feature:editor standalone screen
 }

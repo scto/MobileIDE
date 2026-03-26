@@ -23,7 +23,7 @@ coil                 = "2.7.0"
 datastorePrefs       = "1.1.4"
 
 # ── Sora Editor ───────────────────────────────────────────────────────────────
-soraEditor           = "0.23.5"
+sora                 = "0.23.5"
 
 # ── Other ─────────────────────────────────────────────────────────────────────
 splashscreen         = "1.0.1"
@@ -32,7 +32,11 @@ splashscreen         = "1.0.1"
 dokka                = "2.1.0"
 dokkaMermaid         = "0.6.0"
 
+desugar              = "2.1.5"
+
 [libraries]
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
+
 # AndroidX Core
 androidx-core-ktx                   = { group = "androidx.core",      name = "core-ktx",                    version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx      = { group = "androidx.lifecycle",  name = "lifecycle-runtime-ktx",       version.ref = "lifecycleRuntimeKtx" }
@@ -55,14 +59,15 @@ coil-compose                        = { group = "io.coil-kt",          name = "c
 # DataStore
 androidx-datastore-preferences      = { group = "androidx.datastore",  name = "datastore-preferences",       version.ref = "datastorePrefs" }
 # Sora Editor
-sora-editor                         = { group = "io.github.Rosemoe.sora-editor", name = "editor",            version.ref = "soraEditor" }
-sora-language-textmate              = { group = "io.github.Rosemoe.sora-editor", name = "language-textmate", version.ref = "soraEditor" }
-sora-language-java                  = { group = "io.github.Rosemoe.sora-editor", name = "language-java",     version.ref = "soraEditor" }
+sora-editor                         = { group = "io.github.Rosemoe.sora-editor", name = "editor",            version.ref = "sora" }
+sora-language-textmate              = { group = "io.github.Rosemoe.sora-editor", name = "language-textmate", version.ref = "sora" }
+sora-language-java                  = { group = "io.github.Rosemoe.sora-editor", name = "language-java",     version.ref = "sora" }
 # Splash Screen
 androidx-core-splashscreen          = { group = "androidx.core",       name = "core-splashscreen",           version.ref = "splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application",          version.ref = "agp" }
+android-library      = { id = "com.android.library",              version.ref = "agp" }
 kotlin-android      = { id = "org.jetbrains.kotlin.android",      version.ref = "kotlin" }
 kotlin-compose      = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 # Documentation

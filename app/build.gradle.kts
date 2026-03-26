@@ -163,4 +163,11 @@ dependencies {
 
     // ── Debug ────────────────────────────────────────────────────────────────
     debugImplementation(libs.androidx.ui.tooling)
+
+    // ── Feature submodules ─────────────────────────────────────────────────
+    implementation(project(":feature:editor"))
+    implementation(project(":feature:settings"))
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
+
