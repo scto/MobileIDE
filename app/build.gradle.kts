@@ -168,6 +168,9 @@ dependencies {
     implementation(project(":feature:editor"))
     implementation(project(":feature:settings"))
 
+    // ── Core submodules ────────────────────────────────────────────────────
+    implementation(project(":core:logger"))
+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
