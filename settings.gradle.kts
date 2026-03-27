@@ -26,6 +26,7 @@ include(":app")
 
 // ── Core ──────────────────────────────────────────────────────────────────────
 include(":core:logger")
+include(":core:editor")
 
 // ── Feature submodules ────────────────────────────────────────────────────────
 include(":feature:editor")    // standalone Sora editor with tab bar
