@@ -28,6 +28,8 @@ class TermuxBridge(private val context: Context) {
     } catch (_: Exception) { false }
 
     fun executeStream(command: String, workingDir: String = TERMUX_HOME): Flow<TerminalLine> = flow {
+        Logger.info(LogTag.TERMUX, "exec: $command")
+        Logger.info(LogTag.TERMUX, "execute: $command")
         Logger.info(LogTag.TERMUX, "execute: $command")
         emit(TerminalLine("$ $command", LineType.INPUT))
         try {
