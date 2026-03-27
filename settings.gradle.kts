@@ -27,6 +27,10 @@ include(":app")
 // ── Core ──────────────────────────────────────────────────────────────────────
 include(":core:logger")
 include(":core:editor")
+include(":core:termux:application")
+include(":core:termux:emulator")
+include(":core:termux:shared")
+include(":core:termux:view")
 
 // ── Feature submodules ────────────────────────────────────────────────────────
 include(":feature:editor")    // standalone Sora editor with tab bar

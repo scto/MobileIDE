@@ -170,6 +170,7 @@ dependencies {
 
     // ── Core submodules ────────────────────────────────────────────────────
     implementation(project(":core:logger"))
+    implementation(project(":core:termux:application"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
