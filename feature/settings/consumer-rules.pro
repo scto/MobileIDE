@@ -1,1 +1,0 @@
--keep class com.mobileide.feature.settings.** { *; }

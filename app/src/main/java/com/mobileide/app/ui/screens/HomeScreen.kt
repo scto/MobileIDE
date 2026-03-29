@@ -168,7 +168,7 @@ fun HomeScreen(vm: IDEViewModel) {
                         projects.take(5).forEach { project ->
                             ProjectListItem(
                                 project  = project,
-                                onOpen   = { vm.openProject(project); vm.navigate(if (vm.preferredEditor.value == com.mobileide.feature.settings.app.EditorPreference.FEATURE) Screen.FEATURE_EDITOR else Screen.EDITOR) },
+                                onOpen   = { vm.openProject(project); vm.navigate(Screen.EDITOR) },
                                 onDelete = { deleteTarget = project }
                             )
                         }

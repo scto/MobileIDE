@@ -25,17 +25,18 @@ import kotlinx.coroutines.withContext
 data class CursorPos(val line: Int, val column: Int)
 
 /**
- * Compose wrapper around MobileIDE's [Editor] subclass.
+ * Compose wrapper around [Editor] (our [io.github.rosemoe.sora.widget.CodeEditor] subclass).
  *
- * Initialisation order:
- * 1. Grammar / keyword / Markdown-highlighter registries (IO)
- * 2. TextMate colour scheme (IO → Main)
- * 3. Material3 chrome + theme.json overrides (Main)
- * 4. Editor settings + font (Main)
- * 5. Language (IO → Main)
- * 6. Content — **last**, so the renderer is fully ready (Main)
+ * Initialisation order (all on IO unless stated otherwise):
+ * 1. Grammar + keyword + Markdown-highlighter registries
+ * 2. TextMate colour scheme → assigned on Main
+ * 3. Theme colours → [Editor.setThemeColors] from Material3 ColorScheme
+ * 4. Editor settings (Main)
+ * 5. Language (IO create, Main assign)
+ * 6. Text content (Main, **last** so renderer is fully ready)
  *
- * All settings changes are re-applied reactively via [LaunchedEffect].
+ * Intelligent features (auto-close tag, bullet continuation) receive
+ * key events via [IntelligentFeatureRegistry].
  */
 @Composable
 fun SoraCodeEditor(
@@ -45,41 +46,29 @@ fun SoraCodeEditor(
     themeName: String,
     onContentChange: (String) -> Unit,
     onCursorChange: (CursorPos) -> Unit = {},
-    onEditorReady: ((Editor) -> Unit)? = null,
+    onEditorReady: ((com.mobileide.app.editor.Editor) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val isDark  = isSystemInDarkTheme()
-    val cs      = MaterialTheme.colorScheme   // live — recomposed on theme change
+    val context    = LocalContext.current
+    val isDark     = isSystemInDarkTheme()
+    val colors     = MaterialTheme.colorScheme   // live Material3 colours
 
-    // ── Derive all ARGB ints for Editor.setThemeColors ────────────────────────
-    val bgArgb               = cs.background.toArgb()
-    val surfContArgb         = cs.surfaceContainer.toArgb()
-    val surfArgb             = cs.surface.toArgb()
-    val onSurfArgb           = cs.onSurface.toArgb()
-    val hiContArgb           = cs.surfaceContainerHigh.toArgb()
-    val primaryArgb          = cs.primary.toArgb()
-    val primContArgb         = cs.primaryContainer.toArgb()
-    val secArgb              = cs.secondary.toArgb()
-    val secContArgb          = cs.secondaryContainer.toArgb()
-    val selArgb              = cs.primary.copy(alpha = 0.25f).toArgb()
-    val handleArgb           = cs.primary.toArgb()
-    val gutterArgb           = cs.surfaceContainerLow.toArgb()
-    val curLineArgb          = cs.surfaceContainerHigh.toArgb()
-    val dividerArgb          = cs.outlineVariant.toArgb()
-    val errorArgb            = cs.error.toArgb()
-    val warningArgb          = cs.tertiary.toArgb()
-    val scrollThumbArgb      = cs.onSurface.copy(alpha = 0.30f).toArgb()
-    val scrollPressedArgb    = cs.onSurface.copy(alpha = 0.50f).toArgb()
-    val inlayHintFgArgb      = cs.onSurface.copy(alpha = 0.45f).toArgb()
-    val inlayHintBgArgb      = cs.surfaceContainer.copy(alpha = 0.70f).toArgb()
-    val nonPrintableArgb     = cs.onSurface.copy(alpha = 0.20f).toArgb()
-    val matchedBgArgb        = cs.primary.copy(alpha = 0.12f).toArgb()
-    val snippetEditingArgb   = cs.primaryContainer.copy(alpha = 0.55f).toArgb()
-    val snippetRelatedArgb   = cs.primaryContainer.copy(alpha = 0.30f).toArgb()
-    val snippetInactiveArgb  = cs.surfaceContainer.copy(alpha = 0.50f).toArgb()
-    val textHighlightArgb    = cs.primary.copy(alpha = 0.20f).toArgb()
-    val textHighlightSArgb   = cs.primary.copy(alpha = 0.35f).toArgb()
+    // Derive ARGB ints for theme patching from the current Material3 ColorScheme
+    val bgArgb          = colors.background.toArgb()
+    val surfContArgb    = colors.surfaceContainer.toArgb()
+    val surfArgb        = colors.surface.toArgb()
+    val onSurfArgb      = colors.onSurface.toArgb()
+    val hiContArgb      = colors.surfaceContainerHigh.toArgb()
+    val primaryArgb     = colors.primary.toArgb()
+    val primContArgb    = colors.primaryContainer.toArgb()
+    val secArgb         = colors.secondary.toArgb()
+    val secContArgb     = colors.secondaryContainer.toArgb()
+    val selArgb         = colors.primary.copy(alpha = 0.27f).toArgb()
+    val handleArgb      = colors.primary.toArgb()
+    val gutterArgb      = colors.surfaceContainerLow.toArgb()
+    val curLineArgb     = colors.surfaceContainer.toArgb()
+    val dividerArgb     = colors.outlineVariant.toArgb()
+    val errorArgb       = colors.error.toArgb()
 
     val editor = remember {
         Editor(context).apply {
@@ -92,63 +81,48 @@ fun SoraCodeEditor(
 
     var initialized by remember { mutableStateOf(false) }
 
-    // ── Helper: apply full theme colours ──────────────────────────────────────
-    fun applyThemeColors() {
-        editor.setThemeColors(
-            isDarkMode            = isDark,
-            editorBackground      = bgArgb,
-            surfaceContainer      = surfContArgb,
-            surface               = surfArgb,
-            onSurface             = onSurfArgb,
-            highSurfaceContainer  = hiContArgb,
-            colorPrimary          = primaryArgb,
-            colorPrimaryContainer = primContArgb,
-            colorSecondary        = secArgb,
-            secondaryContainer    = secContArgb,
-            selectionBg           = selArgb,
-            handleColor           = handleArgb,
-            gutterColor           = gutterArgb,
-            currentLine           = curLineArgb,
-            dividerColor          = dividerArgb,
-            errorColor            = errorArgb,
-            warningColor          = warningArgb,
-            scrollThumb           = scrollThumbArgb,
-            scrollThumbPressed    = scrollPressedArgb,
-            inlayHintFg           = inlayHintFgArgb,
-            inlayHintBg           = inlayHintBgArgb,
-            nonPrintable          = nonPrintableArgb,
-            matchedBg             = matchedBgArgb,
-            snippetEditing        = snippetEditingArgb,
-            snippetRelated        = snippetRelatedArgb,
-            snippetInactive       = snippetInactiveArgb,
-            textHighlight         = textHighlightArgb,
-            textHighlightStrong   = textHighlightSArgb,
-        )
-    }
-
     // ── Full initialisation ───────────────────────────────────────────────────
     LaunchedEffect(Unit) {
-        Logger.info(LogTag.SORA_EDITOR, "init: ${language.name} dark=$isDark")
+        Logger.info(LogTag.SORA_EDITOR, "init: ${language.name} / $themeName / dark=$isDark")
 
-        // 1. Registries
+        // 1. Registries (IO, idempotent)
         TextMateSetup.initialize(context)
 
-        // 2. TextMate colour scheme
+        // 2. TextMate colour scheme (IO build → Main assign)
         TextMateSetup.applyTheme(context, editor, isDark)
 
-        // 3. Material3 chrome
-        withContext(Dispatchers.Main) { applyThemeColors() }
+        // 3. Material3 chrome patch (Main)
+        withContext(Dispatchers.Main) {
+            editor.setThemeColors(
+                isDarkMode            = isDark,
+                editorBackground      = bgArgb,
+                surfaceContainer      = surfContArgb,
+                surface               = surfArgb,
+                onSurface             = onSurfArgb,
+                highSurfaceContainer  = hiContArgb,
+                colorPrimary          = primaryArgb,
+                colorPrimaryContainer = primContArgb,
+                colorSecondary        = secArgb,
+                secondaryContainer    = secContArgb,
+                selectionBg           = selArgb,
+                handleColor           = handleArgb,
+                gutterColor           = gutterArgb,
+                currentLine           = curLineArgb,
+                dividerColor          = dividerArgb,
+                errorColor            = errorArgb,
+            )
+        }
 
-        // 4. Settings + font
+        // 4. Editor settings + font (Main)
         withContext(Dispatchers.Main) {
             TextMateSetup.configureEditor(editor, settings)
             editor.applyFont(context, settings.fontPath, isAsset = true)
         }
 
-        // 5. Language
+        // 5. Language (IO create → Main assign)
         TextMateSetup.applyLanguage(editor, language)
 
-        // 6. Content — MUST be last
+        // 6. Content — MUST come last
         withContext(Dispatchers.Main) {
             editor.setText(content)
             initialized = true
@@ -157,28 +131,46 @@ fun SoraCodeEditor(
         Logger.success(LogTag.SORA_EDITOR, "init done: ${content.length} chars")
     }
 
-    // ── Re-apply on dark/light toggle ────────────────────────────────────────
+    // ── Re-apply on system dark/light toggle ──────────────────────────────────
     LaunchedEffect(isDark) {
         if (!initialized) return@LaunchedEffect
         TextMateSetup.applyTheme(context, editor, isDark)
-        withContext(Dispatchers.Main) { applyThemeColors() }
+        withContext(Dispatchers.Main) {
+            editor.setThemeColors(
+                isDarkMode            = isDark,
+                editorBackground      = bgArgb,
+                surfaceContainer      = surfContArgb,
+                surface               = surfArgb,
+                onSurface             = onSurfArgb,
+                highSurfaceContainer  = hiContArgb,
+                colorPrimary          = primaryArgb,
+                colorPrimaryContainer = primContArgb,
+                colorSecondary        = secArgb,
+                secondaryContainer    = secContArgb,
+                selectionBg           = selArgb,
+                handleColor           = handleArgb,
+                gutterColor           = gutterArgb,
+                currentLine           = curLineArgb,
+                dividerColor          = dividerArgb,
+                errorColor            = errorArgb,
+            )
+        }
         Logger.info(LogTag.SORA_EDITOR, "theme re-applied: isDark=$isDark")
     }
 
-    // ── Re-apply on M3 theme name change ─────────────────────────────────────
+    // ── Re-apply when editor theme name changes ───────────────────────────────
     LaunchedEffect(themeName) {
         if (!initialized) return@LaunchedEffect
         TextMateSetup.applyTheme(context, editor, isDark)
-        withContext(Dispatchers.Main) { applyThemeColors() }
     }
 
-    // ── Re-apply on language change ───────────────────────────────────────────
+    // ── Re-apply when language changes ────────────────────────────────────────
     LaunchedEffect(language) {
         if (!initialized) return@LaunchedEffect
         TextMateSetup.applyLanguage(editor, language)
     }
 
-    // ── Re-apply on settings change ───────────────────────────────────────────
+    // ── Re-apply when editor settings change ──────────────────────────────────
     LaunchedEffect(settings) {
         if (!initialized) return@LaunchedEffect
         withContext(Dispatchers.Main) {
@@ -231,7 +223,7 @@ fun SoraCodeEditor(
     )
 }
 
-/** Read-only viewer — autocomplete and bracket-close disabled. */
+/** Read-only variant of [SoraCodeEditor] (autocomplete and bracket-close disabled). */
 @Composable
 fun SoraCodeViewer(
     content: String,
