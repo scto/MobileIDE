@@ -1,0 +1,34 @@
+name: Code Quality
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  detekt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Runs Detekt and reports results to the PR via Reviewdog
+      - name: Run Detekt with Reviewdog
+        uses: alaegin/Detekt-Action@v1.23.8
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          detekt_config: config/detekt/detekt.yml
+          reviewdog_reporter: github-pr-review
+          fail_on_error: true

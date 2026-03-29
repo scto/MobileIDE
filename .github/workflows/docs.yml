@@ -1,0 +1,61 @@
+name: 📚 Documentation Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*'
+      - '!**/.github/workflows/**'
+  workflow_dispatch:
+  
+jobs:
+  mkdocs:
+    name: 📖 Generate & Deploy Docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Ensures full history for mkdocs deployment
+
+      - name: ✅ Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: 📜 Copy CI gradle.properties
+        run: mkdir -p ~/.gradle && cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+      - name: 🏗️ Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: ⚙️ Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: 🏗️ Generate Documentation
+        run: |
+          pip install mkdocs mkdocs-material mkdocs-github-admonitions-plugin Pygments
+          ./gradlew dokkaGeneratePublicationHtml
+          mkdir -p docs/api
+          mv build/dokka/html/* docs/api/
+
+      - name: 📂 Copy Repo Contents to Docs
+        run: |
+          cp README.md docs/index.md
+          sed -i 's/docs\///' docs/index.md
+
+      - name: 🚀 Deploy Documentation
+        run: mkdocs gh-deploy
+
+permissions:
+  contents: write

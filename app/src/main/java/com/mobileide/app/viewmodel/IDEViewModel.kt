@@ -27,7 +27,6 @@ import com.mobileide.app.logger.Logger
 import com.mobileide.app.logger.LogTag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import com.mobileide.feature.settings.app.EditorPreference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -182,13 +181,6 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
         _cpVisible.value     = true
     }
 
-
-    // ── Editor preference ─────────────────────────────────────────────────────
-    private val _preferredEditor = MutableStateFlow(EditorPreference.MOBILEIDE)
-    val preferredEditor: StateFlow<EditorPreference> = _preferredEditor
-
-    fun setPreferredEditor(pref: EditorPreference) { _preferredEditor.value = pref }
-
     fun dismissCommandPalette() {
         _cpVisible.value = false
     }
@@ -270,14 +262,6 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
                 stickyScroll         = ws.editorStickyScroll,
                 highlightCurrentLine = ws.editorHighlightLine,
                 fontPath             = ws.editorFontPath,
-                lineSpacing          = ws.editorLineSpacing,
-                deleteMultiSpaces    = ws.editorDeleteMultiSpaces,
-                cursorAnimation      = ws.editorCursorAnimation,
-                showWhitespace       = ws.editorShowWhitespace,
-                autoCloseTag         = ws.editorAutoCloseTag,
-                bulletContinuation   = ws.editorBulletContinuation,
-                autoSave             = ws.editorAutoSave,
-                formatOnSave         = ws.editorFormatOnSave,
             )
             // Navigate: show onboarding if not complete OR required permissions missing
             val requiredOk = ws.permissions.allGranted
@@ -666,12 +650,5 @@ enum class Screen {
     GIT, LOGCAT, DEPENDENCIES, RUN_CONFIG,
     PROJECT_SEARCH, GRADLE_TASKS, DIFF_VIEWER, PROJECT_STATS,
     TODO_PANEL, PACKAGE_MANAGER, KEYBOARD_HELP, SETUP_WIZARD,
-    LOG_VIEWER, APP_THEME,
-    // ── Settings sub-screens ──────────────────────────────────────────────────
-    SETTINGS_EDITOR, SETTINGS_THEME, SETTINGS_KEYBINDS,
-    SETTINGS_LANGUAGE, SETTINGS_LSP, SETTINGS_RUNNERS,
-    SETTINGS_GIT, SETTINGS_TERMINAL, SETTINGS_EXTENSION,
-    SETTINGS_DEBUG, SETTINGS_SUPPORT, SETTINGS_ABOUT,
-    SETTINGS_EDITOR_SELECT,  // choose between editors
-    FEATURE_EDITOR,          // :feature:editor standalone screen
+    LOG_VIEWER, APP_THEME
 }

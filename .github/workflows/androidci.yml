@@ -1,13 +1,15 @@
 name: Android CI
 
 on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
-    inputs:
-      install_android:
-        description: 'Install Android SDK?'
-        required: true
-        default: false
-        type: boolean
 
 jobs:
   build:
@@ -18,7 +20,7 @@ jobs:
         build-type: [debug]
     steps:
       - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.12.1
+        uses: styfle/cancel-workflow-action@0.13.1
         with:
           access_token: ${{ github.token }}
 
@@ -40,12 +42,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Setup Android SDK
-        if: ${{ inputs.install_android == true }}
         uses: android-actions/setup-android@v3
 
-
       - name: Accept licenses
-        if: ${{ inputs.install_android == true }}
         run: yes | sdkmanager --licenses || true
         
       - name: Generate APK

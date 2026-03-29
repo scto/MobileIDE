@@ -20,10 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MobileIDE"
-
-// ── App ───────────────────────────────────────────────────────────────────────
 include(":app")
-
-// ── Feature submodules ────────────────────────────────────────────────────────
-include(":feature:editor")    // standalone Sora editor with tab bar
-include(":feature:settings")  // all settings screens as library module
