@@ -13,15 +13,15 @@ object AppConstants {
 
     // ── Documentation & Links ─────────────────────────────────────────────────
     /** Main GitHub repository */
-    const val GITHUB_REPO_URL  = "https://github.com/MobileIDE/MobileIDE"
+    const val GITHUB_REPO_URL  = "https://github.com/scto/MobileIDE"
     /** Wiki / documentation root */
-    const val DOCS_URL         = "https://github.com/MobileIDE/MobileIDE/wiki"
+    const val DOCS_URL         = "https://github.com/scto/MobileIDE/wiki"
     /** Quick-start guide */
-    const val QUICKSTART_URL   = "https://github.com/MobileIDE/MobileIDE/wiki/Quick-Start"
+    const val QUICKSTART_URL   = "https://github.com/scto/MobileIDE/wiki/Quick-Start"
     /** Releases / changelog */
-    const val CHANGELOG_URL    = "https://github.com/MobileIDE/MobileIDE/releases"
+    const val CHANGELOG_URL    = "https://github.com/scto/MobileIDE/releases"
     /** Issue tracker */
-    const val ISSUES_URL       = "https://github.com/MobileIDE/MobileIDE/issues"
+    const val ISSUES_URL       = "https://github.com/scto/MobileIDE/issues"
     /** Termux on F-Droid */
     const val TERMUX_FDROID_URL = "https://f-droid.org/packages/com.termux/"
     /** Sora Editor repository */

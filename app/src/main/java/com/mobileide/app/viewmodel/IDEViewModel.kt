@@ -6,30 +6,34 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+
 import com.mobileide.app.data.*
+import com.mobileide.app.editor.EditorThemeManager
+import com.mobileide.app.editor.LanguageManager
+import com.mobileide.app.logger.Logger
+import com.mobileide.app.logger.LogTag
 import com.mobileide.app.ui.components.CursorPos
 import com.mobileide.app.ui.theme.ActiveTheme
 import com.mobileide.app.ui.theme.Themes
-import com.mobileide.app.utils.*
-import com.mobileide.app.utils.SessionManager
 import com.mobileide.app.ui.theme.ThemePreferences
 import com.mobileide.app.ui.theme.amoledM3Theme
 import com.mobileide.app.ui.theme.currentM3Theme
 import com.mobileide.app.ui.theme.dynamicM3Theme
 import com.mobileide.app.ui.theme.m3Themes
-import com.mobileide.app.editor.EditorThemeManager
-import com.mobileide.app.editor.LanguageManager
+import com.mobileide.app.utils.*
+import com.mobileide.app.utils.SessionManager
 import com.mobileide.app.utils.commands.Command
 import com.mobileide.app.utils.commands.CommandRegistry
+
 import io.github.rosemoe.sora.widget.CodeEditor
+
+import java.io.File
 import java.lang.ref.WeakReference
-import com.mobileide.app.logger.Logger
-import com.mobileide.app.logger.LogTag
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * Central ViewModel for the MobileIDE application.
@@ -54,7 +58,6 @@ import java.io.File
  * @see com.mobileide.app.utils.WorkspaceManager
  */
 class IDEViewModel(application: Application) : AndroidViewModel(application) {
-
     val termux    = TermuxBridge(application)
     val git       = GitManager(termux)
     val workspace = WorkspaceManager(application)
@@ -138,6 +141,7 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
     ))
     val terminalLines: StateFlow<List<TerminalLine>> = _terminalLines
 
+    // ── Command History ──────────────────────────────────────────────────────────────
     private val _commandHistory = MutableStateFlow<List<String>>(emptyList())
     val commandHistory: StateFlow<List<String>> = _commandHistory
 
@@ -191,7 +195,6 @@ class IDEViewModel(application: Application) : AndroidViewModel(application) {
 
     fun showJumpToLine() { _showJumpToLine.value = true }
     fun dismissJumpToLine() { _showJumpToLine.value = false }
-
 
     // ── Settings ──────────────────────────────────────────────────────────────
     private val _fontSize      = MutableStateFlow(14f)
