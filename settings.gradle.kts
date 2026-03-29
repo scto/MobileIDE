@@ -20,4 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MobileIDE"
+
 include(":app")
