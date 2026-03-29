@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dokka)
@@ -159,7 +160,7 @@ dependencies {
 
     // ── Theme system ─────────────────────────────────────────────────────────
     implementation("com.google.code.gson:gson:2.13.2")
-    implementation("com.google.android.material:material:1.13.0")
+    implementation("com.google.android.material:material:1.14.0-alpha10")
 
     // ── Debug ────────────────────────────────────────────────────────────────
     debugImplementation(libs.androidx.ui.tooling)
