@@ -5,6 +5,7 @@ import com.mobileide.app.logger.LogTag
 
 import com.mobileide.app.data.LineType
 import com.mobileide.app.data.TerminalLine
+import com.mobileide.termux.TermuxBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
