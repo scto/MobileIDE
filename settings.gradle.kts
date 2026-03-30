@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MobileIDE"
 
-include(":app")
+include(":app", ":termux:application", ":termux:emulator", ":termux:shared", ":termux:view")
