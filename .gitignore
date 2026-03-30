@@ -91,3 +91,4 @@ lint/tmp/
 .acside/editor/
 .aider/
 .claude/
+.aider*
