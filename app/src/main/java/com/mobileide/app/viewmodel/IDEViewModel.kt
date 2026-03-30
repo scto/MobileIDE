@@ -24,6 +24,7 @@ import com.mobileide.app.utils.*
 import com.mobileide.app.utils.SessionManager
 import com.mobileide.app.utils.commands.Command
 import com.mobileide.app.utils.commands.CommandRegistry
+import com.mobileide.termux.TermuxBridge
 
 import io.github.rosemoe.sora.widget.CodeEditor
 
