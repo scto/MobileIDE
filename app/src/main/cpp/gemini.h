@@ -5,12 +5,8 @@
 #include <cstdint>
 #include <string>
 
-namespace AI {
-    class gemini {
-      public:
-        static std::string getApiKey();
-    };
-
-}// namespace AI
+namespace MobileIDE {
+    std::string getGeminiKey();
+} // namespace MobileIDE
 
 #endif//MOBILEIDE_GEMINI_H
