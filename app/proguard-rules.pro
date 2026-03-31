@@ -28,3 +28,7 @@
 -keepclasseswithmembernames class com.mobileide.app.terminal.** {
     native <methods>;
 }
+
+-keepclasseswithmembernames class com.mobileide.feature.termux.app.** {
+    native <methods>;
+}

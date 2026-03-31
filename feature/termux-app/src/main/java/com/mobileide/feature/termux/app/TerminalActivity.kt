@@ -15,6 +15,14 @@ class TerminalActivity : ComponentActivity() {
 
     private var currentSession: TerminalSession? = null
 
+    companion object {
+        init {
+            System.loadLibrary("termux-app")
+        }
+    }
+
+    private external fun stringFromJNI(): String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -24,7 +32,7 @@ class TerminalActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TerminalScreen("Terminal Feature Initialized")
+                    TerminalScreen("Terminal: ${stringFromJNI()}")
                 }
             }
         }
