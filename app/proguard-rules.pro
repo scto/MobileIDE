@@ -19,3 +19,12 @@
 -keepclassmembernames class kotlinx.** {
     volatile <fields>;
 }
+
+# Termux view
+-keep class com.termux.view.** { *; }
+-dontwarn com.termux.view.**
+
+# JNI Native library for terminal
+-keepclasseswithmembernames class com.mobileide.app.terminal.** {
+    native <methods>;
+}

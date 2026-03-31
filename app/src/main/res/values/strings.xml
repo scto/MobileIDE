@@ -2,4 +2,8 @@
 <resources>
     <string name="app_name">MobileIDE</string>
     <string name="app_description">Android IDE for Termux</string>
+    <string name="terminal_notification_channel_name">Terminal Session</string>
+    <string name="terminal_notification_channel_description">Notifications for ongoing terminal sessions</string>
+    <string name="terminal_notification_title">Terminal Running</string>
+    <string name="terminal_notification_text">An active terminal session is running in the background.</string>
 </resources>
