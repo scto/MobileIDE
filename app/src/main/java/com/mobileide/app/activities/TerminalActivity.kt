@@ -13,7 +13,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.teixeira.vcspace.activities
+package com.mobileide.app.activities
 
 import android.content.ComponentName
 import android.content.Context
@@ -48,19 +48,19 @@ import androidx.compose.ui.unit.dp
 import com.blankj.utilcode.util.PathUtils
 import com.blankj.utilcode.util.ThreadUtils
 import com.blankj.utilcode.util.ToastUtils
-import com.teixeira.vcspace.app.strings
-import com.teixeira.vcspace.extensions.child
-import com.teixeira.vcspace.extensions.createFileIfNot
-import com.teixeira.vcspace.extensions.localDir
-import com.teixeira.vcspace.extensions.tmpDir
-import com.teixeira.vcspace.terminal.Terminal
-import com.teixeira.vcspace.terminal.alpineDir
-import com.teixeira.vcspace.terminal.appDataDir
-import com.teixeira.vcspace.terminal.hosts
-import com.teixeira.vcspace.terminal.nameserver
-import com.teixeira.vcspace.terminal.prefix
-import com.teixeira.vcspace.terminal.service.TerminalService
-import com.teixeira.vcspace.ui.theme.VCSpaceTheme
+import com.mobileide.app.app.strings
+import com.mobileide.app.extensions.child
+import com.mobileide.app.extensions.createFileIfNot
+import com.mobileide.app.extensions.localDir
+import com.mobileide.app.extensions.tmpDir
+import com.mobileide.app.terminal.Terminal
+import com.mobileide.app.terminal.alpineDir
+import com.mobileide.app.terminal.appDataDir
+import com.mobileide.app.terminal.hosts
+import com.mobileide.app.terminal.nameserver
+import com.mobileide.app.terminal.prefix
+import com.mobileide.app.terminal.service.TerminalService
+import com.mobileide.app.ui.theme.MobileIdeTheme
 import com.termux.view.TerminalView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -101,7 +101,7 @@ class TerminalActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            VCSpaceTheme {
+            MobileIdeTheme {
                 Surface {
                     MainScreen()
                 }
