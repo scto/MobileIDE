@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import android.content.Intent
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mobileide.app.ui.screens.*
 import com.mobileide.app.utils.commands.CommandRegistry
@@ -67,6 +68,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MobileIDEApp() {
     val vm: IDEViewModel = viewModel()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val screen by vm.currentScreen.collectAsState()
 
     // Initialise command registry once per ViewModel lifetime
@@ -145,7 +147,9 @@ fun MobileIDEApp() {
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick  = { vm.navigate(Screen.TERMINAL) },
+                    onClick  = {
+                        context.startActivity(Intent(context, TerminalActivity::class.java))
+                    },
                     icon     = { Icon(Icons.Default.Terminal, null) },
                     label    = { Text("Terminal") }
                 )
