@@ -149,6 +149,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
 
+    // ── Termux Integration ───────────────────────────────────────────────────
+    implementation(project(":termux:application"))
+
     // ── Sora Editor ──────────────────────────────────────────────────────────
     implementation(libs.sora.editor)
     implementation(libs.sora.language.textmate)
