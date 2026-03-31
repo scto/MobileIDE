@@ -1,6 +1,7 @@
 
 #include "gemini.h"
 #include <aes.hpp>
+#include <cstring>
 
 namespace AI {
     std::string gemini::getApiKey() {
