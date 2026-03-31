@@ -1,4 +1,4 @@
-package com.mobileide.app
+package com.mobileide.app.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -20,11 +20,11 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mobileide.app.ui.screens.*
-import com.mobileide.app.utils.commands.CommandRegistry
-import com.mobileide.app.ui.theme.*
-import com.mobileide.app.viewmodel.IDEViewModel
-import com.mobileide.app.viewmodel.Screen
+import com.mobileide.app.activities.ui.screens.*
+import com.mobileide.app.activities.utils.commands.CommandRegistry
+import com.mobileide.app.activities.ui.theme.*
+import com.mobileide.app.activities.viewmodel.IDEViewModel
+import com.mobileide.app.activities.viewmodel.Screen
 
 class MainActivity : ComponentActivity() {
 
