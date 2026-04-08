@@ -92,3 +92,5 @@ lint/tmp/
 .aider/
 .claude/
 .aider*
+build/
+app/build/
