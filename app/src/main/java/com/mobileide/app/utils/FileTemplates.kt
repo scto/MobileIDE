@@ -403,8 +403,19 @@ class ${name}ViewModelTest {
 
     @Test
     fun `error state is set on exception`() = runTest {
-        // TODO: configure mock to throw
+        // Configure mock to throw
         // coEvery { repository.getAll() } throws Exception("Network error")
+
+        // viewModel.uiState.test {
+        //     val initial = awaitItem()
+        //     assertFalse(initial.isLoading)
+        //     viewModel.load${name}Data()
+        //     val loading = awaitItem()
+        //     assertTrue(loading.isLoading)
+        //     val error = awaitItem()
+        //     assertFalse(error.isLoading)
+        //     assertEquals("Network error", error.error)
+        // }
     }
 }""".trimIndent()
         },
