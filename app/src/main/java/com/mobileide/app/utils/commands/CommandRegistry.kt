@@ -48,7 +48,6 @@ object CommandRegistry {
         redoCommand  = reg(RedoCommand(ctx))
         saveCommand  = reg(SaveCommand(ctx))
         saveAllCommand = reg(SaveAllCommand(ctx))
-        reg(DuplicateLineCommand(ctx))
         reg(UpperCaseCommand(ctx))
         reg(LowerCaseCommand(ctx))
         reg(FormatDocumentCommand(ctx))
