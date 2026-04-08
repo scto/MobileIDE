@@ -132,6 +132,7 @@ dokka {
 // ─────────────────────────────────────────────────────────────────────────────
 
 dependencies {
+    testImplementation(libs.junit)
     // Dokka: Mermaid diagram rendering inside KDoc comments
     dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:${libs.versions.dokkaMermaid.get()}")
 
