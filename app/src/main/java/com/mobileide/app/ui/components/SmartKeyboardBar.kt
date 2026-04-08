@@ -1,5 +1,6 @@
 package com.mobileide.app.ui.components
 
+import com.mobileide.app.editor.Editor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -63,7 +64,8 @@ val SYMBOL_ROWS = listOf(
 fun SmartKeyboardBar(
     textValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    editor: Editor? = null,
 ) {
     var selectedRow by remember { mutableStateOf(0) }
 
@@ -99,11 +101,17 @@ fun SmartKeyboardBar(
                 }
             }
 
-            // Undo / redo placeholders
-            IconButton(onClick = { /* TODO: undo */ }, modifier = Modifier.size(32.dp)) {
+            // Undo / redo actions via editor API
+            IconButton(
+                onClick = { if (editor?.canUndo() == true) editor.undo() },
+                modifier = Modifier.size(32.dp)
+            ) {
                 Icon(Icons.Default.ArrowBack, null, Modifier.size(16.dp), tint = IDEOnSurface)
             }
-            IconButton(onClick = { /* TODO: redo */ }, modifier = Modifier.size(32.dp)) {
+            IconButton(
+                onClick = { if (editor?.canRedo() == true) editor.redo() },
+                modifier = Modifier.size(32.dp)
+            ) {
                 Icon(Icons.Default.ArrowForward, null, Modifier.size(16.dp), tint = IDEOnSurface)
             }
         }
