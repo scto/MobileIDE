@@ -105,7 +105,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ${name}ViewModel : ViewModel() {
+class ${name}ViewModel(
+    private val repository: ${name}Repository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(${name}UiState())
     val uiState: StateFlow<${name}UiState> = _uiState.asStateFlow()
@@ -119,8 +121,7 @@ class ${name}ViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val data = withContext(Dispatchers.IO) {
-                    // TODO: fetch data
-                    emptyList<Any>()
+                    repository.getAll().first()
                 }
                 _uiState.update { it.copy(isLoading = false, items = data) }
             } catch (e: Exception) {
@@ -370,7 +371,8 @@ class ${name}ViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = mockk()
-        viewModel = ${name}ViewModel(/* repository */)
+        coEvery { repository.getAll() } returns flowOf(emptyList())
+        viewModel = ${name}ViewModel(repository)
     }
 
     @After
@@ -403,8 +405,17 @@ class ${name}ViewModelTest {
 
     @Test
     fun `error state is set on exception`() = runTest {
-        // TODO: configure mock to throw
-        // coEvery { repository.getAll() } throws Exception("Network error")
+        val errorMessage = "Network error"
+        coEvery { repository.getAll() } throws Exception(errorMessage)
+
+        viewModel.uiState.test {
+            awaitItem() // Initial state
+            viewModel.load${name}Data()
+            assertTrue(awaitItem().isLoading)
+            val state = awaitItem()
+            assertFalse(state.isLoading)
+            assertEquals(errorMessage, state.error)
+        }
     }
 }""".trimIndent()
         },
