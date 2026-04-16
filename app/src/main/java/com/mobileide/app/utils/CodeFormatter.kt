@@ -127,12 +127,14 @@ object CodeFormatter {
             .filter { it.extension in listOf("kt","java","xml","kts") }
             .forEach { file ->
                 try {
-                    file.readLines().forEachIndexed { idx, line ->
-                        tagRe.find(line)?.let { match ->
-                            val tag = TodoTag.values().firstOrNull {
-                                it.label.equals(match.groupValues[1], ignoreCase = true)
-                            } ?: TodoTag.TODO
-                            items += TodoItem(file, idx + 1, match.groupValues[2].trim(), tag)
+                    file.useLines { lines ->
+                        lines.forEachIndexed { idx, line ->
+                            tagRe.find(line)?.let { match ->
+                                val tag = TodoTag.entries.firstOrNull {
+                                    it.label.equals(match.groupValues[1], ignoreCase = true)
+                                } ?: TodoTag.TODO
+                                items += TodoItem(file, idx + 1, match.groupValues[2].trim(), tag)
+                            }
                         }
                     }
                 } catch (_: Exception) {}
