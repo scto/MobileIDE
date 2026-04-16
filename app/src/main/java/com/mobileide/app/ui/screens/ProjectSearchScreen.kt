@@ -95,15 +95,17 @@ fun ProjectSearchScreen(vm: IDEViewModel) {
                 .forEach { file ->
                     val matches = mutableListOf<SearchResult>()
                     try {
-                        file.readLines().forEachIndexed { idx, line ->
-                            pattern.findAll(line).forEach { match ->
-                                matches += SearchResult(
-                                    file        = file,
-                                    lineNumber   = idx + 1,
-                                    lineContent  = line.trim(),
-                                    matchStart   = match.range.first,
-                                    matchEnd     = match.range.last + 1
-                                )
+                        file.useLines { lines ->
+                            lines.forEachIndexed { idx, line ->
+                                pattern.findAll(line).forEach { match ->
+                                    matches += SearchResult(
+                                        file        = file,
+                                        lineNumber   = idx + 1,
+                                        lineContent  = line.trim(),
+                                        matchStart   = match.range.first,
+                                        matchEnd     = match.range.last + 1
+                                    )
+                                }
                             }
                         }
                     } catch (_: Exception) {}
