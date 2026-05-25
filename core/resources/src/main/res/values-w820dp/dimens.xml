@@ -1,0 +1,4 @@
+<resources>
+    <!-- ≥ 820 dp (7" and 10" tablets in landscape ~960–1280 dp) -->
+    <dimen name="activity_horizontal_margin">64dp</dimen>
+</resources>

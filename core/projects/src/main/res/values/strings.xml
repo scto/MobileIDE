@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MobileIDE</string>
+
+    <string name="action_back">Back</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_refresh">Refresh</string>
+
+    <!-- Strings für UI-Navigation zur Fehlerbehebung -->
+    <string name="about_back_desc">Navigate back from about screen</string>
+    <string name="settings_back_desc">Navigate back from settings screen</string>
+    <string name="welcome_back">Back</string>
+    
+    <string name="dir_selector_title">Select Working Directory</string>
+    <string name="dir_selector_create_folder_desc">Create New Folder</string>
+    <string name="dir_selector_close_desc">Close</string>
+    <string name="dir_selector_go_back">Go back</string>
+    <string name="dir_selector_dir_desc">Directory</string>
+    <string name="dir_selector_empty">This directory is empty</string>
+    <string name="dir_selector_cancel">Cancel</string>
+    <string name="dir_selector_select_dir">Select this directory</string>
+    <string name="dir_selector_location">Location: %1$s</string>
+    <string name="dir_selector_folder_name">Folder Name</string>
+    <string name="dir_selector_error_slash">Folder name cannot contain / or \\</string>
+    <string name="dir_selector_error_invalid">Invalid folder name</string>
+    <string name="dir_selector_btn_create">Create</string>
+    <string name="dir_selector_dialog_title">Create New Folder</string>
+
+    <string name="perm_log_navigating">Navigating to all files access settings page</string>
+    <string name="perm_log_error_open">Cannot open permission settings page</string>
+    <string name="perm_log_granted_all">All files access granted (Callback)</string>
+    <string name="perm_log_denied_all">All files access still not granted (Callback)</string>
+    <string name="perm_log_granted_basic">Basic storage permissions granted</string>
+    <string name="perm_log_denied_basic">Some basic permissions denied: %1$s</string>
+    <string name="perm_log_start_req">Start requesting permissions</string>
+    <string name="perm_rationale_all">All files access is required to manage project files</string>
+    <string name="perm_rationale_basic">Storage permission is required to access and save files</string>
+
+    <string name="log_config_updated">Log system configuration updated - Enabled: %1$b</string>
+    <string name="log_welcome_completed">Welcome flow completed, entering main application</string>
+    <string name="welcome_log_completed">Welcome flow marked as completed</string>
+    <string name="welcome_log_reset">Welcome flow state reset</string>
+
+    <string name="apk_build_start">========== Starting WebApp build ==========</string>
+    <string name="apk_build_err_template">error: Build template not found (assets/webapp_1.0.apk)</string>
+    <string name="apk_build_merging">>> Merging resources...</string>
+    <string name="apk_build_err_too_small">error: Build failed, generated package is too small</string>
+    <string name="apk_build_zipalign">>> Running ZipAlign...</string>
+    <string name="apk_build_err_align">error: Alignment failed - %1$s</string>
+    <string name="apk_build_signing">>> Signing...</string>
+    <string name="apk_build_success">✅ Build successful: %1$s</string>
+    <string name="apk_build_err_sign">error: Signing failed</string>
+    <string name="apk_build_crashed">❌ Build crashed</string>
+    <string name="apk_build_err_general">error: %1$s</string>
+
+    <string name="file_tree_confirm_deletion">Confirm Deletion</string>
+    <string name="file_tree_delete_message">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="file_tree_delete">Delete</string>
+    <string name="file_tree_cancel">Cancel</string>
+    <string name="file_tree_new_file">New File</string>
+    <string name="file_tree_file_name">File Name</string>
+    <string name="file_tree_file_created">File created successfully</string>
+    <string name="file_tree_file_exists">File already exists</string>
+    <string name="file_tree_create_failed_reason">Creation failed: %1$s</string>
+    <string name="file_tree_new_folder">New Folder</string>
+    <string name="file_tree_folder_name">Folder Name</string>
+    <string name="file_tree_folder_created">Folder created successfully</string>
+    <string name="file_tree_create_failed">Creation failed</string>
+    <string name="file_tree_rename">Rename</string>
+    <string name="file_tree_new_name">New Name</string>
+    <string name="file_tree_renamed">Renamed successfully</string>
+    <string name="file_tree_rename_failed">Rename failed</string>
+    <string name="file_tree_expand">Expand</string>
+    <string name="file_tree_copy_path">Copy Absolute Path</string>
+    <string name="file_tree_path_copied">Path copied</string>
+    <string name="file_tree_confirm">Confirm</string>
+
+    <string name="about_title">About</string>
+    <string name="about_team_title">MobileIDE Team</string>
+    <string name="about_author_note">This project is co-developed by human developers and AI, exploring the infinite possibilities of code generation.</string>
+    <string name="about_close_desc">Close</string>
+    <string name="about_licenses_title">Licenses</string>
+    <string name="about_no_info">No information</string>
+    <string name="about_copyright">Copyright © 2025 MobileIDE</string>
+    <string name="about_version">v0.0.9 Beta</string>
+    <string name="about_license_fallback">See project website for license.</string>
+    <string name="about_no_license">No license info.</string>
+    <string name="about_license_title">License</string>
+    <string name="about_copy_desc">Copy</string>
+    <string name="about_visit_website">Visit Website</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_workspace_updated">Workspace directory updated</string>
+    <string name="settings_log_path_updated">Log path updated</string>
+    <string name="settings_appearance_theme">Appearance &amp; Theme</string>
+    <string name="settings_dynamic_color">Dynamic Color</string>
+    <string name="settings_custom_appearance">Custom Appearance</string>
+    <string name="settings_extract_colors">Extract colors from wallpaper</string>
+    <string name="settings_theme_color">Theme Color</string>
+    <string name="settings_display_mode">Display Mode</string>
+    <string name="settings_mode_system">System</string>
+    <string name="settings_mode_light">Light</string>
+    <string name="settings_mode_dark">Dark</string>
+    <string name="settings_workspace_dir">Workspace Directory</string>
+    <string name="settings_other">Other</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_subtitle">Version info and introduction</string>
+    <string name="settings_enable_logs">Enable Logs</string>
+    <string name="settings_save_logs">Save runtime logs</string>
+    <string name="settings_custom_color_label">Custom</string>
+
+    <string name="theme_select_title">Select Theme</string>
+    <string name="theme_mode">Mode</string>
+    <string name="theme_color">Color</string>
+    <string name="theme_cancel">Cancel</string>
+    <string name="theme_done">Done</string>
+    <string name="theme_catppuccin">Catppuccin</string>
+    <string name="theme_apple">Apple</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="theme_midnight">Midnight</string>
+    <string name="theme_nord">Nord</string>
+    <string name="theme_strawberry">Strawberry</string>
+    <string name="theme_tako">Tako</string>
+
+    <string name="welcome_grant">Grant</string>
+    <string name="welcome_granted">Granted</string>
+    <string name="welcome_selected">Selected</string>
+    <string name="welcome_custom_color">Custom Color</string>
+    <string name="welcome_start">Start</string>
+    <string name="welcome_next">Next</string>
+    <string name="welcome_finish">Finish</string>
+    <string name="welcome_subtitle">Professional code editor for mobile</string>
+    <string name="welcome_feat1_title">Efficient and Fluid</string>
+    <string name="welcome_feat1_desc">Editing experience optimized for mobile</string>
+    <string name="welcome_feat2_title">Multi-theme Support</string>
+    <string name="welcome_feat2_desc">Customize your favorite editor appearance</string>
+    <string name="welcome_feat3_title">Sora Editor</string>
+    <string name="welcome_feat3_desc">Powerful code editor for a better coding experience</string>
+    <string name="welcome_perms_title">Permissions Required</string>
+    <string name="welcome_perms_desc">To make the app work properly</string>
+    <string name="welcome_perm_storage_title_11">All Files Access Permission</string>
+    <string name="welcome_perm_storage_title">Storage Permission</string>
+    <string name="welcome_perm_storage_desc_11">Manage and save project files</string>
+    <string name="welcome_perm_storage_desc">Read and save code files</string>
+    <string name="welcome_perm_install_title">Install App Permission</string>
+    <string name="welcome_perm_install_desc">Used for in-app updates or building APKs</string>
+    <string name="welcome_theme_subtitle">Can be changed anytime in settings</string>
+
+    <string name="action_undo">Undo</string>
+    <string name="action_redo">Redo</string>
+    <string name="action_run">Run</string>
+    <string name="action_more_options">More options</string>
+    <string name="action_save_all">Save All</string>
+    <string name="action_build_apk">Build APK</string>
+    <string name="build_successful">Build successful</string>
+    <string name="build_failed">Build failed</string>
+    <string name="build_apk_generated_install">APK generated. Install now?</string>
+    <string name="build_output_path">Output path:</string>
+    <string name="build_error_message">Error message:</string>
+    <string name="action_install">Install</string>
+    <string name="action_close">Close</string>
+    <string name="msg_enable_install_perms">Please enable installation permissions</string>
+    <string name="msg_no_files_opened">No files opened</string>
+    <string name="action_close_others">Close Others</string>
+    <string name="action_close_all">Close All</string>
+    <string name="title_file_tree">File Tree</string>
+    <string name="msg_initializing_editor">Initializing editor...</string>
+
+    <string name="title_theme_test">Editor Theme Test</string>
+    <string name="action_back_arrow">←</string>
+    <string name="title_current_theme">Current Theme</string>
+    <string name="mode_format">Mode: %1$s</string>
+    <string name="mode_dark">Dark</string>
+    <string name="mode_light">Light</string>
+    <string name="title_preset_themes">Preset Themes</string>
+    <string name="action_apply_theme">Apply current theme to editor</string>
+
+    <string name="msg_no_files_to_save">No files need to be saved</string>
+    <string name="msg_storage_perm_required">Storage permission is required to save files</string>
+    <string name="msg_files_saved">%1$d files saved</string>
+
+    <!-- Projektverwaltung -->
+    <string name="new_project_title">New Project</string>
+    <string name="new_project_select_template">Select Template</string>
+    <string name="new_project_type_web">Web</string>
+    <string name="new_project_type_webapp">WebApp</string>
+    <string name="new_project_type_wrapper">Wrapper</string>
+    <string name="new_project_desc_normal">Create a standard HTML/CSS/JS project for frontend development.</string>
+    <string name="new_project_desc_webapp">Create a local WebApp with Native interfaces, supports APK building.</string>
+    <string name="new_project_desc_wrapper">Enter a URL (e.g., Google) to directly package into an App without writing code.</string>
+    <string name="new_project_info_title">Project Information</string>
+    <string name="new_project_name_label">Project Name</string>
+    <string name="new_project_package_label">Package Name</string>
+    <string name="new_project_url_label">Target URL</string>
+    <string name="new_project_url_placeholder">https://www.example.com</string>
+    <string name="new_project_err_no_name">Please enter a project name</string>
+    <string name="new_project_err_no_package">Please enter a package name</string>
+    <string name="new_project_err_no_url">Please enter a target URL</string>
+    <string name="new_project_success">Creation Successful!</string>
+    <string name="new_project_failed">Creation failed: %1$s</string>
+    <string name="new_project_creating">Creating...</string>
+    <string name="new_project_btn_create">Create Project</string>
+    <string name="new_project_err_exists">Project already exists</string>
+    <string name="new_project_err_unknown">Unknown error</string>
+
+    <string name="project_list_title">Projects</string>
+    <string name="action_new_project">New Project</string>
+    <string name="project_list_empty">No projects found</string>
+
+    <string name="workspace_select_title">Select Workspace</string>
+    <string name="workspace_select_desc">Please select a directory as the MobileIDE workspace. All projects will be created and managed here.</string>
+    <string name="workspace_select_dir_desc">Select Directory</string>
+    <string name="workspace_change_btn">Change Workspace Directory</string>
+    <string name="workspace_current_label">Current Workspace:</string>
+    <string name="workspace_confirm_btn">Confirm and Continue</string>
+
+    <string name="preview_title_web">Web Preview</string>
+    <string name="preview_title_app">App Preview</string>
+    <string name="preview_copied">Copied</string>
+    <string name="preview_share">Share</string>
+</resources>
