@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android JS Bridge Pro</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin: 5px; cursor: pointer; }
+        .btn:active { background: #0056b3; }
+        code { background: #eee; padding: 2px 5px; border-radius: 3px; }
+        #video-container { width: 100%; max-width: 400px; height: 300px; background: #000; margin: 10px auto; display: none; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        #photo-preview { max-width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<h2>📱 跨平台 WebApp 测试</h2>
+
+<!-- 环境检测 -->
+<div class="card">
+    <h3>🌍 运行环境</h3>
+    <div id="environment-info">检测中...</div>
+</div>
+
+<!-- 摄像头测试 -->
+<div class="card">
+    <h3>📷 摄像头兼容性测试</h3>
+    <p>测试浏览器和 WebView 中的摄像头兼容性</p>
+
+    <!-- 方案1: 标准摄像头 -->
+    <button class="btn" onclick="startCamera()">启动摄像头 (标准API)</button>
+    <button class="btn" onclick="stopCamera()">停止摄像头</button>
+
+    <div id="video-container">
+        <video id="camera-video" autoplay playsinline></video>
+    </div>
+
+    <button class="btn" onclick="takePhoto()">拍照</button>
+    <img id="photo-preview" alt="拍照预览">
+
+    <!-- 方案2: 文件输入备用 -->
+    <hr>
+    <p>如果上方摄像头失败，使用备用方案：</p>
+    <button class="btn" onclick="takePhotoWithInput()">拍照/选择图片 (备用方案)</button>
+</div>
+
+<!-- 设备信息 -->
+<div class="card">
+    <h3>📱 设备信息</h3>
+    <div id="device-info">加载中...</div>
+</div>
+
+<!-- 交互功能 -->
+<div class="card">
+    <h3>🔔 交互反馈</h3>
+    <button class="btn" onclick="showToast()">Toast 提示</button>
+    <button class="btn" onclick="vibrateDevice()">震动 100ms</button>
+</div>
+
+<!-- 剪贴板 -->
+<div class="card">
+    <h3>📋 剪贴板</h3>
+    <input type="text" id="copy-input" value="Hello WebApp" style="padding:5px; width:200px;">
+    <button class="btn" onclick="copyToClipboard()">复制文本</button>
+    <button class="btn" onclick="readFromClipboard()">读取剪贴板</button>
+    <div id="clip-result" style="margin-top:5px; color:green;"></div>
+</div>
+
+<!-- 文件系统 -->
+<div class="card">
+    <h3>💾 文件系统</h3>
+    <button class="btn" onclick="readSampleFile()">读取示例文件</button>
+    <button class="btn" onclick="writeSampleFile()">写入示例文件</button>
+    <div id="file-result" style="font-size:12px; max-height:100px; overflow:auto;"></div>
+</div>
+
+<!-- 权限管理 -->
+<div class="card">
+    <h3>🔐 权限管理</h3>
+    <button class="btn" onclick="requestCameraPermission()">请求摄像头权限</button>
+    <button class="btn" onclick="checkCameraPermission()">检查摄像头权限</button>
+    <div id="permission-result" style="margin-top:5px;"></div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    // 环境检测
+    function detectEnvironment() {
+        const envInfo = document.getElementById('environment-info');
+        if (window.isWebView()) {
+            envInfo.innerHTML = `
+                <span style="color: green;">✅ 运行在 WebView 中</span><br>
+                支持原生 API: ${Object.keys(window.Android || {}).length} 个
+            `;
+        } else {
+            envInfo.innerHTML = `
+                <span style="color: blue;">🌐 运行在浏览器中</span><br>
+                用户代理: ${navigator.userAgent.substring(0, 50)}...
+            `;
+        }
+    }
+
+    // 显示设备信息
+    async function showDeviceInfo() {
+        const deviceInfo = await window.NativeAPI.getDeviceInfo();
+        const infoDiv = document.getElementById('device-info');
+
+        if (deviceInfo) {
+            infoDiv.innerHTML = `
+                设备型号: ${deviceInfo.model}<br>
+                制造商: ${deviceInfo.manufacturer}<br>
+                系统: ${deviceInfo.androidVersion || 'Browser'}<br>
+                屏幕: ${deviceInfo.screenWidth} × ${deviceInfo.screenHeight}<br>
+                语言: ${deviceInfo.locale}<br>
+                时区: ${deviceInfo.timezone}
+            `;
+        } else {
+            infoDiv.innerHTML = '无法获取设备信息';
+        }
+    }
+
+    // 摄像头相关变量
+    let cameraStream = null;
+
+    // 启动摄像头
+    async function startCamera() {
+        try {
+            const constraints = {
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
+
+            // 使用兼容的摄像头 API
+            cameraStream = await window.CameraAPI.getMediaStream(constraints);
+
+            const video = document.getElementById('camera-video');
+            video.srcObject = cameraStream;
+
+            const container = document.getElementById('video-container');
+            container.style.display = 'block';
+
+            window.NativeAPI.toast('摄像头启动成功');
+        } catch (error) {
+            console.error('摄像头启动失败:', error);
+            window.NativeAPI.toast(`摄像头启动失败: ${error.message}`);
+        }
+    }
+
+    // 停止摄像头
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+
+            const video = document.getElementById('camera-video');
+            video.srcObject = null;
+
+            document.getElementById('video-container').style.display = 'none';
+            window.NativeAPI.toast('摄像头已停止');
+        }
+    }
+
+    // 拍照
+    async function takePhoto() {
+        try {
+            // 使用兼容的拍照 API
+            const photoData = await window.CameraAPI.takePhoto({
+                facingMode: 'environment',
+                quality: 0.8,
+                fallbackToFileInput: true
+            });
+
+            const preview = document.getElementById('photo-preview');
+            preview.src = photoData;
+            preview.style.display = 'block';
+
+            window.NativeAPI.toast('拍照成功');
+        } catch (error) {
+            console.error('拍照失败:', error);
+            window.NativeAPI.toast(`拍照失败: ${error.message}`);
+        }
+    }
+
+    // 使用文件输入拍照
+    async function takePhotoWithInput() {
+        try {
+            const photoData = await window.CameraAPI._takePhotoWithFileInput();
+
+            const preview = document.getElementById('photo-preview');
+            preview.src = photoData;
+            preview.style.display = 'block';
+
+            window.NativeAPI.toast('图片获取成功');
+        } catch (error) {
+            console.error('文件输入失败:', error);
+            window.NativeAPI.toast(`获取图片失败: ${error.message}`);
+        }
+    }
+
+    // Toast 提示
+    function showToast() {
+        window.NativeAPI.toast('这是跨平台的 Toast 消息！');
+    }
+
+    // 震动
+    function vibrateDevice() {
+        window.NativeAPI.vibrate(100);
+    }
+
+    // 复制到剪贴板
+    async function copyToClipboard() {
+        const text = document.getElementById('copy-input').value;
+        const success = await window.NativeAPI.copyToClipboard(text);
+        window.NativeAPI.toast(success ? '已复制到剪贴板' : '复制失败');
+    }
+
+    // 从剪贴板读取
+    async function readFromClipboard() {
+        try {
+            const text = await window.NativeAPI.getClipboard();
+            document.getElementById('clip-result').innerText = `剪贴板内容: ${text}`;
+            window.NativeAPI.toast('读取成功');
+        } catch (error) {
+            document.getElementById('clip-result').innerText = '读取失败: ' + error.message;
+        }
+    }
+
+    // 读取文件
+    async function readSampleFile() {
+        try {
+            // 尝试读取当前目录下的文件
+            const content = await window.FileSystemAPI.readFile('./js/api.js');
+            const resultDiv = document.getElementById('file-result');
+            resultDiv.innerHTML = `<pre>${content.substring(0, 500)}...</pre>`;
+            window.NativeAPI.toast('文件读取成功');
+        } catch (error) {
+            console.error('读取文件失败:', error);
+            window.NativeAPI.toast('文件读取失败');
+        }
+    }
+
+    // 写入文件
+    async function writeSampleFile() {
+        try {
+            const content = `这是测试文件内容，创建于 ${new Date().toLocaleString()}`;
+            const success = await window.FileSystemAPI.writeFile('test.txt', content);
+            window.NativeAPI.toast(success ? '文件已保存' : '文件保存失败');
+        } catch (error) {
+            console.error('写入文件失败:', error);
+            window.NativeAPI.toast('文件写入失败');
+        }
+    }
+
+    // 请求摄像头权限
+    async function requestCameraPermission() {
+        const hasPermission = await window.NativeAPI.requestPermission('android.permission.CAMERA');
+        const resultDiv = document.getElementById('permission-result');
+        resultDiv.innerHTML = hasPermission ?
+            '<span style="color: green;">✅ 摄像头权限已授予</span>' :
+            '<span style="color: red;">❌ 摄像头权限被拒绝</span>';
+    }
+
+    // 检查摄像头权限
+    async function checkCameraPermission() {
+        const hasPermission = await window.NativeAPI.hasPermission('android.permission.CAMERA');
+        const resultDiv = document.getElementById('permission-result');
+        resultDiv.innerHTML = hasPermission ?
+            '<span style="color: green;">✅ 已有摄像头权限</span>' :
+            '<span style="color: orange;">⚠️ 无摄像头权限</span>';
+    }
+
+    // 页面加载完成后的初始化
+    document.addEventListener('DOMContentLoaded', async function() {
+        detectEnvironment();
+        await showDeviceInfo();
+
+        // 自动检查摄像头权限
+        if (window.isWebView()) {
+            await checkCameraPermission();
+        }
+    });
+</script>
+</body>
+</html>

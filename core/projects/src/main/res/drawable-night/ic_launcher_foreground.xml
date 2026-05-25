@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+  <group android:scaleX="0.93"
+      android:scaleY="0.93"
+      android:translateX="35.84"
+      android:translateY="35.84">
+    <group android:scaleX="0.59"
+        android:scaleY="0.59"
+        android:translateX="209.92"
+        android:translateY="209.92">
+      <!-- M-Struktur in leuchtendem Blau für Dark Mode -->
+      <path
+          android:pathData="M150,768L290,256H370L230,768H150Z"
+          android:fillColor="#42A5F5"/>
+      <path
+          android:pathData="M874,768L734,256H654L794,768H874Z"
+          android:fillColor="#42A5F5"/>
+      <path
+          android:pathData="M370,768L512,320H570L450,768H370Z"
+          android:fillColor="#42A5F5"/>
+      <path
+          android:pathData="M654,768L512,320H454L574,768H654Z"
+          android:fillColor="#42A5F5"/>
+      <!-- Akzent-Blitze in hellerem Blau für starken Kontrast -->
+      <path
+          android:pathData="M486,469.3L550,554.7H614L550,469.3L614,384H550L486,469.3Z"
+          android:fillColor="#90CAF9"/>
+      <path
+          android:pathData="M870,469.3L806,554.7H742L806,469.3L742,384H806L870,469.3Z"
+          android:fillColor="#90CAF9"/>
+    </group>
+  </group>
+</vector>

@@ -27,10 +27,26 @@ graph TD
 
 | Package | Responsibility |
 |---|---|
-| `com.mobileide.app` | `MainActivity`, `AppConstants` |
-| `com.mobileide.app.data` | Domain models: `Project`, `Language`, `EditorTab` |
-| `com.mobileide.app.editor` | `Editor` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
-| `com.mobileide.app.editor.intelligent` | Smart editing: `AutoCloseTag`, `BulletContinuation` |
+| `com.mobile.ide` | `MainActivity`, `App`, `MyApplication` |
+| `com.mobile.ide.html` | Domain models: `Project`, `Language`, `EditorTab` |
+| `com.mobile.ide.textmate` | `Editor` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+
+| `com.mobile.ide.ui.editor` | `Editor` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.ui.preview` | `Preview` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.ui.projects` | `Projects` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.ui.settings` | `Settings` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.ui.welcome` | `Welcome` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+
+| `com.mobile.ide.core.build` | `Build` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.core.files` | `Files` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.core.projexrs` | `Projects` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.core.resources` | `Resources` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.core.ui.components` | `Ui` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+| `com.mobile.ide.core.ui.theme` | `Projects` subclass, `EditorThemeManager`, `LanguageManager`, `KeywordManager`, `FontCache` |
+
+
+
+| `com.mobile.ide.core` | Smart editing: `AutoCloseTag`, `BulletContinuation` |
 | `com.mobileide.app.logger` | Structured in-app logger |
 | `com.mobileide.app.ui.components` | Reusable Compose components |
 | `com.mobileide.app.ui.screens` | All application screens |

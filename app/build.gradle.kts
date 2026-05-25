@@ -2,7 +2,30 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ktfmt)
+    alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.dokka)
+}
+
+
+val copyWebAppApk = tasks.register<Copy>("copyWebAppApk") {
+    // Explicitly depend on the webapp build task
+    dependsOn(":webapp:assembleRelease")
+
+    // Set input source: webapp output directory
+    // Note: Use provider mechanism to ensure the path is resolved only during execution
+    from(project(":webapp").layout.buildDirectory.dir("outputs/apk/release")) {
+        include("*.apk")
+        // If you need to specify an exact name, you can use rename
+        // rename { "webapp.apk" }
+        // Or keep the original name, or rename it as you did before
+        rename { _ -> "webapp.apk" }
+    }
+
+    // Set output destination: app module build directory (do not pollute src directory)
+    into(layout.buildDirectory.dir("generated/assets/webapp"))
 }
 
 android {
@@ -15,19 +38,35 @@ android {
         targetSdk     = libs.versions.targetSdk.get().toInt()
         versionCode   = libs.versions.versionCode.get().toInt()
         versionName   = libs.versions.versionName.get()
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    
+    signingConfigs {
+        create("release") {
+            storeFile = file("WebIDE.jks")
+            keyAlias = "WebIDE"
+            storePassword = "WebIDE"
+            keyPassword = "WebIDE"
+        }
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-beta"
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("release")
+        }
         release {
-            isMinifyEnabled   = false
-            isShrinkResources = false
+           // applicationIdSuffix = ".release"
+            isMinifyEnabled = true
+            isShrinkResources = true // Resource shrinking
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-        debug {
-            isDebuggable = true
         }
     }
 
@@ -43,16 +82,19 @@ android {
             freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         }
     }
+    //kotlin { jvmToolchain(libs.versions.java.get()) }
+    //kotlin { jvmToolchain(17) }
 
     buildFeatures {
         compose     = true
         buildConfig = true
     }
 
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+    sourceSets {
+        getByName("main") {
+            // Key point: Add copyWebAppApk task as a directory source
+            // Gradle will automatically identify: copyWebAppApk task must run before packaging assets
+            assets.srcDir(copyWebAppApk)
         }
     }
 
@@ -65,112 +107,68 @@ android {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dokka 2.x — API documentation with Mermaid diagram support
-//
-// Generate:
-//   ./gradlew :app:dokkaHtml   →  app/build/dokka/html/
-//   ./gradlew :app:dokkaGfm    →  app/build/dokka/gfm/
-// ─────────────────────────────────────────────────────────────────────────────
-
-dokka {
-    moduleName.set("MobileIDE")
-    moduleVersion.set(libs.versions.versionName.get())
-
-    dokkaSourceSets.configureEach {
-
-        displayName.set("MobileIDE")
-
-        // Do not warn about undocumented members
-        reportUndocumented.set(false)
-
-        // Include deprecated members in output
-        skipDeprecated.set(false)
-
-        // External API links — makes types clickable in the generated HTML
-        externalDocumentationLinks.create("android") {
-            url.set(uri("https://developer.android.com/reference/"))
-            packageListUrl.set(uri("https://developer.android.com/reference/androidx/package-list"))
+android.applicationVariants.configureEach {
+    outputs.configureEach {
+        val appName = "MobileIDE"
+        val buildType = buildType.name
+        val ver = versionName
+        (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.let {
+            it.outputFileName = "${appName}-${ver}-${buildType}.apk"
         }
-
-        externalDocumentationLinks.create("kotlin-stdlib") {
-            url.set(uri("https://kotlinlang.org/api/latest/jvm/stdlib/"))
-        }
-
-        externalDocumentationLinks.create("compose") {
-            url.set(uri("https://developer.android.com/reference/kotlin/androidx/compose/"))
-            packageListUrl.set(uri("https://developer.android.com/reference/kotlin/androidx/compose/package-list"))
-        }
-
-        externalDocumentationLinks.create("sora-editor") {
-            url.set(uri("https://rosemoe.github.io/sora-editor/"))
-        }
-
-        // Module-level documentation entry page
-        includes.from(project.file("dokka/module.md"))
-
-        // Source root
-        sourceRoots.from(file("src/main/java"))
-
-        // Per-package options — Dokka 2.x uses perPackageOption { } (singular)
-        perPackageOption {
-            matchingRegex.set("com\\.mobileide\\.app\\.ui\\.screens.*")
-            suppress.set(false)
-            skipDeprecated.set(false)
-        }
-    }
-
-    pluginsConfiguration.html {
-        footerMessage.set(
-            "© MobileIDE — Built with Kotlin ${libs.versions.kotlin.get()} · Dokka ${libs.versions.dokka.get()}"
-        )
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dependencies
-// ─────────────────────────────────────────────────────────────────────────────
+aboutLibraries() {
+    export {
+        prettyPrint = true
+        outputFile = file("src/main/res/raw/aboutlibraries.json")
+    }
+}
 
 dependencies {
-    // Dokka: Mermaid diagram rendering inside KDoc comments
-    dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:${libs.versions.dokkaMermaid.get()}")
+    //implementation(project(":signer"))
+    
+    implementation(project(":core:build"))
+    implementation(project(":core:files"))
+    implementation(project(":core:projects"))
+    implementation(project(":core:resources"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:utils"))
+    
+    //implementation("com.google.accompanist:accompanist-navigation-animation:0.36.0")
+    implementation(libs.accompanist.navigation.animation)
 
-    // ── Core ─────────────────────────────────────────────────────────────────
+    //implementation("com.mikepenz:aboutlibraries-compose:13.1.0")
+    implementation(libs.aboutlibraries.compose)
+    
+    val editorVersion = "0.24.0"
+    implementation("io.github.rosemoe:editor:$editorVersion")
+    implementation("io.github.rosemoe:language-textmate:$editorVersion")
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-
-    // ── Compose ──────────────────────────────────────────────────────────────
+    
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons)
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-
-    // ── Async & Storage ──────────────────────────────────────────────────────
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.coil.compose)
-    implementation(libs.androidx.datastore.preferences)
-
-    // ── Termux Integration ───────────────────────────────────────────────────
-    implementation(project(":termux:application"))
-
-    // ── Sora Editor ──────────────────────────────────────────────────────────
-    implementation(libs.sora.editor)
-    implementation(libs.sora.language.textmate)
-    implementation(libs.sora.language.java)
-
-    // ── Splash Screen ────────────────────────────────────────────────────────
-    implementation(libs.androidx.core.splashscreen)
-
-    // ── Theme system ─────────────────────────────────────────────────────────
-    implementation("com.google.code.gson:gson:2.13.2")
-    implementation("com.google.android.material:material:1.14.0-alpha10")
-
-    // ── Debug ────────────────────────────────────────────────────────────────
-    debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.navigation.compose)
+    
+    // Hilt dependencies
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    
+    testImplementation(libs.junit)
+    
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
