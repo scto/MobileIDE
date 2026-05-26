@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.dokka)
 }
 
-
 val copyWebAppApk = tasks.register<Copy>("copyWebAppApk") {
     // Explicitly depend on the webapp build task
     dependsOn(":webapp:assembleRelease")
