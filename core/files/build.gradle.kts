@@ -20,14 +20,6 @@ android {
     }
 
     buildFeatures { compose = true }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    // kotlin { jvmToolchain(libs.versions.java.get()) }
-    kotlin { jvmToolchain(17) }
 }
 
 dependencies {

@@ -11,7 +11,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
     
     // Spongycastle Abhängigkeiten
-    //implementation("org.bouncycastle:bcprov-jdk15on:1.58")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.58")
     implementation("com.madgag.spongycastle:core:1.58.0.0")
     implementation("com.madgag.spongycastle:prov:1.58.0.0")
 }
