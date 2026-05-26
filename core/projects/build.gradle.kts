@@ -17,16 +17,9 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
         consumerProguardFiles("consumer-rules.pro")
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    // kotlin { jvmToolchain(libs.versions.java.get()) }
-    kotlin { jvmToolchain(17) }
 }
 
 dependencies {

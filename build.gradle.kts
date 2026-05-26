@@ -23,6 +23,26 @@ subprojects {
         }
     }
 
+    // Android-spezifische Konfiguration
+    plugins.withId("com.android.base") {
+        extensions.configure<com.android.build.gradle.BaseExtension> {
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+    }
+    
+    // Globale Java Toolchain Lösung (Behebt den Compiler-Fehler)
+    // Wir nutzen hier 'kotlinOptions' statt jvmToolchain, da dies
+    // in eingeschränkten Umgebungen wie Android/Termux zuverlässiger ist.
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions {
+            jvmTarget = "17"
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        }
+    }
+    
     plugins.withId("org.jetbrains.dokka") {
         // 1. Plugins als Dependency definieren
         dependencies {
