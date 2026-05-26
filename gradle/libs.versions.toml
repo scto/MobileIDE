@@ -57,7 +57,7 @@ kotlinReflect = "2.3.20"
 kotlinBom = "2.2.0"
 
 # ── Documentation ────────────────────────────────────────────────────────────
-dokka                = "2.1.0"
+dokka                = "2.2.0"
 dokkaMermaid         = "0.6.0"
 
 collection = "1.5.0"

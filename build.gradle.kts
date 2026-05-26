@@ -21,5 +21,31 @@ subprojects {
             maxWidth.set(120)
         }
     }
-    
+    plugins.withId("org.jetbrains.dokka") {
+        tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+            moduleName.set(project.name)
+            dokkaSourceSets.configureEach {
+                skipEmptyPackages.set(true)
+                reportUndocumented.set(false)
+                skipDeprecated.set(false)
+                jdkVersion.set(17)
+                suppressInheritedMembers.set(false)
+                suppressObviousFunctions.set(false)
+                includes.from(
+                    "${rootDir}/app/dokka/module.md"
+                )
+                sourceLink {
+                    localDirectory.set(
+                        file("src/main/java")
+                    )
+                    remoteUrl.set(
+                        uri(
+                            "https://github.com/scto/MobileIDE/tree/main/src/main/java"
+                        ).toURL()
+                    )
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
 }
