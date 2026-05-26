@@ -27,7 +27,7 @@ subprojects {
     plugins.withId("org.jetbrains.dokka") {
         // Sicherstellen, dass das Mermaid-Plugin als Abhängigkeit verfügbar ist
         dependencies {
-            dokkaPlugin("org.jetbrains.dokka:mermaid-plugin:0.6.0")
+            dokkaPlugin(libs.dokka.mermaid)
         }
 
         // Dokka Konfiguration für alle Subprojekte

@@ -132,6 +132,10 @@ kotlin-bom = { group = "org.jetbrains.kotlin", name = "kotlin-bom", version.ref 
 # --- Add these library definitions ---
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
+
+# Documentation & Plugins
+dokka-mermaid = { module = "org.jetbrains.dokka:mermaid-plugin", version.ref = "dokkaMermaid" }
+
 # Misc
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
