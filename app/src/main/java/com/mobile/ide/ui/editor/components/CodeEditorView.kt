@@ -5,8 +5,8 @@ import android.content.Context
 import android.view.ViewGroup
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -19,61 +19,50 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import com.mobile.ide.R
 import com.mobile.ide.ui.ThemeViewModel
 import com.mobile.ide.ui.ThemeViewModelFactory
 import com.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import com.mobile.ide.ui.editor.viewmodel.EditorViewModel
-
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver
-import io.github.rosemoe.sora.widget.CodeEditor
-
+import kotlinx.coroutines.launch
 import org.eclipse.tm4e.core.registry.IThemeSource
 
-import kotlinx.coroutines.launch
-
 @Composable
-fun CodeEditorView(
-    modifier: Modifier = Modifier,
-    state: CodeEditorState,
-    viewModel: EditorViewModel
-) {
+fun CodeEditorView(modifier: Modifier = Modifier, state: CodeEditorState, viewModel: EditorViewModel) {
     val context = LocalContext.current
     var isEditorReady by remember { mutableStateOf(false) }
-    
-    val themeViewModel: ThemeViewModel = viewModel(
-        factory = ThemeViewModelFactory(context)
-    )
+
+    val themeViewModel: ThemeViewModel = viewModel(factory = ThemeViewModelFactory(context))
     val themeState by themeViewModel.themeState.collectAsState()
-    
+
     val systemDark = isSystemInDarkTheme()
-    val isDark = when (themeState.selectedModeIndex) {
-        0 -> systemDark  
-        1 -> false       
-        2 -> true        
-        else -> systemDark
-    }
-    
-    val seedColor = if (themeState.isCustomTheme) {
-        themeState.customColor
-    } else {
-        MaterialTheme.colorScheme.primary
-    }
-    
+    val isDark =
+        when (themeState.selectedModeIndex) {
+            0 -> systemDark
+            1 -> false
+            2 -> true
+            else -> systemDark
+        }
+
+    val seedColor =
+        if (themeState.isCustomTheme) {
+            themeState.customColor
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+
     LaunchedEffect(seedColor, isDark, isEditorReady) {
         if (isEditorReady) {
             viewModel.updateEditorTheme(seedColor, isDark)
         }
     }
 
-    val editor = remember(state.file.absolutePath) {
-        viewModel.getOrCreateEditor(context, state)
-    }
+    val editor = remember(state.file.absolutePath) { viewModel.getOrCreateEditor(context, state) }
 
     LaunchedEffect(state.file.absolutePath) {
         if (!TextMateInitializer.isReady()) {
@@ -87,15 +76,9 @@ fun CodeEditorView(
         }
     }
 
-    DisposableEffect(state.file.absolutePath) {
-        onDispose {
-        }
-    }
+    DisposableEffect(state.file.absolutePath) { onDispose {} }
 
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (isEditorReady) {
             AndroidView(
                 factory = { factoryContext ->
@@ -122,7 +105,7 @@ fun CodeEditorView(
                     view.isEnabled = true
                     view.visibility = android.view.View.VISIBLE
                     view.requestLayout()
-                }
+                },
             )
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -131,7 +114,7 @@ fun CodeEditorView(
                     text = stringResource(R.string.msg_initializing_editor),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp),
                 )
             }
         }
@@ -142,7 +125,7 @@ object TextMateInitializer {
     private var isInitialized = false
     private var isInitializing = false
     private val callbacks = mutableListOf<() -> Unit>()
-    
+
     @Synchronized
     fun initialize(context: Context, onComplete: (() -> Unit)? = null) {
         if (isInitialized) {
@@ -155,29 +138,26 @@ object TextMateInitializer {
         }
         isInitializing = true
         onComplete?.let { callbacks.add(it) }
-        
+
         kotlinx.coroutines.GlobalScope.launch {
             try {
                 val appContext = context.applicationContext
                 val assetsFileResolver = AssetsFileResolver(appContext.assets)
                 FileProviderRegistry.getInstance().addFileProvider(assetsFileResolver)
-                
+
                 val themeRegistry = ThemeRegistry.getInstance()
                 val themeName = "quietlight"
                 val themePath = "textmate/$themeName.json"
-                
+
                 FileProviderRegistry.getInstance().tryGetInputStream(themePath)?.use { inputStream ->
                     themeRegistry.loadTheme(
-                        ThemeModel(
-                            IThemeSource.fromInputStream(inputStream, themePath, null),
-                            themeName
-                        )
+                        ThemeModel(IThemeSource.fromInputStream(inputStream, themePath, null), themeName)
                     )
                     themeRegistry.setTheme(themeName)
                 }
-                
+
                 GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
-                
+
                 synchronized(this) {
                     isInitialized = true
                     isInitializing = false
@@ -193,9 +173,9 @@ object TextMateInitializer {
             }
         }
     }
-    
+
     fun isReady() = isInitialized
-    
+
     fun preloadCommonLanguages(context: Context) {
         if (!isInitialized && !isInitializing) {
             initialize(context)

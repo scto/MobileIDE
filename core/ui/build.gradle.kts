@@ -12,20 +12,16 @@ android {
     namespace = "com.mobile.ide.core.ui"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
-    defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-    }
+    defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
 
-    buildFeatures {
-        compose = true
-    }
+    buildFeatures { compose = true }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
-   //kotlin { jvmToolchain(libs.versions.java.get()) }
+
+    // kotlin { jvmToolchain(libs.versions.java.get()) }
     kotlin { jvmToolchain(17) }
 }
 
@@ -46,10 +42,10 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    
+
     // DataStore (für ThemeDataStore.kt)
     implementation(libs.androidx.datastore.preferences)
-    
+
     // Lifecycle ViewModel Compose (für ThemeViewModel.kt)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

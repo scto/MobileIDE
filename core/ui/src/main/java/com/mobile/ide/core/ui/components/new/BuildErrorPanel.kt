@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mobileide.app.data.BuildError
 import com.mobileide.app.data.ErrorSeverity
-import com.mobileide.app.data.TerminalLine
 import com.mobileide.app.data.LineType
+import com.mobileide.app.data.TerminalLine
 import com.mobileide.app.ui.theme.*
 import java.io.File
 
@@ -26,13 +26,9 @@ import java.io.File
 object BuildErrorParser {
 
     // Matches:  e: /path/to/File.kt: (42, 7): error message
-    private val KOTLIN_ERROR = Regex(
-        """([ew]):\s*(/.+?\.kt):\s*\((\d+),\s*(\d+)\):\s*(.+)"""
-    )
+    private val KOTLIN_ERROR = Regex("""([ew]):\s*(/.+?\.kt):\s*\((\d+),\s*(\d+)\):\s*(.+)""")
     // Matches:  /path/to/File.java:42: error: message
-    private val JAVA_ERROR = Regex(
-        """(/.+?\.java):(\d+):\s*(error|warning):\s*(.+)"""
-    )
+    private val JAVA_ERROR = Regex("""(/.+?\.java):(\d+):\s*(error|warning):\s*(.+)""")
     // Matches generic Gradle task failure
     private val TASK_ERROR = Regex("""FAILURE:\s*(.+)""")
 
@@ -43,25 +39,27 @@ object BuildErrorParser {
 
             KOTLIN_ERROR.find(text)?.let { m ->
                 val (severity, file, line, col, msg) = m.destructured
-                errors += BuildError(
-                    file     = file,
-                    line     = line.toIntOrNull() ?: 0,
-                    column   = col.toIntOrNull() ?: 0,
-                    message  = msg.trim(),
-                    severity = if (severity == "e") ErrorSeverity.ERROR else ErrorSeverity.WARNING
-                )
+                errors +=
+                    BuildError(
+                        file = file,
+                        line = line.toIntOrNull() ?: 0,
+                        column = col.toIntOrNull() ?: 0,
+                        message = msg.trim(),
+                        severity = if (severity == "e") ErrorSeverity.ERROR else ErrorSeverity.WARNING,
+                    )
                 return@forEach
             }
 
             JAVA_ERROR.find(text)?.let { m ->
                 val (file, line, severity, msg) = m.destructured
-                errors += BuildError(
-                    file     = file,
-                    line     = line.toIntOrNull() ?: 0,
-                    column   = 0,
-                    message  = msg.trim(),
-                    severity = if (severity == "error") ErrorSeverity.ERROR else ErrorSeverity.WARNING
-                )
+                errors +=
+                    BuildError(
+                        file = file,
+                        line = line.toIntOrNull() ?: 0,
+                        column = 0,
+                        message = msg.trim(),
+                        severity = if (severity == "error") ErrorSeverity.ERROR else ErrorSeverity.WARNING,
+                    )
                 return@forEach
             }
         }
@@ -77,31 +75,25 @@ object BuildErrorParser {
 
 // ── Build Status Banner ────────────────────────────────────────────────────────
 @Composable
-fun BuildStatusBanner(
-    terminalLines: List<TerminalLine>,
-    isBuilding: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val errors   = remember(terminalLines) { BuildErrorParser.parse(terminalLines) }
-    val success  = remember(terminalLines) { BuildErrorParser.buildSucceeded(terminalLines) }
-    val failed   = remember(terminalLines) { BuildErrorParser.buildFailed(terminalLines) }
+fun BuildStatusBanner(terminalLines: List<TerminalLine>, isBuilding: Boolean, modifier: Modifier = Modifier) {
+    val errors = remember(terminalLines) { BuildErrorParser.parse(terminalLines) }
+    val success = remember(terminalLines) { BuildErrorParser.buildSucceeded(terminalLines) }
+    val failed = remember(terminalLines) { BuildErrorParser.buildFailed(terminalLines) }
 
-    val errorCount   = errors.count { it.severity == ErrorSeverity.ERROR }
+    val errorCount = errors.count { it.severity == ErrorSeverity.ERROR }
     val warningCount = errors.count { it.severity == ErrorSeverity.WARNING }
 
-    AnimatedVisibility(
-        visible = isBuilding || success || failed,
-        modifier = modifier
-    ) {
-        val bg = when {
-            isBuilding -> IDEPrimary.copy(alpha = 0.15f)
-            success    -> IDESecondary.copy(alpha = 0.15f)
-            else       -> IDETertiary.copy(alpha = 0.15f)
-        }
+    AnimatedVisibility(visible = isBuilding || success || failed, modifier = modifier) {
+        val bg =
+            when {
+                isBuilding -> IDEPrimary.copy(alpha = 0.15f)
+                success -> IDESecondary.copy(alpha = 0.15f)
+                else -> IDETertiary.copy(alpha = 0.15f)
+            }
         Surface(color = bg) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (isBuilding) {
                     CircularProgressIndicator(Modifier.size(14.dp), color = IDEPrimary, strokeWidth = 2.dp)
@@ -131,11 +123,7 @@ fun BuildStatusBanner(
 
 @Composable
 private fun ErrorChip(label: String, color: androidx.compose.ui.graphics.Color) {
-    Surface(
-        shape  = RoundedCornerShape(8.dp),
-        color  = color.copy(alpha = 0.2f),
-        border = BorderStroke(1.dp, color)
-    ) {
+    Surface(shape = RoundedCornerShape(8.dp), color = color.copy(alpha = 0.2f), border = BorderStroke(1.dp, color)) {
         Text(label, color = color, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
     }
 }
@@ -147,25 +135,30 @@ fun BuildErrorPanel(
     visible: Boolean,
     onErrorClick: (BuildError) -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = visible && errors.isNotEmpty(),
         enter = slideInVertically { it },
-        exit  = slideOutVertically { it },
-        modifier = modifier
+        exit = slideOutVertically { it },
+        modifier = modifier,
     ) {
         Surface(color = IDESurface, shadowElevation = 8.dp) {
             Column {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.BugReport, null, Modifier.size(16.dp), tint = IDETertiary)
                     Spacer(Modifier.width(8.dp))
-                    Text("Problems (${errors.size})", fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
-                        color = IDEOnBackground, modifier = Modifier.weight(1f))
+                    Text(
+                        "Problems (${errors.size})",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = IDEOnBackground,
+                        modifier = Modifier.weight(1f),
+                    )
                     IconButton(onClick = onClose, modifier = Modifier.size(28.dp)) {
                         Icon(Icons.Default.Close, null, Modifier.size(16.dp), tint = IDEOnSurface)
                     }
@@ -184,26 +177,21 @@ fun BuildErrorPanel(
 
 @Composable
 private fun BuildErrorItem(error: BuildError, onClick: () -> Unit) {
-    val (icon, color) = when (error.severity) {
-        ErrorSeverity.ERROR   -> Icons.Default.Error to IDETertiary
-        ErrorSeverity.WARNING -> Icons.Default.Warning to IDEPrimary
-        ErrorSeverity.INFO    -> Icons.Default.Info to IDESecondary
-    }
+    val (icon, color) =
+        when (error.severity) {
+            ErrorSeverity.ERROR -> Icons.Default.Error to IDETertiary
+            ErrorSeverity.WARNING -> Icons.Default.Warning to IDEPrimary
+            ErrorSeverity.INFO -> Icons.Default.Info to IDESecondary
+        }
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.Top
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.Top,
     ) {
         Icon(icon, null, Modifier.size(14.dp).padding(top = 2.dp), tint = color)
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(error.message, fontSize = 12.sp, color = IDEOnBackground, maxLines = 2)
-            Text(
-                "${File(error.file).name}:${error.line}:${error.column}",
-                fontSize = 10.sp, color = IDEOnSurface
-            )
+            Text("${File(error.file).name}:${error.line}:${error.column}", fontSize = 10.sp, color = IDEOnSurface)
         }
     }
 }

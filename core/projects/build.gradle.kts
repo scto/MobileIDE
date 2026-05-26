@@ -11,11 +11,11 @@ android {
     namespace = "com.mobile.ide.core.projects"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
-    //lint.disable += "MissingTranslation"
+    // lint.disable += "MissingTranslation"
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
-        
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -24,8 +24,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
-   //kotlin { jvmToolchain(libs.versions.java.get()) }
+
+    // kotlin { jvmToolchain(libs.versions.java.get()) }
     kotlin { jvmToolchain(17) }
 }
 

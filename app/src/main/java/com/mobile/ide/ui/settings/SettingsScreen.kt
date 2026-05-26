@@ -34,12 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
 import com.mobile.ide.R
-import com.mobile.ide.core.resources.Res
-import com.mobile.ide.core.utils.*
 import com.mobile.ide.core.ui.components.*
 import com.mobile.ide.core.ui.theme.*
+import com.mobile.ide.core.utils.*
 
 fun Color.luminance(): Float {
     return 0.2126f * this.red + 0.7152f * this.green + 0.0722f * this.blue
@@ -52,7 +50,7 @@ fun SettingsScreen(
     currentThemeState: ThemeState,
     logConfigState: LogConfigState,
     onThemeChange: (modeIndex: Int, themeIndex: Int, customColor: Color, isMonet: Boolean, isCustom: Boolean) -> Unit,
-    onLogConfigChange: (enabled: Boolean, filePath: String) -> Unit
+    onLogConfigChange: (enabled: Boolean, filePath: String) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -70,24 +68,20 @@ fun SettingsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_back_desc))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         }
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 ThemeSettingsItem(
                     currentThemeState = currentThemeState,
                     onThemeChange = onThemeChange,
-                    onCustomColorClick = { showColorPicker = true }
+                    onCustomColorClick = { showColorPicker = true },
                 )
             }
 
@@ -96,7 +90,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Folder,
                     title = stringResource(R.string.settings_workspace_dir),
                     subtitle = selectedWorkspace,
-                    onClick = { showFileSelector = true }
+                    onClick = { showFileSelector = true },
                 )
             }
 
@@ -104,7 +98,7 @@ fun SettingsScreen(
                 LogSettingsItem(
                     logConfigState = logConfigState,
                     onLogConfigChange = onLogConfigChange,
-                    onPathClick = { showLogPathSelector = true }
+                    onPathClick = { showLogPathSelector = true },
                 )
             }
 
@@ -113,7 +107,7 @@ fun SettingsScreen(
                     text = stringResource(R.string.settings_other),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, top = 8.dp),
                 )
             }
 
@@ -122,7 +116,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Info,
                     title = stringResource(R.string.settings_about),
                     subtitle = stringResource(R.string.settings_about_subtitle),
-                    onClick = { navController.navigate("about") }
+                    onClick = { navController.navigate("about") },
                 )
             }
 
@@ -137,9 +131,10 @@ fun SettingsScreen(
                 selectedWorkspace = path
                 WorkspaceManager.saveWorkspacePath(context, path)
                 showFileSelector = false
-                Toast.makeText(context, context.getString(R.string.settings_workspace_updated), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.settings_workspace_updated), Toast.LENGTH_SHORT)
+                    .show()
             },
-            onDismissRequest = { showFileSelector = false }
+            onDismissRequest = { showFileSelector = false },
         )
     }
 
@@ -149,9 +144,10 @@ fun SettingsScreen(
             onPathSelected = { path ->
                 onLogConfigChange(logConfigState.isLogEnabled, path)
                 showLogPathSelector = false
-                Toast.makeText(context, context.getString(R.string.settings_log_path_updated), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.settings_log_path_updated), Toast.LENGTH_SHORT)
+                    .show()
             },
-            onDismissRequest = { showLogPathSelector = false }
+            onDismissRequest = { showLogPathSelector = false },
         )
     }
 
@@ -160,15 +156,9 @@ fun SettingsScreen(
             initialColor = currentThemeState.customColor,
             onDismiss = { showColorPicker = false },
             onColorSelected = { color ->
-                onThemeChange(
-                    currentThemeState.selectedModeIndex,
-                    themeColors.size,
-                    color,
-                    false,
-                    true
-                )
+                onThemeChange(currentThemeState.selectedModeIndex, themeColors.size, color, false, true)
                 showColorPicker = false
-            }
+            },
         )
     }
 }
@@ -177,7 +167,7 @@ fun SettingsScreen(
 fun ThemeSettingsItem(
     currentThemeState: ThemeState,
     onThemeChange: (Int, Int, Color, Boolean, Boolean) -> Unit,
-    onCustomColorClick: () -> Unit
+    onCustomColorClick: () -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val expandDuration = 200
@@ -186,24 +176,22 @@ fun ThemeSettingsItem(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-            )
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Palette,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -211,46 +199,55 @@ fun ThemeSettingsItem(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.settings_appearance_theme),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                     AnimatedVisibility(
                         visible = !expanded,
-                        enter = fadeIn(tween(textFadeDuration)) + expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top)
+                        enter =
+                            fadeIn(tween(textFadeDuration)) +
+                                expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
+                        exit =
+                            fadeOut(tween(textFadeDuration)) +
+                                shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
                     ) {
                         Text(
-                            text = if (currentThemeState.isMonetEnabled) stringResource(R.string.settings_dynamic_color) else stringResource(R.string.settings_custom_appearance),
+                            text =
+                                if (currentThemeState.isMonetEnabled) stringResource(R.string.settings_dynamic_color)
+                                else stringResource(R.string.settings_custom_appearance),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp),
                         )
                     }
                 }
 
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration)
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(
                     imageVector = Icons.Filled.ExpandMore,
                     contentDescription = null,
-                    modifier = Modifier.rotate(rotation)
+                    modifier = Modifier.rotate(rotation),
                 )
             }
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(tween(expandDuration)) +
+                enter =
+                    fadeIn(tween(expandDuration)) +
                         expandVertically(
                             animationSpec = tween(expandDuration, easing = snappyEasing),
-                            expandFrom = Alignment.Top
+                            expandFrom = Alignment.Top,
                         ),
-                exit = fadeOut(tween(textFadeDuration)) +
+                exit =
+                    fadeOut(tween(textFadeDuration)) +
                         shrinkVertically(
                             animationSpec = tween(textFadeDuration, easing = snappyEasing),
-                            shrinkTowards = Alignment.Top
-                        )
+                            shrinkTowards = Alignment.Top,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -260,54 +257,71 @@ fun ThemeSettingsItem(
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.settings_dynamic_color), style = MaterialTheme.typography.bodyMedium)
-                                Text(stringResource(R.string.settings_extract_colors), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(
+                                    stringResource(R.string.settings_dynamic_color),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Text(
+                                    stringResource(R.string.settings_extract_colors),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
                             }
                             Switch(
                                 checked = currentThemeState.isMonetEnabled,
                                 onCheckedChange = {
-                                    onThemeChange(currentThemeState.selectedModeIndex, currentThemeState.selectedThemeIndex, currentThemeState.customColor, it, currentThemeState.isCustomTheme)
-                                }
+                                    onThemeChange(
+                                        currentThemeState.selectedModeIndex,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        it,
+                                        currentThemeState.isCustomTheme,
+                                    )
+                                },
                             )
                         }
                     }
 
                     AnimatedVisibility(
                         visible = !currentThemeState.isMonetEnabled,
-                        enter = fadeIn(tween(expandDuration)) +
+                        enter =
+                            fadeIn(tween(expandDuration)) +
                                 expandIn(
                                     animationSpec = tween(expandDuration, easing = snappyEasing),
-                                    expandFrom = Alignment.TopStart
+                                    expandFrom = Alignment.TopStart,
                                 ) +
                                 scaleIn(
                                     animationSpec = tween(expandDuration, easing = snappyEasing),
-                                    transformOrigin = TransformOrigin(0f, 0f)
+                                    transformOrigin = TransformOrigin(0f, 0f),
                                 ),
-                        exit = fadeOut(tween(expandDuration)) +
+                        exit =
+                            fadeOut(tween(expandDuration)) +
                                 shrinkOut(
                                     animationSpec = tween(expandDuration, easing = snappyEasing),
-                                    shrinkTowards = Alignment.TopStart
+                                    shrinkTowards = Alignment.TopStart,
                                 ) +
                                 scaleOut(
                                     animationSpec = tween(expandDuration, easing = snappyEasing),
-                                    transformOrigin = TransformOrigin(0f, 0f)
-                                )
+                                    transformOrigin = TransformOrigin(0f, 0f),
+                                ),
                     ) {
                         Column {
                             Text(
                                 stringResource(R.string.settings_theme_color),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
                             )
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+                                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                             ) {
                                 itemsIndexed(themeColors) { index, theme ->
-                                    val isSelected = !currentThemeState.isCustomTheme && currentThemeState.selectedThemeIndex == index
+                                    val isSelected =
+                                        !currentThemeState.isCustomTheme &&
+                                            currentThemeState.selectedThemeIndex == index
                                     ColorSelectionItem(
                                         color = theme.primaryColor,
                                         name = theme.name,
@@ -318,34 +332,51 @@ fun ThemeSettingsItem(
                                                 index,
                                                 currentThemeState.customColor,
                                                 false,
-                                                false
+                                                false,
                                             )
-                                        }
+                                        },
                                     )
                                 }
                                 item {
                                     CustomColorButton(
                                         isSelected = currentThemeState.isCustomTheme,
                                         customColor = currentThemeState.customColor,
-                                        onClick = onCustomColorClick
+                                        onClick = onCustomColorClick,
                                     )
                                 }
                             }
                         }
                     }
 
-                    Text(stringResource(R.string.settings_display_mode), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_display_mode),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        val modes = listOf(stringResource(R.string.settings_mode_system), stringResource(R.string.settings_mode_light), stringResource(R.string.settings_mode_dark))
+                        val modes =
+                            listOf(
+                                stringResource(R.string.settings_mode_system),
+                                stringResource(R.string.settings_mode_light),
+                                stringResource(R.string.settings_mode_dark),
+                            )
                         modes.forEachIndexed { index, label ->
                             SmoothFilterChip(
                                 selected = currentThemeState.selectedModeIndex == index,
                                 label = label,
-                                onClick = { onThemeChange(index, currentThemeState.selectedThemeIndex, currentThemeState.customColor, currentThemeState.isMonetEnabled, currentThemeState.isCustomTheme) },
-                                modifier = Modifier.weight(1f)
+                                onClick = {
+                                    onThemeChange(
+                                        index,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        currentThemeState.isMonetEnabled,
+                                        currentThemeState.isCustomTheme,
+                                    )
+                                },
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
@@ -356,29 +387,32 @@ fun ThemeSettingsItem(
 }
 
 @Composable
-fun SmoothFilterChip(
-    selected: Boolean,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SmoothFilterChip(selected: Boolean, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val duration = 200
     val fastEasing = LinearEasing
 
     val colorAnimSpec = tween<Color>(durationMillis = duration, easing = fastEasing)
 
-    val containerColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
-        animationSpec = colorAnimSpec, label = "Container"
-    )
-    val borderColor by animateColorAsState(
-        targetValue = if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
-        animationSpec = colorAnimSpec, label = "Border"
-    )
-    val contentColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
-        animationSpec = colorAnimSpec, label = "Content"
-    )
+    val containerColor by
+        animateColorAsState(
+            targetValue =
+                if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+            animationSpec = colorAnimSpec,
+            label = "Container",
+        )
+    val borderColor by
+        animateColorAsState(
+            targetValue = if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
+            animationSpec = colorAnimSpec,
+            label = "Border",
+        )
+    val contentColor by
+        animateColorAsState(
+            targetValue =
+                if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+            animationSpec = colorAnimSpec,
+            label = "Content",
+        )
 
     Surface(
         onClick = onClick,
@@ -388,27 +422,27 @@ fun SmoothFilterChip(
         border = if (!selected) BorderStroke(1.dp, borderColor) else null,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             AnimatedVisibility(
                 visible = selected,
-                enter = expandHorizontally(tween(duration, easing = fastEasing), expandFrom = Alignment.Start) +
+                enter =
+                    expandHorizontally(tween(duration, easing = fastEasing), expandFrom = Alignment.Start) +
                         slideInHorizontally(tween(duration, easing = fastEasing), initialOffsetX = { it }) +
                         fadeIn(tween(200)),
-                exit = shrinkHorizontally(tween(duration, easing = fastEasing), shrinkTowards = Alignment.Start) +
+                exit =
+                    shrinkHorizontally(tween(duration, easing = fastEasing), shrinkTowards = Alignment.Start) +
                         slideOutHorizontally(tween(duration, easing = fastEasing), targetOffsetX = { it }) +
-                        fadeOut(tween(200))
+                        fadeOut(tween(200)),
             ) {
                 Row {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = contentColor
+                        tint = contentColor,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                 }
@@ -420,25 +454,36 @@ fun SmoothFilterChip(
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.animateContentSize(tween(duration, easing = fastEasing))
+                modifier = Modifier.animateContentSize(tween(duration, easing = fastEasing)),
             )
         }
     }
 }
 
 @Composable
-fun SimpleSettingsCard(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+fun SimpleSettingsCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -449,42 +494,52 @@ fun SimpleSettingsCard(icon: androidx.compose.ui.graphics.vector.ImageVector, ti
 fun LogSettingsItem(
     logConfigState: LogConfigState,
     onLogConfigChange: (Boolean, String) -> Unit,
-    onPathClick: () -> Unit
+    onPathClick: () -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .animateContentSize(
-                    animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
-                )
+            modifier =
+                Modifier.padding(16.dp)
+                    .animateContentSize(animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing))
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.BugReport, null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_enable_logs), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.settings_save_logs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    Text(
+                        stringResource(R.string.settings_save_logs),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
                 }
-                Switch(checked = logConfigState.isLogEnabled, onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) })
+                Switch(
+                    checked = logConfigState.isLogEnabled,
+                    onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) },
+                )
             }
 
             AnimatedVisibility(
                 visible = logConfigState.isLogEnabled,
                 enter = expandVertically(tween(200)) + fadeIn(tween(100)),
-                exit = shrinkVertically(tween(200)) + fadeOut(tween(80))
+                exit = shrinkVertically(tween(200)) + fadeOut(tween(80)),
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedButton(
                         onClick = onPathClick,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
                     ) {
-                        Text(logConfigState.logFilePath, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        Text(
+                            logConfigState.logFilePath,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
                         Icon(Icons.Outlined.Edit, null, modifier = Modifier.size(16.dp))
                     }
                 }
@@ -495,43 +550,80 @@ fun LogSettingsItem(
 
 @Composable
 fun ColorSelectionItem(color: Color, name: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(48.dp)
-                .border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape)
-                .padding(4.dp)
-                .clip(CircleShape)
-                .background(color)
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(color),
         ) {
-            if (isSelected) Icon(Icons.Default.Check, null, tint = if (color.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(24.dp))
+            if (isSelected)
+                Icon(
+                    Icons.Default.Check,
+                    null,
+                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(name, style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            name,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 @Composable
 fun CustomColorButton(isSelected: Boolean, customColor: Color, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(48.dp)
-                .border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape)
-                .padding(4.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             if (isSelected) {
                 Box(Modifier.fillMaxSize().background(customColor))
-                Icon(Icons.Default.Edit, null, tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Edit,
+                    null,
+                    tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
             } else {
-                Icon(Icons.Default.Add, stringResource(R.string.settings_custom_color_label), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    Icons.Default.Add,
+                    stringResource(R.string.settings_custom_color_label),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(stringResource(R.string.settings_custom_color_label), style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            stringResource(R.string.settings_custom_color_label),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

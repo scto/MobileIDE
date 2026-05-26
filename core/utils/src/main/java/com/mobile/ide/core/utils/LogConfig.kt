@@ -8,28 +8,19 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-
+import com.mobile.ide.core.utils.*
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-
-import com.mobile.ide.core.utils.R
-import com.mobile.ide.core.resources.Res
-import com.mobile.ide.core.utils.*
-
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mobileide_log_config")
 
-data class LogConfigState(
-    val isLogEnabled: Boolean = true,
-    val logFilePath: String = "",
-    val isLoaded: Boolean = false
-)
+data class LogConfigState(val isLogEnabled: Boolean = true, val logFilePath: String = "", val isLoaded: Boolean = false)
 
 class LogConfigRepository(private val context: Context) {
     private object PreferencesKeys {
@@ -37,8 +28,8 @@ class LogConfigRepository(private val context: Context) {
         val LOG_FILE_PATH = stringPreferencesKey("log_file_path")
     }
 
-    val logConfigFlow: Flow<LogConfigState> = context.dataStore.data
-        .combine(WorkspaceManager.getWorkspacePathFlow(context)) { preferences, workspacePath ->
+    val logConfigFlow: Flow<LogConfigState> =
+        context.dataStore.data.combine(WorkspaceManager.getWorkspacePathFlow(context)) { preferences, workspacePath ->
             val defaultLogPath = File(workspacePath, "logs").absolutePath
             val savedPath = preferences[PreferencesKeys.LOG_FILE_PATH]
             val finalPath = if (savedPath.isNullOrEmpty()) defaultLogPath else savedPath
@@ -46,7 +37,7 @@ class LogConfigRepository(private val context: Context) {
             LogConfigState(
                 isLogEnabled = preferences[PreferencesKeys.LOG_ENABLED] ?: true,
                 logFilePath = finalPath,
-                isLoaded = true
+                isLoaded = true,
             )
         }
 
@@ -63,18 +54,15 @@ class LogConfigRepository(private val context: Context) {
             }
         }
     }
-    
+
     suspend fun resetLogPath() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(PreferencesKeys.LOG_FILE_PATH)
-        }
+        context.dataStore.edit { preferences -> preferences.remove(PreferencesKeys.LOG_FILE_PATH) }
     }
 }
 
 object LogCatcher {
     private var logConfig: LogConfigState? = null
-    @Volatile
-    private var isInitialized = false
+    @Volatile private var isInitialized = false
 
     @JvmStatic
     fun updateConfig(config: LogConfigState) {

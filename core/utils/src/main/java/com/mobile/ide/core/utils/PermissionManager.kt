@@ -14,9 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-
-import com.mobile.ide.core.utils.R
-import com.mobile.ide.core.resources.Res
 import com.mobile.ide.core.utils.*
 
 object PermissionManager {
@@ -24,41 +21,41 @@ object PermissionManager {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Environment.isExternalStorageManager()
         } else {
-            true 
+            true
         }
     }
-    
+
     fun hasBasicStoragePermission(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arrayOf(
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.READ_MEDIA_VIDEO,
-                Manifest.permission.READ_MEDIA_AUDIO
-            ).all { permission ->
-                ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-            }
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.READ_MEDIA_VIDEO,
+                    Manifest.permission.READ_MEDIA_AUDIO,
+                )
+                .all { permission ->
+                    ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+                }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             true
         } else {
-            arrayOf(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ).all { permission ->
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE).all {
+                permission ->
                 ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
             }
         }
     }
-    
+
     fun hasRequiredPermissions(context: Context): Boolean {
         return hasAllFilesAccess() || hasBasicStoragePermission(context)
     }
-    
+
     fun requestAllFilesAccess(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                    data = Uri.parse("package:${context.packageName}")
-                }
+                val intent =
+                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                    }
                 context.startActivity(intent)
                 LogCatcher.i("PermissionManager", context.getString(R.string.perm_log_navigating))
             } catch (e: Exception) {
@@ -68,42 +65,43 @@ object PermissionManager {
             }
         }
     }
-    
+
     @Composable
     fun rememberPermissionRequest(
         onPermissionGranted: () -> Unit = {},
-        onPermissionDenied: () -> Unit = {}
+        onPermissionDenied: () -> Unit = {},
     ): PermissionRequestState {
         val context = LocalContext.current
         var showRationale by remember { mutableStateOf(false) }
 
-        val allFilesAccessLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult()
-        ) {
-            if (hasAllFilesAccess()) {
-                LogCatcher.i("PermissionManager", context.getString(R.string.perm_log_granted_all))
-                onPermissionGranted()
-            } else {
-                LogCatcher.w("PermissionManager", context.getString(R.string.perm_log_denied_all))
-                onPermissionDenied()
+        val allFilesAccessLauncher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+                if (hasAllFilesAccess()) {
+                    LogCatcher.i("PermissionManager", context.getString(R.string.perm_log_granted_all))
+                    onPermissionGranted()
+                } else {
+                    LogCatcher.w("PermissionManager", context.getString(R.string.perm_log_denied_all))
+                    onPermissionDenied()
+                }
             }
-        }
 
-        val basicPermissionLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            val allGranted = permissions.values.all { it }
-            if (allGranted) {
-                LogCatcher.i("PermissionManager", context.getString(R.string.perm_log_granted_basic))
-                onPermissionGranted()
-            } else {
-                LogCatcher.w("PermissionManager", context.getString(R.string.perm_log_denied_basic, permissions.toString()))
-                onPermissionDenied()
-                showRationale = true
+        val basicPermissionLauncher =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val allGranted = permissions.values.all { it }
+                if (allGranted) {
+                    LogCatcher.i("PermissionManager", context.getString(R.string.perm_log_granted_basic))
+                    onPermissionGranted()
+                } else {
+                    LogCatcher.w(
+                        "PermissionManager",
+                        context.getString(R.string.perm_log_denied_basic, permissions.toString()),
+                    )
+                    onPermissionDenied()
+                    showRationale = true
+                }
             }
-        }
 
-        return remember(context) { 
+        return remember(context) {
             PermissionRequestState(
                 requestPermissions = {
                     LogCatcher.d("PermissionManager", context.getString(R.string.perm_log_start_req))
@@ -113,9 +111,10 @@ object PermissionManager {
                             onPermissionGranted()
                         } else {
                             try {
-                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                    data = Uri.parse("package:${context.packageName}")
-                                }
+                                val intent =
+                                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
                                 allFilesAccessLauncher.launch(intent)
                             } catch (_: Exception) {
                                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -123,41 +122,44 @@ object PermissionManager {
                             }
                         }
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            arrayOf(
-                                Manifest.permission.READ_MEDIA_IMAGES,
-                                Manifest.permission.READ_MEDIA_VIDEO,
-                                Manifest.permission.READ_MEDIA_AUDIO
-                            )
-                        } else {
-                            arrayOf(
-                                Manifest.permission.READ_EXTERNAL_STORAGE,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE
-                            )
-                        }
+                        val permissions =
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    Manifest.permission.READ_MEDIA_IMAGES,
+                                    Manifest.permission.READ_MEDIA_VIDEO,
+                                    Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else {
+                                arrayOf(
+                                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                )
+                            }
                         basicPermissionLauncher.launch(permissions)
                     } else {
                         onPermissionGranted()
                     }
                 },
                 showRationale = showRationale,
-                hasPermissions = { hasRequiredPermissions(context) }
+                hasPermissions = { hasRequiredPermissions(context) },
             )
         }
     }
-    
+
     data class PermissionRequestState(
         val requestPermissions: () -> Unit,
         val showRationale: Boolean,
-        val hasPermissions: () -> Boolean
+        val hasPermissions: () -> Boolean,
     )
-    
+
     sealed class PermissionResult {
         object Granted : PermissionResult()
+
         object Denied : PermissionResult()
+
         data class Rationale(val message: String) : PermissionResult()
     }
-    
+
     fun checkPermissionsWithResult(context: Context): PermissionResult {
         return if (hasRequiredPermissions(context)) {
             PermissionResult.Granted

@@ -1,11 +1,11 @@
 // Copyright 2025 Thomas Schmid
 package com.mobile.ide.ui.preview
 
+// Ergänze/Passe an:
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.*
-import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.*
 import android.util.Base64
@@ -35,21 +35,16 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
-
 import com.mobile.ide.R
-import com.mobile.ide.ui.editor.viewmodel.EditorViewModel
-// Ergänze/Passe an:
 import com.mobile.ide.core.resources.*
 import com.mobile.ide.core.utils.LogCatcher
 import com.mobile.ide.core.utils.WorkspaceManager
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-
-import org.json.JSONObject
-
+import com.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import java.io.File
 import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,29 +54,37 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
     val workspacePath = WorkspaceManager.getWorkspacePath(context)
     val projectDir = File(workspacePath, folderName)
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        LogCatcher.d("WebPreview", "Permissions granted: $permissions")
-    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) { permissions
+            ->
+            LogCatcher.d("WebPreview", "Permissions granted: $permissions")
+        }
 
     LaunchedEffect(Unit) {
-        permissionLauncher.launch(arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ))
+        permissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            )
+        )
     }
 
-    val webAppConfig = produceState<JSONObject?>(initialValue = null, key1 = projectDir) {
-        value = withContext(Dispatchers.IO) {
-            val configFile = File(projectDir, "webapp.json")
-            if (configFile.exists()) {
-                try { JSONObject(configFile.readText()) } catch (e: Exception) { null }
-            } else null
+    val webAppConfig =
+        produceState<JSONObject?>(initialValue = null, key1 = projectDir) {
+            value =
+                withContext(Dispatchers.IO) {
+                    val configFile = File(projectDir, "webapp.json")
+                    if (configFile.exists()) {
+                        try {
+                            JSONObject(configFile.readText())
+                        } catch (e: Exception) {
+                            null
+                        }
+                    } else null
+                }
         }
-    }
     val config = webAppConfig.value
 
     DisposableEffect(config) {
@@ -110,12 +113,12 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     when (style) {
                         "light" -> {
-                            decorView.systemUiVisibility = decorView.systemUiVisibility or
-                                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                            decorView.systemUiVisibility =
+                                decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                         }
                         "dark" -> {
-                            decorView.systemUiVisibility = decorView.systemUiVisibility and
-                                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                            decorView.systemUiVisibility =
+                                decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                         }
                     }
                 }
@@ -141,34 +144,36 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
         }
     }
 
-    val targetUrl = remember(projectDir, config) {
-        val rawUrl = config?.optString("targetUrl")?.takeIf { it.isNotEmpty() }
-            ?: config?.optString("url")?.takeIf { it.isNotEmpty() }
-            ?: config?.optString("entry")?.takeIf { it.isNotEmpty() }
+    val targetUrl =
+        remember(projectDir, config) {
+            val rawUrl =
+                config?.optString("targetUrl")?.takeIf { it.isNotEmpty() }
+                    ?: config?.optString("url")?.takeIf { it.isNotEmpty() }
+                    ?: config?.optString("entry")?.takeIf { it.isNotEmpty() }
 
-        when {
-            rawUrl != null && (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) -> rawUrl
-            rawUrl != null -> {
-                val f = File(projectDir, rawUrl)
-                val af = File(projectDir, "src/main/assets/$rawUrl")
-                if(f.exists()) "file://${f.absolutePath}" else "file://${af.absolutePath}"
-            }
-            else -> {
-                val af = File(projectDir, "src/main/assets/index.html")
-                if(af.exists()) "file://${af.absolutePath}" else "file://${File(projectDir, "index.html").absolutePath}"
+            when {
+                rawUrl != null && (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) -> rawUrl
+                rawUrl != null -> {
+                    val f = File(projectDir, rawUrl)
+                    val af = File(projectDir, "src/main/assets/$rawUrl")
+                    if (f.exists()) "file://${f.absolutePath}" else "file://${af.absolutePath}"
+                }
+                else -> {
+                    val af = File(projectDir, "src/main/assets/index.html")
+                    if (af.exists()) "file://${af.absolutePath}"
+                    else "file://${File(projectDir, "index.html").absolutePath}"
+                }
             }
         }
-    }
 
     var filePathCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
-    val fileChooserLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (filePathCallback == null) return@rememberLauncherForActivityResult
-        val results = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
-        filePathCallback?.onReceiveValue(results)
-        filePathCallback = null
-    }
+    val fileChooserLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            if (filePathCallback == null) return@rememberLauncherForActivityResult
+            val results = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
+            filePathCallback?.onReceiveValue(results)
+            filePathCallback = null
+        }
 
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     val refreshKey = remember(config) { System.currentTimeMillis() }
@@ -177,13 +182,27 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
         topBar = {
             if (config?.optBoolean("fullscreen", false) != true) {
                 TopAppBar(
-                    title = { Text(if(targetUrl.startsWith("http")) stringResource(R.string.preview_title_web) else stringResource(R.string.preview_title_app)) },
-                    navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back)) } },
-                    actions = { IconButton(onClick = { webViewRef?.reload() }) { Icon(Icons.Default.Refresh, stringResource(R.string.action_refresh)) } }
+                    title = {
+                        Text(
+                            if (targetUrl.startsWith("http")) stringResource(R.string.preview_title_web)
+                            else stringResource(R.string.preview_title_app)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { webViewRef?.reload() }) {
+                            Icon(Icons.Default.Refresh, stringResource(R.string.action_refresh))
+                        }
+                    },
                 )
             }
         },
-        containerColor = if (config?.optBoolean("fullscreen", false) == true) Color.Black else MaterialTheme.colorScheme.background
+        containerColor =
+            if (config?.optBoolean("fullscreen", false) == true) Color.Black else MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         val actualPadding = if (config?.optBoolean("fullscreen", false) == true) PaddingValues(0.dp) else innerPadding
         Box(modifier = Modifier.padding(actualPadding).fillMaxSize()) {
@@ -193,7 +212,10 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
                     factory = { ctx ->
                         WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(-1, -1)
-                            configureFullWebView(this, ctx, config,
+                            configureFullWebView(
+                                this,
+                                ctx,
+                                config,
                                 onShowFileChooser = { callback, params ->
                                     filePathCallback = callback
                                     try {
@@ -206,17 +228,24 @@ fun WebPreviewScreen(folderName: String, navController: NavController, viewModel
                                         filePathCallback = null
                                         false
                                     }
-                                }
+                                },
                             )
                             webViewRef = this
                         }
                     },
-                    update = { webView -> if (webView.url != targetUrl) webView.loadUrl(targetUrl) }
+                    update = { webView -> if (webView.url != targetUrl) webView.loadUrl(targetUrl) },
                 )
             }
             if (config?.optBoolean("fullscreen", false) == true) {
-                IconButton(onClick = { navController.popBackStack() }, modifier = Modifier.align(Alignment.TopStart).padding(16.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back), tint = Color.White.copy(alpha = 0.5f))
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        stringResource(R.string.action_back),
+                        tint = Color.White.copy(alpha = 0.5f),
+                    )
                 }
             }
         }
@@ -228,7 +257,7 @@ private fun configureFullWebView(
     webView: WebView,
     context: Context,
     config: JSONObject?,
-    onShowFileChooser: (ValueCallback<Array<Uri>>, WebChromeClient.FileChooserParams?) -> Boolean
+    onShowFileChooser: (ValueCallback<Array<Uri>>, WebChromeClient.FileChooserParams?) -> Boolean,
 ) {
     val settings = webView.settings
     settings.javaScriptEnabled = true
@@ -239,7 +268,7 @@ private fun configureFullWebView(
     settings.allowContentAccess = true
     settings.allowFileAccessFromFileURLs = true
     settings.allowUniversalAccessFromFileURLs = true
-    settings.mediaPlaybackRequiresUserGesture = false 
+    settings.mediaPlaybackRequiresUserGesture = false
 
     settings.useWideViewPort = true
     settings.loadWithOverviewMode = true
@@ -260,30 +289,44 @@ private fun configureFullWebView(
     val packageName = config?.optString("package", "com.example.webapp") ?: "com.web.preview"
     webView.addJavascriptInterface(FullWebAppInterface(context, webView, packageName), "Android")
 
-    webView.webChromeClient = object : WebChromeClient() {
-        override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
-            return if (filePathCallback != null) onShowFileChooser(filePathCallback, fileChooserParams) else false
-        }
-
-        override fun onPermissionRequest(request: PermissionRequest?) {
-            request?.grant(request.resources)
-        }
-
-        override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-            LogCatcher.d("WebPreview_JS", "[${consoleMessage?.messageLevel()}] ${consoleMessage?.message()}")
-            return true
-        }
-    }
-
-    webView.webViewClient = object : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-            val url = request?.url.toString()
-            if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("sms:") || url.startsWith("geo:")) {
-                try { context.startActivity(Intent(Intent.ACTION_VIEW, request?.url)); return true } catch (e: Exception) {}
+    webView.webChromeClient =
+        object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?,
+            ): Boolean {
+                return if (filePathCallback != null) onShowFileChooser(filePathCallback, fileChooserParams) else false
             }
-            return false
+
+            override fun onPermissionRequest(request: PermissionRequest?) {
+                request?.grant(request.resources)
+            }
+
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                LogCatcher.d("WebPreview_JS", "[${consoleMessage?.messageLevel()}] ${consoleMessage?.message()}")
+                return true
+            }
         }
-    }
+
+    webView.webViewClient =
+        object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val url = request?.url.toString()
+                if (
+                    url.startsWith("tel:") ||
+                        url.startsWith("mailto:") ||
+                        url.startsWith("sms:") ||
+                        url.startsWith("geo:")
+                ) {
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, request?.url))
+                        return true
+                    } catch (e: Exception) {}
+                }
+                return false
+            }
+        }
     WebView.setWebContentsDebuggingEnabled(true)
 }
 
@@ -291,18 +334,24 @@ class FullWebAppInterface(private val context: Context, private val webView: Web
     private val mainHandler = Handler(Looper.getMainLooper())
     private val prefs = context.getSharedPreferences("WebIDE_Preview_${packageName}", Context.MODE_PRIVATE)
 
-    @JavascriptInterface fun showToast(msg: String) { Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+    @JavascriptInterface
+    fun showToast(msg: String) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
 
     @RequiresPermission(Manifest.permission.VIBRATE)
-    @JavascriptInterface fun vibrate(ms: Long) {
+    @JavascriptInterface
+    fun vibrate(ms: Long) {
         try {
             val v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) v.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                v.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE))
             else @Suppress("DEPRECATION") v.vibrate(ms)
         } catch (e: Exception) {}
     }
 
-    @JavascriptInterface fun keepScreenOn(enable: Boolean) {
+    @JavascriptInterface
+    fun keepScreenOn(enable: Boolean) {
         mainHandler.post {
             val win = (context as? Activity)?.window
             if (enable) win?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -310,56 +359,81 @@ class FullWebAppInterface(private val context: Context, private val webView: Web
         }
     }
 
-    @JavascriptInterface fun copyToClipboard(text: String) {
+    @JavascriptInterface
+    fun copyToClipboard(text: String) {
         mainHandler.post {
-            (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("MobileIDE", text))
+            (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(
+                ClipData.newPlainText("MobileIDE", text)
+            )
             Toast.makeText(context, context.getString(R.string.preview_copied), Toast.LENGTH_SHORT).show()
         }
     }
 
-    @JavascriptInterface fun getFromClipboard(callbackId: String) {
+    @JavascriptInterface
+    fun getFromClipboard(callbackId: String) {
         mainHandler.post {
             try {
                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val text = if (cm.hasPrimaryClip()) cm.primaryClip?.getItemAt(0)?.text?.toString() ?: "" else ""
                 sendResultToJs(callbackId, true, text)
-            } catch (e: Exception) { sendResultToJs(callbackId, false, "") }
+            } catch (e: Exception) {
+                sendResultToJs(callbackId, false, "")
+            }
         }
     }
 
-    @JavascriptInterface fun openBrowser(url: String) {
-        try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (e: Exception) {}
+    @JavascriptInterface
+    fun openBrowser(url: String) {
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: Exception) {}
     }
 
-    @JavascriptInterface fun shareText(text: String) {
+    @JavascriptInterface
+    fun shareText(text: String) {
         try {
-            val intent = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, text) }
+            val intent =
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, text)
+                }
             context.startActivity(Intent.createChooser(intent, context.getString(R.string.preview_share)))
         } catch (e: Exception) {}
     }
 
-    @JavascriptInterface fun getDeviceInfo(): String {
+    @JavascriptInterface
+    fun getDeviceInfo(): String {
         val json = JSONObject()
-        json.put("model", Build.MODEL); json.put("android", Build.VERSION.RELEASE); json.put("package", packageName)
+        json.put("model", Build.MODEL)
+        json.put("android", Build.VERSION.RELEASE)
+        json.put("package", packageName)
         return json.toString()
     }
 
     @JavascriptInterface fun saveStorage(k: String, v: String) = prefs.edit().putString(k, v).apply()
+
     @JavascriptInterface fun getStorage(k: String): String = prefs.getString(k, "") ?: ""
 
     private fun sendResultToJs(callbackId: String, success: Boolean, data: String) {
         val json = JSONObject().put("success", success).put("data", data).toString()
         val base64 = Base64.encodeToString(json.toByteArray(StandardCharsets.UTF_8), Base64.NO_WRAP)
-        mainHandler.post { webView.evaluateJavascript("if(window.onAndroidResponse) window.onAndroidResponse('$callbackId', '$base64')", null) }
+        mainHandler.post {
+            webView.evaluateJavascript(
+                "if(window.onAndroidResponse) window.onAndroidResponse('$callbackId', '$base64')",
+                null,
+            )
+        }
     }
 }
 
 private fun hideSystemUI(activity: Activity) {
     WindowCompat.setDecorFitsSystemWindows(activity.window, false)
     WindowInsetsControllerCompat(activity.window, activity.window.decorView).let {
-        it.hide(WindowInsetsCompat.Type.systemBars()); it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        it.hide(WindowInsetsCompat.Type.systemBars())
+        it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }
+
 private fun showSystemUI(activity: Activity) {
     WindowCompat.setDecorFitsSystemWindows(activity.window, true)
     WindowInsetsControllerCompat(activity.window, activity.window.decorView).show(WindowInsetsCompat.Type.systemBars())

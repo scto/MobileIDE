@@ -7,11 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-
-import com.mobile.ide.core.ui.theme.ThemeDataStoreRepository
-import com.mobile.ide.core.ui.theme.ThemeState
 import com.mobile.ide.core.utils.LogCatcher
-
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -21,20 +17,26 @@ class ThemeViewModel(private val repository: ThemeDataStoreRepository) : ViewMod
     companion object {
         private const val TAG = "ThemeViewModel"
     }
-    val themeState: StateFlow<ThemeState> = repository.themeStateFlow.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ThemeState(0, 0, Build.VERSION.SDK_INT >= Build.VERSION_CODES.S, false, Color(0xFF6750A4), false)
-    )
+
+    val themeState: StateFlow<ThemeState> =
+        repository.themeStateFlow.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue =
+                ThemeState(0, 0, Build.VERSION.SDK_INT >= Build.VERSION_CODES.S, false, Color(0xFF6750A4), false),
+        )
 
     fun saveThemeConfig(
         selectedModeIndex: Int,
         selectedThemeIndex: Int,
         customColor: Color,
         isMonetEnabled: Boolean,
-        isCustom: Boolean
+        isCustom: Boolean,
     ) {
-        LogCatcher.d("ThemeDebug_VM", "ViewModel preparing to save: Monet=$isMonetEnabled, Custom=$isCustom, Color=${customColor.value}")
+        LogCatcher.d(
+            "ThemeDebug_VM",
+            "ViewModel preparing to save: Monet=$isMonetEnabled, Custom=$isCustom, Color=${customColor.value}",
+        )
 
         viewModelScope.launch {
             repository.saveThemeConfig(selectedModeIndex, selectedThemeIndex, customColor, isMonetEnabled, isCustom)
