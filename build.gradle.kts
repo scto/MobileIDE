@@ -24,23 +24,35 @@ subprojects {
     }
 
     plugins.withId("org.jetbrains.dokka") {
+        // 1. Plugins als Dependency definieren
         dependencies {
-            dokkaPlugin(libs.dokka.mermaid)
+            //"dokkaPlugin"("org.jetbrains.dokka:mermaid-plugin:0.6.0")
+            "dokkaPlugin"(libs.dokka.mermaid)
         }
         
+         // 2. Zentrale Konfiguration über die DokkaExtension
         configure<org.jetbrains.dokka.gradle.DokkaExtension> {
             dokkaSourceSets.configureEach {
                 moduleName.set(project.name)
-                // Die deprecated suppress-Zeilen hier entfernen!
-                
-                includes.from("${rootDir}/module.md")
-     
+                skipEmptyPackages.set(true)
+                reportUndocumented.set(false)
+                skipDeprecated.set(false)
+                jdkVersion.set(17)
+
+                // Pfad zur globalen module.md
+                includes.from(rootProject.layout.projectDirectory.file("module.md"))
+
                 sourceLink {
                     localDirectory.set(file("src/main/java"))
-                    // Korrektur: URI statt URL
+                    // Korrektur: .toURI() verwenden
                     remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java").toURI())
                     remoteLineSuffix.set("#L")
                 }
+            }
+
+            // 3. Plugin Konfiguration
+            pluginsConfiguration {
+                create("org.jetbrains.dokka.mermaid.MermaidPlugin")
             }
         }
     }
