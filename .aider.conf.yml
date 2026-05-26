@@ -1,0 +1,52 @@
+# ==========================================
+# AIDER KONFIGURATION (Kotlin & Gemini Optimiert)
+# ==========================================
+
+# --- UI & Darstellung ---
+# Zeigt an, was genau im Code geändert wurde (sehr empfohlen!)
+show-diffs: true
+
+# Aktiviert schöne Farben im Terminal (perfekt für Termux/Dark Themes)
+dark-mode: true
+
+# --- Gemini Token & Kontext Optimierung ---
+# WICHTIG: Aktiviert das Prompt Caching. Wenn du mit Gemini 1.5/2.0 arbeitest,
+# hält dies die Systemprompts und die großen .md Dateien im Cache. 
+# Das spart massiv Zeit und API-Limits bei jeder Anfrage!
+cache-prompts: true
+
+# Steuert die Größe der Repository-Map. Da Gemini extrem große Kontextfenster 
+# (1-2 Mio Tokens) hat, können wir Aider erlauben, eine sehr detaillierte Map 
+# deiner Kotlin-Architektur zu erstellen.
+map-tokens: 20000
+
+# Behält eine längere Chat-Historie im Gedächtnis, da das Kontextfenster es hergibt.
+chat-history-tokens: 50000
+
+# --- Git & Commits ---
+# Erstellt automatisch Commits nach jeder erfolgreichen Änderung. 
+# Du kannst Fehler der KI so immer mit "git reset --hard HEAD~1" rückgängig machen.
+auto-commits: true
+
+# Committet deine eigenen, noch nicht gespeicherten Änderungen, *bevor* Aider loslegt.
+dirty-commits: true
+
+# Markiert Aider als Co-Autor im Git Log (hilft bei der Übersicht im Team)
+attribute-author: true
+attribute-committer: false
+
+# --- Linting (Auto-Formatting) ---
+# ktlintFormat repariert Style-Fehler automatisch. Das ist effizienter, 
+# da die KI keine Tokens verschwenden muss, um Formatierungsfehler selbst zu beheben.
+lint-cmd: "./gradlew ktlintFormat"
+auto-lint: true
+
+# --- KSP-Compiler Skill (Compile-Driven Development) ---
+# Aider testet die KSP-Generierung (Hilt/Room/Compose), ohne einen vollen Build zu machen.
+# Das bietet ein extrem schnelles Feedback-Loop, wenn Aider Code generiert.
+test-cmd: "./gradlew compileDebugKotlin"
+auto-test: true
+
+# --- Leistungsoptimierungen ---
+# Aider streamt die Antwort direkt in die Konsole (wie ChatGPT)
+stream: true

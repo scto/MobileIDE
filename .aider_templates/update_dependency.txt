@@ -1,0 +1,9 @@
+Aktualisiere eine Dependency im Version Catalog.
+
+Bibliothek: [BIBLIOTHEKSNAME_HIER]
+Neue Version: [VERSION_HIER]
+
+Aufgaben:
+1. Öffne `gradle/libs.versions.toml`.
+2. Finde die entsprechende Version und passe sie an.
+3. Führe den Test-Befehl (./gradlew dependencies) aus, um sicherzustellen, dass die TOML-Datei syntaktisch korrekt ist und Gradle erfolgreich synchronisiert.

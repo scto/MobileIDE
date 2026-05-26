@@ -1,0 +1,51 @@
+# Aider Ignore - Optimiert für Kotlin/Android/Python
+
+# --- Version Control & Internals ---
+.git/
+.aider*
+!.aiderignore
+
+# --- Kotlin / Java / Android (Sehr wichtig!) ---
+# Build-Ordner komplett ignorieren
+**/build/
+build/
+bin/
+out/
+app/build/
+
+# Explizite Build-Ordner für alle Submodule in core und feature
+core/*/build/
+feature/*/build/
+
+# Generierter Code
+**/generated/
+
+# Bestimmte Dateitypen ignorieren (falls du sie nicht mit KI bearbeiten willst)
+*.jar
+*.aar
+*.apk
+*.so
+*.class
+*.dex
+
+# IDE-spezifische Ordner
+.idea/
+.gradle/
+*.iml
+.vscode/
+
+# --- Python / Venv ---
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# --- Secrets & Config ---
+*.secrets
+.env*
+
+# --- OS & Large Files ---
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
