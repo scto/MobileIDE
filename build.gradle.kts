@@ -40,12 +40,20 @@ subprojects {
                 jdkVersion.set(17)
 
                 // Pfad zur globalen module.md
+                // NEU: Pfad zeigt jetzt in das Unterverzeichnis 'dokka'
+                // Nutze 'fileTree', um alle .md Dateien in diesem Ordner einzuschließen
+                includes.from(project.layout.projectDirectory.dir("dokka").asFileTree.matching {
+                    include("*.md")
+                })
+                
+                /*
                 includes.from(rootProject.layout.projectDirectory.file("module.md"))
-
+                */
+                
                 sourceLink {
                     localDirectory.set(file("src/main/java"))
                     // Korrektur: .toURI() verwenden
-                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java").toURI())
+                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java"))
                     remoteLineSuffix.set("#L")
                 }
             }
