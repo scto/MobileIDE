@@ -23,37 +23,24 @@ subprojects {
         }
     }
 
-    // Globale Dokka v2 Konfiguration
     plugins.withId("org.jetbrains.dokka") {
-        // Sicherstellen, dass das Mermaid-Plugin als Abhängigkeit verfügbar ist
         dependencies {
             dokkaPlugin(libs.dokka.mermaid)
         }
-
-        // Dokka Konfiguration für alle Subprojekte
+        
         configure<org.jetbrains.dokka.gradle.DokkaExtension> {
             dokkaSourceSets.configureEach {
                 moduleName.set(project.name)
-                skipEmptyPackages.set(true)
-                reportUndocumented.set(false)
-                skipDeprecated.set(false)
-                jdkVersion.set(17)
-                suppressInheritedMembers.set(false)
-                suppressObviousFunctions.set(false)
+                // Die deprecated suppress-Zeilen hier entfernen!
                 
-                // Pfad zur globalen module.md
                 includes.from("${rootDir}/module.md")
-                
+     
                 sourceLink {
                     localDirectory.set(file("src/main/java"))
-                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java").toURL())
+                    // Korrektur: URI statt URL
+                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java").toURI())
                     remoteLineSuffix.set("#L")
                 }
-            }
-
-            // Typsichere Plugin-Konfiguration
-            pluginsConfiguration {
-                create("org.jetbrains.dokka.mermaid.MermaidPlugin")
             }
         }
     }
