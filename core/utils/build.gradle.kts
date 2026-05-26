@@ -18,17 +18,17 @@ android {
         // ProGuard-Regeln für Bibliotheks-Module
         consumerProguardFiles("consumer-rules.pro")
     }
-    
+
     buildFeatures { compose = true }
 }
 
 dependencies {
     // Interne Modul-Abhängigkeiten
     implementation(project(":core:resources"))
-    //implementation(project(":signer"))
+    // implementation(project(":signer"))
 
     // Lokale Bibliotheken aus dem libs-Ordner (z.B. xml.jar)
-    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    // implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 
     // DataStore für Konfigurationen (LogConfig, Workspace)
     implementation(libs.androidx.datastore.preferences)
@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // Zipalign für APK-Bauprozesse
-    //implementation("com.github.iyxan23:zipalign-java:1.2.2")
+    // implementation("com.github.iyxan23:zipalign-java:1.2.2")
 
     // Standard-Bibliotheken
     implementation(libs.androidx.core.ktx)
