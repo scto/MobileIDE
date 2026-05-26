@@ -15,36 +15,45 @@ plugins {
 }
 
 subprojects {
+    // Ktfmt Konfiguration
     plugins.withId(rootProject.libs.plugins.ktfmt.get().pluginId) {
         configure<com.ncorti.ktfmt.gradle.KtfmtExtension> {
             kotlinLangStyle()
             maxWidth.set(120)
         }
     }
+
+    // Globale Dokka v2 Konfiguration
     plugins.withId("org.jetbrains.dokka") {
-        tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-            moduleName.set(project.name)
+        // Sicherstellen, dass das Mermaid-Plugin als Abhängigkeit verfügbar ist
+        dependencies {
+            dokkaPlugin("org.jetbrains.dokka:mermaid-plugin:0.6.0")
+        }
+
+        // Dokka Konfiguration für alle Subprojekte
+        configure<org.jetbrains.dokka.gradle.DokkaExtension> {
             dokkaSourceSets.configureEach {
+                moduleName.set(project.name)
                 skipEmptyPackages.set(true)
                 reportUndocumented.set(false)
                 skipDeprecated.set(false)
                 jdkVersion.set(17)
                 suppressInheritedMembers.set(false)
                 suppressObviousFunctions.set(false)
-                includes.from(
-                    "${rootDir}/app/dokka/module.md"
-                )
+                
+                // Pfad zur globalen module.md
+                includes.from("${rootDir}/module.md")
+                
                 sourceLink {
-                    localDirectory.set(
-                        file("src/main/java")
-                    )
-                    remoteUrl.set(
-                        uri(
-                            "https://github.com/scto/MobileIDE/tree/main/src/main/java"
-                        ).toURL()
-                    )
+                    localDirectory.set(file("src/main/java"))
+                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java").toURL())
                     remoteLineSuffix.set("#L")
                 }
+            }
+
+            // Typsichere Plugin-Konfiguration
+            pluginsConfiguration {
+                create("org.jetbrains.dokka.mermaid.MermaidPlugin")
             }
         }
     }

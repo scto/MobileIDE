@@ -59,13 +59,13 @@ graph LR
 # Documentation Generation
 
 Generate Markdown:
-
 ```bash
-./gradlew dokkaGfmMultiModule
+./gradlew :dokkaGenerateGfm
 ```
 
 Generate HTML:
-
 ```bash
-./gradlew dokkaHtmlMultiModule
+./gradlew :dokkaGenerateHtml
 ```
+
+---
