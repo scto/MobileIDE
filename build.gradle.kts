@@ -26,8 +26,8 @@ subprojects {
     plugins.withId("org.jetbrains.dokka") {
         // 1. Plugins als Dependency definieren
         dependencies {
-            //"dokkaPlugin"("org.jetbrains.dokka:mermaid-plugin:0.6.0")
-            "dokkaPlugin"(libs.dokka.mermaid)
+            "dokkaPlugin"("org.jetbrains.dokka:mermaid-plugin:0.6.0")
+            //"dokkaPlugin"(libs.dokka.mermaid)
         }
         
          // 2. Zentrale Konfiguration über die DokkaExtension
@@ -59,9 +59,11 @@ subprojects {
             }
 
             // 3. Plugin Konfiguration
+            /*
             pluginsConfiguration {
                 create("org.jetbrains.dokka.mermaid.MermaidPlugin")
             }
+            */
         }
     }
 }
