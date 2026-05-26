@@ -36,9 +36,10 @@ subprojects {
     // Globale Java Toolchain Lösung (Behebt den Compiler-Fehler)
     // Wir nutzen hier 'kotlinOptions' statt jvmToolchain, da dies
     // in eingeschränkten Umgebungen wie Android/Termux zuverlässiger ist.
+    // Globale Konfiguration der Kotlin Compiler-Optionen
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = "17"
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         }
     }
