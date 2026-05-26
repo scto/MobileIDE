@@ -32,15 +32,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import com.mobile.ide.R
-import com.mobile.ide.core.ui.theme.themeColors
-import com.mobile.ide.core.ui.theme.themeColors
 
 @Composable
 internal fun FeatureItem(icon: ImageVector, title: String, description: String) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Surface(modifier = Modifier.size(48.dp), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
@@ -54,14 +55,24 @@ internal fun FeatureItem(icon: ImageVector, title: String, description: String) 
 }
 
 @Composable
-internal fun PermissionCard(icon: ImageVector, title: String, description: String, isGranted: Boolean, onRequest: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+internal fun PermissionCard(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    isGranted: Boolean,
+    onRequest: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
         Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
-                tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (isGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -71,7 +82,11 @@ internal fun PermissionCard(icon: ImageVector, title: String, description: Strin
             if (!isGranted) {
                 TextButton(onClick = onRequest) { Text(stringResource(R.string.welcome_grant)) }
             } else {
-                Icon(imageVector = Icons.Default.CheckCircle, contentDescription = stringResource(R.string.welcome_granted), tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = stringResource(R.string.welcome_granted),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }
@@ -79,86 +94,220 @@ internal fun PermissionCard(icon: ImageVector, title: String, description: Strin
 
 @Composable
 internal fun ThemePreviewCard(theme: ThemeColor, isSelected: Boolean, onClick: () -> Unit) {
-    val scale by animateFloatAsState(if (isSelected) 1.05f else 1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy), label = "")
+    val scale by
+        animateFloatAsState(
+            if (isSelected) 1.05f else 1f,
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+            label = "",
+        )
     Column(modifier = Modifier.width(100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Surface(
             onClick = onClick,
-            modifier = Modifier.size(100.dp, 140.dp).graphicsLayer { scaleX = scale; scaleY = scale },
+            modifier =
+                Modifier.size(100.dp, 140.dp).graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
             shape = RoundedCornerShape(16.dp),
             color = theme.backgroundColor,
             shadowElevation = if (isSelected) 8.dp else 2.dp,
-            border = if (isSelected) BorderStroke(3.dp, SolidColor(theme.primaryColor)) else null
+            border = if (isSelected) BorderStroke(3.dp, SolidColor(theme.primaryColor)) else null,
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth().height(18.dp).clip(RoundedCornerShape(5.dp)).background(theme.surfaceColor).padding(horizontal = 5.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(theme.primaryColor))
+                    Row(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .height(18.dp)
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(theme.surfaceColor)
+                                .padding(horizontal = 5.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier =
+                                Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(theme.primaryColor)
+                        )
                         Spacer(Modifier.width(3.dp))
-                        Box(modifier = Modifier.width(20.dp).height(5.dp).clip(RoundedCornerShape(2.dp)).background(theme.primaryColor.copy(alpha = 0.6f)))
+                        Box(
+                            modifier =
+                                Modifier.width(20.dp)
+                                    .height(5.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(theme.primaryColor.copy(alpha = 0.6f))
+                        )
                         Spacer(Modifier.weight(1f))
                         Box(modifier = Modifier.size(5.dp).clip(RoundedCornerShape(2.dp)).background(theme.accentColor))
                     }
                     Spacer(Modifier.height(6.dp))
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.width(16.dp).height(60.dp).clip(RoundedCornerShape(4.dp)).background(theme.surfaceColor).padding(3.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            repeat(4) { Box(modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(1.dp)).background(theme.primaryColor.copy(alpha = 0.6f))) }
+                        Column(
+                            modifier =
+                                Modifier.width(16.dp)
+                                    .height(60.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(theme.surfaceColor)
+                                    .padding(3.dp),
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                        ) {
+                            repeat(4) {
+                                Box(
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .height(4.dp)
+                                            .clip(RoundedCornerShape(1.dp))
+                                            .background(theme.primaryColor.copy(alpha = 0.6f))
+                                )
+                            }
                         }
                         Spacer(Modifier.width(4.dp))
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            repeat(5) { index -> Box(modifier = Modifier.width((20 + index * 4).dp).height(4.dp).clip(RoundedCornerShape(1.dp)).background(if (index % 2 == 0) theme.primaryColor.copy(alpha = 0.7f) else theme.accentColor.copy(alpha = 0.7f))) }
+                            repeat(5) { index ->
+                                Box(
+                                    modifier =
+                                        Modifier.width((20 + index * 4).dp)
+                                            .height(4.dp)
+                                            .clip(RoundedCornerShape(1.dp))
+                                            .background(
+                                                if (index % 2 == 0) theme.primaryColor.copy(alpha = 0.7f)
+                                                else theme.accentColor.copy(alpha = 0.7f)
+                                            )
+                                )
+                            }
                         }
                     }
                     Spacer(Modifier.weight(1f))
-                    Box(modifier = Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(4.dp)).background(theme.surfaceColor).padding(horizontal = 4.dp, vertical = 2.dp)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(4.dp).clip(RoundedCornerShape(1.dp)).background(theme.primaryColor))
-                            Box(modifier = Modifier.width(15.dp).height(3.dp).clip(RoundedCornerShape(1.dp)).background(theme.accentColor.copy(alpha = 0.6f)))
+                    Box(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .height(14.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(theme.surfaceColor)
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(3.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier =
+                                    Modifier.size(4.dp).clip(RoundedCornerShape(1.dp)).background(theme.primaryColor)
+                            )
+                            Box(
+                                modifier =
+                                    Modifier.width(15.dp)
+                                        .height(3.dp)
+                                        .clip(RoundedCornerShape(1.dp))
+                                        .background(theme.accentColor.copy(alpha = 0.6f))
+                            )
                             Spacer(Modifier.weight(1f))
-                            Box(modifier = Modifier.width(10.dp).height(3.dp).clip(RoundedCornerShape(1.dp)).background(theme.primaryColor.copy(alpha = 0.5f)))
+                            Box(
+                                modifier =
+                                    Modifier.width(10.dp)
+                                        .height(3.dp)
+                                        .clip(RoundedCornerShape(1.dp))
+                                        .background(theme.primaryColor.copy(alpha = 0.5f))
+                            )
                         }
                     }
                 }
                 if (isSelected) {
-                    Box(modifier = Modifier.align(Alignment.TopEnd).padding(6.dp).size(24.dp).clip(CircleShape).background(theme.primaryColor), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, stringResource(R.string.welcome_selected), tint = Color.White, modifier = Modifier.size(16.dp))
+                    Box(
+                        modifier =
+                            Modifier.align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(theme.primaryColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Default.Check,
+                            stringResource(R.string.welcome_selected),
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp),
+                        )
                     }
                 }
             }
         }
         Spacer(Modifier.height(6.dp))
-        Text(theme.name, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, maxLines = 1)
+        Text(
+            theme.name,
+            fontSize = 12.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+        )
     }
 }
 
 @Composable
 internal fun CustomThemeCard(isSelected: Boolean, onClick: () -> Unit) {
-    val scale by animateFloatAsState(if (isSelected) 1.05f else 1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy), label = "")
+    val scale by
+        animateFloatAsState(
+            if (isSelected) 1.05f else 1f,
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+            label = "",
+        )
     Column(modifier = Modifier.width(100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Surface(
             onClick = onClick,
-            modifier = Modifier.size(100.dp, 140.dp).graphicsLayer { scaleX = scale; scaleY = scale },
+            modifier =
+                Modifier.size(100.dp, 140.dp).graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,
             shadowElevation = if (isSelected) 8.dp else 2.dp,
-            border = if (isSelected) BorderStroke(3.dp, SolidColor(MaterialTheme.colorScheme.primary)) else null
+            border = if (isSelected) BorderStroke(3.dp, SolidColor(MaterialTheme.colorScheme.primary)) else null,
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Palette, stringResource(R.string.settings_custom_color_label), modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.Palette,
+                            stringResource(R.string.settings_custom_color_label),
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
                         Spacer(Modifier.height(6.dp))
-                        Text(stringResource(R.string.settings_custom_color_label), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Text(
+                            stringResource(R.string.settings_custom_color_label),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
                     }
                 }
                 if (isSelected) {
-                    Box(modifier = Modifier.align(Alignment.TopEnd).padding(6.dp).size(24.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, stringResource(R.string.welcome_selected), tint = Color.White, modifier = Modifier.size(16.dp))
+                    Box(
+                        modifier =
+                            Modifier.align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Default.Check,
+                            stringResource(R.string.welcome_selected),
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp),
+                        )
                     }
                 }
             }
         }
         Spacer(Modifier.height(6.dp))
-        Text(stringResource(R.string.welcome_custom_color), fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, maxLines = 1)
+        Text(
+            stringResource(R.string.welcome_custom_color),
+            fontSize = 12.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+        )
     }
 }
 
@@ -168,24 +317,46 @@ internal fun BottomNavigation(currentStep: WelcomeStep, onBack: () -> Unit, onNe
         StepIndicator(currentStep, modifier = Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(24.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AnimatedVisibility(currentStep != WelcomeStep.INTRO, enter = fadeIn() + expandHorizontally(), exit = fadeOut() + shrinkHorizontally()) {
-                OutlinedButton(onClick = onBack, modifier = Modifier.weight(1f).height(56.dp), shape = RoundedCornerShape(16.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.welcome_back), modifier = Modifier.size(20.dp))
+            AnimatedVisibility(
+                currentStep != WelcomeStep.INTRO,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally(),
+            ) {
+                OutlinedButton(
+                    onClick = onBack,
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        stringResource(R.string.welcome_back),
+                        modifier = Modifier.size(20.dp),
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.welcome_back), fontSize = 16.sp)
                 }
             }
-            Button(onClick = onNext, modifier = Modifier.weight(if (currentStep == WelcomeStep.INTRO) 1f else 1f).height(56.dp), shape = RoundedCornerShape(16.dp)) {
+            Button(
+                onClick = onNext,
+                modifier = Modifier.weight(if (currentStep == WelcomeStep.INTRO) 1f else 1f).height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+            ) {
                 Text(
-                    text = when (currentStep) {
-                        WelcomeStep.INTRO -> stringResource(R.string.welcome_start)
-                        WelcomeStep.PERMISSIONS -> stringResource(R.string.welcome_next)
-                        WelcomeStep.THEME_SETUP -> stringResource(R.string.welcome_finish)
-                    },
-                    fontSize = 16.sp
+                    text =
+                        when (currentStep) {
+                            WelcomeStep.INTRO -> stringResource(R.string.welcome_start)
+                            WelcomeStep.PERMISSIONS -> stringResource(R.string.welcome_next)
+                            WelcomeStep.THEME_SETUP -> stringResource(R.string.welcome_finish)
+                        },
+                    fontSize = 16.sp,
                 )
                 Spacer(Modifier.width(8.dp))
-                Icon(if (currentStep == WelcomeStep.THEME_SETUP) Icons.Default.Check else Icons.AutoMirrored.Filled.ArrowForward, null, modifier = Modifier.size(20.dp))
+                Icon(
+                    if (currentStep == WelcomeStep.THEME_SETUP) Icons.Default.Check
+                    else Icons.AutoMirrored.Filled.ArrowForward,
+                    null,
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
@@ -197,19 +368,25 @@ internal fun StepIndicator(currentStep: WelcomeStep, modifier: Modifier = Modifi
         val entries = remember { WelcomeStep.entries }
         entries.forEach { step ->
             val isActive = step == currentStep
-            val targetWidth by animateDpAsState(if (isActive) 32.dp else 8.dp, spring(dampingRatio = Spring.DampingRatioMediumBouncy), label = "")
+            val targetWidth by
+                animateDpAsState(
+                    if (isActive) 32.dp else 8.dp,
+                    spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                    label = "",
+                )
             Box(
-                modifier = Modifier
-                    .width(targetWidth)
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(
-                        when {
-                            isActive -> MaterialTheme.colorScheme.primary
-                            step.ordinal < currentStep.ordinal -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            else -> MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    )
+                modifier =
+                    Modifier.width(targetWidth)
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            when {
+                                isActive -> MaterialTheme.colorScheme.primary
+                                step.ordinal < currentStep.ordinal ->
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        )
             )
         }
     }

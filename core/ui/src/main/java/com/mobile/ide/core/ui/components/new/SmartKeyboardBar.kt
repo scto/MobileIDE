@@ -23,78 +23,85 @@ import com.mobileide.app.ui.theme.*
 
 data class SymbolKey(val label: String, val insert: String = label)
 
-val SYMBOL_ROWS = listOf(
-    // Row 1 – brackets & operators
+val SYMBOL_ROWS =
     listOf(
-        SymbolKey("Tab", "    "),
-        SymbolKey("{"), SymbolKey("}"),
-        SymbolKey("("), SymbolKey(")"),
-        SymbolKey("["), SymbolKey("]"),
-        SymbolKey("<"), SymbolKey(">"),
-        SymbolKey(";"), SymbolKey(","),
-        SymbolKey("."), SymbolKey(":"),
-    ),
-    // Row 2 – common Kotlin ops
-    listOf(
-        SymbolKey("="), SymbolKey("!="),
-        SymbolKey("=="), SymbolKey("->"),
-        SymbolKey("=>", "=>"), SymbolKey("?."),
-        SymbolKey("!!"), SymbolKey("?:"),
-        SymbolKey("&&"), SymbolKey("||"),
-        SymbolKey("!"), SymbolKey("@"),
-        SymbolKey("#"), SymbolKey("$"),
-    ),
-    // Row 3 – snippets
-    listOf(
-        SymbolKey("fun", "fun name() {\n    \n}"),
-        SymbolKey("val", "val name = "),
-        SymbolKey("var", "var name = "),
-        SymbolKey("if", "if (condition) {\n    \n}"),
-        SymbolKey("for", "for (item in list) {\n    \n}"),
-        SymbolKey("when", "when (value) {\n    else -> {}\n}"),
-        SymbolKey("class", "class Name(\n    \n) {\n    \n}"),
-        SymbolKey("@Comp", "@Composable\nfun Name() {\n    \n}"),
-        SymbolKey("λ", "{ it }"),
-        SymbolKey("TODO", "TODO(\"Not yet implemented\")"),
+        // Row 1 – brackets & operators
+        listOf(
+            SymbolKey("Tab", "    "),
+            SymbolKey("{"),
+            SymbolKey("}"),
+            SymbolKey("("),
+            SymbolKey(")"),
+            SymbolKey("["),
+            SymbolKey("]"),
+            SymbolKey("<"),
+            SymbolKey(">"),
+            SymbolKey(";"),
+            SymbolKey(","),
+            SymbolKey("."),
+            SymbolKey(":"),
+        ),
+        // Row 2 – common Kotlin ops
+        listOf(
+            SymbolKey("="),
+            SymbolKey("!="),
+            SymbolKey("=="),
+            SymbolKey("->"),
+            SymbolKey("=>", "=>"),
+            SymbolKey("?."),
+            SymbolKey("!!"),
+            SymbolKey("?:"),
+            SymbolKey("&&"),
+            SymbolKey("||"),
+            SymbolKey("!"),
+            SymbolKey("@"),
+            SymbolKey("#"),
+            SymbolKey("$"),
+        ),
+        // Row 3 – snippets
+        listOf(
+            SymbolKey("fun", "fun name() {\n    \n}"),
+            SymbolKey("val", "val name = "),
+            SymbolKey("var", "var name = "),
+            SymbolKey("if", "if (condition) {\n    \n}"),
+            SymbolKey("for", "for (item in list) {\n    \n}"),
+            SymbolKey("when", "when (value) {\n    else -> {}\n}"),
+            SymbolKey("class", "class Name(\n    \n) {\n    \n}"),
+            SymbolKey("@Comp", "@Composable\nfun Name() {\n    \n}"),
+            SymbolKey("λ", "{ it }"),
+            SymbolKey("TODO", "TODO(\"Not yet implemented\")"),
+        ),
     )
-)
 
 @Composable
 fun SmartKeyboardBar(
     textValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var selectedRow by remember { mutableStateOf(0) }
 
     Column(modifier = modifier.background(IDESurfaceVariant)) {
 
         // Row selector tabs
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(IDESurface),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().background(IDESurface), verticalAlignment = Alignment.CenterVertically) {
             listOf("{ }", "ops", "snip").forEachIndexed { index, label ->
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { selectedRow = index }
-                        .background(
-                            if (selectedRow == index) IDEPrimary.copy(alpha = 0.2f)
-                            else IDESurface
-                        )
-                        .padding(vertical = 4.dp),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier.weight(1f)
+                            .clickable { selectedRow = index }
+                            .background(if (selectedRow == index) IDEPrimary.copy(alpha = 0.2f) else IDESurface)
+                            .padding(vertical = 4.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         label,
-                        style = TextStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 11.sp,
-                            color = if (selectedRow == index) IDEPrimary else IDEOnSurface
-                        )
+                        style =
+                            TextStyle(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                color = if (selectedRow == index) IDEPrimary else IDEOnSurface,
+                            ),
                     )
                 }
             }
@@ -110,12 +117,12 @@ fun SmartKeyboardBar(
 
         // Symbol keys
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             SYMBOL_ROWS[selectedRow].forEach { key ->
                 SymbolKeyButton(key) {
@@ -128,35 +135,33 @@ fun SmartKeyboardBar(
 }
 
 private fun insertText(current: TextFieldValue, text: String): TextFieldValue {
-    val sel    = current.selection
+    val sel = current.selection
     val before = current.text.substring(0, sel.start)
-    val after  = current.text.substring(sel.end)
+    val after = current.text.substring(sel.end)
     val newText = before + text + after
     val newCursor = sel.start + text.length
-    return current.copy(
-        text = newText,
-        selection = androidx.compose.ui.text.TextRange(newCursor)
-    )
+    return current.copy(text = newText, selection = androidx.compose.ui.text.TextRange(newCursor))
 }
 
 @Composable
 private fun SymbolKeyButton(key: SymbolKey, onClick: () -> Unit) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(IDESurface)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier.clip(RoundedCornerShape(6.dp))
+                .background(IDESurface)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             key.label,
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = IDEOnBackground
-            )
+            style =
+                TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = IDEOnBackground,
+                ),
         )
     }
 }

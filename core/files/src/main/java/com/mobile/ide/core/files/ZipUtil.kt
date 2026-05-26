@@ -1,23 +1,16 @@
 // Copyright 2025 Thomas Schmid
 package com.mobile.ide.core.files
 
-import java.io.IOException
 import java.net.URI
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributeView
-import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.util.zip.ZipException
 
-import com.mobile.ide.core.files.R
-import com.mobile.ide.core.files.File
-import com.mobile.ide.core.resources.Res
-
 /**
- * Hilfsprogramm für ZIP-Operationen, angepasst für MobileIDE.
- * Ermöglicht die Arbeit mit ZIP-Dateien als virtuelle Dateisysteme.
+ * Hilfsprogramm für ZIP-Operationen, angepasst für MobileIDE. Ermöglicht die Arbeit mit ZIP-Dateien als virtuelle
+ * Dateisysteme.
  */
-
 fun File.zipFileSystem(create: Boolean = false): FileSystem {
     val env = mapOf("create" to create.toString())
     val uri = URI.create("jar:" + this.javaPath.toUri().toString())
@@ -34,9 +27,7 @@ fun <T> File.withZipFileSystem(create: Boolean = false, action: (FileSystem) -> 
 
 fun <T> File.withZipFileSystem(action: (FileSystem) -> T): T = this.withZipFileSystem(false, action)
 
-/**
- * Entpackt das ZIP-Archiv in ein Zielverzeichnis.
- */
+/** Entpackt das ZIP-Archiv in ein Zielverzeichnis. */
 fun File.unzipTo(destination: File, resetTimeAttributes: Boolean = false) {
     this.withZipFileSystem { zipFs ->
         val sourcePath = zipFs.getPath("/")
@@ -44,9 +35,7 @@ fun File.unzipTo(destination: File, resetTimeAttributes: Boolean = false) {
     }
 }
 
-/**
- * Packt ein Verzeichnis rekursiv in eine neue ZIP-Datei.
- */
+/** Packt ein Verzeichnis rekursiv in eine neue ZIP-Datei. */
 fun File.zipTo(destination: File) {
     if (destination.exists) destination.delete()
     destination.withZipFileSystem(create = true) { zipFs ->
@@ -70,7 +59,7 @@ private fun recursiveCopyTo(sourcePath: Path, destination: File, resetTimeAttrib
         }
 
         if (newPath == newPath.root) return@forEach
-        
+
         if (Files.isDirectory(oldPath)) {
             if (!Files.exists(newPath)) Files.createDirectories(newPath)
         } else {
@@ -87,7 +76,8 @@ private fun recursiveCopyTo(sourcePath: Path, destination: File, resetTimeAttrib
 // Erweiterungen für direkten Zugriff
 fun File.isZipFile(): Boolean {
     return try {
-        FileSystems.newFileSystem(URI.create("jar:" + this.javaPath.toUri().toString()), mapOf("create" to "false")).use { true }
+        FileSystems.newFileSystem(URI.create("jar:" + this.javaPath.toUri().toString()), mapOf("create" to "false"))
+            .use { true }
     } catch (e: Exception) {
         false
     }

@@ -18,12 +18,9 @@ import com.mobile.ide.ui.editor.viewmodel.EditorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorThemeTestScreen(
-    viewModel: EditorViewModel,
-    onBack: () -> Unit = {}
-) {
+fun EditorThemeTestScreen(viewModel: EditorViewModel, onBack: () -> Unit = {}) {
     val isDark = isSystemInDarkTheme()
-    
+
     val themeColors = remember {
         listOf(
             "Material Purple" to Color(0xFF6750A4),
@@ -35,91 +32,75 @@ fun EditorThemeTestScreen(
             "Teal" to Color(0xFF009688),
             "Indigo" to Color(0xFF3F51B5),
             "Cyan" to Color(0xFF00BCD4),
-            "Lime" to Color(0xFFCDDC39)
+            "Lime" to Color(0xFFCDDC39),
         )
     }
-    
+
     var selectedColorIndex by remember { mutableStateOf(0) }
     val currentColor = themeColors[selectedColorIndex].second
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_theme_test)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text(stringResource(R.string.action_back_arrow))
-                    }
-                }
+                navigationIcon = { IconButton(onClick = onBack) { Text(stringResource(R.string.action_back_arrow)) } },
             )
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(stringResource(R.string.title_current_theme), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(stringResource(R.string.mode_format, if (isDark) stringResource(R.string.mode_dark) else stringResource(R.string.mode_light)))
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .background(currentColor, MaterialTheme.shapes.small)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            stringResource(
+                                R.string.mode_format,
+                                if (isDark) stringResource(R.string.mode_dark) else stringResource(R.string.mode_light),
+                            )
                         )
+                        Box(modifier = Modifier.size(24.dp).background(currentColor, MaterialTheme.shapes.small))
                     }
                 }
             }
-            
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(stringResource(R.string.title_preset_themes), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     themeColors.forEachIndexed { index, (name, color) ->
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .background(color, MaterialTheme.shapes.small)
-                                )
+                                Box(modifier = Modifier.size(32.dp).background(color, MaterialTheme.shapes.small))
                                 Text(name)
                             }
-                            
+
                             RadioButton(
                                 selected = selectedColorIndex == index,
                                 onClick = {
                                     selectedColorIndex = index
                                     viewModel.updateEditorTheme(color, isDark)
-                                }
+                                },
                             )
                         }
                     }
                 }
             }
-            
+
             Button(
                 onClick = { viewModel.updateEditorTheme(currentColor, isDark) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.action_apply_theme))
             }

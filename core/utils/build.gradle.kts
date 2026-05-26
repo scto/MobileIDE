@@ -23,7 +23,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    //kotlin { jvmToolchain(libs.versions.java.get()) }
+    // kotlin { jvmToolchain(libs.versions.java.get()) }
     kotlin { jvmToolchain(17) }
 }
 
@@ -31,14 +31,14 @@ dependencies {
     // Interne Modul-Abhängigkeiten
     implementation(project(":core:resources"))
     implementation(project(":signer"))
-    
+
     // Lokale Bibliotheken aus dem libs-Ordner (z.B. xml.jar)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 
     // DataStore für Konfigurationen (LogConfig, Workspace)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.core)
-    
+
     // Jetpack Compose Unterstützung
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -48,13 +48,13 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     // Koroutinen für asynchrone Aufgaben (Workspace, Log-Writing)
     implementation(libs.kotlinx.coroutines.android)
-    
+
     // Zipalign für APK-Bauprozesse
     implementation("com.github.iyxan23:zipalign-java:1.2.2")
-    
+
     // Standard-Bibliotheken
     implementation(libs.androidx.core.ktx)
-    
+
     // Hilt Abhängigkeiten
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

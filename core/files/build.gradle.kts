@@ -16,21 +16,17 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
 
         // Hinzugefügt für Compose-Support
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
     }
 
-    buildFeatures {
-        compose = true
-    }
+    buildFeatures { compose = true }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    //kotlin { jvmToolchain(libs.versions.java.get()) }
+    // kotlin { jvmToolchain(libs.versions.java.get()) }
     kotlin { jvmToolchain(17) }
 }
 
@@ -48,7 +44,4 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     // Notwendig für Icons wie Icons.Default.ChevronRight etc.
     implementation(libs.androidx.compose.material.icons.extended)
-    
-
-    
 }

@@ -20,12 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-import com.mobile.ide.R
-import com.mobile.ide.core.resources.Res
-import com.mobile.ide.core.utils.*
 import com.mobile.ide.core.ui.components.*
 import com.mobile.ide.core.ui.theme.*
+import com.mobile.ide.core.utils.*
 import com.mobile.ide.ui.editor.components.TextMateInitializer
 import com.mobile.ide.ui.welcome.WelcomeScreen
 
@@ -33,19 +30,21 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "MainActivity"
     }
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge(
-            statusBarStyle = androidx.activity.SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            ),
-            navigationBarStyle = androidx.activity.SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            )
+            statusBarStyle =
+                androidx.activity.SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ),
+            navigationBarStyle =
+                androidx.activity.SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ),
         )
 
         window.isNavigationBarContrastEnforced = false
@@ -62,17 +61,12 @@ class MainActivity : ComponentActivity() {
             val themeState by themeViewModel.themeState.collectAsState()
 
             val logConfigRepository = remember { LogConfigRepository(context) }
-            val logConfigState by logConfigRepository.logConfigFlow.collectAsState(
-                initial = LogConfigState()
-            )
-            
+            val logConfigState by logConfigRepository.logConfigFlow.collectAsState(initial = LogConfigState())
+
             LaunchedEffect(logConfigState) {
                 if (logConfigState.isLoaded) {
                     LogCatcher.updateConfig(logConfigState)
-                    LogCatcher.i(
-                        TAG,
-                        context.getString(R.string.log_config_updated, logConfigState.isLogEnabled)
-                    )
+                    LogCatcher.i(TAG, context.getString(R.string.log_config_updated, logConfigState.isLogEnabled))
                 }
             }
 
@@ -92,23 +86,23 @@ class MainActivity : ComponentActivity() {
                             label = "ScreenTransition",
                             transitionSpec = {
                                 fadeIn(animationSpec = tween(durationMillis = 500)) togetherWith
-                                fadeOut(animationSpec = tween(durationMillis = 500))
-                            }
+                                    fadeOut(animationSpec = tween(durationMillis = 500))
+                            },
                         ) { isWelcomeTarget ->
                             if (isWelcomeTarget) {
                                 WelcomeScreen(
                                     themeViewModel = themeViewModel,
-                                    onWelcomeFinished = { 
+                                    onWelcomeFinished = {
                                         WelcomePreferences.setWelcomeCompleted(context)
                                         LogCatcher.i(TAG, context.getString(R.string.log_welcome_completed))
-                                        showWelcomeScreen = false 
-                                    }
+                                        showWelcomeScreen = false
+                                    },
                                 )
                             } else {
                                 App(
                                     themeViewModel = themeViewModel,
                                     logConfigRepository = logConfigRepository,
-                                    logConfigState = logConfigState
+                                    logConfigState = logConfigState,
                                 )
                             }
                         }
