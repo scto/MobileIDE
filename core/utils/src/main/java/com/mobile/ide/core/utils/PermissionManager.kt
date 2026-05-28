@@ -14,7 +14,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+
 import com.mobile.ide.core.utils.*
+import com.mobile.ide.core.resources.R 
+import com.mobile.ide.core.resources.Res
 
 object PermissionManager {
     fun hasAllFilesAccess(): Boolean {

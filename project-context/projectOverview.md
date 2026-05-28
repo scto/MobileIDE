@@ -1,4 +1,4 @@
-## Projektziele (McsIDE - Mobile-Code-Studio-IDE)
+## Projektziele (MobileIDE)
  * **Hauptziel:** Entwicklung einer vollwertigen, mobilen integrierten Entwicklungsumgebung (IDE) für Android-Geräte.
  * **Sekundärziele:** Entwicklern ermöglichen, Android-Projekte direkt auf dem Smartphone oder Tablet via JGit zu klonen, mit TextMate-Syntax-Highlighting zu bearbeiten und lokal (via simuliertem Terminal und Proot) zu kompilieren.
 ## Erfolgsmetriken

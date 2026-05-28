@@ -20,12 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+
 import com.mobile.ide.core.ui.components.*
 import com.mobile.ide.core.ui.theme.*
 import com.mobile.ide.core.utils.*
 import com.mobile.ide.ui.editor.components.TextMateInitializer
 import com.mobile.ide.ui.welcome.WelcomeScreen
 
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "MainActivity"

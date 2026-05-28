@@ -12,8 +12,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+
+import javax.inject.Inject
+import javax.inject.Singleton
+
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+import com.mobile.ide.core.utils.LogCatcher
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mobileide_theme_settings")
 
@@ -26,7 +32,11 @@ data class ThemeState(
     val isLoaded: Boolean = false,
 )
 
-class ThemeDataStoreRepository(private val context: Context) {
+@Singleton
+class ThemeDataStoreRepository @Inject constructor(
+    private val context: Context,
+    private val themeDataStore: ThemeDataStore
+) {
     private object PreferencesKeys {
         val SELECTED_MODE = intPreferencesKey("selected_mode")
         val SELECTED_THEME = intPreferencesKey("selected_theme")

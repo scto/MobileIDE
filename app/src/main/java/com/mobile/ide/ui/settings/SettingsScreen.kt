@@ -34,7 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mobile.ide.R
+
+import com.mobile.ide.core.resources.R
+import com.mobile.ide.core.resources.Res
 import com.mobile.ide.core.ui.components.*
 import com.mobile.ide.core.ui.theme.*
 import com.mobile.ide.core.utils.*

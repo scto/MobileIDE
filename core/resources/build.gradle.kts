@@ -19,6 +19,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
+    
+    sourceSets {
+        getByName("main") {
+            // Dies stellt sicher, dass nur korrekte Ordner gescannt werden
+            res.srcDirs("src/main/res")
+        }
+    }
 }
 
 dependencies {

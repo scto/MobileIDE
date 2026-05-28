@@ -1,6 +1,9 @@
 // Copyright 2025 Thomas Schmid
 package com.mobile.ide.ui.editor.viewmodel
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.getValue

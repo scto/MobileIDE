@@ -40,10 +40,15 @@ subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            // HIER die Sprachversion explizit auf 2.0 oder höher setzen
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            
             freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         }
     }
     
+    // Globale Konfiguration der Dokka Konfiguration 
     plugins.withId("org.jetbrains.dokka") {
         // 1. Plugins als Dependency definieren
         dependencies {

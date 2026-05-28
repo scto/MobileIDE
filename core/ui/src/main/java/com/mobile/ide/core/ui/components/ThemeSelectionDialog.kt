@@ -16,7 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.mobile.ide.R
+
+import com.mobile.ide.core.resources.R
+import com.mobile.ide.core.resources.Res
+import com.mobile.ide.core.ui.components.ColorPickerDialog
+import com.mobile.ide.core.ui.components.CustomThemeCard
+import com.mobile.ide.core.ui.components.ThemePreviewCard
 import com.mobile.ide.core.ui.theme.themeColors
 import com.mobile.ide.core.utils.LogCatcher
 
@@ -108,7 +113,7 @@ fun ThemeSelectionDialog(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     themeColors.forEachIndexed { index, theme ->
-                        com.mobile.ide.ui.welcome.ThemePreviewCard(
+                        com.mobile.ide.core.ui.components.ThemePreviewCard(
                             theme = theme,
                             isSelected = selectedThemeIndex == index,
                             onClick = {
@@ -117,7 +122,7 @@ fun ThemeSelectionDialog(
                             },
                         )
                     }
-                    com.mobile.ide.ui.welcome.CustomThemeCard(
+                    com.mobile.ide.core.ui.components.CustomThemeCard(
                         isSelected = selectedThemeIndex == themeColors.size,
                         onClick = {
                             selectedThemeIndex = themeColors.size

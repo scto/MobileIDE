@@ -10,10 +10,12 @@ versionName    = "0.0.1"
 
 # ── Build toolchain ───────────────────────────────────────────────────────────
 agp    = "8.11.2"
-kotlin = "2.2.0"
+kotlin = "2.2.20"
+#kotlin = "2.2.0"
 java = "17"
 
-ksp = "2.2.0-2.0.2"
+ksp = "2.2.20-2.0.2" 
+#ksp = "2.2.0-2.0.2"
 #ksp = "2.2.0-1.0.26"
 ktfmt = "0.25.0"
 
@@ -47,7 +49,8 @@ material3 = "1.4.0"
 
 lifecycleRuntimeKtx = "2.10.0"
 
-hilt = "2.51.1"
+#hilt = "2.51.1"
+hilt = "2.57"
 androidxHiltNavigationCompose = "1.2.0"
 
 coroutines = "1.10.2"
