@@ -12,10 +12,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
 import com.mobile.ide.core.projects.*
 import com.mobile.ide.core.ui.components.*
 import com.mobile.ide.core.ui.theme.*
 import com.mobile.ide.core.utils.*
+import com.mobile.ide.core.utils.LogConfigRepository
+import com.mobile.ide.core.utils.LogConfigState
+import com.mobile.ide.core.utils.WorkspaceManager
 import com.mobile.ide.ui.editor.CodeEditScreen
 import com.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import com.mobile.ide.ui.preview.WebPreviewScreen
@@ -24,6 +28,7 @@ import com.mobile.ide.ui.projects.ProjectListScreen
 import com.mobile.ide.ui.projects.WorkspaceSelectionScreen
 import com.mobile.ide.ui.settings.AboutScreen
 import com.mobile.ide.ui.settings.SettingsScreen
+
 import kotlinx.coroutines.launch
 
 @Composable

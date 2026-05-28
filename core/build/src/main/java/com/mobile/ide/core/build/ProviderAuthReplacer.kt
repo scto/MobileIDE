@@ -237,6 +237,21 @@ object ProviderAuthReplacer {
 
     fun fixProviderConflicts(manifestFile: File, newPackageName: String) {
         try {
+            LogCatcher.i("ProviderAuthReplacer", "Checking Provider conflicts...")
+            val authorities = scanProviderAuthorities(manifestFile)
+            val replacements = authorities.filter { it.contains("com.web.webapp") }
+                .associateWith { it.replace("com.web.webapp", newPackageName) }
+            
+            if (replacements.isNotEmpty()) {
+                batchReplaceStringInAXML(manifestFile, replacements)
+            }
+        } catch (e: Exception) {
+            LogCatcher.e("ProviderAuthReplacer", "Fix failed", e)
+        }
+    }
+    /*
+    fun fixProviderConflicts(manifestFile: File, newPackageName: String) {
+        try {
             LogCatcher.i("ProviderAuthReplacer", "Starting to check for Provider conflicts...")
             val authorities = scanProviderAuthorities(manifestFile)
             val replacements = mutableMapOf<String, String>()
@@ -255,4 +270,5 @@ object ProviderAuthReplacer {
             LogCatcher.e("ProviderAuthReplacer", "Failed to fix Provider conflicts", e)
         }
     }
+    */
 }

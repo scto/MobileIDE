@@ -1,19 +1,29 @@
 // Copyright 2025 Thomas Schmid
 package com.mobile.ide.core.ui.theme
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import android.content.Context
 import android.os.Build
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+
 import com.mobile.ide.core.utils.LogCatcher
+import com.mobile.ide.core.utils.LogConfigState
+import com.mobile.ide.core.utils.LogConfigRepository
+import com.mobile.ide.core.ui.theme.ThemeDataStoreRepository
+import com.mobile.ide.core.ui.theme.ThemeState
+
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ThemeViewModel(private val repository: ThemeDataStoreRepository) : ViewModel() {
+@HiltViewModel
+class ThemeViewModel @Inject constructor(private val repository: ThemeDataStoreRepository) : ViewModel() {
     companion object {
         private const val TAG = "ThemeViewModel"
     }

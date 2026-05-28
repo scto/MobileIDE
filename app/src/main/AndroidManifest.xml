@@ -61,7 +61,6 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.MobileIDE"
         android:requestLegacyExternalStorage="true"
-        android:enableOnBackInvokedCallback="true"
         tools:targetApi="36">
 
         <activity

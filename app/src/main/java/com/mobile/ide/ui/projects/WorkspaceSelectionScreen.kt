@@ -17,10 +17,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mobile.ide.R
+
+import com.mobile.ide.core.resources.R
+import com.mobile.ide.core.resources.Res
 import com.mobile.ide.core.ui.components.DirectorySelector
 import com.mobile.ide.core.utils.LogConfigRepository
 import com.mobile.ide.core.utils.WorkspaceManager
+
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

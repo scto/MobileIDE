@@ -19,21 +19,21 @@ android {
 }
 
 dependencies {
+    // Methode A: Falls sie als lokale .jar/.aar Dateien im 'libs' Ordner liegen:
+    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    implementation(files("libs/xml.jar"))
+
     // Interne Abhängigkeiten
     implementation(project(":signer"))
     implementation(project(":core:utils"))
 
     // --- Einbindung der Drittanbieter-Bibliotheken ---
 
-    // Methode A: Falls sie als lokale .jar/.aar Dateien im 'libs' Ordner liegen:
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
-    implementation(files("libs/xml.jar"))
-
     // Methode B: Falls 'ApkXmlEditor' ein eigenes Modul im Projekt ist (empfohlen für sauberere Struktur):
     // implementation(project(":libs:ApkXmlEditor"))
 
     // Methode C: Falls 'apksigner' über ein Repository kommt (hier als Beispiel):
-    // implementation("com.mcal:apksigner:1.0.0")
+    //implementation("com.mcal:apksigner:1.0.0")
 
     implementation("com.github.iyxan23:zipalign-java:1.2.2")
 

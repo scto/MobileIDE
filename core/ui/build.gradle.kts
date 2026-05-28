@@ -20,7 +20,8 @@ android {
 dependencies {
     // Projekt Abhängigkeiten
     implementation(project(":core:resources"))
-
+    implementation(project(":core:utils"))
+    
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)

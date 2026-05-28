@@ -16,7 +16,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+
 import com.mobile.ide.core.utils.LogCatcher
+import com.mobile.ide.core.ui.theme.ThemeState
+
 import kotlin.math.pow
 
 // ============================================================================
@@ -25,6 +28,25 @@ import kotlin.math.pow
 // ============================================================================
 // 1. 预设主题 (已修复 Scrim 缺失与卡片对比度问题)
 // ============================================================================
+
+val IDEBackground       = Color(0xFF1E1E2E)
+val IDESurface          = Color(0xFF2A2A3E)
+val IDESurfaceVariant   = Color(0xFF313145)
+val IDEPrimary          = Color(0xFF82AAFF)
+val IDESecondary        = Color(0xFFC3E88D)
+val IDETertiary         = Color(0xFFFF9CAC)
+val IDEOnBackground     = Color(0xFFCDD6F4)
+val IDEOnSurface        = Color(0xFFBAC2DE)
+val IDEOutline          = Color(0xFF45475A)
+
+val SyntaxKeyword       = Color(0xFFCBA6F7)
+val SyntaxString        = Color(0xFFA6E3A1)
+val SyntaxComment       = Color(0xFF6C7086)
+val SyntaxNumber        = Color(0xFFFAB387)
+val SyntaxFunction      = Color(0xFF89B4FA)
+val SyntaxAnnotation    = Color(0xFFF38BA8)
+val SyntaxType          = Color(0xFF89DCEB)
+val SyntaxPlain         = Color(0xFFCDD6F4)
 
 // 默认 Material 深色 (保留官方微调)
 private val DarkColorScheme =
