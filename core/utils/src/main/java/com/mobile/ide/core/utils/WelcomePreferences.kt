@@ -3,10 +3,8 @@ package com.mobile.ide.core.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-
+import com.mobile.ide.core.resources.R
 import com.mobile.ide.core.utils.*
-import com.mobile.ide.core.resources.R 
-import com.mobile.ide.core.resources.Res
 
 /** Utility class for managing welcome page display state */
 object WelcomePreferences {

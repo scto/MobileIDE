@@ -49,14 +49,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
 import com.mikepenz.aboutlibraries.util.withContext
-
 import com.mobile.ide.core.resources.R
-import com.mobile.ide.core.resources.Res
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
