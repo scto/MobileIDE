@@ -16,12 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-
 import com.mobile.ide.core.resources.R
-import com.mobile.ide.core.resources.Res
-import com.mobile.ide.core.ui.components.ColorPickerDialog
-import com.mobile.ide.core.ui.components.CustomThemeCard
-import com.mobile.ide.core.ui.components.ThemePreviewCard
 import com.mobile.ide.core.ui.theme.themeColors
 import com.mobile.ide.core.utils.LogCatcher
 

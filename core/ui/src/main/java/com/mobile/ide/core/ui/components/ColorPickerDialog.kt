@@ -35,12 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-
 import com.mobile.ide.core.resources.R
-import com.mobile.ide.core.resources.Res
-import com.mobile.ide.core.resources.drawables
-import com.mobile.ide.core.resources.strings
-
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

@@ -23,14 +23,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
-import com.mobile.ide.core.resources.R
 import com.mobile.ide.core.projects.ProjectTemplates
+import com.mobile.ide.core.resources.R
 import com.mobile.ide.core.utils.WorkspaceManager
-
 import java.io.File
 import java.util.Locale
-
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

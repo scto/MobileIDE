@@ -26,7 +26,7 @@ dependencies {
     // Projekt Abhängigkeiten
     implementation(project(":core:resources"))
     implementation(project(":core:utils"))
-    
+
     // Hilt Abhängigkeiten
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

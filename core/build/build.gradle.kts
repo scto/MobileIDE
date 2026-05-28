@@ -20,7 +20,7 @@ android {
 
 dependencies {
     // Methode A: Falls sie als lokale .jar/.aar Dateien im 'libs' Ordner liegen:
-    //implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    // implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation(files("libs/xml.jar"))
 
     // Interne Abhängigkeiten
@@ -33,7 +33,7 @@ dependencies {
     // implementation(project(":libs:ApkXmlEditor"))
 
     // Methode C: Falls 'apksigner' über ein Repository kommt (hier als Beispiel):
-    //implementation("com.mcal:apksigner:1.0.0")
+    // implementation("com.mcal:apksigner:1.0.0")
 
     implementation("com.github.iyxan23:zipalign-java:1.2.2")
 

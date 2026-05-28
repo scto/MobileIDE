@@ -32,11 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import com.mobile.ide.core.resources.R
-import com.mobile.ide.core.resources.Res
 import com.mobile.ide.core.ui.theme.ThemeColor
-import com.mobile.ide.core.ui.theme.themeColors
 import com.mobile.ide.core.ui.theme.WelcomeStep
 
 @Composable
@@ -373,23 +370,25 @@ internal fun StepIndicator(currentStep: WelcomeStep, modifier: Modifier = Modifi
         val entries = remember { WelcomeStep.entries }
         entries.forEach { step ->
             val isActive = step == currentStep
-            val targetWidth by animateDpAsState(
-                if (isActive) 32.dp else 8.dp,
-                spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-                label = "",
-            )
-            Box(
-                modifier = Modifier.width(targetWidth)
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(
-                    when {
-                        isActive -> MaterialTheme.colorScheme.primary
-                        step.ordinal < currentStep.ordinal ->
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    else -> MaterialTheme.colorScheme.surfaceVariant
-                    }
+            val targetWidth by
+                animateDpAsState(
+                    if (isActive) 32.dp else 8.dp,
+                    spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                    label = "",
                 )
+            Box(
+                modifier =
+                    Modifier.width(targetWidth)
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            when {
+                                isActive -> MaterialTheme.colorScheme.primary
+                                step.ordinal < currentStep.ordinal ->
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        )
             )
         }
     }
