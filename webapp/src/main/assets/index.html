@@ -1,290 +1,321 @@
+<!--
+  ~ WebIDE - A powerful IDE for Android web development.
+  ~ Copyright (C) 2025  如日中天  <3382198490@qq.com>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <!DOCTYPE html>
-<html lang="">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Android JS Bridge Pro</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>WebIDE 接口功能测试</title>
     <style>
-        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin: 5px; cursor: pointer; }
-        .btn:active { background: #0056b3; }
-        code { background: #eee; padding: 2px 5px; border-radius: 3px; }
-        #video-container { width: 100%; max-width: 400px; height: 300px; background: #000; margin: 10px auto; display: none; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #photo-preview { max-width: 100%; margin-top: 10px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 250px; /* 为底部日志留空间 */
+        }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-top: 20px; }
+        h4 { margin: 10px 0 5px 0; color: #555; }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* 按钮网格布局 */
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:active { background-color: #1f618d; transform: translateY(1px); }
+        button.danger { background-color: #e74c3c; }
+        button.success { background-color: #27ae60; }
+        button.warning { background-color: #f39c12; }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        /* 底部日志控制台 */
+        #console-log {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 200px;
+            background: #222;
+            color: #0f0;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            padding: 10px;
+            border-top: 3px solid #444;
+            z-index: 999;
+        }
+        .log-item { border-bottom: 1px solid #333; padding: 2px 0; }
+        .log-err { color: #ff5555; }
     </style>
 </head>
 <body>
-<h2>📱 跨平台 WebApp 测试</h2>
 
-<!-- 环境检测 -->
+<!-- 配置区域 -->
 <div class="card">
-    <h3>🌍 运行环境</h3>
-    <div id="environment-info">检测中...</div>
+    <h4>🔌 接口配置</h4>
+    <input type="text" id="bridgeName" value="websApp" placeholder="输入注入对象的名称 (默认 websApp)">
+    <div style="font-size: 12px; color: #666;">
+        当前状态: <span id="status">检测中...</span>
+    </div>
 </div>
 
-<!-- 摄像头测试 -->
+<!-- 脚本执行区域 (核心功能) -->
 <div class="card">
-    <h3>📷 摄像头兼容性测试</h3>
-    <p>测试浏览器和 WebView 中的摄像头兼容性</p>
+    <h2>🚀 动态脚本 (Java/BeanShell)</h2>
+    <p style="font-size:12px; color:#666;">前提：App 需集成 BeanShell 或 Groovy 并在 evalJavaCode 中实现。</p>
+    <textarea id="javaCode" rows="6" placeholder="在此输入 Java 代码...">import android.widget.Toast;
+Toast.makeText(context, "Hello from BeanShell!", 1).show();
+return "执行成功";</textarea>
+    <div class="btn-group">
+        <button class="success" onclick="runJava()">执行 Java 代码</button>
+        <button onclick="runJs()">执行 JS 代码</button>
+    </div>
+</div>
 
-    <!-- 方案1: 标准摄像头 -->
-    <button class="btn" onclick="startCamera()">启动摄像头 (标准API)</button>
-    <button class="btn" onclick="stopCamera()">停止摄像头</button>
-
-    <div id="video-container">
-        <video id="camera-video" autoplay playsinline></video>
+<!-- 系统交互 -->
+<div class="card">
+    <h2>📱 系统与 UI</h2>
+    <div class="btn-group">
+        <button onclick="callApi('toast', '这是一个 Toast')">Toast 提示</button>
+        <button onclick="testNotification()">发送通知</button>
+        <button onclick="callApi('openFlashLight')">打开手电筒</button>
+        <button onclick="callApi('closeFlashLight')">关闭手电筒</button>
+        <button onclick="callApi('shockDevice', 500)">震动 500ms</button>
+        <button onclick="getClip()">获取剪贴板</button>
+        <button onclick="callApi('setClipContent', 'WebIDE 复制测试')">写入剪贴板</button>
     </div>
 
-    <button class="btn" onclick="takePhoto()">拍照</button>
-    <img id="photo-preview" alt="拍照预览">
-
-    <!-- 方案2: 文件输入备用 -->
-    <hr>
-    <p>如果上方摄像头失败，使用备用方案：</p>
-    <button class="btn" onclick="takePhotoWithInput()">拍照/选择图片 (备用方案)</button>
+    <h4>状态栏/导航栏颜色</h4>
+    <div class="btn-group">
+        <button onclick="callApi('setStatuColor', '#FF0000')">红状态栏</button>
+        <button onclick="callApi('setStatuColor', '#FFFFFF')">白状态栏</button>
+        <button onclick="callApi('setNavColor', '#00FF00')">绿导航栏</button>
+    </div>
 </div>
 
-<!-- 设备信息 -->
+<!-- 硬件信息 -->
 <div class="card">
-    <h3>📱 设备信息</h3>
-    <div id="device-info">加载中...</div>
+    <h2>🔋 硬件与状态</h2>
+    <div class="btn-group">
+        <button onclick="showRet('getBatteryTemperature')">电池温度</button>
+        <button onclick="showRet('getMediaVolume')">媒体音量</button>
+        <button onclick="showRet('getScreenBrightness')">屏幕亮度</button>
+        <button onclick="showRet('getMemoryUsage')">内存占用</button>
+        <button onclick="showRet('getDeviceStatus')">设备信息</button>
+    </div>
 </div>
 
-<!-- 交互功能 -->
+<!-- 文件操作 -->
 <div class="card">
-    <h3>🔔 交互反馈</h3>
-    <button class="btn" onclick="showToast()">Toast 提示</button>
-    <button class="btn" onclick="vibrateDevice()">震动 100ms</button>
+    <h2>📂 文件系统</h2>
+    <input type="text" id="filePath" value="/sdcard/webide_test.txt" placeholder="文件路径">
+    <textarea id="fileContent" rows="3" placeholder="写入内容">Hello WebIDE File System</textarea>
+    <div class="btn-group">
+        <button onclick="doWriteFile()">写入文件</button>
+        <button onclick="doReadFile()">读取文件</button>
+        <button onclick="doListFiles()">列出目录(sdcard)</button>
+        <button class="danger" onclick="doDeleteFile()">删除文件</button>
+    </div>
+    <div class="btn-group" style="margin-top:10px;">
+        <button onclick="callApi('openFile', getValue('filePath'))">调用系统打开</button>
+        <button onclick="callApi('installAPK', getValue('filePath'))">安装 APK</button>
+    </div>
 </div>
 
-<!-- 剪贴板 -->
+<!-- App 操作 -->
 <div class="card">
-    <h3>📋 剪贴板</h3>
-    <input type="text" id="copy-input" value="Hello WebApp" style="padding:5px; width:200px;">
-    <button class="btn" onclick="copyToClipboard()">复制文本</button>
-    <button class="btn" onclick="readFromClipboard()">读取剪贴板</button>
-    <div id="clip-result" style="margin-top:5px; color:green;"></div>
+    <h2>🛠 App 控制</h2>
+    <div class="btn-group">
+        <button onclick="showRet('getAppName')">App 名称</button>
+        <button onclick="showRet('getAppVersion')">App 版本</button>
+        <button class="warning" onclick="callApi('restartApp')">重启 App</button>
+        <button class="danger" onclick="callApi('exitApp')">退出 App</button>
+    </div>
 </div>
 
-<!-- 文件系统 -->
-<div class="card">
-    <h3>💾 文件系统</h3>
-    <button class="btn" onclick="readSampleFile()">读取示例文件</button>
-    <button class="btn" onclick="writeSampleFile()">写入示例文件</button>
-    <div id="file-result" style="font-size:12px; max-height:100px; overflow:auto;"></div>
+<!-- 底部日志 -->
+<div id="console-log">
+    <div class="log-item">Ready. Waiting for commands...</div>
 </div>
 
-<!-- 权限管理 -->
-<div class="card">
-    <h3>🔐 权限管理</h3>
-    <button class="btn" onclick="requestCameraPermission()">请求摄像头权限</button>
-    <button class="btn" onclick="checkCameraPermission()">检查摄像头权限</button>
-    <div id="permission-result" style="margin-top:5px;"></div>
-</div>
-
-<script src="js/api.js"></script>
 <script>
-    // 环境检测
-    function detectEnvironment() {
-        const envInfo = document.getElementById('environment-info');
-        if (window.isWebView()) {
-            envInfo.innerHTML = `
-                <span style="color: green;">✅ 运行在 WebView 中</span><br>
-                支持原生 API: ${Object.keys(window.Android || {}).length} 个
-            `;
+    // 获取注入对象名 (默认 websApp，但也可能是 Android)
+    function getBridge() {
+        var name = document.getElementById('bridgeName').value || 'websApp';
+        return window[name];
+    }
+
+    function getValue(id) {
+        return document.getElementById(id).value;
+    }
+
+    // 基础日志打印
+    function log(msg, isError) {
+        var consoleDiv = document.getElementById('console-log');
+        var div = document.createElement('div');
+        div.className = 'log-item' + (isError ? ' log-err' : '');
+
+        var time = new Date().toLocaleTimeString();
+        div.innerText = "[" + time + "] " + msg;
+
+        consoleDiv.appendChild(div);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        console.log(msg);
+    }
+
+    // 检测接口状态
+    setInterval(function() {
+        var bridge = getBridge();
+        var statusSpan = document.getElementById('status');
+        if (bridge) {
+            statusSpan.innerText = "✅ 已连接 (" + document.getElementById('bridgeName').value + ")";
+            statusSpan.style.color = "green";
         } else {
-            envInfo.innerHTML = `
-                <span style="color: blue;">🌐 运行在浏览器中</span><br>
-                用户代理: ${navigator.userAgent.substring(0, 50)}...
-            `;
+            statusSpan.innerText = "❌ 未找到对象";
+            statusSpan.style.color = "red";
         }
-    }
+    }, 1000);
 
-    // 显示设备信息
-    async function showDeviceInfo() {
-        const deviceInfo = await window.NativeAPI.getDeviceInfo();
-        const infoDiv = document.getElementById('device-info');
-
-        if (deviceInfo) {
-            infoDiv.innerHTML = `
-                设备型号: ${deviceInfo.model}<br>
-                制造商: ${deviceInfo.manufacturer}<br>
-                系统: ${deviceInfo.androidVersion || 'Browser'}<br>
-                屏幕: ${deviceInfo.screenWidth} × ${deviceInfo.screenHeight}<br>
-                语言: ${deviceInfo.locale}<br>
-                时区: ${deviceInfo.timezone}
-            `;
+    // 通用调用方法
+    function callApi(methodName, ...args) {
+        var bridge = getBridge();
+        if (!bridge) {
+            log("Error: 桥接对象未找到", true);
+            return;
+        }
+        if (typeof bridge[methodName] === 'function') {
+            try {
+                log("调用: " + methodName + "(" + args.join(", ") + ")");
+                bridge[methodName](...args);
+            } catch (e) {
+                log("调用异常: " + e.message, true);
+            }
         } else {
-            infoDiv.innerHTML = '无法获取设备信息';
+            log("方法 " + methodName + " 不存在", true);
         }
     }
 
-    // 摄像头相关变量
-    let cameraStream = null;
+    // 调用并显示返回值
+    function showRet(methodName, ...args) {
+        var bridge = getBridge();
+        if (!bridge) return log("Bridge not found", true);
 
-    // 启动摄像头
-    async function startCamera() {
         try {
-            const constraints = {
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
-                audio: false
-            };
-
-            // 使用兼容的摄像头 API
-            cameraStream = await window.CameraAPI.getMediaStream(constraints);
-
-            const video = document.getElementById('camera-video');
-            video.srcObject = cameraStream;
-
-            const container = document.getElementById('video-container');
-            container.style.display = 'block';
-
-            window.NativeAPI.toast('摄像头启动成功');
-        } catch (error) {
-            console.error('摄像头启动失败:', error);
-            window.NativeAPI.toast(`摄像头启动失败: ${error.message}`);
+            var ret = bridge[methodName](...args);
+            log(methodName + " 返回: " + ret);
+            return ret;
+        } catch (e) {
+            log(methodName + " 错误: " + e.message, true);
         }
     }
 
-    // 停止摄像头
-    function stopCamera() {
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
+    // --- 具体功能实现 ---
 
-            const video = document.getElementById('camera-video');
-            video.srcObject = null;
+    // 1. 运行 Java 代码 (BeanShell/Groovy)
+    function runJava() {
+        var code = document.getElementById('javaCode').value;
+        callApi('evalJavaCode', code);
+    }
 
-            document.getElementById('video-container').style.display = 'none';
-            window.NativeAPI.toast('摄像头已停止');
+    // 2. 运行 JS 代码 (evalJsCode)
+    function runJs() {
+        // 测试反向注入
+        callApi('evalJsCode', 'alert("这是由 Android 调起的 JS Alert");');
+    }
+
+    // 3. 通知测试
+    function testNotification() {
+        // 调用 adapter.sendNotification(title, content)
+        callApi('sendNotification', 'WebIDE 通知', '这是一条来自网页的消息');
+    }
+
+    // 4. 获取剪贴板
+    function getClip() {
+        var content = showRet('getClipContent');
+        if(content) alert("剪贴板内容:\n" + content);
+    }
+
+    // 5. 文件写入
+    function doWriteFile() {
+        var path = getValue('filePath');
+        var content = getValue('fileContent');
+        callApi('writeFile', path, content);
+        log("写入指令已发送");
+    }
+
+    // 6. 文件读取
+    function doReadFile() {
+        var path = getValue('filePath');
+        var content = showRet('readFile', path);
+        if (content) {
+            document.getElementById('fileContent').value = content;
         }
     }
 
-    // 拍照
-    async function takePhoto() {
-        try {
-            // 使用兼容的拍照 API
-            const photoData = await window.CameraAPI.takePhoto({
-                facingMode: 'environment',
-                quality: 0.8,
-                fallbackToFileInput: true
-            });
-
-            const preview = document.getElementById('photo-preview');
-            preview.src = photoData;
-            preview.style.display = 'block';
-
-            window.NativeAPI.toast('拍照成功');
-        } catch (error) {
-            console.error('拍照失败:', error);
-            window.NativeAPI.toast(`拍照失败: ${error.message}`);
+    // 7. 列出文件
+    function doListFiles() {
+        var path = "/sdcard/";
+        var result = showRet('listFiles', path);
+        // Adapter 中用 [FG] 分割
+        if (result) {
+            var files = result.split("[FG]");
+            log("文件列表: " + files.join(", "));
+            alert("SD卡根目录文件:\n" + files.slice(0, 10).join("\n") + "\n(仅显示前10个)");
         }
     }
 
-    // 使用文件输入拍照
-    async function takePhotoWithInput() {
-        try {
-            const photoData = await window.CameraAPI._takePhotoWithFileInput();
-
-            const preview = document.getElementById('photo-preview');
-            preview.src = photoData;
-            preview.style.display = 'block';
-
-            window.NativeAPI.toast('图片获取成功');
-        } catch (error) {
-            console.error('文件输入失败:', error);
-            window.NativeAPI.toast(`获取图片失败: ${error.message}`);
+    // 8. 删
+    function doDeleteFile() {
+        var path = getValue('filePath');
+        if(confirm("确定删除 " + path + " 吗？")) {
+            callApi('deletFiles', path); // 注意你的 Kotlin 方法名是 deletFiles (拼写是这样的)
+            log("删除指令已发送");
         }
     }
 
-    // Toast 提示
-    function showToast() {
-        window.NativeAPI.toast('这是跨平台的 Toast 消息！');
-    }
-
-    // 震动
-    function vibrateDevice() {
-        window.NativeAPI.vibrate(100);
-    }
-
-    // 复制到剪贴板
-    async function copyToClipboard() {
-        const text = document.getElementById('copy-input').value;
-        const success = await window.NativeAPI.copyToClipboard(text);
-        window.NativeAPI.toast(success ? '已复制到剪贴板' : '复制失败');
-    }
-
-    // 从剪贴板读取
-    async function readFromClipboard() {
-        try {
-            const text = await window.NativeAPI.getClipboard();
-            document.getElementById('clip-result').innerText = `剪贴板内容: ${text}`;
-            window.NativeAPI.toast('读取成功');
-        } catch (error) {
-            document.getElementById('clip-result').innerText = '读取失败: ' + error.message;
-        }
-    }
-
-    // 读取文件
-    async function readSampleFile() {
-        try {
-            // 尝试读取当前目录下的文件
-            const content = await window.FileSystemAPI.readFile('./js/api.js');
-            const resultDiv = document.getElementById('file-result');
-            resultDiv.innerHTML = `<pre>${content.substring(0, 500)}...</pre>`;
-            window.NativeAPI.toast('文件读取成功');
-        } catch (error) {
-            console.error('读取文件失败:', error);
-            window.NativeAPI.toast('文件读取失败');
-        }
-    }
-
-    // 写入文件
-    async function writeSampleFile() {
-        try {
-            const content = `这是测试文件内容，创建于 ${new Date().toLocaleString()}`;
-            const success = await window.FileSystemAPI.writeFile('test.txt', content);
-            window.NativeAPI.toast(success ? '文件已保存' : '文件保存失败');
-        } catch (error) {
-            console.error('写入文件失败:', error);
-            window.NativeAPI.toast('文件写入失败');
-        }
-    }
-
-    // 请求摄像头权限
-    async function requestCameraPermission() {
-        const hasPermission = await window.NativeAPI.requestPermission('android.permission.CAMERA');
-        const resultDiv = document.getElementById('permission-result');
-        resultDiv.innerHTML = hasPermission ?
-            '<span style="color: green;">✅ 摄像头权限已授予</span>' :
-            '<span style="color: red;">❌ 摄像头权限被拒绝</span>';
-    }
-
-    // 检查摄像头权限
-    async function checkCameraPermission() {
-        const hasPermission = await window.NativeAPI.hasPermission('android.permission.CAMERA');
-        const resultDiv = document.getElementById('permission-result');
-        resultDiv.innerHTML = hasPermission ?
-            '<span style="color: green;">✅ 已有摄像头权限</span>' :
-            '<span style="color: orange;">⚠️ 无摄像头权限</span>';
-    }
-
-    // 页面加载完成后的初始化
-    document.addEventListener('DOMContentLoaded', async function() {
-        detectEnvironment();
-        await showDeviceInfo();
-
-        // 自动检查摄像头权限
-        if (window.isWebView()) {
-            await checkCameraPermission();
-        }
-    });
 </script>
 </body>
 </html>

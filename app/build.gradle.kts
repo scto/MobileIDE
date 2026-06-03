@@ -1,32 +1,48 @@
+import java.io.ByteArrayOutputStream
+
+/*
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+ 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ktfmt)
     alias(libs.plugins.aboutlibraries)
-    alias(libs.plugins.dokka)
 }
 
-val copyWebAppApk =
-    tasks.register<Copy>("copyWebAppApk") {
-        // Explicitly depend on the webapp build task
-        dependsOn(":webapp:assembleRelease")
-
-        // Set input source: webapp output directory
-        // Note: Use provider mechanism to ensure the path is resolved only during execution
-        from(project(":webapp").layout.buildDirectory.dir("outputs/apk/release")) {
-            include("*.apk")
-            // If you need to specify an exact name, you can use rename
-            // rename { "webapp.apk" }
-            // Or keep the original name, or rename it as you did before
-            rename { _ -> "webapp.apk" }
-        }
-
-        // Set output destination: app module build directory (do not pollute src directory)
-        into(layout.buildDirectory.dir("generated/assets/webapp"))
+// 1. Update the helper function to return a String directly or handle the provider
+fun getGitInfo(vararg args: String): String {
+    return try {
+        // Execute and get the result immediately during configuration
+        val output = providers.exec {
+            commandLine("git", *args)
+        }.standardOutput.asText.get()
+        output.trim()
+    } catch (e: Exception) {
+        "unknown"
     }
+}
+
+// 2. Initialize variables
+val gitCommitHash = getGitInfo("rev-parse", "--short=8", "HEAD")
+val fullGitCommitHash = getGitInfo("rev-parse", "HEAD")
+val gitCommitDate = getGitInfo("show", "-s", "--format=%cI", "HEAD")
+
 
 android {
     namespace = libs.versions.applicationId.get()
@@ -39,124 +55,234 @@ android {
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
 
+        //multiDexEnabled = true
+        
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+        }
     }
-
+    
     signingConfigs {
         create("release") {
             storeFile = file("WebIDE.jks")
             keyAlias = "WebIDE"
             storePassword = "WebIDE"
             keyPassword = "WebIDE"
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
-
+    
+    // 3. Now use them directly in buildConfigField without .get()
     buildTypes {
         debug {
+            buildConfigField("String", "GIT_COMMIT_HASH", "\"$fullGitCommitHash\"")
+            buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"$gitCommitHash\"")
+            buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
+    
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-beta"
-            isDebuggable = true
+            versionNameSuffix = "-beta-debug"
             signingConfig = signingConfigs.getByName("release")
         }
         release {
-            // applicationIdSuffix = ".release"
+            buildConfigField("String", "GIT_COMMIT_HASH", "\"$fullGitCommitHash\"")
+            buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"$gitCommitHash\"")
+            buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
+        
+            versionNameSuffix = "-release"
             isMinifyEnabled = true
-            isShrinkResources = true // Resource shrinking
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
-    compileOptions { isCoreLibraryDesugaringEnabled = true }
+    // Merged all packaging configurations into a single block
+    packaging {
+        resources {
+            // Exclude conflicting files potentially generated by LSP4J, JGit, and other libraries
+            excludes += listOf(
+                "OSGI-INF/l10n/plugin.properties",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module",
+                "META-INF/INDEX.LIST"
+            )
+        }
+        
+        // Add jniLibs legacy packaging
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+    
     buildFeatures {
         compose = true
         buildConfig = true
     }
 
-    sourceSets {
-        getByName("main") {
-            // Key point: Add copyWebAppApk task as a directory source
-            // Gradle will automatically identify: copyWebAppApk task must run before packaging assets
-            assets.srcDir(copyWebAppApk)
-        }
-    }
-
-    // Required for Sora Editor's textmate grammar files
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/DEPENDENCIES"
-        }
+    // Do not compress bin and so files
+    androidResources {
+        noCompress += listOf("bin", "proot", "so", "2")
     }
 }
 
 android.applicationVariants.configureEach {
+    val variant = this
+    outputs.all {
+        val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+        val appName = "MobileIDE"
+        val buildType = variant.buildType.name
+        val versionName = variant.versionName
+        
+        output?.outputFileName = "${appName}-${versionName}-${buildType}.apk"
+    }
+}
+
+/*
+android.applicationVariants.configureEach {
     outputs.configureEach {
         val appName = "MobileIDE"
         val buildType = buildType.name
-        val ver = versionName
-        (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.let {
+        val ver = versionName(this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.let {
             it.outputFileName = "${appName}-${ver}-${buildType}.apk"
         }
     }
 }
+*/
 
-aboutLibraries() {
+aboutLibraries {
+    collect {
+        fetchRemoteLicense = true
+    }
     export {
         prettyPrint = true
         outputFile = file("src/main/res/raw/aboutlibraries.json")
     }
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        freeCompilerArgs.add("-Xdeprecation=warn")
+    }
+}
+
 dependencies {
-    // implementation(project(":signer"))
-
-    implementation(project(":core:build"))
-    implementation(project(":core:files"))
-    implementation(project(":core:projects"))
-    implementation(project(":core:resources"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:utils"))
-
-    // implementation("com.google.accompanist:accompanist-navigation-animation:0.36.0")
+    implementation(libs.material.kolor)
+    implementation(libs.jsoup)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
+    
+    implementation(project(":web-bridge"))
     implementation(libs.accompanist.navigation.animation)
+    implementation(libs.compose.icons.simple)
+    implementation(libs.compose.icons.font.awesome)
 
-    // implementation("com.mikepenz:aboutlibraries-compose:13.1.0")
     implementation(libs.aboutlibraries.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.multiplatform.markdown.renderer.m3)
+    implementation(libs.multiplatform.markdown.renderer.code)
+    implementation(libs.multiplatform.markdown.renderer.coil2)
+    implementation(libs.highlights)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.ui)
+    
+    // Git dependencies
+    // Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
+    implementation(libs.org.eclipse.jgit)
+    // Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache
+    implementation(libs.org.eclipse.jgit.ssh.apache)
+    //noinspection UseTomlInstead
+    implementation("org.slf4j:slf4j-simple:2.0.17")
 
-    val editorVersion = "0.24.0"
-    implementation("io.github.rosemoe:editor:$editorVersion")
-    implementation("io.github.rosemoe:language-textmate:$editorVersion")
+    // Add terminal dependencies
+    implementation(project(":core:main"))
+    
+    // LSP support
+    implementation(project(":editor-lsp"))
+    implementation(libs.lsp4j)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.ui.ui)
+    
+    // TreeSitter language packs
+    implementation(libs.tree.sitter)
+    implementation(libs.tree.sitter.json)
+
+    // Media3 (Video Player)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.common)
+
+    // Editor
+    implementation(project(":editor"))
+    implementation(project(":language-treesitter"))
+    implementation(libs.language.textmate)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    
+    // DataStore dependencies
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.core)
+
+    implementation(files("libs/xml.jar"))
+
+    implementation(project(":signer"))
+
+    implementation(libs.zipalign.java)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation.compose)
-
-    // Hilt dependencies
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
-
-    // Du benötigst zwingend auch die Core-Library-Desugaring Abhängigkeit
-    coreLibraryDesugaring(libs.androidx.desugar)
-
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.volley)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.appcompat)
+        
+    // Core Library Desugaring (translates newer Java APIs for older Android versions)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    
     testImplementation(libs.junit)
-
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

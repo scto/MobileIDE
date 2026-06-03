@@ -1,39 +1,40 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ktfmt)
-    alias(libs.plugins.dokka)
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace = "com.mobile.ide.core.resources"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    namespace = "com.rk.resources"
+    compileSdk = 36
 
-    // lint.disable += "MissingTranslation"
-
+    lint.disable += "MissingTranslation"
+    
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
-
+        minSdk = 24
+        
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
-
-    sourceSets {
-        getByName("main") {
-            // Dies stellt sicher, dass nur korrekte Ordner gescannt werden
-            res.srcDirs("src/main/res")
+    
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
     implementation(libs.material)
-
-    // Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
 }

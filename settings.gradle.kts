@@ -1,17 +1,42 @@
+/*
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        google ()
+        google()
+        /*
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        */
         mavenCentral()
-        maven { url = uri("https://cache-redirector.jetbrains.com/kotlin.bintray.com/kotlin-plugin") }
+        gradlePluginPortal()
 
     }
-    
     resolutionStrategy {
         eachPlugin {
-            if (requested.id.id == "com.google.android.gms.oss-licenses-plugin") {
-                useModule("com.google.android.gms:oss-licenses-plugin:0.10.9")
-            }
+                if (requested.id.id == "com.google.android.gms.oss-licenses-plugin") {
+                    useModule("com.google.android.gms:oss-licenses-plugin:0.10.9")
+                }
         }
     }
 }
@@ -20,32 +45,29 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
-        mavenCentral() // <-- DAS FEHLT HIER
-        maven {
-            url = uri("https://jitpack.io")
-            // Wir verbieten JitPack, Pakete der Sora-Editor Gruppe zu bedienen
-            content {
-                excludeGroup("io.github.rosemoe.sora")
-            }
-        }
-        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "MobileIDE"
 
+/*
 include(
     ":app",
     ":signer",
-    ":webapp"
+    ":webapp",
+    ":web-bridge",
+    ":editor",
+    ":editor-lsp",
+    ":language-treesitter"
 )
+*/
 
-include(
-    ":core:build",
-    ":core:files",
-    ":core:projects",
-    ":core:resources",
-    ":core:ui",
-    ":core:utils"
-)
+include(":app",":signer",":web-bridge",":editor",":editor-lsp",":language-treesitter")
+
+include(":core:main")
+include(":core:components")
+include(":core:resources")
+include(":core:terminal-emulator")
+include(":core:terminal-view")

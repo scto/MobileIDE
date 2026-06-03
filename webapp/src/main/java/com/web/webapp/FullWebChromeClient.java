@@ -1,7 +1,24 @@
+
+
+/*
+ * WebIDE - A powerful IDE for Android web development.
+ * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.web.webapp;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -9,8 +26,6 @@ import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-
-import androidx.core.app.ActivityCompat;
 
 public class FullWebChromeClient extends WebChromeClient {
 
@@ -28,6 +43,7 @@ public class FullWebChromeClient extends WebChromeClient {
     @Override
     public void onPermissionRequest(PermissionRequest request) {
         // 授予所有权限请求（相机、麦克风等）
+        // 在生产环境中，建议根据 webapp.json 的配置来决定是否授权
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             request.grant(request.getResources());
         }
@@ -38,17 +54,17 @@ public class FullWebChromeClient extends WebChromeClient {
                                      ValueCallback<Uri[]> filePathCallback,
                                      FileChooserParams fileChooserParams) {
 
-        // 保存回调
+        if (this.filePathCallback != null) {
+            this.filePathCallback.onReceiveValue(null);
+        }
         this.filePathCallback = filePathCallback;
 
-        // 创建文件选择 Intent
         Intent intent = fileChooserParams.createIntent();
         try {
             activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
         } catch (Exception e) {
-            // 没有找到文件选择器应用
-            if (filePathCallback != null) {
-                filePathCallback.onReceiveValue(null);
+            if (this.filePathCallback != null) {
+                this.filePathCallback.onReceiveValue(null);
                 this.filePathCallback = null;
             }
             return false;
@@ -56,14 +72,11 @@ public class FullWebChromeClient extends WebChromeClient {
         return true;
     }
 
-    /**
-     * 处理文件选择结果
-     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
             if (filePathCallback != null) {
                 Uri[] results = null;
-                if (resultCode == Activity.RESULT_OK && data != null) {
+                if (resultCode == MainActivity.RESULT_OK && data != null) {
                     String dataString = data.getDataString();
                     if (dataString != null) {
                         results = new Uri[]{Uri.parse(dataString)};
