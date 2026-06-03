@@ -76,35 +76,3 @@ add_treesitter_lang(
     v0.25.0
     ts_javascript_jni.c
 )
-
-add_treesitter_lang(
-    tree-sitter-java
-    ts_java
-    https://github.com/tree-sitter/tree-sitter-java.git
-    v0.23.5
-    ts_java_jni.c
-)
-
-add_treesitter_lang(
-    tree-sitter-kotlin
-    ts_kotlin
-    https://github.com/tree-sitter-grammars/tree-sitter-kotlin.git
-    v0.25.0
-    ts_kotlin_jni.c
-)
-
-add_treesitter_lang(
-    tree-sitter-bash
-    ts_bash
-    https://github.com/tree-sitter/tree-sitter-bash.git
-    v0.25.1
-    ts_bash_jni.c
-)
-
-add_treesitter_lang(
-    tree-sitter-markdown
-    ts_markdown
-    https://github.com/tree-sitter-grammars/tree-sitter-markdown.git
-    v0.5.3
-    ts_markdown_jni.c
-)
