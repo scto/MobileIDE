@@ -1,552 +1,495 @@
+
+
+/*
+ * WebIDE - A powerful IDE for Android web development.
+ * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.web.webapp;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.URLUtil;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.jvm.functions.Function1;
+import rrzt.web.web_bridge.WebsApiAdapter;
+
 public class MainActivity extends Activity {
+    private static final String TAG = "WebIDE_Main";
+
     private WebView webView;
     private JSONObject appConfig;
-    private SharedPreferences prefs;
     private FullWebChromeClient webChromeClient;
-
-    // 权限请求码
-    private static final int PERMISSION_REQUEST_CODE = 100;
-
-    // 文件选择器请求码
-    private static final int FILE_CHOOSER_REQUEST_CODE = 1;
-
-    // WebApp 接口实例
     private WebAppInterface webAppInterface;
 
-    // 配置缓存键
-    private static final String CONFIG_CACHE_KEY = "last_app_config";
-    private static final String PREF_NAME = "webapp_config";
+    private static final int PERMISSION_REQUEST_CODE = 100;
+    private static final int FILE_CHOOSER_REQUEST_CODE = 101;
+
+    static {
+        System.loadLibrary("webapp_crypto");
+    }
+
+    private static native void initRandom();
+    private native byte[] decryptAsset(android.content.res.AssetManager manager, String filename);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initRandom();
 
-        // 初始化配置缓存
-        prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        // 0. 基础设置：防止键盘自动顶起
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        // 读取应用配置
-        try {
-            loadAppConfig();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // 1. 加载配置
+        loadAppConfig();
 
-        // 检查并请求权限
-        checkAndRequestPermissions();
+        // 2. 设置屏幕方向 (修正版)
+        applyOrientation();
 
-        // 应用配置（状态栏、方向等）
-        applyConfig();
-
-        // 创建 WebView
+        // 3. 初始化 WebView
         webView = new WebView(this);
+        setContentView(webView); // 必须先 setContentView
+
+        // 4. 终极状态栏修复 (Android 16 兼容)
+        applyModernStatusBar();
+
+        // 5. 权限与 WebView 设置
+        checkAndRequestPermissions();
         configureWebView();
 
-        // 加载网页
+        // 6. 加载网页
         loadWebContent();
-
-        setContentView(webView);
     }
 
-    /**
-     * 读取 webapp.json 配置
-     */
-    private void loadAppConfig() throws Exception {
+    private void loadAppConfig() {
         try {
-            // 尝试从 assets 读取
             InputStream is = getAssets().open("webapp.json");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                sb.append(line);
+                if (!line.trim().startsWith("//")) {
+                    int commentIdx = line.indexOf("//");
+                    if (commentIdx != -1 && !line.contains("http:") && !line.contains("https:")) {
+                        sb.append(line.substring(0, commentIdx));
+                    } else {
+                        sb.append(line);
+                    }
+                }
             }
             reader.close();
-
-            // 解析 JSON
-            String configJson = sb.toString();
-            appConfig = new JSONObject(configJson);
-
-            // 缓存到 SharedPreferences
-            prefs.edit().putString(CONFIG_CACHE_KEY, configJson).apply();
-
+            appConfig = new JSONObject(sb.toString());
         } catch (Exception e) {
-            // 如果 assets 中没有，尝试从缓存读取
+            Log.e(TAG, "Config load failed", e);
+            appConfig = new JSONObject();
+        }
+    }
+
+    /**
+     * 修复 1：方向映射修正
+     * 0 -> Portrait (竖屏)
+     * 1 -> Landscape (横屏)
+     */
+    private void applyOrientation() {
+        if (appConfig == null) return;
+        String ori = appConfig.optString("orientation", "auto").trim().toLowerCase();
+
+        Log.d(TAG, "Orientation config: " + ori);
+
+        // 根据你的要求修正映射
+        if (ori.equals("0") || ori.equals("portrait")) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else if (ori.equals("1") || ori.equals("landscape")) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else if (ori.equals("auto")) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
+    }
+
+    /**
+     * 修复 2：针对 Android 15/16 的终极状态栏修复
+     * 不再依赖 flags，而是使用 WindowInsetsControllerCompat 和 手动 Padding
+     */
+    private void applyModernStatusBar() {
+        if (appConfig == null || webView == null) return;
+
+        boolean isFullscreen = appConfig.optBoolean("fullscreen", false);
+
+        Window window = getWindow();
+        WindowInsetsControllerCompat windowController = WindowCompat.getInsetsController(window, webView);
+
+        if (isFullscreen) {
+            // --- 全屏模式 ---
+            // 1. 隐藏系统栏 (状态栏 + 导航栏)
+            windowController.hide(WindowInsetsCompat.Type.systemBars());
+            // 2. 允许手势滑出
+            windowController.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            // 3. 内容延伸到边缘
+            WindowCompat.setDecorFitsSystemWindows(window, false);
+            // 4. 清除 WebView Padding
+            webView.setPadding(0, 0, 0, 0);
+        } else {
+            // --- 非全屏模式 (标准模式) ---
+
+            // 1. 显示系统栏
+            windowController.show(WindowInsetsCompat.Type.systemBars());
+
+            // 2. 关键：针对 Android 15+ 强制 Edge-to-Edge 的特性
+            // 我们手动监听系统栏高度，并把它加到 WebView 的 PaddingTop 上
+            // 这是唯一能保证 "绝对不覆盖" 的方法
+            ViewCompat.setOnApplyWindowInsetsListener(webView, (v, windowInsets) -> {
+                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                // 给 WebView 顶部增加 Padding，高度等于状态栏高度
+                v.setPadding(0, insets.top, 0, 0);
+                return WindowInsetsCompat.CONSUMED;
+            });
+
+            // 3. 设置状态栏样式
+            JSONObject sbConfig = appConfig.optJSONObject("statusBar");
+            String bgColorStr = "#FFFFFF";
+            String style = "dark";
+
+            if (sbConfig != null) {
+                bgColorStr = sbConfig.optString("backgroundColor", "#FFFFFF");
+                style = sbConfig.optString("style", "dark");
+            }
+
+            // 4. 设置文字颜色 (深色/浅色)
+            // dark = 黑色文字 (背景是亮的) -> isAppearanceLightStatusBars = true
+            windowController.setAppearanceLightStatusBars("dark".equalsIgnoreCase(style));
+
+            // 5. 设置背景色
+            // 注意：在 Android 15+ 上，由于强制 Edge-to-Edge，window.statusBarColor 可能会被忽略
+            // 但设置它作为保底
             try {
-                String cachedConfig = prefs.getString(CONFIG_CACHE_KEY, null);
-                if (cachedConfig != null) {
-                    appConfig = new JSONObject(cachedConfig);
-                } else {
-                    // 创建默认配置
-                    appConfig = createDefaultConfig();
-                }
-            } catch (Exception ex) {
-                appConfig = createDefaultConfig();
-            }
-        }
-    }
-
-    /**
-     * 创建默认配置
-     */
-    private JSONObject createDefaultConfig() throws Exception {
-        String defaultConfig = "{" +
-                "\"name\": \"WebApp\"," +
-                "\"package\": \"com.example.webapp\"," +
-                "\"orientation\": \"portrait\"," +
-                "\"fullscreen\": false," +
-                "\"statusBar\": {" +
-                "    \"backgroundColor\": \"#FFFFFF\"," +
-                "    \"style\": \"dark\"," +
-                "    \"translucent\": false," +
-                "    \"hidden\": false" +
-                "}," +
-                "\"webview\": {" +
-                "    \"zoomEnabled\": false," +
-                "    \"javascriptEnabled\": true," +
-                "    \"domStorageEnabled\": true," +
-                "    \"allowFileAccess\": true," +
-                "    \"textZoom\": 100," +
-                "    \"userAgent\": \"\"" +
-                "}," +
-                "\"permissions\": [\"android.permission.INTERNET\"]" +
-                "}";
-        return new JSONObject(defaultConfig);
-    }
-
-    /**
-     * 检查并请求权限
-     */
-    private void checkAndRequestPermissions() {
-        List<String> permissionsToRequest = new ArrayList<>();
-
-        // 摄像头权限
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.CAMERA);
-        }
-
-        // 录音权限
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.RECORD_AUDIO);
-        }
-
-        // 存储权限（Android 11+ 需要不同处理）
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
-
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
-        }
-
-        // 位置权限（如果需要）
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-
-        // 电话权限（如果需要）
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(Manifest.permission.READ_PHONE_STATE);
-        }
-
-        // 如果有权限需要请求
-        if (!permissionsToRequest.isEmpty()) {
-            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    /**
-     * 处理权限请求结果
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            // 将权限结果传递给 WebAppInterface
-            if (webAppInterface != null) {
-                webAppInterface.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            }
-
-            // 检查是否所有权限都被授予
-            boolean allGranted = true;
-            for (int grantResult : grantResults) {
-                if (grantResult != PackageManager.PERMISSION_GRANTED) {
-                    allGranted = false;
-                    break;
-                }
-            }
-
-            if (!allGranted) {
-                // 有些权限被拒绝，可以在这里提示用户
-                // 例如：显示一个对话框解释为什么需要这些权限
-            }
-        }
-    }
-
-    /**
-     * 应用配置到 Activity
-     */
-    private void applyConfig() {
-        try {
-            // 设置屏幕方向
-            String orientation = appConfig.optString("orientation", "portrait");
-            switch (orientation) {
-                case "landscape":
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    break;
-                case "portrait":
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    break;
-                case "sensor":
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                    break;
-                default:
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-            }
-
-            // 设置全屏
-            boolean fullscreen = appConfig.optBoolean("fullscreen", false);
-            if (fullscreen) {
-                requestWindowFeature(Window.FEATURE_NO_TITLE);
-                getWindow().setFlags(
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN
-                );
-            }
-
-            // 应用状态栏配置
-            applyStatusBarConfig();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 应用状态栏配置
-     */
-    private void applyStatusBarConfig() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                JSONObject statusBar = appConfig.optJSONObject("statusBar");
-                if (statusBar != null) {
-                    Window window = getWindow();
-
-                    // 隐藏状态栏
-                    if (statusBar.optBoolean("hidden", false)) {
-                        window.getDecorView().setSystemUiVisibility(
-                                View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        );
-                        return;
-                    }
-
-                    // 显示状态栏
-                    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-
-                    // 设置状态栏颜色
-                    String colorStr = statusBar.optString("backgroundColor", "#FFFFFF");
-                    if (colorStr.startsWith("#")) {
-                        try {
-                            int color = Color.parseColor(colorStr);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                            window.setStatusBarColor(color);
-                        } catch (Exception e) {
-                            // 颜色解析失败，使用默认
-                        }
-                    }
-
-                    // 设置状态栏文字颜色
-                    String style = statusBar.optString("style", "dark");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        View decorView = window.getDecorView();
-                        int systemUiVisibility = decorView.getSystemUiVisibility();
-                        if ("light".equals(style)) {
-                            // 浅色文字（深色背景）
-                            systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-                        } else {
-                            // 深色文字（浅色背景）
-                            systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-                        }
-                        decorView.setSystemUiVisibility(systemUiVisibility);
-                    }
-
-                    // 设置透明状态栏
-                    if (statusBar.optBoolean("translucent", false)) {
-                        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    } else {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                    }
-                }
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                window.setStatusBarColor(Color.parseColor(bgColorStr));
             } catch (Exception e) {
-                e.printStackTrace();
+                window.setStatusBarColor(Color.WHITE);
             }
         }
     }
 
-    /**
-     * 配置 WebView
-     */
+    private void checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        List<String> needed = new ArrayList<>();
+        JSONArray jsonPerms = appConfig.optJSONArray("permissions");
+        if (jsonPerms != null) {
+            for (int i = 0; i < jsonPerms.length(); i++) {
+                String perm = jsonPerms.optString(i);
+                if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+                    needed.add(perm);
+                }
+            }
+        }
+        if (!needed.isEmpty()) {
+            ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
     private void configureWebView() {
         WebSettings settings = webView.getSettings();
 
-        // 基础设置
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-        settings.setAllowFileAccessFromFileURLs(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            settings.setAllowFileAccessFromFileURLs(true);
+            settings.setAllowUniversalAccessFromFileURLs(true);
+        }
         settings.setMediaPlaybackRequiresUserGesture(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
 
-        // 应用 webview 配置
-        applyWebViewConfig(settings);
+        JSONObject wvConfig = appConfig.optJSONObject("webview");
+        boolean zoomEnabled = true;
+        int textZoom = 100;
+        String rawUserAgent = "";
 
-        // 创建并注入 JavaScript 接口
+        if (wvConfig != null) {
+            zoomEnabled = wvConfig.optBoolean("zoomEnabled", true);
+            textZoom = wvConfig.optInt("textZoom", 100);
+            rawUserAgent = wvConfig.optString("userAgent", "");
+        }
+
+        settings.setSupportZoom(zoomEnabled);
+        settings.setBuiltInZoomControls(zoomEnabled);
+        settings.setDisplayZoomControls(false);
+
+        // UA 处理
+        if (!rawUserAgent.isEmpty()) {
+            String lowerUA = rawUserAgent.toLowerCase();
+            if (lowerUA.contains("windows") || lowerUA.contains("pc")) {
+                settings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                settings.setLoadWithOverviewMode(true);
+                settings.setUseWideViewPort(true);
+                settings.setTextZoom(textZoom == 100 ? 50 : textZoom);
+            } else if (lowerUA.contains("ios") || lowerUA.contains("iphone")) {
+                settings.setUserAgentString("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1");
+                settings.setTextZoom(textZoom);
+            } else {
+                settings.setUserAgentString(rawUserAgent);
+                settings.setTextZoom(textZoom);
+            }
+        } else {
+            settings.setTextZoom(textZoom);
+        }
+
         webAppInterface = new WebAppInterface(this, webView);
         webView.addJavascriptInterface(webAppInterface, "Android");
 
-        // 设置 WebViewClient 和 WebChromeClient
+        WebsApiAdapter websAdapter = new WebsApiAdapter(
+                this,
+                webView,
+                webAppInterface,
+                path -> {
+                    // 打包应用中无法直接获取 Assets 的 File 对象
+                    // 如果 WebsApiAdapter 内部检测到是 assets 路径，应该使用 AssetManager 流式读取
+                    // 这里的返回 null 即可，WebsApiAdapter.readFile 需要做针对 assets 的流处理（上面 Kotlin 代码已处理部分，但建议完善）
+                    return null;
+                }
+        );
+        webView.addJavascriptInterface(websAdapter, "websApp");
+
+        // 下载监听
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            try {
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setMimeType(mimetype);
+                String filename = URLUtil.guessFileName(url, contentDisposition, mimetype);
+                request.setTitle(filename);
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                dm.enqueue(request);
+                Toast.makeText(MainActivity.this, "下载中: " + filename, Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception ex) {}
+            }
+        });
+
         webView.setWebViewClient(new LocalContentWebViewClient());
         webChromeClient = new FullWebChromeClient();
-        webChromeClient.setActivity(this);
         webView.setWebChromeClient(webChromeClient);
-
-        // 开启调试（仅调试模式）
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            WebView.setWebContentsDebuggingEnabled(true);
-        }
+        WebView.setWebContentsDebuggingEnabled(true);
     }
 
-    /**
-     * 应用 webview 配置
-     */
-    private void applyWebViewConfig(WebSettings settings) {
-        try {
-            JSONObject webviewConfig = appConfig.optJSONObject("webview");
-            if (webviewConfig != null) {
-                // 缩放
-                boolean zoomEnabled = webviewConfig.optBoolean("zoomEnabled", false);
-                settings.setSupportZoom(zoomEnabled);
-                settings.setBuiltInZoomControls(zoomEnabled);
-                settings.setDisplayZoomControls(false);
-
-                // 文本缩放
-                int textZoom = webviewConfig.optInt("textZoom", 100);
-                settings.setTextZoom(textZoom);
-
-                // 用户代理
-                String userAgent = webviewConfig.optString("userAgent", "");
-                if (!userAgent.isEmpty()) {
-                    settings.setUserAgentString(userAgent);
-                }
-
-                // 其他布尔设置
-                settings.setJavaScriptEnabled(webviewConfig.optBoolean("javascriptEnabled", true));
-                settings.setDomStorageEnabled(webviewConfig.optBoolean("domStorageEnabled", true));
-                settings.setAllowFileAccess(webviewConfig.optBoolean("allowFileAccess", true));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 加载网页内容
-     */
     private void loadWebContent() {
-        try {
-            // 获取入口 URL
-            String targetUrl = getTargetUrl();
+        String targetUrl = "index.html";
+        if (appConfig != null) {
+            String url = appConfig.optString("targetUrl");
+            if (url.isEmpty()) url = appConfig.optString("url");
+            if (!url.isEmpty()) targetUrl = url;
+        }
+
+        if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
             webView.loadUrl(targetUrl);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 加载本地默认页面
-            webView.loadUrl("http://localhost/index.html");
+        } else {
+            targetUrl = targetUrl.replace("./", "").replace("/", "");
+            webView.loadUrl("http://localhost/" + targetUrl);
         }
     }
 
-    /**
-     * 获取目标 URL
-     */
-    private String getTargetUrl() {
-        try {
-            // 优先级：targetUrl > url > entry > 默认 index.html
-            String targetUrl = appConfig.optString("targetUrl", "");
-            if (targetUrl.isEmpty()) {
-                targetUrl = appConfig.optString("url", "");
-            }
-            if (targetUrl.isEmpty()) {
-                targetUrl = appConfig.optString("entry", "");
-            }
-
-            if (!targetUrl.isEmpty()) {
-                // 如果是 http/https 链接，直接使用
-                if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
-                    return targetUrl;
-                }
-                // 本地文件路径
-                return "http://localhost/" + targetUrl;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // 默认入口
-        return "http://localhost/index.html";
-    }
-
-    /**
-     * 本地内容 WebViewClient
-     */
     private class LocalContentWebViewClient extends WebViewClient {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Uri url = request.getUrl();
             if (url != null && "localhost".equalsIgnoreCase(url.getHost())) {
+                String path = url.getPath();
+                if (path == null || path.isEmpty() || "/".equals(path)) path = "index.html";
+                if (path.startsWith("/")) path = path.substring(1);
+                
+                // 尝试加载加密资源 (.bin)
                 try {
-                    String path = url.getPath();
-                    if (path == null || path.equals("/") || path.equals("")) {
-                        path = "index.html";
-                    }
-                    if (path.startsWith("/")) {
-                        path = path.substring(1);
+                    // 检查是否存在对应的 .bin 文件
+                    // 由于 AssetManager 没法直接 check exist，我们尝试列出目录或者直接 open
+                    // 这里采用直接调用的方式，如果 decryptAsset 返回非空，说明成功
+                    
+                    // 注意：decryptAsset 在 Native 层会尝试读取 path + ".bin" 吗？
+                    // 不，Native 层直接读取传入的文件名。所以我们在 Java 层决定文件名。
+                    
+                    // 策略：先看有没有 path + ".bin"
+                    String binPath = path + ".bin";
+                    boolean hasEncrypted = false;
+                    try {
+                        InputStream is = getAssets().open(binPath);
+                        is.close();
+                        hasEncrypted = true;
+                    } catch (IOException ignored) {
+                        // 没有 .bin 文件
                     }
 
-                    // 尝试从 assets 读取文件
+                    if (hasEncrypted) {
+                        byte[] data = decryptAsset(getAssets(), binPath);
+                        if (data != null) {
+                            return new WebResourceResponse(getMimeType(path), "UTF-8", new ByteArrayInputStream(data));
+                        }
+                    }
+                    
+                    // 回退到普通文件
                     InputStream stream = getAssets().open(path);
-
-                    // 根据文件扩展名设置 MIME 类型
-                    String mimeType = getMimeType(path);
-
-                    return new WebResourceResponse(mimeType, "UTF-8", stream);
+                    return new WebResourceResponse(getMimeType(path), "UTF-8", stream);
                 } catch (IOException e) {
-                    // 文件不存在，返回 404
-                    return null;
+                    return new WebResourceResponse("text/html", "UTF-8", 404, "Not Found", null, null);
                 }
             }
             return super.shouldInterceptRequest(view, request);
         }
 
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            // 处理特殊协议
-            if (url.startsWith("tel:") || url.startsWith("mailto:") ||
-                    url.startsWith("sms:") || url.startsWith("geo:")) {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-
-            // 允许 WebView 加载其他 URL
-            return false;
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return handleSpecialUrl(view, request.getUrl().toString());
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            // 页面加载完成后，可以注入一些初始化脚本
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return handleSpecialUrl(view, url);
+        }
+
+        private boolean handleSpecialUrl(WebView view, String url) {
+            if (url.startsWith("http://") || url.startsWith("https://")) return false;
+            try {
+                Intent intent;
+                if (url.startsWith("intent://")) {
+                    intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                } else {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.w(TAG, "未安装应用: " + url);
+                }
+                return true;
+            } catch (Exception e) {
+                Log.e(TAG, "URL Scheme Error", e);
+                return true;
+            }
+        }
+
+        private String getMimeType(String path) {
+            String lowerPath = path.toLowerCase(); // 建议转小写，防止 .SVG 后缀匹配失败
+
+            if (lowerPath.endsWith(".html") || lowerPath.endsWith(".htm")) return "text/html";
+            if (lowerPath.endsWith(".js")) return "application/javascript";
+            if (lowerPath.endsWith(".css")) return "text/css";
+            if (lowerPath.endsWith(".json")) return "application/json";
+
+            // 图片格式
+            if (lowerPath.endsWith(".png")) return "image/png";
+            if (lowerPath.endsWith(".jpg") || lowerPath.endsWith(".jpeg")) return "image/jpeg";
+            if (lowerPath.endsWith(".gif")) return "image/gif";
+            if (lowerPath.endsWith(".svg")) return "image/svg+xml"; // 🔥 关键修复：添加这一行
+            if (lowerPath.endsWith(".ico")) return "image/x-icon";
+            if (lowerPath.endsWith(".webp")) return "image/webp"; // 现代 Android 开发常用
+
+            // 字体格式 (如果你的网页用了本地字体)
+            if (lowerPath.endsWith(".ttf")) return "font/ttf";
+            if (lowerPath.endsWith(".woff")) return "font/woff";
+            if (lowerPath.endsWith(".woff2")) return "font/woff2";
+
+            // 音视频
+            if (lowerPath.endsWith(".mp3")) return "audio/mpeg";
+            if (lowerPath.endsWith(".mp4")) return "video/mp4";
+            return "text/plain";
         }
     }
 
-    /**
-     * 获取 MIME 类型
-     */
-    private String getMimeType(String path) {
-        if (path.endsWith(".html") || path.endsWith(".htm")) return "text/html";
-        if (path.endsWith(".css")) return "text/css";
-        if (path.endsWith(".js")) return "application/javascript";
-        if (path.endsWith(".json")) return "application/json";
-        if (path.endsWith(".png")) return "image/png";
-        if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
-        if (path.endsWith(".gif")) return "image/gif";
-        if (path.endsWith(".svg")) return "image/svg+xml";
-        if (path.endsWith(".webp")) return "image/webp";
-        if (path.endsWith(".mp3")) return "audio/mpeg";
-        if (path.endsWith(".mp4")) return "video/mp4";
-        if (path.endsWith(".woff")) return "font/woff";
-        if (path.endsWith(".woff2")) return "font/woff2";
-        if (path.endsWith(".ttf")) return "font/ttf";
-        if (path.endsWith(".xml")) return "text/xml";
-        return "text/plain";
-    }
+    private class FullWebChromeClient extends WebChromeClient {
+        private ValueCallback<Uri[]> uploadMessage;
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // 配置变化时重新应用状态栏设置
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            applyStatusBarConfig();
-        }, 100);
+        @Override
+        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+            if (uploadMessage != null) uploadMessage.onReceiveValue(null);
+            uploadMessage = filePathCallback;
+            try {
+                Intent intent = fileChooserParams.createIntent();
+                startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
+                return true;
+            } catch (Exception e) {
+                uploadMessage = null;
+                return false;
+            }
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (webChromeClient != null) {
-            webChromeClient.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
+            if (webChromeClient.uploadMessage == null) return;
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                results = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            }
+            webChromeClient.uploadMessage.onReceiveValue(results);
+            webChromeClient.uploadMessage = null;
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (webView != null) {
-            webView.destroy();
-        }
-
-        if (webAppInterface != null) {
-            // 清理 WebAppInterface 资源
-            try {
-                webAppInterface.finalize();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
-
-
 }

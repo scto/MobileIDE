@@ -1,4 +1,0 @@
-<resources>
-    <!-- ≥ 600 dp (7" tablets in landscape, most 10" tablets) -->
-    <dimen name="fab_margin">48dp</dimen>
-</resources>

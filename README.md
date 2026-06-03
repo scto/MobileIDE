@@ -1,85 +1,92 @@
-# MobileIDE - AI-Collaborated Android IDE
+# MobileIDE ![Stone Badge](https://stone.professorlee.work/api/stone/scto/MobileIDE)
+![Version](https://img.shields.io/badge/version-0.3.2-blue?style=flat-square)
+[![Language](https://img.shields.io/badge/Language-Kotlin-blue?style=flat-square)](https://kotlinlang.org/)
+[![UI](https://img.shields.io/badge/UI-Jetpack_Compose-green?style=flat-square)](https://developer.android.com/jetpack/compose)
+[![License](https://img.shields.io/badge/License-GPLv3-orange?style=flat-square)](LICENSE)
 
-## 📖 Project Introduction
 
-MobileIDE is a fully on-device Android IDE written in Kotlin and Jetpack Compose.
-The project combines modern Android development tooling, syntax-aware editing,
-TextMate grammars, APK signing support, project management, and integrated web previewing.
+[ [**English**] ] | [ German](README_DE.md) ]
 
-The IDE is designed to run completely on Android devices without external desktop tooling.
+MobileIDE is a native Android Integrated Development Environment (IDE) for app development. Built entirely with Jetpack Compose, this project implements a complete workflow ranging from code editing to building APKs directly on your mobile device.
 
-## 🤖 AI Development
+This is an experimental engineering project; its core architecture and code logic were collaboratively completed by multiple AI models (Claude, Gemini, DeepSeek).
 
-This project was collaboratively developed using multiple AI systems:
+## Screenshots
 
-- **Claude**: Architecture refinement, theme system, modularization
-- **Gemini**: UI layer, project management flows, editor integrations
-- **DeepSeek**: Core editor features and supporting infrastructure
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2eac6ea4-25a1-4a02-b814-2925ffb2092e" width="45%" />
+  <img src="https://github.com/user-attachments/assets/7999b42a-af56-4aea-b705-920e7e168844" width="45%" />
+</div>
 
-## 🛠️ Tech Stack
+## Project Structure
 
-- **Language**: Kotlin + Java
-- **UI Framework**: Jetpack Compose
-- **Architecture**: Modular Android Architecture
-- **Editor Engine**: Sora Editor
-- **Syntax Highlighting**: TextMate Grammars
-- **Build System**: Gradle Kotlin DSL
-- **APK Signing**: Embedded Android APK Signer
-- **Target Platform**: Android
-
----
-
-# 📁 Project Structure
+The main code is located in `app/src/main/java/com/scto/mobile/ide/`. The directory structure and functions are as follows:
 
 ```text
-MobileIDE
-├── app/                    # Main Android application module
-│   ├── ui/                 # Screens and UI flows
-│   ├── html/               # HTML analysis and autocomplete
-│   ├── textmate/           # TextMate language integration
-│   └── dokka/              # Dokka documentation
-│
-├── core/
-│   ├── files/              # File abstraction and ZIP utilities
-│   ├── projects/           # Project templates and workspace handling
-│   ├── resources/          # Shared Android resources
-│   ├── ui/                 # Shared Compose UI components and themes
-│   └── utils/              # Logging, permissions, workspace utilities
-│
-├── signer/                 # Embedded APK signer implementation
-│   ├── apksig/             # Android APK Signature Scheme implementation
-│   └── mcal/               # Kotlin signing utilities and wrappers
-│
-├── webapp/                 # Lightweight Android Web IDE preview app
-│
-├── assets/
-│   └── MobileIDE_Icons/    # Launcher icons and branding assets
-│
-├── gradle/                 # Gradle wrapper and version catalog
-└── settings.gradle.kts     # Module configuration
+com.scto.mobile.ide
+├── build/              # Custom APK build system
+│   ├── ApkBuilder.java # Core logic for compiling and packaging APKs
+│   ├── ApkInstaller.kt # Handles APK installation
+│   └── ...             # Encryptor, ZipAligner
+├── core/               # App-specific core infrastructure
+│   └── utils/          # Utilities (Backup, CodeFormatter, WorkspaceManager, etc.)
+├── files/              # File system module
+│   ├── FileIcons.kt    # Icon resource mapping
+│   └── FileTree.kt     # File explorer UI and logic
+├── ui/                 # Interface layer (Jetpack Compose)
+│   ├── components/     # Shared UI components
+│   ├── editor/         # Code editor screen
+│   ├── preview/        # Web preview screen
+│   ├── settings/       # Application settings and about screens
+│   ├── terminal/       # Terminal emulator (Alpine Linux integration)
+│   ├── theme/          # Design system (Colors, Typography)
+│   └── welcome/        # Welcome/Onboarding screen
 ```
 
----
+**Key Assets (`app/src/main/assets/`)**:
+*   `textmate/`: TextMate grammars and configurations for syntax highlighting.
+*   `queries/`: Syntax tree queries.
+*   `init-host.sh`, `init.sh`, `proot`, `rootfs.bin`: Files for the embedded Alpine Linux environment.
 
-# 🧩 Modules Overview
 
-| Module | Description |
-|---|---|
-| `:app` | Main MobileIDE application |
-| `:core:files` | File tree, ZIP support, file abstractions |
-| `:core:projects` | Project templates and workspace helpers |
-| `:core:resources` | Shared Android resources |
-| `:core:ui` | Shared Compose components and theming |
-| `:core:utils` | Logging, permissions, preferences |
-| `:signer` | APK signing and keystore management |
-| `:webapp` | Android-based web preview runtime |
+## Features
 
-# Dokka v2 + Mermaid Configuration
+*   **Syntax Highlighting**: Based on TextMate grammar files, providing perfect support for HTML, CSS, JavaScript, and JSON.
+*   **Project Management**: Full file system access permissions, supporting the creation and management of multi-file Web projects.
+*   **Real-time Preview**: Integrated WebView preview environment supporting JavaScript interaction testing.
+*   **Modern UI**: Written 100% in Kotlin and Jetpack Compose, supporting dynamic themes.
+*   **Git Integration**: Built-in Git version control with a visual commit history graph, supporting Clone, Commit, Push, Pull, and Branch management. Automatically ignores sensitive files and build artifacts.
 
-Included:
+## Discussion
 
-- Dokka v2 configuration
-- Mermaid architecture diagrams
-- Multi-module documentation setup
-- MkDocs Mermaid support
-- Markdown + HTML documentation support
+* QQ Group: [1050254184](https://qm.qq.com/q/tFXuqMQDlK)
+* TG Group: [Android_For_MobileIDE](https://t.me/Android_For_MobileIDE)
+
+## Contributors
+
+<a href="https://github.com/scto/MobileIDE/graphs/contributors">
+   <img src="https://contributors-img.web.app/image?repo=scto/MobileIDE" />
+</a>
+
+## License
+
+```
+MobileIDE - A powerful IDE for Android app development.
+Copyright (C) 2025  scto  <tschmid35@.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```
+
+
+[![Star History Chart](https://api.star-history.com/svg?repos=scto/MobileIDE&type=Date)](https://star-history.com/#scto/MobileIDE&Date)

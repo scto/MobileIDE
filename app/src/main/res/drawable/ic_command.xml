@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ MobileIDE - A powerful IDE for Android app development.
+  ~ Copyright (C) 2025  scto  <tschmid35@gmail.com>
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+  
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M260,840q-58,0 -99,-41t-41,-99q0,-58 41,-99t99,-41h60v-160h-60q-58,0 -99,-41t-41,-99q0,-58 41,-99t99,-41q58,0 99,41t41,99v60h160v-60q0,-58 41,-99t99,-41q58,0 99,41t41,99q0,58 -41,99t-99,41h-60v160h60q58,0 99,41t41,99q0,58 -41,99t-99,41q-58,0 -99,-41t-41,-99v-60L400,640v60q0,58 -41,99t-99,41ZM260,760q25,0 42.5,-17.5T320,700v-60h-60q-25,0 -42.5,17.5T200,700q0,25 17.5,42.5T260,760ZM700,760q25,0 42.5,-17.5T760,700q0,-25 -17.5,-42.5T700,640h-60v60q0,25 17.5,42.5T700,760ZM400,560h160v-160L400,400v160ZM260,320h60v-60q0,-25 -17.5,-42.5T260,200q-25,0 -42.5,17.5T200,260q0,25 17.5,42.5T260,320ZM640,320h60q25,0 42.5,-17.5T760,260q0,-25 -17.5,-42.5T700,200q-25,0 -42.5,17.5T640,260v60Z"/>
+</vector>

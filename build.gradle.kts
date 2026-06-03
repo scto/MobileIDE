@@ -1,17 +1,30 @@
+/*
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.kotlin.parcelize) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.ktfmt) apply false
-    alias(libs.plugins.aboutlibraries) apply false
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.aboutlibraries) apply false
+    alias(libs.plugins.mavenPublish) apply false
 }
 
 subprojects {
@@ -23,73 +36,19 @@ subprojects {
         }
     }
 
-    // Android-spezifische Konfiguration
-    plugins.withId("com.android.base") {
-        extensions.configure<com.android.build.gradle.BaseExtension> {
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
-            }
-        }
-    }
-    
     // Globale Java Toolchain Lösung (Behebt den Compiler-Fehler)
     // Wir nutzen hier 'kotlinOptions' statt jvmToolchain, da dies
     // in eingeschränkten Umgebungen wie Android/Termux zuverlässiger ist.
     // Globale Konfiguration der Kotlin Compiler-Optionen
+    /*
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             // HIER die Sprachversion explizit auf 2.0 oder höher setzen
             languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
-            
             freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         }
     }
-    
-    // Globale Konfiguration der Dokka Konfiguration 
-    plugins.withId("org.jetbrains.dokka") {
-        // 1. Plugins als Dependency definieren
-        dependencies {
-            "dokkaPlugin"("org.jetbrains.dokka:mermaid-plugin:0.6.0")
-            //"dokkaPlugin"(libs.dokka.mermaid)
-        }
-        
-         // 2. Zentrale Konfiguration über die DokkaExtension
-        configure<org.jetbrains.dokka.gradle.DokkaExtension> {
-            dokkaSourceSets.configureEach {
-                moduleName.set(project.name)
-                skipEmptyPackages.set(true)
-                reportUndocumented.set(false)
-                skipDeprecated.set(false)
-                jdkVersion.set(17)
-
-                // Pfad zur globalen module.md
-                // NEU: Pfad zeigt jetzt in das Unterverzeichnis 'dokka'
-                // Nutze 'fileTree', um alle .md Dateien in diesem Ordner einzuschließen
-                includes.from(project.layout.projectDirectory.dir("dokka").asFileTree.matching {
-                    include("*.md")
-                })
-                
-                /*
-                includes.from(rootProject.layout.projectDirectory.file("module.md"))
-                */
-                
-                sourceLink {
-                    localDirectory.set(file("src/main/java"))
-                    // Korrektur: .toURI() verwenden
-                    remoteUrl.set(uri("https://github.com/scto/MobileIDE/tree/main/src/main/java"))
-                    remoteLineSuffix.set("#L")
-                }
-            }
-
-            // 3. Plugin Konfiguration
-            /*
-            pluginsConfiguration {
-                create("org.jetbrains.dokka.mermaid.MermaidPlugin")
-            }
-            */
-        }
-    }
+    */
 }
