@@ -49,7 +49,6 @@ val acsProps =
             .filter { '=' in it }
             .associate { it.substringBefore('=').trim() to it.substringAfter('=').trim() }
     } else emptyMap()
-
 // ACS_SIGNING_CONFIG_END
 
 android {
