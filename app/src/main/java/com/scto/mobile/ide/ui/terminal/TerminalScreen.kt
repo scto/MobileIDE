@@ -108,14 +108,11 @@ fun TerminalScreen(navController: NavController) {
                             }
                         }
                     },
-<<<<<<< HEAD
-=======
                     update = { view ->
                         // Hier wird der VirtualKeysListener angebunden und bei Session-Wechsel aktualisiert
                         val listener = VirtualKeysListener(currentSession)
                         view.setVirtualKeysViewClient(listener)
-                    }
->>>>>>> 7df758f (Fix: Implementation & Changes Made:)
+                    },
                 )
             }
         }
