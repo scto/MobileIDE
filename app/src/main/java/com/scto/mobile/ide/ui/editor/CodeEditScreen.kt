@@ -117,7 +117,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var autoSaveInterval by remember { mutableLongStateOf(0L) }
     // 🔥 优化：在初始化时直接读取 SharedPreferences，避免闪烁
     var isAiEnabled by remember {
-        val editorPrefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+        val editorPrefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
         mutableStateOf(editorPrefs.getBoolean("editor_ai_enabled", true))
     }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -125,10 +125,10 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val prefs = context.getSharedPreferences("WebIDE_Settings", Context.MODE_PRIVATE)
+                val prefs = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
                 autoSaveInterval = prefs.getLong("auto_save_interval", 0L)
 
-                val editorPrefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+                val editorPrefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
                 isAiEnabled = editorPrefs.getBoolean("editor_ai_enabled", true)
             }
         }
