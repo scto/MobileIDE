@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.welcome
 
 import android.os.Build
@@ -46,21 +46,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.PermissionManager
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
-
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WelcomeScreen(
-    themeViewModel: ThemeViewModel,
-    onWelcomeFinished: () -> Unit
-) {
+fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit) {
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val themeState by themeViewModel.themeState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -78,75 +73,84 @@ fun WelcomeScreen(
     var isMonetEnabled by remember { mutableStateOf(themeState.isMonetEnabled) }
 
     val systemDark = isSystemInDarkTheme()
-    val isDarkTheme = remember(selectedModeIndex, systemDark) {
-        when (selectedModeIndex) {
-            1 -> false
-            2 -> true
-            else -> systemDark
+    val isDarkTheme =
+        remember(selectedModeIndex, systemDark) {
+            when (selectedModeIndex) {
+                1 -> false
+                2 -> true
+                else -> systemDark
+            }
         }
-    }
 
     // --- Logic fixes in WelcomeScreen.kt ---
 
-// 1. Calculate current preview theme data
-    val currentPreviewTheme: ThemeColor? = remember(selectedThemeIndex, customColor, isMonetEnabled, isDarkTheme) {
-        if (isMonetEnabled) {
-            null
-        } else if (selectedThemeIndex < themeColors.size) {
-            themeColors[selectedThemeIndex]
-        } else {
-            // [Custom mode]
-            // 1. Determine background color: Dark uses slightly bright pure black, Light uses slightly gray pure white
-            val bgDark = Color(0xFF121212)
-            val bgLight = Color(0xFFF8F9FA) // Slightly grayish to avoid glaring
+    // 1. Calculate current preview theme data
+    val currentPreviewTheme: ThemeColor? =
+        remember(selectedThemeIndex, customColor, isMonetEnabled, isDarkTheme) {
+            if (isMonetEnabled) {
+                null
+            } else if (selectedThemeIndex < themeColors.size) {
+                themeColors[selectedThemeIndex]
+            } else {
+                // [Custom mode]
+                // 1. Determine background color: Dark uses slightly bright pure black, Light uses slightly gray pure
+                // white
+                val bgDark = Color(0xFF121212)
+                val bgLight = Color(0xFFF8F9FA) // Slightly grayish to avoid glaring
 
-            // 2. Key point: Stuff customColor into Primary and Accent
-            // This way the light blobs in WelcomeBackground can read your custom color!
-            val customSpecDark = ThemeColorSpec(
-                background = bgDark,
-                surface = Color(0xFF1E1E1E),
-                primary = customColor,
-                accent = customColor // Make both light blobs your custom color, or make the second blob slightly lighter
-            )
-            val customSpecLight = ThemeColorSpec(
-                background = bgLight,
-                surface = Color.White,
-                primary = customColor,
-                accent = customColor
-            )
+                // 2. Key point: Stuff customColor into Primary and Accent
+                // This way the light blobs in WelcomeBackground can read your custom color!
+                val customSpecDark =
+                    ThemeColorSpec(
+                        background = bgDark,
+                        surface = Color(0xFF1E1E1E),
+                        primary = customColor,
+                        accent =
+                            customColor, // Make both light blobs your custom color, or make the second blob slightly
+                                        // lighter
+                    )
+                val customSpecLight =
+                    ThemeColorSpec(
+                        background = bgLight,
+                        surface = Color.White,
+                        primary = customColor,
+                        accent = customColor,
+                    )
 
-            ThemeColor("Custom", customSpecDark, customSpecLight)
+                ThemeColor("Custom", customSpecDark, customSpecLight)
+            }
         }
-    }
 
     // 2. Calculate target background color (used for text inverse color calculation)
-    val targetBg = if (isMonetEnabled) {
-        if (isDarkTheme) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLowest
-    } else if (selectedThemeIndex < themeColors.size) {
-        val theme = themeColors[selectedThemeIndex]
-        if (isDarkTheme) theme.dark.background else theme.light.background
-    } else {
-        // Custom color mode: If custom is selected, background uses color generated by Theme.kt logic
-        MaterialTheme.colorScheme.background
-    }
+    val targetBg =
+        if (isMonetEnabled) {
+            if (isDarkTheme) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLowest
+        } else if (selectedThemeIndex < themeColors.size) {
+            val theme = themeColors[selectedThemeIndex]
+            if (isDarkTheme) theme.dark.background else theme.light.background
+        } else {
+            // Custom color mode: If custom is selected, background uses color generated by Theme.kt logic
+            MaterialTheme.colorScheme.background
+        }
 
     val animatedBgColor by animateColorAsState(targetBg, tween(600), label = "bg_color")
 
     // 3. Smart text color: Increase threshold to avoid text turning white on light gray background
-    val contentColor by animateColorAsState(
-        if (animatedBgColor.luminance() > 0.45f) Color.Black else Color.White,
-        tween(600),
-        label = "content_color"
-    )
+    val contentColor by
+        animateColorAsState(
+            if (animatedBgColor.luminance() > 0.45f) Color.Black else Color.White,
+            tween(600),
+            label = "content_color",
+        )
 
-    val permissionState = PermissionManager.rememberPermissionRequest(
-        onPermissionGranted = { storageGranted = true },
-        onPermissionDenied = { }
-    )
+    val permissionState =
+        PermissionManager.rememberPermissionRequest(
+            onPermissionGranted = { storageGranted = true },
+            onPermissionDenied = {},
+        )
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) storageGranted =
-                permissionState.hasPermissions()
+            if (event == Lifecycle.Event.ON_RESUME) storageGranted = permissionState.hasPermissions()
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -158,13 +162,16 @@ fun WelcomeScreen(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 // Calculate the highlight color of the bottom navigation bar
-                val activeColor = when {
-                    isMonetEnabled -> MaterialTheme.colorScheme.primary
-                    // If it is custom mode (index == size), use customColor directly
-                    selectedThemeIndex == themeColors.size -> customColor
-                    // Otherwise use theme color
-                    else -> if (isDarkTheme) themeColors[selectedThemeIndex].dark.primary else themeColors[selectedThemeIndex].light.primary
-                }
+                val activeColor =
+                    when {
+                        isMonetEnabled -> MaterialTheme.colorScheme.primary
+                        // If it is custom mode (index == size), use customColor directly
+                        selectedThemeIndex == themeColors.size -> customColor
+                        // Otherwise use theme color
+                        else ->
+                            if (isDarkTheme) themeColors[selectedThemeIndex].dark.primary
+                            else themeColors[selectedThemeIndex].light.primary
+                    }
 
                 WelcomeBottomBar(
                     pagerState = pagerState,
@@ -176,14 +183,17 @@ fun WelcomeScreen(
                             scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                         } else {
                             themeViewModel.saveThemeConfig(
-                                selectedModeIndex, selectedThemeIndex, customColor, isMonetEnabled,
-                                selectedThemeIndex == themeColors.size
+                                selectedModeIndex,
+                                selectedThemeIndex,
+                                customColor,
+                                isMonetEnabled,
+                                selectedThemeIndex == themeColors.size,
                             )
                             onWelcomeFinished()
                         }
-                    }
+                    },
                 )
-            }
+            },
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
                 // Background layer
@@ -191,38 +201,35 @@ fun WelcomeScreen(
                     currentTheme = currentPreviewTheme,
                     isDarkTheme = isDarkTheme,
                     monetPrimary = MaterialTheme.colorScheme.primary,
-                    monetTertiary = MaterialTheme.colorScheme.tertiary
+                    monetTertiary = MaterialTheme.colorScheme.tertiary,
                 )
 
                 // Content layer
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                ) { page ->
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().padding(paddingValues)) { page ->
                     when (page) {
                         0 -> IntroContent()
-                        1 -> PermissionsContent(
-                            storageGranted = storageGranted,
-                            installGranted = installGranted,
-                            onRequestStoragePermission = { permissionState.requestPermissions() },
-                            onRequestInstallPermission = { /* ... */ }
-                        )
+                        1 ->
+                            PermissionsContent(
+                                storageGranted = storageGranted,
+                                installGranted = installGranted,
+                                onRequestStoragePermission = { permissionState.requestPermissions() },
+                                onRequestInstallPermission = { /* ... */ },
+                            )
 
-                        2 -> ThemeSetupContent(
-                            selectedModeIndex = selectedModeIndex,
-                            selectedThemeIndex = selectedThemeIndex,
-                            isMonetEnabled = isMonetEnabled,
-                            isDarkTheme = isDarkTheme, // Pass current mode
-                            onMonetToggle = { isMonetEnabled = it },
-                            onModeSelected = { selectedModeIndex = it },
-                            onThemeSelected = { selectedThemeIndex = it },
-                            onCustomColorClick = {
-                                selectedThemeIndex = themeColors.size
-                                showColorPicker = true
-                            }
-                        )
+                        2 ->
+                            ThemeSetupContent(
+                                selectedModeIndex = selectedModeIndex,
+                                selectedThemeIndex = selectedThemeIndex,
+                                isMonetEnabled = isMonetEnabled,
+                                isDarkTheme = isDarkTheme, // Pass current mode
+                                onMonetToggle = { isMonetEnabled = it },
+                                onModeSelected = { selectedModeIndex = it },
+                                onThemeSelected = { selectedThemeIndex = it },
+                                onCustomColorClick = {
+                                    selectedThemeIndex = themeColors.size
+                                    showColorPicker = true
+                                },
+                            )
                     }
                 }
             }
@@ -237,7 +244,7 @@ fun WelcomeScreen(
                 customColor = color
                 showColorPicker = false
                 selectedThemeIndex = themeColors.size
-            }
+            },
         )
     }
 }
@@ -245,25 +252,20 @@ fun WelcomeScreen(
 // --- Page 1: Intro ---
 @Composable
 private fun IntroContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(modifier = Modifier.size(250.dp)) { MobileIDE_Icon() }
-           // Spacer(Modifier.height(20.dp))
+            // Spacer(Modifier.height(20.dp))
             Text(
                 stringResource(R.string.app_name),
-                style = MaterialTheme.typography.displayMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
-                )
+                style =
+                    MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp),
             )
             Spacer(Modifier.height(16.dp))
             Text(
                 stringResource(R.string.welcome_tagline),
                 style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current.copy(alpha = 0.8f)
+                color = LocalContentColor.current.copy(alpha = 0.8f),
             )
         }
     }
@@ -275,24 +277,21 @@ private fun PermissionsContent(
     storageGranted: Boolean,
     installGranted: Boolean,
     onRequestStoragePermission: () -> Unit,
-    onRequestInstallPermission: () -> Unit
+    onRequestInstallPermission: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             stringResource(R.string.welcome_permissions_title),
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
         )
         Spacer(Modifier.height(8.dp))
         Text(
             stringResource(R.string.welcome_permissions_description),
             style = MaterialTheme.typography.bodyMedium,
-            color = LocalContentColor.current.copy(alpha = 0.8f)
+            color = LocalContentColor.current.copy(alpha = 0.8f),
         )
 
         Spacer(Modifier.height(32.dp))
@@ -302,7 +301,7 @@ private fun PermissionsContent(
             stringResource(R.string.welcome_permission_storage_title),
             stringResource(R.string.welcome_permission_storage_description),
             storageGranted,
-            onRequestStoragePermission
+            onRequestStoragePermission,
         )
         Spacer(Modifier.height(12.dp))
         PermissionCard(
@@ -310,7 +309,7 @@ private fun PermissionsContent(
             stringResource(R.string.welcome_permission_install_title),
             stringResource(R.string.welcome_permission_install_description),
             installGranted,
-            onRequestInstallPermission
+            onRequestInstallPermission,
         )
     }
 }
@@ -325,47 +324,47 @@ private fun ThemeSetupContent(
     onMonetToggle: (Boolean) -> Unit,
     onModeSelected: (Int) -> Unit,
     onThemeSelected: (Int) -> Unit,
-    onCustomColorClick: () -> Unit
+    onCustomColorClick: () -> Unit,
 ) {
-    val modeOptions = listOf(
-        stringResource(R.string.action_follow_system),
-        stringResource(R.string.action_light),
-        stringResource(R.string.action_dark)
-    )
+    val modeOptions =
+        listOf(
+            stringResource(R.string.action_follow_system),
+            stringResource(R.string.action_light),
+            stringResource(R.string.action_dark),
+        )
 
     // 1. Remove padding from parent container, keep only vertical scrolling
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
     ) {
         // 2. Add padding individually to internal elements
         Text(
             stringResource(R.string.welcome_appearance_title),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(horizontal = 24.dp) // <--- Add here
+            modifier = Modifier.padding(horizontal = 24.dp), // <--- Add here
         )
         Spacer(Modifier.height(32.dp))
 
         // Mode selection button
         SingleChoiceSegmentedButtonRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp) // <--- Add here
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp) // <--- Add here
         ) {
             modeOptions.forEachIndexed { index, label ->
                 SegmentedButton(
                     selected = selectedModeIndex == index,
                     onClick = { onModeSelected(index) },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = modeOptions.size),
-                    colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        inactiveContainerColor = Color.Transparent,
-                        inactiveContentColor = LocalContentColor.current
-                    )
-                ) { Text(label) }
+                    colors =
+                        SegmentedButtonDefaults.colors(
+                            activeContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            activeContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            inactiveContainerColor = Color.Transparent,
+                            inactiveContentColor = LocalContentColor.current,
+                        ),
+                ) {
+                    Text(label)
+                }
             }
         }
 
@@ -375,12 +374,14 @@ private fun ThemeSetupContent(
             ListItem(
                 headlineContent = { Text(stringResource(R.string.welcome_dynamic_color)) },
                 trailingContent = { Switch(checked = isMonetEnabled, onCheckedChange = onMonetToggle) },
-                colors = ListItemDefaults.colors(
-                    containerColor = Color.Transparent,
-                    headlineColor = LocalContentColor.current,
-                    trailingIconColor = LocalContentColor.current
-                ),
-                modifier = Modifier.padding(horizontal = 8.dp) // ListItem comes with some padding, just adjust slightly here
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = Color.Transparent,
+                        headlineColor = LocalContentColor.current,
+                        trailingIconColor = LocalContentColor.current,
+                    ),
+                modifier =
+                    Modifier.padding(horizontal = 8.dp), // ListItem comes with some padding, just adjust slightly here
             )
         }
 
@@ -391,9 +392,10 @@ private fun ThemeSetupContent(
 
                 // Use LazyRow instead of Row + Scroll
                 LazyRow(
-                    // Key point: contentPadding allows content to scroll to the edge of the screen, but has indentation at start
+                    // Key point: contentPadding allows content to scroll to the edge of the screen, but has indentation
+                    // at start
                     contentPadding = PaddingValues(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     // Render preset themes
                     itemsIndexed(themeColors) { index, theme ->
@@ -401,7 +403,7 @@ private fun ThemeSetupContent(
                             theme = theme,
                             isSelected = selectedThemeIndex == index,
                             isDarkTheme = isDarkTheme,
-                            onClick = { onThemeSelected(index) }
+                            onClick = { onThemeSelected(index) },
                         )
                     }
 
@@ -409,7 +411,7 @@ private fun ThemeSetupContent(
                     item {
                         CustomThemeCard(
                             isSelected = selectedThemeIndex == themeColors.size,
-                            onClick = onCustomColorClick
+                            onClick = onCustomColorClick,
                         )
                     }
                 }

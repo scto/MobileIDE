@@ -7,25 +7,21 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
-
 import com.rk.terminal.ui.screens.terminal.stat
 import com.rk.terminal.ui.screens.terminal.vmstat
-
+import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
-
-import com.scto.mobile.ide.core.utils.WorkspaceManager
-
 import java.io.File
 
 object AlpineManager {
     var currentProject: String? = null
-    
+
     private fun getTerminalDir(context: Context): File = File(context.filesDir, "terminal").apply { mkdirs() }
 
     fun createSession(context: Context, client: TerminalSessionClient, projectPath: String? = null): TerminalSession {
@@ -33,7 +29,7 @@ object AlpineManager {
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
         val initHostScript = File(terminalDir, "init-host.sh")
-        
+
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
@@ -44,37 +40,38 @@ object AlpineManager {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        
+
         val targetProjectPath = projectPath ?: currentProject ?: ""
-        
-        val env = mutableListOf(
-            "PATH=${System.getenv("PATH")}:/sbin:${terminalDir.absolutePath}:${terminalDir.absolutePath}/tools:${terminalDir.absolutePath}/bin",
-            "HOME=/root",
-            "TERM=xterm-256color",
-            "LANG=C.UTF-8",
-            "PREFIX=${terminalDir.absolutePath}",
-            "LOCAL=${terminalDir.absolutePath}",
-            "LD_LIBRARY_PATH=${terminalDir.absolutePath}/bin:$nativeLibDir",
-            "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
-            "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
-            "TMPDIR=${context.cacheDir.absolutePath}",
-            "MOBILEIDE_VERSION_NAME=$versionName",
-            "MOBILEIDE_VERSION_CODE=$versionCode",
-            "MOBILEIDE_WORKSPACE=$workspacePath",
-            "MOBILEIDE_PROJECT_DIR=$targetProjectPath"
-        )
+
+        val env =
+            mutableListOf(
+                "PATH=${System.getenv("PATH")}:/sbin:${terminalDir.absolutePath}:${terminalDir.absolutePath}/tools:${terminalDir.absolutePath}/bin",
+                "HOME=/root",
+                "TERM=xterm-256color",
+                "LANG=C.UTF-8",
+                "PREFIX=${terminalDir.absolutePath}",
+                "LOCAL=${terminalDir.absolutePath}",
+                "LD_LIBRARY_PATH=${terminalDir.absolutePath}/bin:$nativeLibDir",
+                "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+                "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
+                "TMPDIR=${context.cacheDir.absolutePath}",
+                "MOBILEIDE_VERSION_NAME=$versionName",
+                "MOBILEIDE_VERSION_CODE=$versionCode",
+                "MOBILEIDE_WORKSPACE=$workspacePath",
+                "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
+            )
 
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
             env.add("PROOT_LOADER=$nativeLibDir/libproot-loader.so")
         }
-        
+
         if (File(nativeLibDir, "libproot-loader32.so").exists()) {
             env.add("PROOT_LOADER32=$nativeLibDir/libproot-loader32.so")
         }
 
         val statFile = File(terminalDir, "stat")
         if (!statFile.exists()) statFile.writeText(stat)
-        
+
         val vmstatFile = File(terminalDir, "vmstat")
         if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
 
@@ -87,7 +84,7 @@ object AlpineManager {
             args,
             env.toTypedArray(),
             TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
-            client
+            client,
         )
     }
 
@@ -107,10 +104,7 @@ object AlpineManager {
         args.add("-L")
         args.add("-0")
 
-        val mounts = listOf(
-            "/proc", "/sys", "/dev", "/data", "/storage",
-            "/system"
-        )
+        val mounts = listOf("/proc", "/sys", "/dev", "/data", "/storage", "/system")
 
         mounts.forEach {
             if (File(it).exists()) {

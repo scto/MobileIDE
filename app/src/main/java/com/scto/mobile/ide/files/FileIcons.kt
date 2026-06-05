@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.files
 
 import androidx.compose.material.icons.Icons
@@ -84,66 +84,126 @@ object FileIcons {
 
         // Specific file names check
         if (fileName == "androidmanifest.xml") return Icons.Filled.Android to ColorAndroid
-        if (fileName == "build.gradle" || fileName == "build.gradle.kts" || fileName == "settings.gradle" || fileName == "settings.gradle.kts") return SimpleIcons.Gradle to Color(0xFF02303A)
+        if (
+            fileName == "build.gradle" ||
+                fileName == "build.gradle.kts" ||
+                fileName == "settings.gradle" ||
+                fileName == "settings.gradle.kts"
+        )
+            return SimpleIcons.Gradle to Color(0xFF02303A)
         if (fileName == "package.json") return SimpleIcons.Json to Color(0xFF339933)
         if (fileName.startsWith(".git")) return SimpleIcons.Git to Color(0xFFF05032)
         if (fileName == "dockerfile") return SimpleIcons.Docker to Color(0xFF2496ED)
 
         return when (extension) {
             // JVM Languages
-            "kt", "kts" -> SimpleIcons.Kotlin to ColorKotlin
+            "kt",
+            "kts" -> SimpleIcons.Kotlin to ColorKotlin
             "java" -> SimpleIcons.Java to ColorJava
-            "class", "jar" -> Icons.Filled.FolderZip to ColorJava
-            
+            "class",
+            "jar" -> Icons.Filled.FolderZip to ColorJava
+
             // Web
-            "html", "htm" -> SimpleIcons.Html5 to ColorHtml
+            "html",
+            "htm" -> SimpleIcons.Html5 to ColorHtml
             "css" -> SimpleIcons.Css3 to ColorCss
-            "scss", "sass" -> SimpleIcons.Sass to Color(0xFFCC6699)
+            "scss",
+            "sass" -> SimpleIcons.Sass to Color(0xFFCC6699)
             "less" -> Icons.Filled.Css to ColorCss
-            "js", "jsx", "mjs", "cjs" -> SimpleIcons.Javascript to ColorJavaScript
-            "ts", "tsx" -> SimpleIcons.Typescript to ColorTypeScript
+            "js",
+            "jsx",
+            "mjs",
+            "cjs" -> SimpleIcons.Javascript to ColorJavaScript
+            "ts",
+            "tsx" -> SimpleIcons.Typescript to ColorTypeScript
             "vue" -> Icons.Filled.Code to Color(0xFF4FC08D)
             "php" -> SimpleIcons.Php to Color(0xFF777BB4)
             "svelte" -> SimpleIcons.Svelte to Color(0xFFFF3E00)
             "ico" -> Icons.Filled.Image to ColorImage
 
             // Scripting / Other Languages
-            "py", "pyc", "pyd" -> SimpleIcons.Python to ColorPython
+            "py",
+            "pyc",
+            "pyd" -> SimpleIcons.Python to ColorPython
             "rb" -> SimpleIcons.Ruby to ColorRuby
             "go" -> SimpleIcons.Go to ColorGo
             "rs" -> SimpleIcons.Rust to Color.Unspecified // Rust icon usually has its own color or black/white
-            "c", "h" -> SimpleIcons.C to ColorC
-            "cpp", "hpp", "cc" -> SimpleIcons.Cplusplus to ColorCpp
+            "c",
+            "h" -> SimpleIcons.C to ColorC
+            "cpp",
+            "hpp",
+            "cc" -> SimpleIcons.Cplusplus to ColorCpp
             "cs" -> SimpleIcons.Csharp to Color(0xFF239120)
             "swift" -> SimpleIcons.Swift to ColorSwift
             "dart" -> SimpleIcons.Dart to ColorDart
             "lua" -> SimpleIcons.Lua to ColorLua
-            "sh", "bash", "zsh", "fish" -> SimpleIcons.Gnubash to ColorShell
-            "bat", "cmd", "ps1" -> SimpleIcons.Powershell to ColorShell
+            "sh",
+            "bash",
+            "zsh",
+            "fish" -> SimpleIcons.Gnubash to ColorShell
+            "bat",
+            "cmd",
+            "ps1" -> SimpleIcons.Powershell to ColorShell
 
             // Data & Config
             "json" -> SimpleIcons.Json to ColorJson
             "xml" -> Icons.Filled.Code to ColorXml
-            "yaml", "yml" -> Icons.Filled.Settings to ColorConfig
-            "toml", "ini", "conf", "properties" -> Icons.Filled.Settings to ColorConfig
-            "sql", "db", "sqlite" -> FontAwesomeIcons.Solid.Database to ColorDatabase
-            "csv", "tsv" -> Icons.Filled.TableChart to Color(0xFF217346)
+            "yaml",
+            "yml" -> Icons.Filled.Settings to ColorConfig
+            "toml",
+            "ini",
+            "conf",
+            "properties" -> Icons.Filled.Settings to ColorConfig
+            "sql",
+            "db",
+            "sqlite" -> FontAwesomeIcons.Solid.Database to ColorDatabase
+            "csv",
+            "tsv" -> Icons.Filled.TableChart to Color(0xFF217346)
 
             // Media
-            "png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "tiff" -> Icons.Filled.Image to ColorImage
-            "mp3", "wav", "ogg", "m4a", "flac", "aac" -> Icons.Filled.AudioFile to ColorAudio
-            "mp4", "mkv", "avi", "mov", "webm", "flv", "wmv" -> Icons.Filled.VideoFile to ColorVideo
-            
+            "png",
+            "jpg",
+            "jpeg",
+            "gif",
+            "webp",
+            "svg",
+            "bmp",
+            "tiff" -> Icons.Filled.Image to ColorImage
+            "mp3",
+            "wav",
+            "ogg",
+            "m4a",
+            "flac",
+            "aac" -> Icons.Filled.AudioFile to ColorAudio
+            "mp4",
+            "mkv",
+            "avi",
+            "mov",
+            "webm",
+            "flv",
+            "wmv" -> Icons.Filled.VideoFile to ColorVideo
+
             // Documents
-            "md", "markdown" -> SimpleIcons.Markdown to Color.Unspecified // Markdown usually black/white
-            "txt", "log" -> Icons.AutoMirrored.Filled.Article to Color(0xFF757575)
+            "md",
+            "markdown" -> SimpleIcons.Markdown to Color.Unspecified // Markdown usually black/white
+            "txt",
+            "log" -> Icons.AutoMirrored.Filled.Article to Color(0xFF757575)
             "pdf" -> Icons.AutoMirrored.Filled.InsertDriveFile to Color(0xFFD32F2F)
-            
+
             // Archives
-            "zip", "tar", "gz", "7z", "rar", "apk", "aab" -> Icons.Filled.FolderZip to ColorArchive
-            
+            "zip",
+            "tar",
+            "gz",
+            "7z",
+            "rar",
+            "apk",
+            "aab" -> Icons.Filled.FolderZip to ColorArchive
+
             // Fonts
-            "ttf", "otf", "woff", "woff2" -> Icons.Filled.FontDownload to Color(0xFF000000)
+            "ttf",
+            "otf",
+            "woff",
+            "woff2" -> Icons.Filled.FontDownload to Color(0xFF000000)
 
             // Default
             else -> Icons.AutoMirrored.Filled.InsertDriveFile to Color.Unspecified

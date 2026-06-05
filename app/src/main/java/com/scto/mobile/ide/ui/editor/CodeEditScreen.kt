@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor
 
 import android.annotation.SuppressLint
@@ -52,24 +52,24 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import com.scto.mobile.ide.files.FileTreeConfig
-import com.scto.mobile.ide.files.SortBy
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.core.content.edit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.build.ApkInstaller
-import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.files.FileTree
+import com.scto.mobile.ide.files.FileTreeConfig
+import com.scto.mobile.ide.files.SortBy
 import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.colorToHex
@@ -83,15 +83,12 @@ import com.scto.mobile.ide.ui.editor.git.GitViewModel
 import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import com.scto.mobile.ide.ui.terminal.AlpineManager
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import androidx.core.content.edit
 
 // 构建结果状态
 sealed class BuildResultState {
@@ -114,16 +111,13 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val gitViewModel: GitViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
     // 初始化 Git (加载配置等)
-    LaunchedEffect(projectPath) {
-        gitViewModel.initialize(projectPath)
-    }
+    LaunchedEffect(projectPath) { gitViewModel.initialize(projectPath) }
 
     // 1. 定义状态来持有自动保存的时间间隔
     var autoSaveInterval by remember { mutableLongStateOf(0L) }
     // 🔥 优化：在初始化时直接读取 SharedPreferences，避免闪烁
     var isAiEnabled by remember {
-        val editorPrefs =
-            context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+        val editorPrefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
         mutableStateOf(editorPrefs.getBoolean("editor_ai_enabled", true))
     }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -134,15 +128,12 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 val prefs = context.getSharedPreferences("WebIDE_Settings", Context.MODE_PRIVATE)
                 autoSaveInterval = prefs.getLong("auto_save_interval", 0L)
 
-                val editorPrefs =
-                    context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+                val editorPrefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
                 isAiEnabled = editorPrefs.getBoolean("editor_ai_enabled", true)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     LaunchedEffect(projectPath) {
         viewModel.loadInitialFile(projectPath)
@@ -169,9 +160,8 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
             val buildDir = File(projectPath, "build")
             if (buildDir.exists() && buildDir.isDirectory) {
                 // 找 build 目录下以 _release.apk 结尾且最新的文件
-                val lastApk = buildDir.listFiles()
-                    ?.filter { it.name.endsWith("_release.apk") }
-                    ?.maxByOrNull { it.lastModified() }
+                val lastApk =
+                    buildDir.listFiles()?.filter { it.name.endsWith("_release.apk") }?.maxByOrNull { it.lastModified() }
 
                 if (lastApk != null) {
                     viewModel.updateLastBuild(lastApk.absolutePath)
@@ -180,7 +170,6 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         }
     }
 
-
     LaunchedEffect(drawerState.targetValue) {
         if (drawerState.targetValue == DrawerValue.Open) {
             keyboardController?.hide()
@@ -188,9 +177,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         }
     }
     // 加载配置
-    LaunchedEffect(Unit) {
-        viewModel.reloadEditorConfig(context)
-    }
+    LaunchedEffect(Unit) { viewModel.reloadEditorConfig(context) }
     val editorConfig = viewModel.editorConfig
 
     // 初始加载进度条状态
@@ -202,36 +189,30 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var buildResult by remember { mutableStateOf<BuildResultState?>(null) }
 
     // 检测是否为 Gradle/Android 项目 (含有 build.gradle 或 build.gradle.kts)
-    val hasWebAppConfig = remember(projectPath) {
-        File(projectPath, "build.gradle.kts").exists() || File(projectPath, "build.gradle").exists()
-    }
+    val hasWebAppConfig =
+        remember(projectPath) {
+            File(projectPath, "build.gradle.kts").exists() || File(projectPath, "build.gradle").exists()
+        }
 
     // FileTree Config (Hoisted to persist across drawer toggles)
     val prefs = remember { context.getSharedPreferences("FileTreeSettings", Context.MODE_PRIVATE) }
     var fileTreeConfig by remember {
         mutableStateOf(
             FileTreeConfig(
-                sortBy = try {
-                    SortBy.valueOf(prefs.getString("sortBy", SortBy.NAME.name) ?: SortBy.NAME.name)
-                } catch (_: Exception) {
-                    SortBy.NAME
-                },
+                sortBy =
+                    try {
+                        SortBy.valueOf(prefs.getString("sortBy", SortBy.NAME.name) ?: SortBy.NAME.name)
+                    } catch (_: Exception) {
+                        SortBy.NAME
+                    },
                 foldersAlwaysOnTop = prefs.getBoolean("foldersAlwaysOnTop", true),
-                showDetails = prefs.getBoolean(
-                    "showDetails",
-                    false
-                ), // User requested default: false
+                showDetails = prefs.getBoolean("showDetails", false), // User requested default: false
                 compactMiddlePackages = prefs.getBoolean("compactMiddlePackages", false),
                 compactMiddlePackageCount = prefs.getInt("compactMiddlePackageCount", 3),
-                alwaysSelectOpenedFile = prefs.getBoolean(
-                    "alwaysSelectOpenedFile",
-                    false
-                ), // User requested default: false
-                showIndentGuides = prefs.getBoolean(
-                    "showIndentGuides",
-                    false
-                ), // User requested default: false
-                rememberExpandedStates = prefs.getBoolean("rememberExpandedStates", false) //  新增读取
+                alwaysSelectOpenedFile =
+                    prefs.getBoolean("alwaysSelectOpenedFile", false), // User requested default: false
+                showIndentGuides = prefs.getBoolean("showIndentGuides", false), // User requested default: false
+                rememberExpandedStates = prefs.getBoolean("rememberExpandedStates", false), //  新增读取
             )
         )
     }
@@ -264,9 +245,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         }
     }
 
-    LaunchedEffect(projectPath) {
-        viewModel.loadInitialFile(projectPath)
-    }
+    LaunchedEffect(projectPath) { viewModel.loadInitialFile(projectPath) }
 
     LaunchedEffect(Unit) {
         if (showInitialLoader) {
@@ -292,9 +271,8 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val jsDocsText = stringResource(R.string.editor_js_docs)
     val installLastApkText = stringResource(R.string.editor_install_last_apk)
     val buildApkText = stringResource(R.string.editor_build_apk)
-    val lastBuiltApkNameText = viewModel.lastBuiltApk
-        ?.takeIf { it.exists() }
-        ?.let { stringResource(R.string.label_version_format, it.name) }
+    val lastBuiltApkNameText =
+        viewModel.lastBuiltApk?.takeIf { it.exists() }?.let { stringResource(R.string.label_version_format, it.name) }
     val newContentTitleText = stringResource(R.string.editor_new_content_title)
     val exampleTestFileText = stringResource(R.string.editor_example_test_file)
     val createText = stringResource(R.string.action_create)
@@ -322,20 +300,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                     // --- 左侧：NavigationRail ---
                     NavigationRail(
                         containerColor = MaterialTheme.colorScheme.surface, // 与Drawer背景融合
-                        modifier = Modifier.width(80.dp) // 固定Rail宽度
+                        modifier = Modifier.width(80.dp), // 固定Rail宽度
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
                         // 1. 文件树按钮
                         NavigationRailItem(
                             selected = selectedTab == FILES,
                             onClick = { selectedTab = FILES },
-                            icon = {
-                                Icon(
-                                    Icons.Default.Folder,
-                                    contentDescription = fileLabelText
-                                )
-                            },
-                            label = { Text(fileTreeTitleText) }
+                            icon = { Icon(Icons.Default.Folder, contentDescription = fileLabelText) },
+                            label = { Text(fileTreeTitleText) },
                         )
                         // 2. Git 按钮
                         NavigationRailItem(
@@ -360,26 +333,19 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                         // 🔥 这里修改：使用 painterResource 加载 xml 资源
                                         painter = painterResource(id = R.drawable.ic_git),
                                         contentDescription = gitTitleText,
-                                        modifier = Modifier.size(24.dp) // 建议加上尺寸限制，防止图标过大
+                                        modifier = Modifier.size(24.dp), // 建议加上尺寸限制，防止图标过大
                                     )
                                 }
                             },
-                            label = { Text(gitTitleText) }
+                            label = { Text(gitTitleText) },
                         )
                     }
 
                     // --- 中间分割线 (可选) ---
-                    VerticalDivider(
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
+                    VerticalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
                     // --- 右侧：内容区域 ---
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                    ) {
+                    Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                         when (selectedTab) {
                             FILES -> {
                                 // 原有的文件管理器
@@ -391,30 +357,18 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                         fileTreeConfig = newConfig
                                         prefs.edit {
                                             putString("sortBy", newConfig.sortBy.name)
-                                                .putBoolean(
-                                                    "foldersAlwaysOnTop",
-                                                    newConfig.foldersAlwaysOnTop
-                                                )
+                                                .putBoolean("foldersAlwaysOnTop", newConfig.foldersAlwaysOnTop)
                                                 .putBoolean("showDetails", newConfig.showDetails)
-                                                .putBoolean(
-                                                    "compactMiddlePackages",
-                                                    newConfig.compactMiddlePackages
-                                                )
+                                                .putBoolean("compactMiddlePackages", newConfig.compactMiddlePackages)
                                                 .putInt(
                                                     "compactMiddlePackageCount",
-                                                    newConfig.compactMiddlePackageCount
+                                                    newConfig.compactMiddlePackageCount,
                                                 )
-                                                .putBoolean(
-                                                    "alwaysSelectOpenedFile",
-                                                    newConfig.alwaysSelectOpenedFile
-                                                )
-                                                .putBoolean(
-                                                    "showIndentGuides",
-                                                    newConfig.showIndentGuides
-                                                )
+                                                .putBoolean("alwaysSelectOpenedFile", newConfig.alwaysSelectOpenedFile)
+                                                .putBoolean("showIndentGuides", newConfig.showIndentGuides)
                                                 .putBoolean(
                                                     "rememberExpandedStates",
-                                                    newConfig.rememberExpandedStates //  新增持久化
+                                                    newConfig.rememberExpandedStates, //  新增持久化
                                                 )
                                         }
                                     },
@@ -425,7 +379,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     onFileRenamed = { oldFile, newFile ->
                                         viewModel.updateRenamedFile(oldFile, newFile)
                                         gitViewModel.refreshAll()
-                                    }
+                                    },
                                 )
                             }
 
@@ -434,14 +388,14 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 GitPanel(
                                     projectPath = projectPath,
                                     viewModel = gitViewModel,
-                                    editorViewModel = viewModel // 🔥 加上这一行
+                                    editorViewModel = viewModel, // 🔥 加上这一行
                                 )
                             }
                         }
                     }
                 }
             }
-        }
+        },
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
@@ -452,16 +406,12 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                         TopAppBar(
                             title = {
                                 Column {
-                                    Text(
-                                        appNameText,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                    Text(appNameText, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     Text(
                                         text = currentFolderName,
                                         style = MaterialTheme.typography.bodyMedium,
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                 }
                             },
@@ -472,15 +422,17 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                         scope.launch {
                                             if (drawerState.isClosed) drawerState.open() else drawerState.close()
                                         }
-                                    }
+                                    },
                                 )
                             },
                             actions = {
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        handleRunApk(context, projectPath, folderName, viewModel, snackbarHostState)
+                                IconButton(
+                                    onClick = {
+                                        scope.launch {
+                                            handleRunApk(context, projectPath, folderName, viewModel, snackbarHostState)
+                                        }
                                     }
-                                }) {
+                                ) {
                                     Icon(Icons.Filled.PlayArrow, runText)
                                 }
                                 IconButton(onClick = { viewModel.undo() }) {
@@ -496,20 +448,17 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     }
                                     DropdownMenu(
                                         expanded = isMoreMenuExpanded,
-                                        onDismissRequest = { isMoreMenuExpanded = false }
+                                        onDismissRequest = { isMoreMenuExpanded = false },
                                     ) {
                                         DropdownMenuItem(
                                             text = { Text(saveAllText) },
                                             onClick = {
                                                 scope.launch {
-                                                    viewModel.saveAllModifiedFiles(
-                                                        context,
-                                                        snackbarHostState
-                                                    )
+                                                    viewModel.saveAllModifiedFiles(context, snackbarHostState)
                                                     gitViewModel.refreshAll() // <--- 加这一行
                                                 }
                                                 isMoreMenuExpanded = false
-                                            }
+                                            },
                                         )
                                         DropdownMenuItem(
                                             text = { Text(if (isOpenSearch) closeSearchText else searchText) },
@@ -517,7 +466,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                 if (isOpenSearch) viewModel.stopSearch()
                                                 isOpenSearch = !isOpenSearch
                                                 isMoreMenuExpanded = false
-                                            }
+                                            },
                                         )
                                         DropdownMenuItem(
                                             text = { Text(terminalText) },
@@ -525,14 +474,14 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                 isMoreMenuExpanded = false
                                                 // 🔥 跳转到独立的终端页面
                                                 navController.navigate("terminal")
-                                            }
+                                            },
                                         )
                                         DropdownMenuItem(
                                             text = { Text(jsDocsText) },
                                             onClick = {
                                                 isMoreMenuExpanded = false
                                                 navController.safeNavigate("js_interface_doc")
-                                            }
+                                            },
                                         )
 
                                         // 只有文件存在且路径属于当前项目(可选逻辑)时才显示
@@ -544,18 +493,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                         Text(
                                                             text = lastBuiltApkNameText.orEmpty(),
                                                             style = MaterialTheme.typography.labelSmall,
-                                                            color = MaterialTheme.colorScheme.secondary
+                                                            color = MaterialTheme.colorScheme.secondary,
                                                         )
                                                     }
                                                 },
                                                 onClick = {
                                                     isMoreMenuExpanded = false
                                                     // 调用安装器
-                                                    ApkInstaller.install(
-                                                        context,
-                                                        viewModel.lastBuiltApk!!
-                                                    )
-                                                }
+                                                    ApkInstaller.install(context, viewModel.lastBuiltApk!!)
+                                                },
                                             )
                                             HorizontalDivider() // 加个分割线好看点
                                         }
@@ -578,30 +524,28 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                                 buildResult = resultState
                                                                 isBuilding = false
                                                                 // 🔥 新增：如果构建成功，保存路径到 ViewModel
-                                                                if (resultState is BuildResultState.Finished && resultState.apkPath != null) {
-                                                                    viewModel.updateLastBuild(
-                                                                        resultState.apkPath
-                                                                    )
+                                                                if (
+                                                                    resultState is BuildResultState.Finished &&
+                                                                        resultState.apkPath != null
+                                                                ) {
+                                                                    viewModel.updateLastBuild(resultState.apkPath)
                                                                 }
-                                                            }
+                                                            },
                                                         )
                                                     }
-                                                }
+                                                },
                                             )
                                         }
                                     }
                                 }
-                            }
+                            },
                         )
                         // 工具栏 (根据配置显示)
                         if (editorConfig.showToolbar) {
                             EditorToolbar(
                                 onSave = {
                                     scope.launch {
-                                        viewModel.saveAllModifiedFiles(
-                                            context,
-                                            snackbarHostState
-                                        )
+                                        viewModel.saveAllModifiedFiles(context, snackbarHostState)
                                         gitViewModel.refreshAll() // <--- 加这一行
                                     }
                                 },
@@ -630,7 +574,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                             onResult = { resultState ->
                                                 buildResult = resultState
                                                 isBuilding = false
-                                            }
+                                            },
                                         )
                                     }
                                 },
@@ -640,10 +584,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                         // 搜索面板
                         AnimatedVisibility(visible = isOpenSearch) {
                             Column {
-                                HorizontalDivider(
-                                    thickness = 0.5.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant
-                                )
+                                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                                 SearchPanel(
                                     viewModel = viewModel,
                                     searchText = currentSearchText,
@@ -651,65 +592,58 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     onClose = {
                                         viewModel.stopSearch()
                                         isOpenSearch = false
-                                    }
+                                    },
                                 )
                             }
                         }
                         AnimatedVisibility(visible = isOpenJump) {
                             Column {
-                                HorizontalDivider(
-                                    thickness = 0.5.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant
-                                )
+                                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
                                 JumpLinePanel(
                                     onJump = { line -> viewModel.jumpToLine(line) },
                                     onClose = {
                                         isOpenJump = false
                                         viewModel.getActiveEditor()?.requestFocus()
-                                    }
+                                    },
                                 )
                             }
                         }
                     }
                 },
-
                 content = { innerPadding ->
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                            .imePadding()
-                    ) {
+                    BoxWithConstraints(modifier = Modifier.padding(innerPadding).fillMaxSize().imePadding()) {
                         val availableEditorHeight = maxHeight // 这就是 EditorPanelLayout 可以用的全部高度
 
                         // 🔥 修改：在代码编辑器和Diff模式下显示符号栏，仅在媒体查看器或无文件时隐藏
                         val activeTab = viewModel.openFiles.getOrNull(viewModel.activeFileIndex)
                         val shouldShowSymbols =
                             activeTab is com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState ||
-                                    activeTab is com.scto.mobile.ide.ui.editor.viewmodel.DiffEditorState
+                                activeTab is com.scto.mobile.ide.ui.editor.viewmodel.DiffEditorState
                         val currentSymbols =
                             if (hasOpenFiles && shouldShowSymbols) editorConfig.getSymbolList() else emptyList()
 
                         EditorPanelLayout(
                             viewModel = viewModel,
                             symbols = currentSymbols,
-                            modifier = Modifier.height(availableEditorHeight) // 将精确高度传递给 EditorPanelLayout
+                            modifier = Modifier.height(availableEditorHeight), // 将精确高度传递给 EditorPanelLayout
                             // 将精确高度传递给 EditorPanelLayout
                         ) {
                             Column(modifier = Modifier.fillMaxSize()) {
                                 AnimatedVisibility(visible = showInitialLoader || isBuilding) {
                                     LinearProgressIndicator(
                                         modifier = Modifier.fillMaxWidth(),
-                                        strokeCap = StrokeCap.Butt
+                                        strokeCap = StrokeCap.Butt,
                                     )
                                 }
-                                // The content here is just a placeholder because EditorPanelLayout handles the content structure.
+                                // The content here is just a placeholder because EditorPanelLayout handles the content
+                                // structure.
                                 // But wait, EditorPanelLayout expects `content` to be the main editor area.
                                 // However, we have a HorizontalPager below that switches tabs.
-                                // The structure seems to be: 
+                                // The structure seems to be:
                                 // CodeEditScreen -> Scaffold -> EditorPanelLayout -> Content (Main Area)
 
-                                // If we are here, it means we are in the single-pane mode (maybe?) or this is the common area.
+                                // If we are here, it means we are in the single-pane mode (maybe?) or this is the
+                                // common area.
                                 // Actually, `CodeEditScreen` uses `EditCode` which contains the `HorizontalPager`.
                                 // Let's look at `EditCode`.
 
@@ -723,7 +657,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     onNavigateToTerminal = { navController.safeNavigate("terminal") },
                                     onShowJumpLine = { isOpenJump = true },
                                     onShowCreate = { showCreateDialog = true },
-                                    onShowColorPicker = { showColorPicker = true }
+                                    onShowColorPicker = { showColorPicker = true },
                                 )
                             }
                         }
@@ -731,19 +665,17 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                         // 配置文件可视化入口
                         // Removed duplicate button from here
 
-
                         if (isAiEnabled) {
                             AICodingPanel()
                         }
                     }
-                }
+                },
             )
         }
         if (drawerState.isOpen) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
+                modifier =
+                    Modifier.fillMaxSize().pointerInput(Unit) {
                         detectTapGestures(
                             onTap = {
                                 // 点击时：关闭侧滑栏
@@ -774,24 +706,26 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                         value = nameInput,
                         onValueChange = { nameInput = it },
                         label = { Text(exampleTestFileText) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (nameInput.isNotBlank()) {
-                        viewModel.createNewItem(projectPath, nameInput, isFileType) { newItem ->
-                            if (isFileType) viewModel.openFile(newItem)
-                            gitViewModel.refreshAll()
+                TextButton(
+                    onClick = {
+                        if (nameInput.isNotBlank()) {
+                            viewModel.createNewItem(projectPath, nameInput, isFileType) { newItem ->
+                                if (isFileType) viewModel.openFile(newItem)
+                                gitViewModel.refreshAll()
+                            }
                         }
+                        showCreateDialog = false
                     }
-                    showCreateDialog = false
-                }) { Text(createText) }
+                ) {
+                    Text(createText)
+                }
             },
-            dismissButton = {
-                TextButton(onClick = { showCreateDialog = false }) { Text(cancelText) }
-            }
+            dismissButton = { TextButton(onClick = { showCreateDialog = false }) { Text(cancelText) } },
         )
     }
 
@@ -803,15 +737,11 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
             onColorSelected = { color ->
                 val hex = colorToHex(color, color.alpha < 1f)
                 viewModel.insertText(hex)
-                val clipboardManager =
-                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clipData = ClipData.newPlainText(
-                    context.getString(R.string.editor_clipboard_hex_label),
-                    hex
-                )
+                val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipData = ClipData.newPlainText(context.getString(R.string.editor_clipboard_hex_label), hex)
                 clipboardManager.setPrimaryClip(clipData)
                 showColorPicker = false
-            }
+            },
         )
     }
 
@@ -819,9 +749,10 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     buildResult?.let { result ->
         if (result is BuildResultState.Finished) {
             val isSuccess = result.apkPath != null
-            val buildResultTitleText = stringResource(
-                if (isSuccess) R.string.editor_build_success_title else R.string.editor_build_failed_title
-            )
+            val buildResultTitleText =
+                stringResource(
+                    if (isSuccess) R.string.editor_build_success_title else R.string.editor_build_failed_title
+                )
             AlertDialog(
                 onDismissRequest = { buildResult = null },
                 title = { Text(buildResultTitleText) },
@@ -840,24 +771,24 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 },
                 confirmButton = {
                     if (isSuccess) {
-                        TextButton(onClick = {
-                            val apkFile = File(result.apkPath)
-                            ApkInstaller.install(context, apkFile)
-                            buildResult = null
-                        }) { Text(installText) }
+                        TextButton(
+                            onClick = {
+                                val apkFile = File(result.apkPath)
+                                ApkInstaller.install(context, apkFile)
+                                buildResult = null
+                            }
+                        ) {
+                            Text(installText)
+                        }
                     }
                 },
-                dismissButton = {
-                    TextButton(onClick = { buildResult = null }) { Text(closeText) }
-                }
+                dismissButton = { TextButton(onClick = { buildResult = null }) { Text(closeText) } },
             )
         }
     }
 }
 
-
 // ---------------- 辅助函数 ----------------
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -871,7 +802,7 @@ fun EditCode(
     onNavigateToTerminal: () -> Unit,
     onShowJumpLine: () -> Unit,
     onShowCreate: () -> Unit,
-    onShowColorPicker: () -> Unit
+    onShowColorPicker: () -> Unit,
 ) {
     val openFiles = viewModel.openFiles
     val activeFileIndex = viewModel.activeFileIndex
@@ -892,22 +823,29 @@ fun EditCode(
     val closeAllText = stringResource(R.string.editor_close_all)
     val historyContentDescription = stringResource(R.string.content_desc_history)
 
-    val pagerState = rememberPagerState(
-        initialPage = activeFileIndex.coerceIn(0, maxOf(0, openFiles.size - 1)),
-        pageCount = { currentFiles.size }
-    )
+    val pagerState =
+        rememberPagerState(
+            initialPage = activeFileIndex.coerceIn(0, maxOf(0, openFiles.size - 1)),
+            pageCount = { currentFiles.size },
+        )
 
     LaunchedEffect(currentIndex, currentFiles.size) {
-        if (currentFiles.isNotEmpty() && currentIndex >= 0 && currentIndex < currentFiles.size && pagerState.currentPage != currentIndex) {
+        if (
+            currentFiles.isNotEmpty() &&
+                currentIndex >= 0 &&
+                currentIndex < currentFiles.size &&
+                pagerState.currentPage != currentIndex
+        ) {
             pagerState.scrollToPage(currentIndex)
         }
     }
     LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            if (currentFiles.isNotEmpty() && page in currentFiles.indices && page != currentIndex) {
-                viewModel.changeActiveFileIndex(page)
+        snapshotFlow { pagerState.currentPage }
+            .collect { page ->
+                if (currentFiles.isNotEmpty() && page in currentFiles.indices && page != currentIndex) {
+                    viewModel.changeActiveFileIndex(page)
+                }
             }
-        }
     }
 
     Column(modifier = modifier) {
@@ -927,29 +865,22 @@ fun EditCode(
 
                             DropdownMenu(
                                 expanded = expandedTabIndex == -2,
-                                onDismissRequest = { expandedTabIndex = null }
+                                onDismissRequest = { expandedTabIndex = null },
                             ) {
                                 if (viewModel.closedFilesHistory.isEmpty()) {
                                     DropdownMenuItem(
                                         text = {
-                                            Text(
-                                                noRecentClosedText,
-                                                color = MaterialTheme.colorScheme.secondary
-                                            )
+                                            Text(noRecentClosedText, color = MaterialTheme.colorScheme.secondary)
                                         },
-                                        onClick = { expandedTabIndex = null }
+                                        onClick = { expandedTabIndex = null },
                                     )
                                 } else {
                                     DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                clearHistoryText,
-                                                color = MaterialTheme.colorScheme.error
-                                            )
-                                        },
+                                        text = { Text(clearHistoryText, color = MaterialTheme.colorScheme.error) },
                                         onClick = {
-                                            expandedTabIndex = null; viewModel.clearClosedHistory()
-                                        }
+                                            expandedTabIndex = null
+                                            viewModel.clearClosedHistory()
+                                        },
                                     )
                                     HorizontalDivider()
                                     viewModel.closedFilesHistory.forEach { tab ->
@@ -960,14 +891,14 @@ fun EditCode(
                                                     Text(
                                                         tab.file.parentFile?.name ?: "",
                                                         style = MaterialTheme.typography.labelSmall,
-                                                        color = MaterialTheme.colorScheme.secondary
+                                                        color = MaterialTheme.colorScheme.secondary,
                                                     )
                                                 }
                                             },
                                             onClick = {
-                                                expandedTabIndex =
-                                                    null; viewModel.restoreClosedFile(tab)
-                                            }
+                                                expandedTabIndex = null
+                                                viewModel.restoreClosedFile(tab)
+                                            },
                                         )
                                     }
                                 }
@@ -982,23 +913,15 @@ fun EditCode(
                     selectedTabIndex = pagerState.currentPage.coerceIn(0, openFiles.size - 1),
                     edgePadding = 0.dp,
                     modifier = Modifier.weight(1f),
-                    divider = { },
+                    divider = {},
                     indicator = {
                         Box(
-                            modifier = Modifier
-                                .tabIndicatorOffset(
-                                    pagerState.currentPage.coerceIn(
-                                        0,
-                                        openFiles.size - 1
-                                    )
-                                )
-                                .height(3.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.primary,
-                                    RoundedCornerShape(percent = 50)
-                                )
+                            modifier =
+                                Modifier.tabIndicatorOffset(pagerState.currentPage.coerceIn(0, openFiles.size - 1))
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(percent = 50))
                         )
-                    }
+                    },
                 ) {
                     openFiles.forEachIndexed { index, tab ->
                         Box {
@@ -1021,32 +944,37 @@ fun EditCode(
                                         text = displayName,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else tabColor
+                                        color =
+                                            if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary
+                                            else tabColor,
                                     )
-                                }
+                                },
                             )
 
                             DropdownMenu(
                                 expanded = expandedTabIndex == index,
-                                onDismissRequest = { expandedTabIndex = null }
+                                onDismissRequest = { expandedTabIndex = null },
                             ) {
                                 DropdownMenuItem(
                                     text = { Text(closeText) },
                                     onClick = {
-                                        expandedTabIndex = null; viewModel.closeFile(index)
-                                    }
+                                        expandedTabIndex = null
+                                        viewModel.closeFile(index)
+                                    },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(closeOthersText) },
                                     onClick = {
-                                        expandedTabIndex = null; viewModel.closeOtherFiles(
-                                        index
-                                    )
-                                    }
+                                        expandedTabIndex = null
+                                        viewModel.closeOtherFiles(index)
+                                    },
                                 )
                                 DropdownMenuItem(
                                     text = { Text(closeAllText) },
-                                    onClick = { expandedTabIndex = null; viewModel.closeAllFiles() }
+                                    onClick = {
+                                        expandedTabIndex = null
+                                        viewModel.closeAllFiles()
+                                    },
                                 )
                             }
                         }
@@ -1060,35 +988,26 @@ fun EditCode(
                             Icon(
                                 Icons.Default.History,
                                 historyContentDescription,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
 
                         DropdownMenu(
                             expanded = expandedTabIndex == -1,
-                            onDismissRequest = { expandedTabIndex = null }
+                            onDismissRequest = { expandedTabIndex = null },
                         ) {
                             if (viewModel.closedFilesHistory.isEmpty()) {
                                 DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            noRecentClosedText,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
-                                    },
-                                    onClick = { expandedTabIndex = null }
+                                    text = { Text(noRecentClosedText, color = MaterialTheme.colorScheme.secondary) },
+                                    onClick = { expandedTabIndex = null },
                                 )
                             } else {
                                 DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            clearHistoryText,
-                                            color = MaterialTheme.colorScheme.error
-                                        )
-                                    },
+                                    text = { Text(clearHistoryText, color = MaterialTheme.colorScheme.error) },
                                     onClick = {
-                                        expandedTabIndex = null; viewModel.clearClosedHistory()
-                                    }
+                                        expandedTabIndex = null
+                                        viewModel.clearClosedHistory()
+                                    },
                                 )
                                 HorizontalDivider()
                                 viewModel.closedFilesHistory.forEach { tab ->
@@ -1099,14 +1018,14 @@ fun EditCode(
                                                 Text(
                                                     tab.file.parentFile?.name ?: "",
                                                     style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.secondary
+                                                    color = MaterialTheme.colorScheme.secondary,
                                                 )
                                             }
                                         },
                                         onClick = {
-                                            expandedTabIndex =
-                                                null; viewModel.restoreClosedFile(tab)
-                                        }
+                                            expandedTabIndex = null
+                                            viewModel.restoreClosedFile(tab)
+                                        },
                                     )
                                 }
                             }
@@ -1116,14 +1035,12 @@ fun EditCode(
             }
             HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
 
-            Box(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize(),
                     userScrollEnabled = false,
-                    key = { index -> if (index < openFiles.size) openFiles[index].uniqueId else "empty_$index" }
+                    key = { index -> if (index < openFiles.size) openFiles[index].uniqueId else "empty_$index" },
                 ) { page ->
                     if (page in openFiles.indices) {
                         val tab = openFiles[page]
@@ -1133,7 +1050,7 @@ fun EditCode(
                             is com.scto.mobile.ide.ui.editor.viewmodel.MediaEditorState -> {
                                 com.scto.mobile.ide.ui.editor.components.MediaViewer(
                                     file = tab.file,
-                                    type = tab.mediaType
+                                    type = tab.mediaType,
                                 )
                             }
 
@@ -1151,7 +1068,7 @@ fun EditCode(
                                     onNavigateToTerminal = onNavigateToTerminal,
                                     onShowJumpLine = onShowJumpLine,
                                     onShowCreate = onShowCreate,
-                                    onShowColorPicker = onShowColorPicker
+                                    onShowColorPicker = onShowColorPicker,
                                 )
                             }
 
@@ -1159,15 +1076,12 @@ fun EditCode(
                                 com.scto.mobile.ide.ui.editor.components.DiffViewer(
                                     viewModel = viewModel,
                                     state = tab,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             }
                         }
                     } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()
                         }
                     }
@@ -1184,7 +1098,7 @@ fun FileManagerDrawer(
     fileTreeConfig: FileTreeConfig,
     onConfigChange: (FileTreeConfig) -> Unit,
     onFileClick: (File) -> Unit,
-    onFileRenamed: (File, File) -> Unit
+    onFileRenamed: (File, File) -> Unit,
 ) {
     var showSettingsMenu by remember { mutableStateOf(false) }
     var locateTrigger by remember { mutableLongStateOf(0L) }
@@ -1215,10 +1129,7 @@ fun FileManagerDrawer(
     val showDetailsText = stringResource(R.string.file_tree_show_details)
     val compactMiddlePackagesText = stringResource(R.string.file_tree_compact_middle_packages)
     val maxCompactLevelText =
-        stringResource(
-            R.string.file_tree_max_compact_level,
-            fileTreeConfig.compactMiddlePackageCount
-        )
+        stringResource(R.string.file_tree_max_compact_level, fileTreeConfig.compactMiddlePackageCount)
     val showIndentGuidesText = stringResource(R.string.file_tree_show_indent_guides)
     val behaviorText = stringResource(R.string.file_tree_behavior)
     val alwaysSelectOpenedText = stringResource(R.string.file_tree_always_select_opened)
@@ -1238,31 +1149,27 @@ fun FileManagerDrawer(
                 Column {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showCreateMenu = false
-                                showNewFileDialog = true
-                            }
-                            .padding(vertical = 12.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    showCreateMenu = false
+                                    showNewFileDialog = true
+                                }
+                                .padding(vertical = 12.dp),
                     ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.InsertDriveFile,
-                            null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.InsertDriveFile, null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(16.dp))
                         Text(fileLabelText)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showCreateMenu = false
-                                showNewFolderDialog = true
-                            }
-                            .padding(vertical = 12.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    showCreateMenu = false
+                                    showNewFolderDialog = true
+                                }
+                                .padding(vertical = 12.dp),
                     ) {
                         Icon(Icons.Filled.Folder, null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(16.dp))
@@ -1271,9 +1178,7 @@ fun FileManagerDrawer(
                 }
             },
             confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showCreateMenu = false }) { Text(actionCancelText) }
-            }
+            dismissButton = { TextButton(onClick = { showCreateMenu = false }) { Text(actionCancelText) } },
         )
     }
 
@@ -1287,41 +1192,37 @@ fun FileManagerDrawer(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(fileNameText) },
-                    singleLine = true
+                    singleLine = true,
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (name.isNotBlank()) {
-                        scope.launch(Dispatchers.IO) {
-                            try {
-                                val parent =
-                                    if (activeFile != null) activeFile.parentFile else File(
-                                        projectPath
-                                    )
-                                val target =
-                                    if (parent != null && parent.exists()) parent else File(
-                                        projectPath
-                                    )
-                                val newFile = File(target, name)
-                                if (!newFile.exists()) {
-                                    newFile.createNewFile()
-                                    withContext(Dispatchers.Main) {
-                                        refreshTrigger = System.currentTimeMillis()
-                                        onFileClick(newFile) // Open created file
+                TextButton(
+                    onClick = {
+                        if (name.isNotBlank()) {
+                            scope.launch(Dispatchers.IO) {
+                                try {
+                                    val parent = if (activeFile != null) activeFile.parentFile else File(projectPath)
+                                    val target = if (parent != null && parent.exists()) parent else File(projectPath)
+                                    val newFile = File(target, name)
+                                    if (!newFile.exists()) {
+                                        newFile.createNewFile()
+                                        withContext(Dispatchers.Main) {
+                                            refreshTrigger = System.currentTimeMillis()
+                                            onFileClick(newFile) // Open created file
+                                        }
                                     }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
                             }
+                            showNewFileDialog = false
                         }
-                        showNewFileDialog = false
                     }
-                }) { Text(actionConfirmText) }
+                ) {
+                    Text(actionConfirmText)
+                }
             },
-            dismissButton = {
-                TextButton(onClick = { showNewFileDialog = false }) { Text(actionCancelText) }
-            }
+            dismissButton = { TextButton(onClick = { showNewFileDialog = false }) { Text(actionCancelText) } },
         )
     }
 
@@ -1335,40 +1236,34 @@ fun FileManagerDrawer(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(folderNameText) },
-                    singleLine = true
+                    singleLine = true,
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (name.isNotBlank()) {
-                        scope.launch(Dispatchers.IO) {
-                            try {
-                                val parent =
-                                    if (activeFile != null) activeFile.parentFile else File(
-                                        projectPath
-                                    )
-                                val target =
-                                    if (parent != null && parent.exists()) parent else File(
-                                        projectPath
-                                    )
-                                val newFile = File(target, name)
-                                if (!newFile.exists()) {
-                                    newFile.mkdirs()
-                                    withContext(Dispatchers.Main) {
-                                        refreshTrigger = System.currentTimeMillis()
+                TextButton(
+                    onClick = {
+                        if (name.isNotBlank()) {
+                            scope.launch(Dispatchers.IO) {
+                                try {
+                                    val parent = if (activeFile != null) activeFile.parentFile else File(projectPath)
+                                    val target = if (parent != null && parent.exists()) parent else File(projectPath)
+                                    val newFile = File(target, name)
+                                    if (!newFile.exists()) {
+                                        newFile.mkdirs()
+                                        withContext(Dispatchers.Main) { refreshTrigger = System.currentTimeMillis() }
                                     }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
                             }
+                            showNewFolderDialog = false
                         }
-                        showNewFolderDialog = false
                     }
-                }) { Text(actionConfirmText) }
+                ) {
+                    Text(actionConfirmText)
+                }
             },
-            dismissButton = {
-                TextButton(onClick = { showNewFolderDialog = false }) { Text(actionCancelText) }
-            }
+            dismissButton = { TextButton(onClick = { showNewFolderDialog = false }) { Text(actionCancelText) } },
         )
     }
 
@@ -1381,15 +1276,15 @@ fun FileManagerDrawer(
                     Text(
                         sortTitleText,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.NAME)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.NAME)) }
+                                .padding(vertical = 8.dp),
                     ) {
                         RadioButton(selected = fileTreeConfig.sortBy == SortBy.NAME, onClick = null)
                         Spacer(Modifier.width(8.dp))
@@ -1397,10 +1292,10 @@ fun FileManagerDrawer(
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.TYPE)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.TYPE)) }
+                                .padding(vertical = 8.dp),
                     ) {
                         RadioButton(selected = fileTreeConfig.sortBy == SortBy.TYPE, onClick = null)
                         Spacer(Modifier.width(8.dp))
@@ -1408,15 +1303,12 @@ fun FileManagerDrawer(
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.DATE_NEWEST)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable { onConfigChange(fileTreeConfig.copy(sortBy = SortBy.DATE_NEWEST)) }
+                                .padding(vertical = 8.dp),
                     ) {
-                        RadioButton(
-                            selected = fileTreeConfig.sortBy == SortBy.DATE_NEWEST,
-                            onClick = null
-                        )
+                        RadioButton(selected = fileTreeConfig.sortBy == SortBy.DATE_NEWEST, onClick = null)
                         Spacer(Modifier.width(8.dp))
                         Text(sortByDateNewestText)
                     }
@@ -1425,29 +1317,32 @@ fun FileManagerDrawer(
                     Text(
                         appearanceText,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(foldersAlwaysOnTop = !fileTreeConfig.foldersAlwaysOnTop)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(
+                                        fileTreeConfig.copy(foldersAlwaysOnTop = !fileTreeConfig.foldersAlwaysOnTop)
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
-                        Checkbox(
-                            checked = fileTreeConfig.foldersAlwaysOnTop,
-                            onCheckedChange = null
-                        )
+                        Checkbox(checked = fileTreeConfig.foldersAlwaysOnTop, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
                         Text(foldersOnTopText)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(showDetails = !fileTreeConfig.showDetails)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(fileTreeConfig.copy(showDetails = !fileTreeConfig.showDetails))
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
                         Checkbox(checked = fileTreeConfig.showDetails, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
@@ -1455,15 +1350,18 @@ fun FileManagerDrawer(
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(compactMiddlePackages = !fileTreeConfig.compactMiddlePackages)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(
+                                        fileTreeConfig.copy(
+                                            compactMiddlePackages = !fileTreeConfig.compactMiddlePackages
+                                        )
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
-                        Checkbox(
-                            checked = fileTreeConfig.compactMiddlePackages,
-                            onCheckedChange = null
-                        )
+                        Checkbox(checked = fileTreeConfig.compactMiddlePackages, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
                         Text(compactMiddlePackagesText)
                     }
@@ -1473,29 +1371,29 @@ fun FileManagerDrawer(
                             Text(
                                 maxCompactLevelText,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Slider(
                                 value = fileTreeConfig.compactMiddlePackageCount.toFloat(),
                                 onValueChange = {
-                                    onConfigChange(
-                                        fileTreeConfig.copy(
-                                            compactMiddlePackageCount = it.toInt()
-                                        )
-                                    )
+                                    onConfigChange(fileTreeConfig.copy(compactMiddlePackageCount = it.toInt()))
                                 },
                                 valueRange = 1f..10f,
-                                steps = 8
+                                steps = 8,
                             )
                         }
                     }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(showIndentGuides = !fileTreeConfig.showIndentGuides)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(
+                                        fileTreeConfig.copy(showIndentGuides = !fileTreeConfig.showIndentGuides)
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
                         Checkbox(checked = fileTreeConfig.showIndentGuides, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
@@ -1506,119 +1404,118 @@ fun FileManagerDrawer(
                     Text(
                         behaviorText,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(alwaysSelectOpenedFile = !fileTreeConfig.alwaysSelectOpenedFile)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(
+                                        fileTreeConfig.copy(
+                                            alwaysSelectOpenedFile = !fileTreeConfig.alwaysSelectOpenedFile
+                                        )
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
-                        Checkbox(
-                            checked = fileTreeConfig.alwaysSelectOpenedFile,
-                            onCheckedChange = null
-                        )
+                        Checkbox(checked = fileTreeConfig.alwaysSelectOpenedFile, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
                         Text(alwaysSelectOpenedText)
                     }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onConfigChange(fileTreeConfig.copy(rememberExpandedStates = !fileTreeConfig.rememberExpandedStates)) }
-                            .padding(vertical = 8.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    onConfigChange(
+                                        fileTreeConfig.copy(
+                                            rememberExpandedStates = !fileTreeConfig.rememberExpandedStates
+                                        )
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                     ) {
-                        Checkbox(
-                            checked = fileTreeConfig.rememberExpandedStates,
-                            onCheckedChange = null
-                        )
+                        Checkbox(checked = fileTreeConfig.rememberExpandedStates, onCheckedChange = null)
                         Spacer(Modifier.width(8.dp))
                         // 如果之后你有在 strings.xml 添加，这里可以用 stringResource，此处暂用硬编码以免报错
                         Text(rememberExpandedStatesText)
                     }
                 }
             },
-            confirmButton = {
-                TextButton(onClick = { showSettingsMenu = false }) { Text(actionCloseText) }
-            }
+            confirmButton = { TextButton(onClick = { showSettingsMenu = false }) { Text(actionCloseText) } },
         )
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Toolbar
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
                 fileTreeTitleText,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp),
             )
 
-            Row(
-                modifier = Modifier.padding(end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.padding(end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 // New File/Folder
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = newItemContentDescription,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { showCreateMenu = true }
-                        .padding(4.dp)
+                    modifier =
+                        Modifier.size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { showCreateMenu = true }
+                            .padding(4.dp),
                 )
 
                 // Locate File
                 Icon(
                     imageVector = Icons.Filled.MyLocation,
                     contentDescription = locateFileContentDescription,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { locateTrigger = System.currentTimeMillis() }
-                        .padding(4.dp)
+                    modifier =
+                        Modifier.size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { locateTrigger = System.currentTimeMillis() }
+                            .padding(4.dp),
                 )
 
                 // Collapse All
                 Icon(
                     imageVector = Icons.Filled.UnfoldLess,
                     contentDescription = collapseAllContentDescription,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { collapseTrigger = System.currentTimeMillis() }
-                        .padding(4.dp)
+                    modifier =
+                        Modifier.size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { collapseTrigger = System.currentTimeMillis() }
+                            .padding(4.dp),
                 )
 
                 // Expand All
                 Icon(
                     imageVector = Icons.Filled.UnfoldMore,
                     contentDescription = expandAllContentDescription,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { expandTrigger = System.currentTimeMillis() }
-                        .padding(4.dp)
+                    modifier =
+                        Modifier.size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { expandTrigger = System.currentTimeMillis() }
+                            .padding(4.dp),
                 )
 
                 // Settings
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = optionsContentDescription,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { showSettingsMenu = true }
-                        .padding(4.dp)
+                    modifier =
+                        Modifier.size(28.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { showSettingsMenu = true }
+                            .padding(4.dp),
                 )
             }
         }
@@ -1636,31 +1533,24 @@ fun FileManagerDrawer(
             modifier = Modifier.fillMaxSize(),
             onFileClick = onFileClick,
             onFileRenamed = onFileRenamed,
-
-            )
+        )
     }
 }
 
-
 @Composable
-fun AnimatedDrawerToggle(
-    isOpen: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun AnimatedDrawerToggle(isOpen: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     // 0f = 菜单, 1f = 箭头
-    val progress by animateFloatAsState(
-        targetValue = if (isOpen) 1f else 0f,
-        label = "DrawerToggleProgress",
-        animationSpec = tween(durationMillis = 300)
-    )
+    val progress by
+        animateFloatAsState(
+            targetValue = if (isOpen) 1f else 0f,
+            label = "DrawerToggleProgress",
+            animationSpec = tween(durationMillis = 300),
+        )
 
     IconButton(onClick = onClick, modifier = modifier) {
         val color = LocalContentColor.current
 
-        Canvas(
-            modifier = Modifier.size(24.dp)
-        ) {
+        Canvas(modifier = Modifier.size(24.dp)) {
             val strokeWidth = 2.dp.toPx()
             val cap = StrokeCap.Square // 保持直角
 
@@ -1703,7 +1593,7 @@ fun AnimatedDrawerToggle(
                     strokeWidth = strokeWidth,
                     cap = cap,
                     start = Offset(midStartX, centerY),
-                    end = Offset(endX, centerY)
+                    end = Offset(endX, centerY),
                 )
 
                 // --- 上面的线 ---
@@ -1720,7 +1610,7 @@ fun AnimatedDrawerToggle(
                     strokeWidth = strokeWidth,
                     cap = cap,
                     start = Offset(topStartX, topStartY),
-                    end = Offset(topEndX, topEndY)
+                    end = Offset(topEndX, topEndY),
                 )
 
                 // --- 下面的线 ---
@@ -1735,13 +1625,12 @@ fun AnimatedDrawerToggle(
                     strokeWidth = strokeWidth,
                     cap = cap,
                     start = Offset(bottomStartX, bottomStartY),
-                    end = Offset(bottomEndX, bottomEndY)
+                    end = Offset(bottomEndX, bottomEndY),
                 )
             }
         }
     }
 }
-
 
 private suspend fun performBuild(
     context: Context,
@@ -1749,7 +1638,7 @@ private suspend fun performBuild(
     folderName: String,
     viewModel: EditorViewModel,
     snackbarHostState: SnackbarHostState,
-    onResult: (BuildResultState) -> Unit
+    onResult: (BuildResultState) -> Unit,
 ) {
     onResult(BuildResultState.Finished("Build not supported directly. Please run Gradle in the terminal tab."))
 }
@@ -1759,16 +1648,17 @@ private suspend fun handleRunApk(
     projectPath: String,
     folderName: String,
     viewModel: EditorViewModel,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
 ) {
     val success = viewModel.saveAllModifiedFiles(context, snackbarHostState)
     if (success) {
-        val apkPaths = listOf(
-            "app/build/outputs/apk/debug/app-debug.apk",
-            "app/build/outputs/apk/release/app-release.apk",
-            "app/build/outputs/apk/release/app-release-unsigned.apk",
-            "build/outputs/apk/debug/app-debug.apk"
-        )
+        val apkPaths =
+            listOf(
+                "app/build/outputs/apk/debug/app-debug.apk",
+                "app/build/outputs/apk/release/app-release.apk",
+                "app/build/outputs/apk/release/app-release-unsigned.apk",
+                "build/outputs/apk/debug/app-debug.apk",
+            )
         var foundApk: File? = null
         for (path in apkPaths) {
             val file = File(projectPath, path)
@@ -1781,9 +1671,7 @@ private suspend fun handleRunApk(
         if (foundApk != null) {
             ApkInstaller.install(context, foundApk)
         } else {
-            snackbarHostState.showSnackbar(
-                "No built APK found. Please run Gradle build in the Terminal tab first."
-            )
+            snackbarHostState.showSnackbar("No built APK found. Please run Gradle build in the Terminal tab first.")
         }
     }
 }

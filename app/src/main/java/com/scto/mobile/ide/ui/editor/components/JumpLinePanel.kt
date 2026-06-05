@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.components
 
 import androidx.compose.foundation.layout.*
@@ -36,21 +36,13 @@ import com.scto.mobile.ide.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JumpLinePanel(
-    onJump: (String) -> Unit,
-    onClose: () -> Unit
-) {
+fun JumpLinePanel(onJump: (String) -> Unit, onClose: () -> Unit) {
     var lineText by remember { mutableStateOf("") }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface
-    ) {
+    Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 6.dp, vertical = 4.dp)
-                .height(50.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp).height(50.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             TextField(
                 value = lineText,
@@ -64,22 +56,27 @@ fun JumpLinePanel(
                     }
                 },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(R.string.jump_line_placeholder), style = MaterialTheme.typography.bodyMedium) },
+                placeholder = {
+                    Text(stringResource(R.string.jump_line_placeholder), style = MaterialTheme.typography.bodyMedium)
+                },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done // 键盘右下角显示“完成”
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        // 按下完成键时关闭面板
-                        onClose()
-                    }
-                ),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                )
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done, // 键盘右下角显示“完成”
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = {
+                            // 按下完成键时关闭面板
+                            onClose()
+                        }
+                    ),
+                colors =
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                    ),
             )
 
             IconButton(onClick = onClose) {

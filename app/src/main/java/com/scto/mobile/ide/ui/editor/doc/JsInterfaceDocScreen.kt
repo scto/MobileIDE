@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.doc
 
 import android.annotation.SuppressLint
@@ -41,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
 import com.mikepenz.markdown.coil2.Coil2ImageTransformerImpl
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
@@ -49,16 +48,12 @@ import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.elements.MarkdownCheckBox
 import com.mikepenz.markdown.model.rememberMarkdownState
-
+import com.scto.mobile.ide.R
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
-
-import kotlinx.coroutines.launch
-
-import com.scto.mobile.ide.R
-
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import kotlinx.coroutines.launch
 
 data class DocSection(val id: Int, val title: String, val content: String)
 
@@ -105,29 +100,30 @@ fun JsInterfaceDocScreen(navController: NavController) {
     }
 
     // Parse sections
-    val sections = remember(docContent) {
-        if (docContent.isBlank()) emptyList()
-        else {
-            // Split by headers (#, ##, etc.) but keep the delimiter
-            val regex = Regex("(?m)^(?=#{1,6}\\s)")
-            val parts = docContent.split(regex).filter { it.isNotBlank() }
-            parts.mapIndexed { index, part ->
-                val firstLine = part.lines().firstOrNull { it.isNotBlank() } ?: ""
-                val title = firstLine.trimStart('#').trim().ifEmpty {
-                    context.getString(R.string.doc_section_fallback, index + 1)
+    val sections =
+        remember(docContent) {
+            if (docContent.isBlank()) emptyList()
+            else {
+                // Split by headers (#, ##, etc.) but keep the delimiter
+                val regex = Regex("(?m)^(?=#{1,6}\\s)")
+                val parts = docContent.split(regex).filter { it.isNotBlank() }
+                parts.mapIndexed { index, part ->
+                    val firstLine = part.lines().firstOrNull { it.isNotBlank() } ?: ""
+                    val title =
+                        firstLine.trimStart('#').trim().ifEmpty {
+                            context.getString(R.string.doc_section_fallback, index + 1)
+                        }
+                    DocSection(index, title, part)
                 }
-                DocSection(index, title, part)
             }
         }
-    }
 
     // Filtered results
-    val searchResults = remember(searchQuery, sections) {
-        if (searchQuery.isBlank()) emptyList()
-        else sections.filter {
-            it.title.contains(searchQuery, true) || it.content.contains(searchQuery, true)
+    val searchResults =
+        remember(searchQuery, sections) {
+            if (searchQuery.isBlank()) emptyList()
+            else sections.filter { it.title.contains(searchQuery, true) || it.content.contains(searchQuery, true) }
         }
-    }
 
     Scaffold(
         contentWindowInsets = WindowInsets.ime, // 处理输入法遮挡
@@ -141,40 +137,42 @@ fun JsInterfaceDocScreen(navController: NavController) {
                                 onValueChange = { searchQuery = it },
                                 placeholder = { Text(stringResource(R.string.search_placeholder)) },
                                 singleLine = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(focusRequester),
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                ),
+                                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                                colors =
+                                    TextFieldDefaults.colors(
+                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    ),
                                 trailingIcon = {
                                     if (searchQuery.isNotEmpty()) {
                                         IconButton(onClick = { searchQuery = "" }) {
                                             Icon(Icons.Default.Close, stringResource(R.string.action_clear))
                                         }
                                     }
-                                }
+                                },
                             )
-                            LaunchedEffect(Unit) {
-                                focusRequester.requestFocus()
-                            }
+                            LaunchedEffect(Unit) { focusRequester.requestFocus() }
                         } else {
                             Text(stringResource(R.string.js_interface_docs_title))
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = {
-                            if (isSearchActive) {
-                                isSearchActive = false
-                                searchQuery = ""
-                            } else {
-                                navController.popBackStack()
+                        IconButton(
+                            onClick = {
+                                if (isSearchActive) {
+                                    isSearchActive = false
+                                    searchQuery = ""
+                                } else {
+                                    navController.popBackStack()
+                                }
                             }
-                        }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.action_back),
+                            )
                         }
                     },
                     actions = {
@@ -183,7 +181,7 @@ fun JsInterfaceDocScreen(navController: NavController) {
                                 Icon(Icons.Default.Search, contentDescription = stringResource(R.string.action_search))
                             }
                         }
-                    }
+                    },
                 )
                 if (fileList.isNotEmpty() && !isSearchActive) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
@@ -193,62 +191,58 @@ fun JsInterfaceDocScreen(navController: NavController) {
                             containerColor = MaterialTheme.colorScheme.surface,
                             contentColor = MaterialTheme.colorScheme.primary,
                             divider = {},
-                            modifier = Modifier.wrapContentWidth()
+                            modifier = Modifier.wrapContentWidth(),
                         ) {
                             fileList.forEach { fileName ->
                                 Tab(
                                     selected = selectedFile == fileName,
                                     onClick = { selectedFile = fileName },
-                                    text = { Text(fileName.removeSuffix(".md").removeSuffix(".txt")) }
+                                    text = { Text(fileName.removeSuffix(".md").removeSuffix(".txt")) },
                                 )
                             }
                         }
                     }
                 }
             }
-        }
+        },
     ) { padding ->
         val isDarkTheme = isSystemInDarkTheme()
-        val highlightsBuilder = remember(isDarkTheme) {
-            Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme))
-        }
+        val highlightsBuilder =
+            remember(isDarkTheme) { Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDarkTheme)) }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             // Main Content
             SelectionContainer {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp)
+                    contentPadding = PaddingValues(16.dp),
                 ) {
                     items(sections, key = { it.id }) { section ->
                         Markdown(
                             markdownState = rememberMarkdownState(section.content) { section.content },
-                            components = markdownComponents(
-                                codeBlock = {
-                                    MarkdownHighlightedCodeBlock(
-                                        content = it.content,
-                                        node = it.node,
-                                        highlightsBuilder = highlightsBuilder,
-                                        showHeader = true,
-                                    )
-                                },
-                                codeFence = {
-                                    MarkdownHighlightedCodeFence(
-                                        content = it.content,
-                                        node = it.node,
-                                        highlightsBuilder = highlightsBuilder,
-                                        showHeader = true,
-                                    )
-                                },
-                                checkbox = { MarkdownCheckBox(it.content, it.node, it.typography.text) }
-                            ),
+                            components =
+                                markdownComponents(
+                                    codeBlock = {
+                                        MarkdownHighlightedCodeBlock(
+                                            content = it.content,
+                                            node = it.node,
+                                            highlightsBuilder = highlightsBuilder,
+                                            showHeader = true,
+                                        )
+                                    },
+                                    codeFence = {
+                                        MarkdownHighlightedCodeFence(
+                                            content = it.content,
+                                            node = it.node,
+                                            highlightsBuilder = highlightsBuilder,
+                                            showHeader = true,
+                                        )
+                                    },
+                                    checkbox = { MarkdownCheckBox(it.content, it.node, it.typography.text) },
+                                ),
                             imageTransformer = Coil2ImageTransformerImpl,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -260,51 +254,49 @@ fun JsInterfaceDocScreen(navController: NavController) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 4.dp
+                    tonalElevation = 4.dp,
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
+                    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
                         items(searchResults) { result ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .clickable {
+                                modifier =
+                                    Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable {
                                         scope.launch {
                                             isSearchActive = false
                                             searchQuery = ""
                                             listState.scrollToItem(result.id)
                                         }
                                     },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
+                                colors =
+                                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = result.title,
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary,
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     // Show a snippet of content containing the query
-                                    val snippet = remember(result.content, searchQuery) {
-                                        val index = result.content.indexOf(searchQuery, ignoreCase = true)
-                                        if (index != -1) {
-                                            val start = (index - 20).coerceAtLeast(0)
-                                            val end = (index + searchQuery.length + 50).coerceAtMost(result.content.length)
-                                            "..." + result.content.substring(start, end).replace("\n", " ") + "..."
-                                        } else {
-                                            result.content.take(100).replace("\n", " ") + "..."
+                                    val snippet =
+                                        remember(result.content, searchQuery) {
+                                            val index = result.content.indexOf(searchQuery, ignoreCase = true)
+                                            if (index != -1) {
+                                                val start = (index - 20).coerceAtLeast(0)
+                                                val end =
+                                                    (index + searchQuery.length + 50).coerceAtMost(
+                                                        result.content.length
+                                                    )
+                                                "..." + result.content.substring(start, end).replace("\n", " ") + "..."
+                                            } else {
+                                                result.content.take(100).replace("\n", " ") + "..."
+                                            }
                                         }
-                                    }
                                     Text(
                                         text = snippet,
                                         style = MaterialTheme.typography.bodySmall,
                                         maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                 }
                             }

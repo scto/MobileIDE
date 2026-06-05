@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.app.Application
-
 import com.rk.libcommons.application
 import com.rk.resources.Res
 

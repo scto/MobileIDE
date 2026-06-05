@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
@@ -28,9 +28,7 @@ object TerminalFontManager {
     // Cache Typeface to avoid repeated loading
     private var cachedTypeface: Typeface? = null
 
-    /**
-     * Get global terminal font
-     */
+    /** Get global terminal font */
     fun getTypeface(context: Context): Typeface {
         // If already loaded, return cache directly
         if (cachedTypeface != null) {
@@ -48,5 +46,4 @@ object TerminalFontManager {
             Typeface.MONOSPACE
         }
     }
-
 }

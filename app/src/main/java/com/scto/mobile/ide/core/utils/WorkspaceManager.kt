@@ -15,18 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.core.utils
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-
+import java.io.File
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-
-import java.io.File
 
 object WorkspaceManager {
     private const val PREFS_NAME = "mobileide_prefs"
@@ -38,9 +36,7 @@ object WorkspaceManager {
         return dir?.absolutePath ?: context.filesDir.absolutePath
     }
 
-    /**
-     * Get workspace directory (with automatic error correction)
-     */
+    /** Get workspace directory (with automatic error correction) */
     fun getWorkspacePath(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val savedPath = prefs.getString(KEY_WORKSPACE_PATH, null)
@@ -51,13 +47,19 @@ object WorkspaceManager {
         }
 
         // 🔥🔥🔥 Fix 2: More robust path checking logic 🔥🔥🔥
-        // The previous logic relied on absolute path string matching, which easily caused misjudgments due to the difference between /sdcard and /storage/emulated/0
-        // Current logic: As long as the path contains "Android/data", check if it contains "the current App's package name"
+        // The previous logic relied on absolute path string matching, which easily caused misjudgments due to the
+        // difference between /sdcard and /storage/emulated/0
+        // Current logic: As long as the path contains "Android/data", check if it contains "the current App's package
+        // name"
         if (savedPath.contains("/Android/data/")) {
             val packageName = context.packageName
-            // If the path does not even contain the package name, it means this path definitely belongs to other Apps (or old package names). We have no permission and must reset it.
+            // If the path does not even contain the package name, it means this path definitely belongs to other Apps
+            // (or old package names). We have no permission and must reset it.
             if (!savedPath.contains(packageName)) {
-                android.util.Log.e("WorkspaceManager", "Invalid path detected (package name mismatch): $savedPath, resetting to default")
+                android.util.Log.e(
+                    "WorkspaceManager",
+                    "Invalid path detected (package name mismatch): $savedPath, resetting to default",
+                )
                 val validPath = getDefaultPath(context)
                 saveWorkspacePath(context, validPath) // Automatically save the corrected path
                 return validPath
@@ -75,11 +77,12 @@ object WorkspaceManager {
 
     fun getWorkspacePathFlow(context: Context): Flow<String> = callbackFlow {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_WORKSPACE_PATH) {
-                trySend(getWorkspacePath(context))
+        val listener =
+            SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                if (key == KEY_WORKSPACE_PATH) {
+                    trySend(getWorkspacePath(context))
+                }
             }
-        }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         trySend(getWorkspacePath(context))
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 package com.scto.mobile.ide.ui.components
 
 import androidx.compose.foundation.Canvas
@@ -53,19 +52,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.toColorInt
 import com.scto.mobile.ide.R
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import androidx.core.graphics.toColorInt
 
 @Composable
-fun ColorPickerDialog(
-    initialColor: Color,
-    onDismiss: () -> Unit,
-    onColorSelected: (Color) -> Unit
-) {
+fun ColorPickerDialog(initialColor: Color, onDismiss: () -> Unit, onColorSelected: (Color) -> Unit) {
     // 核心状态
     val initialHsv = colorToHsv(initialColor)
     var hue by remember { mutableFloatStateOf(initialHsv[0]) }
@@ -78,37 +73,31 @@ fun ColorPickerDialog(
     val confirmText = stringResource(R.string.action_confirm)
 
     // Hex 输入框状态 (透明度为1时只显示6位)
-    var hexInput by remember(currentColor) {
-        val isOpaque = currentColor.alpha >= 0.999f
-        mutableStateOf(colorToHex(currentColor, !isOpaque).removePrefix("#"))
-    }
+    var hexInput by
+        remember(currentColor) {
+            val isOpaque = currentColor.alpha >= 0.999f
+            mutableStateOf(colorToHex(currentColor, !isOpaque).removePrefix("#"))
+        }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ) {
+            Column(modifier = Modifier.padding(24.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
                 // --- 1. 顶部：HEX 输入 + 预览 ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // HEX 输入
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "#",
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         BasicTextField(
                             value = hexInput,
@@ -125,7 +114,7 @@ fun ColorPickerDialog(
                                         saturation = hsv[1]
                                         value = hsv[2]
                                         alpha = 1f
-                                    } catch (_: Exception) { }
+                                    } catch (_: Exception) {}
                                 } else if (filtered.length == 8) {
                                     try {
                                         val color = hexToColor(filtered)
@@ -134,50 +123,42 @@ fun ColorPickerDialog(
                                         saturation = hsv[1]
                                         value = hsv[2]
                                         alpha = color.alpha
-                                    } catch (_: Exception) { }
+                                    } catch (_: Exception) {}
                                 }
                             },
-                            textStyle = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                capitalization = KeyboardCapitalization.Characters,
-                                keyboardType = KeyboardType.Ascii
-                            ),
+                            textStyle =
+                                MaterialTheme.typography.headlineMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                ),
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.Characters,
+                                    keyboardType = KeyboardType.Ascii,
+                                ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.width(160.dp)
+                            modifier = Modifier.width(160.dp),
                         )
                     }
 
                     // 预览方块 (修改为方形圆角 8.dp)
                     Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(4.dp)) // 方的
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                        modifier =
+                            Modifier.size(56.dp)
+                                .clip(RoundedCornerShape(4.dp)) // 方的
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
                     ) {
-                        Canvas(modifier = Modifier.matchParentSize()) {
-                            drawCheckerboard()
-                        }
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(currentColor)
-                        )
+                        Canvas(modifier = Modifier.matchParentSize()) { drawCheckerboard() }
+                        Box(modifier = Modifier.matchParentSize().background(currentColor))
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // --- 2. 颜色选择核心区：左侧方块 + 右侧竖条 ---
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                ) {
+                Row(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                     // 左侧：饱和度/明度 (方块)
                     SatValPanel(
                         hue = hue,
@@ -187,11 +168,11 @@ fun ColorPickerDialog(
                             saturation = s
                             value = v
                         },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                        modifier =
+                            Modifier.weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(4.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp)),
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))
@@ -200,35 +181,29 @@ fun ColorPickerDialog(
                     VerticalHueSlider(
                         hue = hue,
                         onHueChange = { hue = it },
-                        modifier = Modifier
-                            .width(24.dp)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(4.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                        modifier =
+                            Modifier.width(24.dp)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(4.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp)),
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // --- 3. 透明度滑块 (横向) ---
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(24.dp)
-                ) {
+                Box(modifier = Modifier.fillMaxWidth().height(24.dp)) {
                     // 背景棋盘格
-                    Canvas(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp))) {
-                        drawCheckerboard()
-                    }
+                    Canvas(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp))) { drawCheckerboard() }
                     // 渐变滑块 (竖条指示器)
                     HorizontalAlphaSlider(
                         alpha = alpha,
                         baseColor = Color.hsv(hue, saturation, value),
                         onAlphaChange = { alpha = it },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(4.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                        modifier =
+                            Modifier.fillMaxSize()
+                                .clip(RoundedCornerShape(4.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp)),
                     )
                 }
 
@@ -243,10 +218,50 @@ fun ColorPickerDialog(
 
                 // RGB Inputs
                 ColorInputRow(label = "RGB") {
-                    NumberInput("R", r, 255) { onColorUpdate(Color(it, g, b, aInt), { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a }) }
-                    NumberInput("G", g, 255) { onColorUpdate(Color(r, it, b, aInt), { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a }) }
-                    NumberInput("B", b, 255) { onColorUpdate(Color(r, g, it, aInt), { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a }) }
-                    NumberInput("A", aInt, 255) { onColorUpdate(Color(r, g, b, it), { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a }) }
+                    NumberInput("R", r, 255) {
+                        onColorUpdate(
+                            Color(it, g, b, aInt),
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
+                    }
+                    NumberInput("G", g, 255) {
+                        onColorUpdate(
+                            Color(r, it, b, aInt),
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
+                    }
+                    NumberInput("B", b, 255) {
+                        onColorUpdate(
+                            Color(r, g, it, aInt),
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
+                    }
+                    NumberInput("A", aInt, 255) {
+                        onColorUpdate(
+                            Color(r, g, b, it),
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -265,30 +280,49 @@ fun ColorPickerDialog(
                 ColorInputRow(label = "HSL") {
                     NumberInput("H", hsl[0].roundToInt(), 360) {
                         val newColor = hslToColor(it.toFloat(), hsl[1], hsl[2], alpha)
-                        onColorUpdate(newColor, { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a })
+                        onColorUpdate(
+                            newColor,
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
                     }
                     NumberInput("S", (hsl[1] * 100).roundToInt(), 100) {
                         val newColor = hslToColor(hsl[0], it / 100f, hsl[2], alpha)
-                        onColorUpdate(newColor, { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a })
+                        onColorUpdate(
+                            newColor,
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
                     }
                     NumberInput("L", (hsl[2] * 100).roundToInt(), 100) {
                         val newColor = hslToColor(hsl[0], hsl[1], it / 100f, alpha)
-                        onColorUpdate(newColor, { h, s, v, a -> hue=h; saturation=s; value=v; alpha=a })
+                        onColorUpdate(
+                            newColor,
+                            { h, s, v, a ->
+                                hue = h
+                                saturation = s
+                                value = v
+                                alpha = a
+                            },
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // --- 底部按钮 ---
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) { Text(cancelText) }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { onColorSelected(currentColor) }) {
-                        Text(confirmText)
-                    }
+                    Button(onClick = { onColorSelected(currentColor) }) { Text(confirmText) }
                 }
             }
         }
@@ -303,26 +337,19 @@ private fun onColorUpdate(newColor: Color, updateState: (Float, Float, Float, Fl
 
 // --- 组件：数值输入行 ---
 @Composable
-private fun ColorInputRow(
-    label: String,
-    content: @Composable RowScope.() -> Unit
-) {
+private fun ColorInputRow(label: String, content: @Composable RowScope.() -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .width(36.dp)
-                // ▼▼▼ 修改处：添加顶部内边距，避开右侧的小标题高度 ▼▼▼
-                .padding(top = 14.dp)
+            modifier =
+                Modifier.width(36.dp)
+                    // ▼▼▼ 修改处：添加顶部内边距，避开右侧的小标题高度 ▼▼▼
+                    .padding(top = 14.dp),
         )
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            content = content
-        )
+        Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp), content = content)
     }
 }
 
@@ -333,29 +360,29 @@ private fun SatValPanel(
     saturation: Float,
     value: Float,
     onValChange: (Float, Float) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     Box(modifier = modifier) {
         Canvas(
-            modifier = Modifier
-                .matchParentSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        onValChange(
-                            (offset.x / size.width).coerceIn(0f, 1f),
-                            1f - (offset.y / size.height).coerceIn(0f, 1f)
-                        )
+            modifier =
+                Modifier.matchParentSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset ->
+                            onValChange(
+                                (offset.x / size.width).coerceIn(0f, 1f),
+                                1f - (offset.y / size.height).coerceIn(0f, 1f),
+                            )
+                        }
                     }
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        change.consume()
-                        onValChange(
-                            (change.position.x / size.width).coerceIn(0f, 1f),
-                            1f - (change.position.y / size.height).coerceIn(0f, 1f)
-                        )
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, _ ->
+                            change.consume()
+                            onValChange(
+                                (change.position.x / size.width).coerceIn(0f, 1f),
+                                1f - (change.position.y / size.height).coerceIn(0f, 1f),
+                            )
+                        }
                     }
-                }
         ) {
             drawRect(color = Color.hsv(hue, 1f, 1f))
             drawRect(brush = Brush.horizontalGradient(listOf(Color.White, Color.Transparent)))
@@ -368,15 +395,15 @@ private fun SatValPanel(
 
             drawRect(
                 color = Color.Black.copy(alpha = 0.5f),
-                topLeft = Offset(x - cursorSize/2, y - cursorSize/2),
+                topLeft = Offset(x - cursorSize / 2, y - cursorSize / 2),
                 size = Size(cursorSize, cursorSize),
-                style = Stroke(3f)
+                style = Stroke(3f),
             )
             drawRect(
                 color = Color.White,
-                topLeft = Offset(x - cursorSize/2, y - cursorSize/2),
+                topLeft = Offset(x - cursorSize / 2, y - cursorSize / 2),
                 size = Size(cursorSize, cursorSize),
-                style = Stroke(1.5f)
+                style = Stroke(1.5f),
             )
         }
     }
@@ -384,26 +411,20 @@ private fun SatValPanel(
 
 // --- 组件：竖向色相滑块 ---
 @Composable
-private fun VerticalHueSlider(
-    hue: Float,
-    onHueChange: (Float) -> Unit,
-    modifier: Modifier
-) {
+private fun VerticalHueSlider(hue: Float, onHueChange: (Float) -> Unit, modifier: Modifier) {
     Box(modifier = modifier) {
         Canvas(
-            modifier = Modifier
-                .matchParentSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        onHueChange((offset.y / size.height * 360f).coerceIn(0f, 360f))
+            modifier =
+                Modifier.matchParentSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset -> onHueChange((offset.y / size.height * 360f).coerceIn(0f, 360f)) }
                     }
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        change.consume()
-                        onHueChange((change.position.y / size.height * 360f).coerceIn(0f, 360f))
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, _ ->
+                            change.consume()
+                            onHueChange((change.position.y / size.height * 360f).coerceIn(0f, 360f))
+                        }
                     }
-                }
         ) {
             val colors = (0..360 step 10).map { Color.hsv(it.toFloat(), 1f, 1f) }
             drawRect(brush = Brush.verticalGradient(colors = colors))
@@ -414,15 +435,15 @@ private fun VerticalHueSlider(
 
             drawRect(
                 color = Color.Black.copy(alpha = 0.5f),
-                topLeft = Offset(0f, y - barHeight/2),
+                topLeft = Offset(0f, y - barHeight / 2),
                 size = Size(size.width, barHeight),
-                style = Stroke(2f)
+                style = Stroke(2f),
             )
             drawRect(
                 color = Color.White,
-                topLeft = Offset(0f, y - barHeight/2),
+                topLeft = Offset(0f, y - barHeight / 2),
                 size = Size(size.width, barHeight),
-                style = Stroke(1f)
+                style = Stroke(1f),
             )
         }
     }
@@ -430,33 +451,22 @@ private fun VerticalHueSlider(
 
 // --- 组件：横向透明度滑块 ---
 @Composable
-private fun HorizontalAlphaSlider(
-    alpha: Float,
-    baseColor: Color,
-    onAlphaChange: (Float) -> Unit,
-    modifier: Modifier
-) {
+private fun HorizontalAlphaSlider(alpha: Float, baseColor: Color, onAlphaChange: (Float) -> Unit, modifier: Modifier) {
     Box(modifier = modifier) {
         Canvas(
-            modifier = Modifier
-                .matchParentSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        onAlphaChange((offset.x / size.width).coerceIn(0f, 1f))
+            modifier =
+                Modifier.matchParentSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures { offset -> onAlphaChange((offset.x / size.width).coerceIn(0f, 1f)) }
                     }
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        change.consume()
-                        onAlphaChange((change.position.x / size.width).coerceIn(0f, 1f))
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, _ ->
+                            change.consume()
+                            onAlphaChange((change.position.x / size.width).coerceIn(0f, 1f))
+                        }
                     }
-                }
         ) {
-            drawRect(
-                brush = Brush.horizontalGradient(
-                    listOf(Color.Transparent, baseColor.copy(alpha = 1f))
-                )
-            )
+            drawRect(brush = Brush.horizontalGradient(listOf(Color.Transparent, baseColor.copy(alpha = 1f))))
 
             // 指示器：改为竖条 (Vertical Bar)
             val x = alpha * size.width
@@ -464,27 +474,22 @@ private fun HorizontalAlphaSlider(
 
             drawRect(
                 color = Color.Black.copy(alpha = 0.5f),
-                topLeft = Offset(x - barWidth/2, 0f),
+                topLeft = Offset(x - barWidth / 2, 0f),
                 size = Size(barWidth, size.height),
-                style = Stroke(2f)
+                style = Stroke(2f),
             )
             drawRect(
                 color = Color.White,
-                topLeft = Offset(x - barWidth/2, 0f),
+                topLeft = Offset(x - barWidth / 2, 0f),
                 size = Size(barWidth, size.height),
-                style = Stroke(1f)
+                style = Stroke(1f),
             )
         }
     }
 }
 
 @Composable
-private fun RowScope.NumberInput(
-    label: String,
-    value: Int,
-    max: Int,
-    onValueChange: (Int) -> Unit
-) {
+private fun RowScope.NumberInput(label: String, value: Int, max: Int, onValueChange: (Int) -> Unit) {
     var text by remember(value) { mutableStateOf(value.toString()) }
 
     Column(modifier = Modifier.weight(1f)) {
@@ -494,7 +499,7 @@ private fun RowScope.NumberInput(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            fontSize = 10.sp
+            fontSize = 10.sp,
         )
         BasicTextField(
             value = text,
@@ -507,17 +512,18 @@ private fun RowScope.NumberInput(
                     }
                 }
             },
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontFamily = FontFamily.Monospace
-            ),
+            textStyle =
+                MaterialTheme.typography.bodyMedium.copy(
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = FontFamily.Monospace,
+                ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
-                .padding(vertical = 4.dp)
+            modifier =
+                Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
+                    .padding(vertical = 4.dp),
         )
     }
 }
@@ -532,11 +538,7 @@ fun DrawScope.drawCheckerboard() {
     for (i in 0 until rows) {
         for (j in 0 until cols) {
             val color = if ((i + j) % 2 == 0) Color.LightGray else Color.White
-            drawRect(
-                color = color,
-                topLeft = Offset(j * size, i * size),
-                size = Size(size, size)
-            )
+            drawRect(color = color, topLeft = Offset(j * size, i * size), size = Size(size, size))
         }
     }
 }
@@ -589,12 +591,13 @@ fun rgbToHsl(r: Int, g: Int, b: Int): FloatArray {
     } else {
         val d = max - min
         s = if (l > 0.5f) d / (2f - max - min) else d / (max + min)
-        h = when (max) {
-            rf -> (gf - bf) / d + (if (gf < bf) 6f else 0f)
-            gf -> (bf - rf) / d + 2f
-            bf -> (rf - gf) / d + 4f
-            else -> 0f
-        }
+        h =
+            when (max) {
+                rf -> (gf - bf) / d + (if (gf < bf) 6f else 0f)
+                gf -> (bf - rf) / d + 2f
+                bf -> (rf - gf) / d + 4f
+                else -> 0f
+            }
         h *= 60f
     }
     return floatArrayOf(h, s, l)
@@ -610,12 +613,36 @@ fun hslToColor(h: Float, s: Float, l: Float, a: Float): Color {
     var b = 0f
 
     when {
-        h < 60f -> { r = c; g = x; b = 0f }
-        h < 120f -> { r = x; g = c; b = 0f }
-        h < 180f -> { r = 0f; g = c; b = x }
-        h < 240f -> { r = 0f; g = x; b = c }
-        h < 300f -> { r = x; g = 0f; b = c }
-        else -> { r = c; g = 0f; b = x }
+        h < 60f -> {
+            r = c
+            g = x
+            b = 0f
+        }
+        h < 120f -> {
+            r = x
+            g = c
+            b = 0f
+        }
+        h < 180f -> {
+            r = 0f
+            g = c
+            b = x
+        }
+        h < 240f -> {
+            r = 0f
+            g = x
+            b = c
+        }
+        h < 300f -> {
+            r = x
+            g = 0f
+            b = c
+        }
+        else -> {
+            r = c
+            g = 0f
+            b = x
+        }
     }
 
     return Color(r + m, g + m, b + m, a)

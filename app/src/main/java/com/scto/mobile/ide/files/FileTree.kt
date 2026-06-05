@@ -22,8 +22,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.core.content.edit
-import androidx.core.content.FileProvider
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -62,25 +60,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import com.scto.mobile.ide.R
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.math.log10
-import kotlin.math.pow
-
 import java.io.File
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.log10
+import kotlin.math.pow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-data class FileNode(
-    val file: File,
-    val isDirectory: Boolean,
-)
+data class FileNode(val file: File, val isDirectory: Boolean)
 
 // Config for FileTree
 data class FileTreeConfig(
@@ -91,14 +85,14 @@ data class FileTreeConfig(
     val compactMiddlePackageCount: Int = 3, // Default max depth for compaction
     val alwaysSelectOpenedFile: Boolean = false,
     val showIndentGuides: Boolean = false,
-    val rememberExpandedStates: Boolean = false // 新增：记忆展开状态
+    val rememberExpandedStates: Boolean = false, // 新增：记忆展开状态
 )
 
 enum class SortBy {
     NAME,
     TYPE,
     DATE_NEWEST,
-    DATE_OLDEST
+    DATE_OLDEST,
 }
 
 // Helper for file size
@@ -122,7 +116,7 @@ fun FileTree(
     refreshTrigger: Long = 0,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
     onFileClick: (File) -> Unit,
-    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> }
+    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> },
 ) {
     // 兼容单个rootPath调用
     FileTreeImpl(
@@ -135,7 +129,7 @@ fun FileTree(
         refreshTrigger = refreshTrigger,
         modifier = modifier,
         onFileClick = onFileClick,
-        onFileRenamed = onFileRenamed
+        onFileRenamed = onFileRenamed,
     )
 }
 
@@ -150,7 +144,7 @@ fun FileTree(
     refreshTrigger: Long = 0,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
     onFileClick: (File) -> Unit,
-    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> }
+    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> },
 ) {
     FileTree(
         rootPaths = listOf(rootPath),
@@ -162,7 +156,7 @@ fun FileTree(
         refreshTrigger = refreshTrigger,
         modifier = modifier,
         onFileClick = onFileClick,
-        onFileRenamed = onFileRenamed
+        onFileRenamed = onFileRenamed,
     )
 }
 
@@ -179,65 +173,69 @@ private fun FileTreeImpl(
     refreshTrigger: Long = 0,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
     onFileClick: (File) -> Unit,
-    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> }
+    onFileRenamed: (oldFile: File, newFile: File) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     var showInstallApkDialog by remember { mutableStateOf<File?>(null) }
     var rootFiles by remember { mutableStateOf<List<FileNode>>(emptyList()) }
     val scope = rememberCoroutineScope()
-    
+
     // Sort logic
     fun sortFiles(files: List<File>): List<File> {
-        return files.sortedWith(Comparator { f1, f2 ->
-            // 1. Folders on top check
-            if (config.foldersAlwaysOnTop) {
-                if (f1.isDirectory && !f2.isDirectory) return@Comparator -1
-                if (!f1.isDirectory && f2.isDirectory) return@Comparator 1
-            }
-            
-            // 2. Main sort
-            when (config.sortBy) {
-                SortBy.NAME -> f1.name.compareTo(f2.name, ignoreCase = true)
-                SortBy.TYPE -> {
-                    val ext1 = f1.extension
-                    val ext2 = f2.extension
-                    val res = ext1.compareTo(ext2, ignoreCase = true)
-                    if (res != 0) res else f1.name.compareTo(f2.name, ignoreCase = true)
+        return files.sortedWith(
+            Comparator { f1, f2 ->
+                // 1. Folders on top check
+                if (config.foldersAlwaysOnTop) {
+                    if (f1.isDirectory && !f2.isDirectory) return@Comparator -1
+                    if (!f1.isDirectory && f2.isDirectory) return@Comparator 1
                 }
-                SortBy.DATE_NEWEST -> f2.lastModified().compareTo(f1.lastModified())
-                SortBy.DATE_OLDEST -> f1.lastModified().compareTo(f2.lastModified())
+
+                // 2. Main sort
+                when (config.sortBy) {
+                    SortBy.NAME -> f1.name.compareTo(f2.name, ignoreCase = true)
+                    SortBy.TYPE -> {
+                        val ext1 = f1.extension
+                        val ext2 = f2.extension
+                        val res = ext1.compareTo(ext2, ignoreCase = true)
+                        if (res != 0) res else f1.name.compareTo(f2.name, ignoreCase = true)
+                    }
+                    SortBy.DATE_NEWEST -> f2.lastModified().compareTo(f1.lastModified())
+                    SortBy.DATE_OLDEST -> f1.lastModified().compareTo(f2.lastModified())
+                }
             }
-        })
+        )
     }
 
     var containerWidth by remember { mutableIntStateOf(0) }
     val sideMargin = 12.dp
     val density = LocalDensity.current
 
-    val minItemWidth = remember(containerWidth, sideMargin) {
-        if (containerWidth == 0) 0.dp else
-            with(density) { (containerWidth.toDp() - (sideMargin * 2)).coerceAtLeast(0.dp) }
-    }
+    val minItemWidth =
+        remember(containerWidth, sideMargin) {
+            if (containerWidth == 0) 0.dp
+            else with(density) { (containerWidth.toDp() - (sideMargin * 2)).coerceAtLeast(0.dp) }
+        }
 
     var itemWidths by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     val maxContentWidth = itemWidths.values.maxOrNull() ?: 0
-    val viewportWidthPx =
-        if (containerWidth > 0) containerWidth - with(density) { (sideMargin * 2).toPx() } else 0f
+    val viewportWidthPx = if (containerWidth > 0) containerWidth - with(density) { (sideMargin * 2).toPx() } else 0f
     val isHorizontalScrollEnabled = maxContentWidth > viewportWidthPx && containerWidth > 0
     val horizontalScrollState = rememberScrollState()
 
     val treePrefs = remember { context.getSharedPreferences("FileTreeExpandedStates", Context.MODE_PRIVATE) }
     val projectKey = remember(rootPaths) { rootPaths.firstOrNull() ?: "" }
 
-    var expandedNodes by remember(rootPaths) {
-        val defaultNodes = rootPaths.map { File(it).path }.toSet()
-        val initialSet = if (config.rememberExpandedStates && projectKey.isNotEmpty()) {
-            treePrefs.getStringSet(projectKey, null)?.toSet() ?: defaultNodes
-        } else {
-            defaultNodes
+    var expandedNodes by
+        remember(rootPaths) {
+            val defaultNodes = rootPaths.map { File(it).path }.toSet()
+            val initialSet =
+                if (config.rememberExpandedStates && projectKey.isNotEmpty()) {
+                    treePrefs.getStringSet(projectKey, null)?.toSet() ?: defaultNodes
+                } else {
+                    defaultNodes
+                }
+            mutableStateOf(initialSet)
         }
-        mutableStateOf(initialSet)
-    }
 
     LaunchedEffect(expandedNodes, config.rememberExpandedStates, projectKey) {
         if (projectKey.isNotEmpty()) {
@@ -248,7 +246,6 @@ private fun FileTreeImpl(
             }
         }
     }
-
 
     var treeSelection by remember { mutableStateOf<String?>(null) }
 
@@ -299,7 +296,7 @@ private fun FileTreeImpl(
             if (activeFile != null) {
                 treeSelection = activeFile.absolutePath
                 expandToActiveFile()
-                
+
                 // If "Always Select" is OFF, show temporarily then clear
                 if (!config.alwaysSelectOpenedFile) {
                     delay(1000)
@@ -320,30 +317,28 @@ private fun FileTreeImpl(
 
     LaunchedEffect(expandTrigger) {
         if (expandTrigger > 0) {
-             withContext(Dispatchers.IO) {
-                 val allPaths = mutableSetOf<String>()
-                 // Use a queue for BFS traversal
-                 val queue = java.util.ArrayDeque<File>()
-                 rootPaths.forEach { queue.add(File(it)) }
-                 
-                 var count = 0
-                 val maxNodes = 200 // Safety limit to prevent freezing
-                 
-                 while (!queue.isEmpty() && count < maxNodes) {
-                     val current = queue.removeFirst()
-                     if (current.isDirectory) {
-                         allPaths.add(current.path)
-                         current.listFiles()?.let { children ->
-                             // Add directories to queue
-                             children.filter { it.isDirectory }.forEach { queue.add(it) }
-                         }
-                         count++
-                     }
-                 }
-                 withContext(Dispatchers.Main) {
-                     expandedNodes = allPaths
-                 }
-             }
+            withContext(Dispatchers.IO) {
+                val allPaths = mutableSetOf<String>()
+                // Use a queue for BFS traversal
+                val queue = java.util.ArrayDeque<File>()
+                rootPaths.forEach { queue.add(File(it)) }
+
+                var count = 0
+                val maxNodes = 200 // Safety limit to prevent freezing
+
+                while (!queue.isEmpty() && count < maxNodes) {
+                    val current = queue.removeFirst()
+                    if (current.isDirectory) {
+                        allPaths.add(current.path)
+                        current.listFiles()?.let { children ->
+                            // Add directories to queue
+                            children.filter { it.isDirectory }.forEach { queue.add(it) }
+                        }
+                        count++
+                    }
+                }
+                withContext(Dispatchers.Main) { expandedNodes = allPaths }
+            }
         }
     }
 
@@ -376,10 +371,8 @@ private fun FileTreeImpl(
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
     val confirmDeleteTitleText = stringResource(R.string.file_tree_confirm_delete_title)
-    val confirmDeleteMessageText = stringResource(
-        R.string.file_tree_confirm_delete_message,
-        selectedFileNode?.file?.name ?: ""
-    )
+    val confirmDeleteMessageText =
+        stringResource(R.string.file_tree_confirm_delete_message, selectedFileNode?.file?.name ?: "")
     val createFileTitleText = stringResource(R.string.file_tree_create_file_title)
     val fileNameText = stringResource(R.string.file_tree_file_name)
     val createFolderTitleText = stringResource(R.string.file_tree_create_folder_title)
@@ -401,51 +394,39 @@ private fun FileTreeImpl(
     // Initial load & Refresh
     LaunchedEffect(rootPaths, refreshTrigger) {
         withContext(Dispatchers.IO) {
-            val nodes = rootPaths.mapNotNull { path ->
-                val file = File(path)
-                if (file.exists()) FileNode(file, file.isDirectory) else null
-            }
-            withContext(Dispatchers.Main) {
-                rootFiles = nodes
-            }
+            val nodes =
+                rootPaths.mapNotNull { path ->
+                    val file = File(path)
+                    if (file.exists()) FileNode(file, file.isDirectory) else null
+                }
+            withContext(Dispatchers.Main) { rootFiles = nodes }
         }
     }
 
     val fileSorter = remember(config.sortBy, config.foldersAlwaysOnTop) { { files: List<File> -> sortFiles(files) } }
 
     if (rootFiles.isEmpty()) {
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
+        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
     } else {
-        Column(
-            modifier = modifier
-                .onSizeChanged { containerWidth = it.width }
-        ) {
+        Column(modifier = modifier.onSizeChanged { containerWidth = it.width }) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .horizontalScroll(
-                        state = horizontalScrollState,
-                        enabled = isHorizontalScrollEnabled
-                    ),
-                contentPadding = PaddingValues(
-                    horizontal = sideMargin,
-                    vertical = 4.dp
-                )
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .weight(1f)
+                        .horizontalScroll(state = horizontalScrollState, enabled = isHorizontalScrollEnabled),
+                contentPadding = PaddingValues(horizontal = sideMargin, vertical = 4.dp),
             ) {
                 items(rootFiles, key = { it.file.path }) { node ->
                     FileNodeItem(
-                    node = node,
-                    selectedPath = treeSelection,
-                    config = config,
-                    fileSorter = fileSorter,
-                    refreshTrigger = refreshTrigger,
-                    depth = 0,
-                    expandedNodes = expandedNodes,
-                    minWidth = minItemWidth,
-                    onToggle = onSmartToggle,
+                        node = node,
+                        selectedPath = treeSelection,
+                        config = config,
+                        fileSorter = fileSorter,
+                        refreshTrigger = refreshTrigger,
+                        depth = 0,
+                        expandedNodes = expandedNodes,
+                        minWidth = minItemWidth,
+                        onToggle = onSmartToggle,
                         onFileClick = {
                             if (it.extension.equals("apk", ignoreCase = true)) {
                                 showInstallApkDialog = it
@@ -469,30 +450,26 @@ private fun FileTreeImpl(
                         onWidthMeasured = { path, width ->
                             if (itemWidths[path] != width) itemWidths = itemWidths + (path to width)
                         },
-                        onDisposed = { path ->
-                            itemWidths = itemWidths - path
-                        }
+                        onDisposed = { path -> itemWidths = itemWidths - path },
                     )
                 }
             }
         }
     }
-    
+
     if (showBottomSheet && selectedFileNode != null) {
-        ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
-            sheetState = sheetState
-        ) {
+        ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
             FileActionBottomSheet(
                 node = selectedFileNode!!,
                 onDismiss = {
-                    scope.launch { sheetState.hide() }
+                    scope
+                        .launch { sheetState.hide() }
                         .invokeOnCompletion { if (!sheetState.isVisible) showBottomSheet = false }
                 },
                 onDeleteRequest = { showDeleteConfirmationDialog = true },
                 onCreateFileRequest = { showCreateFileDialog = true },
                 onCreateFolderRequest = { showCreateFolderDialog = true },
-                onRenameRequest = { showRenameDialog = true }
+                onRenameRequest = { showRenameDialog = true },
             )
         }
     }
@@ -511,26 +488,30 @@ private fun FileTreeImpl(
                             scope.launch {
                                 val parent = node.file.parentFile
                                 val success =
-                                    withContext(Dispatchers.IO) { if (node.isDirectory) node.file.deleteRecursively() else node.file.delete() }
+                                    withContext(Dispatchers.IO) {
+                                        if (node.isDirectory) node.file.deleteRecursively() else node.file.delete()
+                                    }
                                 if (success && parent != null) refreshDirectory(parent)
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text(actionDeleteText) }
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(actionDeleteText)
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmationDialog = false }) {
-                    Text(actionCancelText)
-                }
-            }
+                TextButton(onClick = { showDeleteConfirmationDialog = false }) { Text(actionCancelText) }
+            },
         )
     }
-    
+
     if (showCreateFileDialog) {
         var name by remember { mutableStateOf("") }
-        val extensions = remember { listOf(".html", ".css", ".js", ".php", ".json", ".xml", ".kt", ".java", ".txt", ".md") }
-        
+        val extensions = remember {
+            listOf(".html", ".css", ".js", ".php", ".json", ".xml", ".kt", ".java", ".txt", ".md")
+        }
+
         AlertDialog(
             onDismissRequest = { showCreateFileDialog = false },
             title = { Text(createFileTitleText) },
@@ -541,7 +522,7 @@ private fun FileTreeImpl(
                         onValueChange = { name = it },
                         label = { Text(fileNameText) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -554,7 +535,7 @@ private fun FileTreeImpl(
                                         name += ext
                                     }
                                 },
-                                label = { Text(ext) }
+                                label = { Text(ext) },
                             )
                         }
                     }
@@ -571,9 +552,7 @@ private fun FileTreeImpl(
                                 parent?.let {
                                     scope.launch {
                                         val newFile = File(it, name)
-                                        withContext(Dispatchers.IO) {
-                                            newFile.createNewFile()
-                                        }
+                                        withContext(Dispatchers.IO) { newFile.createNewFile() }
                                         refreshDirectory(it)
                                         onFileClick(newFile)
                                     }
@@ -581,43 +560,41 @@ private fun FileTreeImpl(
                             }
                         }
                     },
-                    enabled = name.isNotBlank()
-                ) { Text(actionConfirmText) }
+                    enabled = name.isNotBlank(),
+                ) {
+                    Text(actionConfirmText)
+                }
             },
-            dismissButton = {
-                TextButton(onClick = { showCreateFileDialog = false }) { Text(actionCancelText) }
-            }
+            dismissButton = { TextButton(onClick = { showCreateFileDialog = false }) { Text(actionCancelText) } },
         )
     }
-    
+
     if (showCreateFolderDialog) {
         InputDialog(
             title = createFolderTitleText,
             label = folderNameText,
-            onDismiss = { showCreateFolderDialog = false }) { name ->
-            showCreateFolderDialog = false; showBottomSheet = false
+            onDismiss = { showCreateFolderDialog = false },
+        ) { name ->
+            showCreateFolderDialog = false
+            showBottomSheet = false
             selectedFileNode?.let { node ->
                 val parent = if (node.isDirectory) node.file else node.file.parentFile
                 parent?.let {
                     scope.launch {
-                        withContext(Dispatchers.IO) {
-                            File(
-                                it,
-                                name
-                            ).mkdirs()
-                        }; refreshDirectory(it)
+                        withContext(Dispatchers.IO) { File(it, name).mkdirs() }
+                        refreshDirectory(it)
                     }
                 }
             }
         }
     }
-    
+
     if (showRenameDialog) {
         InputDialog(
             title = renameTitleText,
             label = newNameText,
             initialValue = selectedFileNode?.file?.name ?: "",
-            onDismiss = { showRenameDialog = false }
+            onDismiss = { showRenameDialog = false },
         ) { name ->
             // 1. 关闭弹窗
             showRenameDialog = false
@@ -632,9 +609,7 @@ private fun FileTreeImpl(
                         val newFile = File(parentDir, name)
 
                         // 2. 在 IO 线程执行重命名
-                        val success = withContext(Dispatchers.IO) {
-                            oldFile.renameTo(newFile)
-                        }
+                        val success = withContext(Dispatchers.IO) { oldFile.renameTo(newFile) }
 
                         // 3. 根据结果刷新 UI
                         if (success) {
@@ -648,7 +623,7 @@ private fun FileTreeImpl(
             }
         }
     }
-    
+
     if (showInstallApkDialog != null) {
         val file = showInstallApkDialog!!
         val installAppMessageText = stringResource(R.string.file_tree_install_app_message, file.name)
@@ -662,27 +637,27 @@ private fun FileTreeImpl(
                         showInstallApkDialog = null
                         try {
                             val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "application/vnd.android.package-archive")
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
+                            val intent =
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, "application/vnd.android.package-archive")
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
                             context.startActivity(intent)
                         } catch (e: Exception) {
                             Toast.makeText(
-                                context,
-                                context.getString(R.string.file_tree_install_failed, e.message),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                    context,
+                                    context.getString(R.string.file_tree_install_failed, e.message),
+                                    Toast.LENGTH_SHORT,
+                                )
+                                .show()
                         }
                     }
-                ) { Text(actionInstallText) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showInstallApkDialog = null }) {
-                    Text(actionCancelText)
+                ) {
+                    Text(actionInstallText)
                 }
-            }
+            },
+            dismissButton = { TextButton(onClick = { showInstallApkDialog = null }) { Text(actionCancelText) } },
         )
     }
 }
@@ -702,104 +677,106 @@ private fun FileNodeItem(
     onFileClick: (File) -> Unit,
     onLongClick: (FileNode) -> Unit,
     onWidthMeasured: (String, Int) -> Unit,
-    onDisposed: (String) -> Unit
+    onDisposed: (String) -> Unit,
 ) {
-    val (effectiveNode, effectiveName) = remember(node, config.compactMiddlePackages, config.compactMiddlePackageCount, refreshTrigger) {
-        if (!config.compactMiddlePackages || !node.isDirectory) {
-            node to node.file.name
-        } else {
-            var curr = node.file
-            var nameBuilder = StringBuilder(curr.name)
-            var count = 0
-            while (count < config.compactMiddlePackageCount) {
-                val kids = curr.listFiles()
-                if (kids != null && kids.size == 1 && kids[0].isDirectory) {
-                    curr = kids[0]
-                    nameBuilder.append(".").append(curr.name)
-                    count++
-                } else {
-                    break
+    val (effectiveNode, effectiveName) =
+        remember(node, config.compactMiddlePackages, config.compactMiddlePackageCount, refreshTrigger) {
+            if (!config.compactMiddlePackages || !node.isDirectory) {
+                node to node.file.name
+            } else {
+                var curr = node.file
+                var nameBuilder = StringBuilder(curr.name)
+                var count = 0
+                while (count < config.compactMiddlePackageCount) {
+                    val kids = curr.listFiles()
+                    if (kids != null && kids.size == 1 && kids[0].isDirectory) {
+                        curr = kids[0]
+                        nameBuilder.append(".").append(curr.name)
+                        count++
+                    } else {
+                        break
+                    }
                 }
+                FileNode(curr, true) to nameBuilder.toString()
             }
-            FileNode(curr, true) to nameBuilder.toString()
         }
-    }
 
     val isExpanded = expandedNodes.contains(effectiveNode.file.path)
     val isSelected = selectedPath == effectiveNode.file.absolutePath
 
     val animationSpec = tween<Float>(durationMillis = 150)
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (isExpanded) 90f else 0f,
-        label = "arrowAnimation",
-        animationSpec = animationSpec
-    )
+    val arrowRotation by
+        animateFloatAsState(
+            targetValue = if (isExpanded) 90f else 0f,
+            label = "arrowAnimation",
+            animationSpec = animationSpec,
+        )
 
-    val children by remember(isExpanded, effectiveNode, fileSorter, refreshTrigger) {
-        derivedStateOf {
-            if (isExpanded && effectiveNode.isDirectory) {
-                val rawChildren = effectiveNode.file.listFiles()?.toList() ?: emptyList()
-                fileSorter(rawChildren).map { FileNode(file = it, isDirectory = it.isDirectory) }
-            } else {
-                emptyList()
+    val children by
+        remember(isExpanded, effectiveNode, fileSorter, refreshTrigger) {
+            derivedStateOf {
+                if (isExpanded && effectiveNode.isDirectory) {
+                    val rawChildren = effectiveNode.file.listFiles()?.toList() ?: emptyList()
+                    fileSorter(rawChildren).map { FileNode(file = it, isDirectory = it.isDirectory) }
+                } else {
+                    emptyList()
+                }
             }
         }
-    }
 
     val indentGuideVisible = config.showIndentGuides
 
-    DisposableEffect(effectiveNode.file.path) {
-        onDispose { onDisposed(effectiveNode.file.path) }
-    }
+    DisposableEffect(effectiveNode.file.path) { onDispose { onDisposed(effectiveNode.file.path) } }
 
-    val widthModifier = if (minWidth > 0.dp) {
-        Modifier.widthIn(min = minWidth)
-    } else {
-        Modifier.fillMaxWidth()
-    }
+    val widthModifier =
+        if (minWidth > 0.dp) {
+            Modifier.widthIn(min = minWidth)
+        } else {
+            Modifier.fillMaxWidth()
+        }
 
     Column(
-        modifier = Modifier
-            .then(widthModifier)
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
-            .combinedClickable(
-                onClick = {
-                    if (effectiveNode.isDirectory) {
-                        onToggle(effectiveNode)
-                    } else {
-                        onFileClick(effectiveNode.file)
-                    }
-                },
-                onLongClick = { onLongClick(effectiveNode) }
-            )
+        modifier =
+            Modifier.then(widthModifier)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                .combinedClickable(
+                    onClick = {
+                        if (effectiveNode.isDirectory) {
+                            onToggle(effectiveNode)
+                        } else {
+                            onFileClick(effectiveNode.file)
+                        }
+                    },
+                    onLongClick = { onLongClick(effectiveNode) },
+                )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth() // Row 填满外层 Column
-                .onSizeChanged { onWidthMeasured(effectiveNode.file.path, it.width) }
-                .padding(vertical = 10.dp, horizontal = 4.dp), // 内部上下边距，稍微减小一点显得更紧凑
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier.fillMaxWidth() // Row 填满外层 Column
+                    .onSizeChanged { onWidthMeasured(effectiveNode.file.path, it.width) }
+                    .padding(vertical = 10.dp, horizontal = 4.dp), // 内部上下边距，稍微减小一点显得更紧凑
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (depth > 0) {
                 Spacer(modifier = Modifier.width((depth * 20).dp))
             }
 
             val (icon, baseTint) = FileIcons.getFileIcon(effectiveNode.file.name, effectiveNode.isDirectory, isExpanded)
-            
-            val tint = if (effectiveNode.isDirectory) {
-                 MaterialTheme.colorScheme.primary
-            } else {
-                 if (baseTint == Color.Unspecified) LocalContentColor.current.copy(alpha = 0.7f) else baseTint
-            }
+
+            val tint =
+                if (effectiveNode.isDirectory) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    if (baseTint == Color.Unspecified) LocalContentColor.current.copy(alpha = 0.7f) else baseTint
+                }
 
             if (effectiveNode.isDirectory) {
                 Icon(
                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
-
                     contentDescription = stringResource(R.string.content_desc_expand),
                     modifier = Modifier.size(24.dp).rotate(arrowRotation),
-                    tint = LocalContentColor.current.copy(alpha = 0.6f)
+                    tint = LocalContentColor.current.copy(alpha = 0.6f),
                 )
             } else {
                 Spacer(modifier = Modifier.width(24.dp))
@@ -813,7 +790,7 @@ private fun FileNodeItem(
                 maxLines = 1,
                 overflow = TextOverflow.Visible,
                 fontSize = 14.sp,
-                color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified
+                color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else Color.Unspecified,
             )
 
             // File Details (if enabled)
@@ -824,7 +801,7 @@ private fun FileNodeItem(
                     text = size,
                     maxLines = 1,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 )
             }
 
@@ -834,21 +811,24 @@ private fun FileNodeItem(
         AnimatedVisibility(
             visible = isExpanded,
             enter = expandVertically(animationSpec = tween(150)),
-            exit = shrinkVertically(animationSpec = tween(150))
+            exit = shrinkVertically(animationSpec = tween(150)),
         ) {
-            Column(modifier = Modifier.fillMaxWidth().drawBehind {
-                if (indentGuideVisible) {
-                    val indentUnit = 20.dp.toPx()
-                    val guideX = (depth * indentUnit) + 4.dp.toPx() + 10.dp.toPx()
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth().drawBehind {
+                        if (indentGuideVisible) {
+                            val indentUnit = 20.dp.toPx()
+                            val guideX = (depth * indentUnit) + 4.dp.toPx() + 10.dp.toPx()
 
-                    drawLine(
-                        color = Color.Gray.copy(alpha = 0.2f),
-                        start = Offset(guideX, 0f),
-                        end = Offset(guideX, size.height),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
-            }) {
+                            drawLine(
+                                color = Color.Gray.copy(alpha = 0.2f),
+                                start = Offset(guideX, 0f),
+                                end = Offset(guideX, size.height),
+                                strokeWidth = 1.dp.toPx(),
+                            )
+                        }
+                    }
+            ) {
                 children.forEach { child ->
                     FileNodeItem(
                         node = child,
@@ -863,7 +843,7 @@ private fun FileNodeItem(
                         onFileClick = onFileClick,
                         onLongClick = onLongClick,
                         onWidthMeasured = onWidthMeasured,
-                        onDisposed = onDisposed
+                        onDisposed = onDisposed,
                     )
                 }
             }
@@ -872,13 +852,15 @@ private fun FileNodeItem(
 }
 
 @Composable
-private fun BottomSheetActionItem(icon: ImageVector, text: String, onClick: () -> Unit, color: Color = Color.Unspecified) {
+private fun BottomSheetActionItem(
+    icon: ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    color: Color = Color.Unspecified,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         val tint = if (color != Color.Unspecified) color else LocalContentColor.current
         Icon(imageVector = icon, contentDescription = text, tint = tint)
@@ -905,69 +887,120 @@ fun FileActionBottomSheet(
     val renameText = stringResource(R.string.file_tree_action_rename)
     val copyPathText = stringResource(R.string.file_tree_action_copy_path)
     val deleteText = stringResource(R.string.action_delete)
-    
+
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         // File Info Header
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 if (node.isDirectory) Icons.Default.Folder else Icons.Default.Description,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
-                tint = if (node.isDirectory) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                tint =
+                    if (node.isDirectory) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(node.file.name, style = MaterialTheme.typography.titleMedium)
-                val size = if (node.isDirectory) stringResource(R.string.file_tree_folder_type) else formatFileSize(node.file.length())
-                val date = DateFormat.getDateTimeInstance(
-                    DateFormat.SHORT,
-                    DateFormat.SHORT,
-                    Locale.getDefault()
-                ).format(Date(node.file.lastModified()))
+                val size =
+                    if (node.isDirectory) stringResource(R.string.file_tree_folder_type)
+                    else formatFileSize(node.file.length())
+                val date =
+                    DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
+                        .format(Date(node.file.lastModified()))
                 Text(
                     stringResource(R.string.file_tree_details_format, size, date),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
-        
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-        BottomSheetActionItem(Icons.Default.Description, createFileText, { onCreateFileRequest(); onDismiss() })
-        BottomSheetActionItem(Icons.Default.CreateNewFolder, createFolderText, { onCreateFolderRequest(); onDismiss() })
-        
+        BottomSheetActionItem(
+            Icons.Default.Description,
+            createFileText,
+            {
+                onCreateFileRequest()
+                onDismiss()
+            },
+        )
+        BottomSheetActionItem(
+            Icons.Default.CreateNewFolder,
+            createFolderText,
+            {
+                onCreateFolderRequest()
+                onDismiss()
+            },
+        )
+
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 8.dp),
             thickness = DividerDefaults.Thickness,
-            color = DividerDefaults.color
+            color = DividerDefaults.color,
         )
-        
-        BottomSheetActionItem(Icons.Default.DriveFileRenameOutline, renameText, { onRenameRequest(); onDismiss() })
-        BottomSheetActionItem(Icons.Default.ContentCopy, copyPathText, {
-            clipboardManager.setText(AnnotatedString(node.file.absolutePath))
-            Toast.makeText(context, context.getString(R.string.file_tree_path_copied), Toast.LENGTH_SHORT).show()
-            onDismiss()
-        })
-        BottomSheetActionItem(Icons.Default.Delete, deleteText, { onDeleteRequest(); onDismiss() }, MaterialTheme.colorScheme.error)
+
+        BottomSheetActionItem(
+            Icons.Default.DriveFileRenameOutline,
+            renameText,
+            {
+                onRenameRequest()
+                onDismiss()
+            },
+        )
+        BottomSheetActionItem(
+            Icons.Default.ContentCopy,
+            copyPathText,
+            {
+                clipboardManager.setText(AnnotatedString(node.file.absolutePath))
+                Toast.makeText(context, context.getString(R.string.file_tree_path_copied), Toast.LENGTH_SHORT).show()
+                onDismiss()
+            },
+        )
+        BottomSheetActionItem(
+            Icons.Default.Delete,
+            deleteText,
+            {
+                onDeleteRequest()
+                onDismiss()
+            },
+            MaterialTheme.colorScheme.error,
+        )
     }
 }
 
 @Composable
-fun InputDialog(title: String, label: String, initialValue: String = "", onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+fun InputDialog(
+    title: String,
+    label: String,
+    initialValue: String = "",
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
     var text by remember { mutableStateOf(initialValue) }
     val actionConfirmText = stringResource(R.string.action_confirm)
     val actionCancelText = stringResource(R.string.action_cancel)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
-        text = { OutlinedTextField(value = text, onValueChange = { text = it }, label = { Text(label) }, singleLine = true, modifier = Modifier.fillMaxWidth()) },
-        confirmButton = { Button(onClick = { if (text.isNotBlank()) onConfirm(text) }, enabled = text.isNotBlank()) { Text(actionConfirmText) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(actionCancelText) } }
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(label) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            Button(onClick = { if (text.isNotBlank()) onConfirm(text) }, enabled = text.isNotBlank()) {
+                Text(actionConfirmText)
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(actionCancelText) } },
     )
 }

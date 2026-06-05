@@ -32,13 +32,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.LogConfigRepository
 import com.scto.mobile.ide.core.utils.PermissionManager
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.ui.components.DirectorySelector
-
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,12 +50,11 @@ fun WorkspaceSelectionScreen(navController: NavController) {
     var showFileSelector by remember { mutableStateOf(false) }
 
     // 权限请求回调
-    val permissionState = PermissionManager.rememberPermissionRequest(
-        onPermissionGranted = {
-            saveAndNavigate(context, selectedWorkspace, navController, scope)
-        },
-        onPermissionDenied = { /* 可选：提示用户 */ }
-    )
+    val permissionState =
+        PermissionManager.rememberPermissionRequest(
+            onPermissionGranted = { saveAndNavigate(context, selectedWorkspace, navController, scope) },
+            onPermissionDenied = { /* 可选：提示用户 */ },
+        )
 
     // ✅✅✅ 修复点 1：进入页面时，检查是否已经配置过。
     // 如果已配置，直接跳转到主页，不再让用户重新选择。
@@ -76,34 +73,29 @@ fun WorkspaceSelectionScreen(navController: NavController) {
 
     // 只有在未配置时才渲染 UI 内容，避免跳转时的闪烁（可选优化）
     if (!WorkspaceManager.isWorkspaceConfigured(context)) {
-        Scaffold(
-            topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }
-        ) { innerPadding ->
+        Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(32.dp),
+                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Icon(
                     Icons.Default.FolderOpen,
                     null,
                     modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.workspace_select_title),
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     stringResource(R.string.workspace_select_description),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 if (selectedWorkspace.contains("Android/data")) {
@@ -111,7 +103,7 @@ fun WorkspaceSelectionScreen(navController: NavController) {
                         stringResource(R.string.workspace_private_recommended),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
 
@@ -120,7 +112,7 @@ fun WorkspaceSelectionScreen(navController: NavController) {
                 Button(
                     onClick = { showFileSelector = true },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
                 ) {
                     Icon(Icons.Default.FolderOpen, null)
                     Spacer(Modifier.width(8.dp))
@@ -131,7 +123,7 @@ fun WorkspaceSelectionScreen(navController: NavController) {
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(stringResource(R.string.label_current), style = MaterialTheme.typography.bodySmall)
@@ -139,7 +131,7 @@ fun WorkspaceSelectionScreen(navController: NavController) {
                             selectedWorkspace,
                             style = MaterialTheme.typography.bodyMedium,
                             maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -148,17 +140,14 @@ fun WorkspaceSelectionScreen(navController: NavController) {
 
                 Button(
                     onClick = {
-                        if (PermissionManager.isSystemPermissionRequiredForPath(
-                                context,
-                                selectedWorkspace
-                            )
-                        ) {
+                        if (PermissionManager.isSystemPermissionRequiredForPath(context, selectedWorkspace)) {
                             permissionState.requestPermissions()
                         } else {
                             saveAndNavigate(context, selectedWorkspace, navController, scope)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
                 ) {
                     Icon(Icons.Default.Check, null)
                     Spacer(Modifier.width(8.dp))
@@ -171,8 +160,11 @@ fun WorkspaceSelectionScreen(navController: NavController) {
     if (showFileSelector) {
         DirectorySelector(
             initialPath = selectedWorkspace,
-            onPathSelected = { selectedWorkspace = it; showFileSelector = false },
-            onDismissRequest = { showFileSelector = false }
+            onPathSelected = {
+                selectedWorkspace = it
+                showFileSelector = false
+            },
+            onDismissRequest = { showFileSelector = false },
         )
     }
 }
@@ -181,17 +173,14 @@ private fun saveAndNavigate(
     context: android.content.Context,
     path: String,
     navController: NavController,
-    scope: kotlinx.coroutines.CoroutineScope
+    scope: kotlinx.coroutines.CoroutineScope,
 ) {
     WorkspaceManager.saveWorkspacePath(context, path)
 
     scope.launch {
         try {
             LogConfigRepository(context).resetLogPath()
-        } catch (_: Exception) {
-        }
+        } catch (_: Exception) {}
     }
-    navController.navigate("project_list") {
-        popUpTo("workspace_selection") { inclusive = true }
-    }
+    navController.navigate("project_list") { popUpTo("workspace_selection") { inclusive = true } }
 }

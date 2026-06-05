@@ -13,7 +13,8 @@ package com.scto.mobile.ide.ui.projects
 
 object ProjectTemplates {
 
-    val libsVersionsToml = """
+    val libsVersionsToml =
+        """
         [versions]
         agp = "8.2.2"
         kotlin = "1.9.22"
@@ -50,9 +51,11 @@ object ProjectTemplates {
         [plugins]
         android-application = { id = "com.android.application", version.ref = "agp" }
         kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val gradlewScript = """
+    val gradlewScript =
+        """
         #!/usr/bin/env bash
 
         # Attempt to run local gradle wrapper
@@ -65,14 +68,17 @@ object ProjectTemplates {
             echo "Gradle wrapper not fully installed. Trying system gradle..."
             exec gradle "${"$"}@"
         fi
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val gradleProperties = """
+    val gradleProperties =
+        """
         org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
         android.useAndroidX=true
         android.nonTransitiveRClass=true
         kotlin.code.style=official
-    """.trimIndent()
+        """
+            .trimIndent()
 
     fun getSettingsGradle(projectName: String): String {
         return """
@@ -92,15 +98,18 @@ object ProjectTemplates {
             }
             rootProject.name = "$projectName"
             include(":app")
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
-    val rootBuildGradleAndroid = """
+    val rootBuildGradleAndroid =
+        """
         plugins {
             alias(libs.plugins.android.application) apply false
             alias(libs.plugins.kotlin.android) apply false
         }
-    """.trimIndent()
+        """
+            .trimIndent()
 
     fun getAppBuildGradleCompose(packageName: String, addNavigation: Boolean = false): String {
         return """
@@ -173,7 +182,8 @@ object ProjectTemplates {
                 debugImplementation(libs.androidx.ui.tooling)
                 debugImplementation(libs.androidx.ui.test.manifest)
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getAppBuildGradleCmake(packageName: String): String {
@@ -242,46 +252,51 @@ object ProjectTemplates {
                 implementation(libs.androidx.ui.tooling.preview)
                 implementation(libs.androidx.material3)
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getAndroidManifest(packageName: String): String {
         return """
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                <application
-                    android:allowBackup="true"
-                    android:icon="@mipmap/ic_launcher"
-                    android:label="@string/app_name"
-                    android:roundIcon="@mipmap/ic_launcher_round"
-                    android:supportsRtl="true"
-                    android:theme="@style/Theme.MyApplication">
-                    <activity
-                        android:name=".MainActivity"
-                        android:exported="true">
-                        <intent-filter>
-                            <action android:name="android.intent.action.MAIN" />
-                            <category android:name="android.intent.category.LAUNCHER" />
-                        </intent-filter>
-                    </activity>
-                </application>
-            </manifest>
-        """.trimIndent()
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="@string/app_name"
+                android:roundIcon="@mipmap/ic_launcher_round"
+                android:supportsRtl="true"
+                android:theme="@style/Theme.MyApplication">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        """
+            .trimIndent()
     }
 
-    val themesXml = """
+    val themesXml =
+        """
         <?xml version="1.0" encoding="utf-8"?>
         <resources>
             <style name="Theme.MyApplication" parent="android:Theme.Material.Light.NoActionBar" />
         </resources>
-    """.trimIndent()
+        """
+            .trimIndent()
 
     fun getStringsXml(projectName: String): String {
         return """
             <resources>
                 <string name="app_name">$projectName</string>
             </resources>
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getEmptyComposeMainActivity(packageName: String): String {
@@ -321,7 +336,8 @@ object ProjectTemplates {
                     modifier = modifier
                 )
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getBasicComposeMainActivity(packageName: String): String {
@@ -372,7 +388,8 @@ object ProjectTemplates {
                     }
                 }
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getBottomNavigationMainActivity(packageName: String): String {
@@ -440,7 +457,8 @@ object ProjectTemplates {
                     }
                 }
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getNavigationDrawerMainActivity(packageName: String): String {
@@ -527,10 +545,12 @@ object ProjectTemplates {
                     }
                 }
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
-    val flutterPubspec = """
+    val flutterPubspec =
+        """
         name: flutter_app
         description: A new Flutter project generated by MobileIDE.
         publish_to: 'none'
@@ -551,9 +571,11 @@ object ProjectTemplates {
 
         flutter:
           uses-material-design: true
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val flutterMainDart = """
+    val flutterMainDart =
+        """
         import 'package:flutter/material.dart';
 
         void main() {
@@ -621,9 +643,11 @@ object ProjectTemplates {
             );
           }
         }
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val flutterAndroidBuildGradle = """
+    val flutterAndroidBuildGradle =
+        """
         buildscript {
             ext.kotlin_version = '1.9.0'
             repositories {
@@ -641,13 +665,17 @@ object ProjectTemplates {
                 mavenCentral()
             }
         }
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val flutterAndroidSettingsGradle = """
+    val flutterAndroidSettingsGradle =
+        """
         include ':app'
-    """.trimIndent()
+        """
+            .trimIndent()
 
-    val flutterAndroidAppBuildGradle = """
+    val flutterAndroidAppBuildGradle =
+        """
         plugins {
             id 'com.android.application'
             id 'kotlin-android'
@@ -665,7 +693,8 @@ object ProjectTemplates {
                 versionName "1.0"
             }
         }
-    """.trimIndent()
+        """
+            .trimIndent()
 
     fun getFlutterAndroidManifest(packageName: String): String {
         return """
@@ -689,7 +718,8 @@ object ProjectTemplates {
                     </activity>
                 </application>
             </manifest>
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getFlutterMainActivity(packageName: String): String {
@@ -700,10 +730,12 @@ object ProjectTemplates {
 
             class MainActivity: FlutterActivity() {
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
-    val cmakeLists = """
+    val cmakeLists =
+        """
         cmake_minimum_required(VERSION 3.22.1)
         project("native-lib")
 
@@ -722,7 +754,8 @@ object ProjectTemplates {
             native-lib
             ${"$"}{log-lib}
         )
-    """.trimIndent()
+        """
+            .trimIndent()
 
     fun getNativeLibCpp(packageName: String): String {
         val jniFunctionName = "Java_" + packageName.replace(".", "_") + "_MainActivity_stringFromJNI"
@@ -737,7 +770,8 @@ object ProjectTemplates {
                 std::string hello = "Hello from Native C++ !!";
                 return env->NewStringUTF(hello.c_str());
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getCmakeMainActivity(packageName: String): String {
@@ -785,6 +819,7 @@ object ProjectTemplates {
                     modifier = modifier
                 )
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 }

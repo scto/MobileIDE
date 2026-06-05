@@ -15,24 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.view.View
 import android.widget.Button
-
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeyButton
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
-
 import com.termux.terminal.TerminalSession
 
 // 🔥 Directly port rk terminal's implementation
 class VirtualKeysListener(val session: TerminalSession) : VirtualKeysView.IVirtualKeysView {
-    override fun onVirtualKeyButtonClick(
-        view: View?,
-        buttonInfo: VirtualKeyButton?,
-        button: Button?,
-    ) {
+    override fun onVirtualKeyButtonClick(view: View?, buttonInfo: VirtualKeyButton?, button: Button?) {
         val key = buttonInfo?.key ?: return
         val writeable: String =
             when (key) {

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor
 
 import android.graphics.Color as AndroidColor
@@ -25,10 +25,7 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 
 object EditorColorSchemeManager {
 
-    /**
-     * 将 Material 主题色应用到现有的 EditorColorScheme
-     * 直接使用 Compose 的 ColorScheme，无需重复计算 HCT
-     */
+    /** 将 Material 主题色应用到现有的 EditorColorScheme 直接使用 Compose 的 ColorScheme，无需重复计算 HCT */
     fun applyThemeColors(scheme: EditorColorScheme, colorScheme: ColorScheme) {
         val primary = colorScheme.primary.toArgb()
         val surface = colorScheme.surface.toArgb()
@@ -43,58 +40,58 @@ object EditorColorSchemeManager {
             setColor(EditorColorScheme.LINE_DIVIDER, surfaceVariant)
             setColor(EditorColorScheme.LINE_NUMBER, onSurfaceVariant)
             setColor(EditorColorScheme.LINE_NUMBER_CURRENT, primary)
-            
+
             // 当前行高亮
             setColor(EditorColorScheme.CURRENT_LINE, adjustAlpha(surfaceVariant, 0.3f))
-            
+
             // 选择相关
             setColor(EditorColorScheme.SELECTED_TEXT_BACKGROUND, adjustAlpha(primary, 0.25f))
             setColor(EditorColorScheme.SELECTION_INSERT, primary)
             setColor(EditorColorScheme.SELECTION_HANDLE, primary)
-            
+
             // 滚动条
             setColor(EditorColorScheme.SCROLL_BAR_THUMB, adjustAlpha(onSurfaceVariant, 0.3f))
             setColor(EditorColorScheme.SCROLL_BAR_THUMB_PRESSED, adjustAlpha(primary, 0.5f))
-            
+
             // 自动完成窗口
             setColor(EditorColorScheme.COMPLETION_WND_BACKGROUND, surface)
             setColor(EditorColorScheme.COMPLETION_WND_CORNER, surfaceVariant)
             setColor(EditorColorScheme.COMPLETION_WND_ITEM_CURRENT, adjustAlpha(primary, 0.2f))
-            
+
             // 文本操作弹窗 (双击/长按弹出的菜单)
             setColor(EditorColorScheme.TEXT_ACTION_WINDOW_BACKGROUND, surface)
             setColor(EditorColorScheme.TEXT_ACTION_WINDOW_ICON_COLOR, primary)
-            
+
             // 括号匹配
             setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_FOREGROUND, primary)
             setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BACKGROUND, AndroidColor.TRANSPARENT)
             setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BORDER, AndroidColor.TRANSPARENT)
             setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_UNDERLINE, primary)
-            
+
             // 下划线
             setColor(EditorColorScheme.UNDERLINE, primary)
-            
+
             // 代码块线条
             setColor(EditorColorScheme.BLOCK_LINE, surfaceVariant)
             setColor(EditorColorScheme.BLOCK_LINE_CURRENT, primary)
             setColor(EditorColorScheme.SIDE_BLOCK_LINE, surfaceVariant)
-            
+
             // 确保文本颜色适配深色/浅色模式 (针对 TreeSitter 或默认编辑器)
             val onBackground = colorScheme.onBackground.toArgb()
             setColor(EditorColorScheme.TEXT_NORMAL, onBackground)
-            
+
             // 如果是浅色模式，优化 TreeSitter 的默认高亮颜色 (简单的覆盖，防止看不清)
             if (!isDarkScheme(this)) {
-                 setColor(EditorColorScheme.KEYWORD, 0xFF0000FF.toInt()) // 蓝色关键字
-                 setColor(EditorColorScheme.COMMENT, 0xFF008000.toInt()) // 绿色注释
-                 setColor(EditorColorScheme.LITERAL, 0xFF098658.toInt()) // 深绿数字/常量
-                 setColor(EditorColorScheme.OPERATOR, 0xFF333333.toInt()) // 深灰操作符
-                 setColor(EditorColorScheme.IDENTIFIER_NAME, 0xFF001080.toInt()) // 深蓝标识符
-                 setColor(EditorColorScheme.IDENTIFIER_VAR, 0xFF001080.toInt()) // 深蓝变量
-                 setColor(EditorColorScheme.FUNCTION_NAME, 0xFF795E26.toInt()) // 金色函数名
-                 setColor(EditorColorScheme.ATTRIBUTE_NAME, 0xFF001080.toInt()) // 属性名
-                 setColor(EditorColorScheme.ATTRIBUTE_VALUE, 0xFFA31515.toInt()) // 属性值
-                 setColor(EditorColorScheme.HTML_TAG, 0xFF800000.toInt()) // HTML标签
+                setColor(EditorColorScheme.KEYWORD, 0xFF0000FF.toInt()) // 蓝色关键字
+                setColor(EditorColorScheme.COMMENT, 0xFF008000.toInt()) // 绿色注释
+                setColor(EditorColorScheme.LITERAL, 0xFF098658.toInt()) // 深绿数字/常量
+                setColor(EditorColorScheme.OPERATOR, 0xFF333333.toInt()) // 深灰操作符
+                setColor(EditorColorScheme.IDENTIFIER_NAME, 0xFF001080.toInt()) // 深蓝标识符
+                setColor(EditorColorScheme.IDENTIFIER_VAR, 0xFF001080.toInt()) // 深蓝变量
+                setColor(EditorColorScheme.FUNCTION_NAME, 0xFF795E26.toInt()) // 金色函数名
+                setColor(EditorColorScheme.ATTRIBUTE_NAME, 0xFF001080.toInt()) // 属性名
+                setColor(EditorColorScheme.ATTRIBUTE_VALUE, 0xFFA31515.toInt()) // 属性值
+                setColor(EditorColorScheme.HTML_TAG, 0xFF800000.toInt()) // HTML标签
             }
         }
     }
@@ -107,34 +104,26 @@ object EditorColorSchemeManager {
         return AndroidColor.argb(a, r, g, b)
     }
 
-    /**
-     * 获取 Diff 视图的新增行背景色
-     */
+    /** 获取 Diff 视图的新增行背景色 */
     fun getDiffAddColor(scheme: EditorColorScheme): Int {
         val isDark = isDarkScheme(scheme)
         // 深色模式下用深绿，浅色模式下用浅绿，或者统一用半透明绿
         return if (isDark) 0x401B5E20 else 0x40A5D6A7
     }
 
-    /**
-     * 获取 Diff 视图的删除行背景色
-     */
+    /** 获取 Diff 视图的删除行背景色 */
     fun getDiffDeleteColor(scheme: EditorColorScheme): Int {
         val isDark = isDarkScheme(scheme)
         return if (isDark) 0x40B71C1C else 0x40EF9A9A
     }
 
-    /**
-     * 获取 Diff 视图的新增行背景色 (Word Level)
-     */
+    /** 获取 Diff 视图的新增行背景色 (Word Level) */
     fun getDiffAddWordColor(scheme: EditorColorScheme): Int {
         val isDark = isDarkScheme(scheme)
         return if (isDark) 0x802E7D32.toInt() else 0x8066BB6A.toInt()
     }
 
-    /**
-     * 获取 Diff 视图的删除行背景色 (Word Level)
-     */
+    /** 获取 Diff 视图的删除行背景色 (Word Level) */
     fun getDiffDeleteWordColor(scheme: EditorColorScheme): Int {
         val isDark = isDarkScheme(scheme)
         return if (isDark) 0x80C62828.toInt() else 0x80EF5350.toInt()

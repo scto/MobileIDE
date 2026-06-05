@@ -15,27 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
-
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 
 /**
- * Wrapper class: Resolves the issue of mTitle being invisible inside TerminalSession.
- * We maintain the Session object and its title ourselves.
+ * Wrapper class: Resolves the issue of mTitle being invisible inside TerminalSession. We maintain the Session object
+ * and its title ourselves.
  */
-data class SessionWrapper(
-    val session: TerminalSession,
-    val title: String
-)
+data class SessionWrapper(val session: TerminalSession, val title: String)
 
 object SessionManager {
     // Use Compose's mutableStateListOf to ensure UI listens to list changes
@@ -47,56 +42,69 @@ object SessionManager {
     // Get currently active Session object (for UI use)
     // Return null if list is empty or index is out of bounds
     val currentSession: TerminalSession?
-        get() = if (sessions.isNotEmpty() && currentSessionIndex in sessions.indices) {
-            sessions[currentSessionIndex].session
-        } else null
+        get() =
+            if (sessions.isNotEmpty() && currentSessionIndex in sessions.indices) {
+                sessions[currentSessionIndex].session
+            } else null
 
-    /**
-     * Create new session and add to list
-     */
+    /** Create new session and add to list */
     fun addNewSession(context: Context) {
         // Define Session callback interface
-        val client = object : TerminalSessionClient {
-            override fun onTextChanged(changedSession: TerminalSession) {
-                // When text changes, TerminalView on UI layer automatically redraws
-            }
+        val client =
+            object : TerminalSessionClient {
+                override fun onTextChanged(changedSession: TerminalSession) {
+                    // When text changes, TerminalView on UI layer automatically redraws
+                }
 
-            override fun onTitleChanged(changedSession: TerminalSession) {
-                // If you want to support dynamic titles (e.g., show current directory), 
-                // you can update wrapper's title here.
-                // Temporarily left blank to use static title.
-            }
+                override fun onTitleChanged(changedSession: TerminalSession) {
+                    // If you want to support dynamic titles (e.g., show current directory),
+                    // you can update wrapper's title here.
+                    // Temporarily left blank to use static title.
+                }
 
-            override fun onSessionFinished(finishedSession: TerminalSession) {
-                // When Shell exits (e.g., user enters 'exit'), automatically remove this session
-                // 1. Find the wrapper containing this session in the list
-                val wrapper = sessions.find { it.session == finishedSession }
-                // 2. Remove it
-                if (wrapper != null) {
-                    removeSession(wrapper)
+                override fun onSessionFinished(finishedSession: TerminalSession) {
+                    // When Shell exits (e.g., user enters 'exit'), automatically remove this session
+                    // 1. Find the wrapper containing this session in the list
+                    val wrapper = sessions.find { it.session == finishedSession }
+                    // 2. Remove it
+                    if (wrapper != null) {
+                        removeSession(wrapper)
+                    }
+                }
+
+                // --- Below are other interfaces that must be implemented but are temporarily not needed ---
+                override fun onCopyTextToClipboard(session: TerminalSession, text: String) {}
+
+                override fun onPasteTextFromClipboard(session: TerminalSession?) {}
+
+                override fun onBell(session: TerminalSession) {}
+
+                override fun onColorsChanged(session: TerminalSession) {}
+
+                override fun onTerminalCursorStateChange(state: Boolean) {}
+
+                override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
+
+                override fun getTerminalCursorStyle(): Int = 0
+
+                override fun logError(tag: String, message: String) {}
+
+                override fun logWarn(tag: String, message: String) {}
+
+                override fun logInfo(tag: String, message: String) {}
+
+                override fun logDebug(tag: String, message: String) {}
+
+                override fun logVerbose(tag: String, message: String) {}
+
+                override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
+                    e.printStackTrace()
+                }
+
+                override fun logStackTrace(tag: String, e: Exception) {
+                    e.printStackTrace()
                 }
             }
-
-            // --- Below are other interfaces that must be implemented but are temporarily not needed ---
-            override fun onCopyTextToClipboard(session: TerminalSession, text: String) {}
-            override fun onPasteTextFromClipboard(session: TerminalSession?) {}
-            override fun onBell(session: TerminalSession) {}
-            override fun onColorsChanged(session: TerminalSession) {}
-            override fun onTerminalCursorStateChange(state: Boolean) {}
-            override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
-            override fun getTerminalCursorStyle(): Int = 0
-            override fun logError(tag: String, message: String) {}
-            override fun logWarn(tag: String, message: String) {}
-            override fun logInfo(tag: String, message: String) {}
-            override fun logDebug(tag: String, message: String) {}
-            override fun logVerbose(tag: String, message: String) {}
-            override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
-                e.printStackTrace()
-            }
-            override fun logStackTrace(tag: String, e: Exception) {
-                e.printStackTrace()
-            }
-        }
 
         // Call AlpineManager to create core session
         val session = AlpineManager.createSession(context, client)
@@ -111,9 +119,7 @@ object SessionManager {
         currentSessionIndex = sessions.lastIndex
     }
 
-    /**
-     * Remove specified session
-     */
+    /** Remove specified session */
     fun removeSession(wrapper: SessionWrapper) {
         // 1. Ensure underlying session stops
         wrapper.session.finishIfRunning()
@@ -127,9 +133,7 @@ object SessionManager {
         }
     }
 
-    /**
-     * Switch to session at specified index
-     */
+    /** Switch to session at specified index */
     fun switchTo(index: Int) {
         if (index in sessions.indices) {
             currentSessionIndex = index

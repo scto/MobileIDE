@@ -7,15 +7,15 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object SetupWorker {
     private const val TAG = "SetupWorker"
@@ -74,11 +74,12 @@ object SetupWorker {
 
     private fun copyAssetFolder(context: Context, fromAssetPath: String, toPath: String) {
         val assetManager = context.assets
-        val assets = try {
-            assetManager.list(fromAssetPath)
-        } catch (e: Exception) {
-            null
-        }
+        val assets =
+            try {
+                assetManager.list(fromAssetPath)
+            } catch (e: Exception) {
+                null
+            }
 
         if (assets.isNullOrEmpty()) {
             copySingleAsset(context, fromAssetPath, File(toPath))
@@ -99,11 +100,9 @@ object SetupWorker {
 
         try {
             context.assets.open(assetPath).use { input ->
-                FileOutputStream(destFile).use { output ->
-                    input.copyTo(output)
-                }
+                FileOutputStream(destFile).use { output -> input.copyTo(output) }
             }
-            
+
             // Ausführungsrechte für Shell-Skripte, Binaries und Libs
             if (destFile.name.endsWith(".sh") || destFile.name == "proot" || destFile.name.contains(".so")) {
                 destFile.setExecutable(true, false)
