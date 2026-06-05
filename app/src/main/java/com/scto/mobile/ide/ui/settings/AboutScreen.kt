@@ -1,5 +1,5 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
+ * MobileIDE - A powerful IDE for Android app development.
  * Copyright (C) 2025  如日中天  <3382198490@qq.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -115,7 +115,7 @@ fun AboutScreen(navController: NavController) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val prefs = remember { context.getSharedPreferences("webide_settings", Context.MODE_PRIVATE) }
+    val prefs = remember { context.getSharedPreferences("mobileide_settings", Context.MODE_PRIVATE) }
 
     var showAuthorNote by remember { mutableStateOf(prefs.getBoolean("show_author_note", true)) }
 

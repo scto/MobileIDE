@@ -1,5 +1,5 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
+ * MobileIDE - A powerful IDE for Android app development.
  * Copyright (C) 2025  如日中天  <3382198490@qq.com>
  *
  * This program is free software: you can redistribute it and/or modify

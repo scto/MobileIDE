@@ -68,7 +68,7 @@
 
     <string name="welcome_tagline">Build the Future on Android</string>
     <string name="welcome_permissions_title">Required Permissions</string>
-    <string name="welcome_permissions_description">WebIDE needs the following permissions to read/write code and run apps.</string>
+    <string name="welcome_permissions_description">MobileIDE needs the following permissions to read/write code and run apps.</string>
     <string name="welcome_permission_storage_title">Storage</string>
     <string name="welcome_permission_storage_description">Used to access and save project files</string>
     <string name="welcome_permission_install_title">App Installation</string>
@@ -407,12 +407,12 @@
     <string name="terminal_new_session">New Session</string>
     <string name="terminal_input_hint">Enter command...</string>
 
-    <string name="about_team_title">WebIDE Team</string>
+    <string name="about_team_title">MobileIDE Team</string>
     <string name="about_special_thanks_title">Special Thanks</string>
     <string name="about_donors_title">Donors</string>
     <string name="about_licenses_title">Open Source Licenses</string>
     <string name="about_author_note">This project is co-developed by human developers and AI, exploring the infinite possibilities of code generation.</string>
-    <string name="about_copyright">Copyright © 2025 WebIDE</string>
+    <string name="about_copyright">Copyright © 2025 MobileIDE</string>
     <string name="about_license_title">License</string>
     <string name="about_see_project_website">Please visit the project website to view the license.</string>
     <string name="about_no_license_info">No license information available.</string>
