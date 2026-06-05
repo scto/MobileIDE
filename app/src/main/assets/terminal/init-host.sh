@@ -14,7 +14,11 @@ fi
 # ==========================================
 # PRoot Arguments Setup
 # ==========================================
-PROOT_BIN="$PREFIX/bin/proot"
+if [ -n "$PROOT_EXEC" ] && [ -f "$PROOT_EXEC" ]; then
+    PROOT_BIN="$PROOT_EXEC"
+else
+    PROOT_BIN="$PREFIX/bin/proot"
+fi
 INIT_SCRIPT="$PREFIX/init.sh"
 
 ARGS="--kill-on-exit"

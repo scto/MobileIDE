@@ -62,16 +62,22 @@ ARGS="$ARGS -L"
 
 chmod -R +x $LOCAL/bin
 
+if [ -n "$PROOT_EXEC" ] && [ -f "$PROOT_EXEC" ]; then
+    PROOT_BIN="$PROOT_EXEC"
+else
+    PROOT_BIN="$LOCAL/bin/proot"
+fi
+
 if [ "$FDROID" = false ]; then
     if [ $# -gt 0 ]; then
-        $LINKER $LOCAL/bin/proot $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
+        $LINKER "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
     else
-        $LINKER $LOCAL/bin/proot $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
+        $LINKER "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
     fi
 else
     if [ $# -gt 0 ]; then
-        $LOCAL/bin/proot $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
+        "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
     else
-        $LOCAL/bin/proot $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
+        "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
     fi
 fi

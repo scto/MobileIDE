@@ -47,7 +47,7 @@ import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(
+fun App(
     navController: NavHostController,
     themeViewModel: ThemeViewModel,
     logConfigRepository: LogConfigRepository,
