@@ -49,7 +49,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.PermissionHelper
 import com.scto.mobile.ide.core.utils.PermissionManager
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
@@ -66,7 +65,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     val pagerState = rememberPagerState(pageCount = { 3 })
 
     var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
-    var installGranted by remember { mutableStateOf(PermissionHelper.hasInstallPermission(context)) }
+    var installGranted by remember { mutableStateOf(PermissionManager.hasInstallPermission(context)) }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }
@@ -153,12 +152,12 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
             onPermissionDenied = {},
         )
     val requestInstallPermission =
-        PermissionHelper.rememberInstallPermissionRequest { granted -> installGranted = granted }
+        PermissionManager.rememberInstallPermissionRequest { granted -> installGranted = granted }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 storageGranted = permissionState.hasPermissions()
-                installGranted = PermissionHelper.hasInstallPermission(context)
+                installGranted = PermissionManager.hasInstallPermission(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
