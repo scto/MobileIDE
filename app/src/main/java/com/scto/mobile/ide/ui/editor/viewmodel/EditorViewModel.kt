@@ -586,7 +586,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "yml" -> "source.yaml"
                     else -> return null
                 }
-            val prefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
             val lspEnabled = prefs.getBoolean("editor_lsp_enabled", false)
             TextMateLanguage.create(scopeName, !lspEnabled)
         } catch (_: Exception) {
@@ -828,7 +828,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun reloadEditorConfig(context: Context) {
-        val prefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
         editorConfig =
             EditorConfig(
                 fontSize = prefs.getFloat("editor_font_size", 14f),
@@ -1067,7 +1067,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 )
         )
             return
-        val prefs = context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
         if (!prefs.getBoolean("editor_lsp_enabled", false) || language == null) return
 
         try {
