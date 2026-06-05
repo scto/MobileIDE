@@ -21,20 +21,16 @@ package com.scto.mobile.ide.ui.terminal
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
-
 import com.github.anrwatchdog.ANRWatchDog
-
 import com.rk.libcommons.application
 import com.rk.resources.Res
 import com.rk.update.UpdateManager
-
+import java.io.File
+import java.util.concurrent.Executors
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
-import java.io.File
-import java.util.concurrent.Executors
 
 class App : Application() {
     @OptIn(DelicateCoroutinesApi::class)
@@ -56,29 +52,33 @@ class App : Application() {
 
         GlobalScope.launch(Dispatchers.IO) {
             getTempDir().apply {
-                if (exists() && listFiles().isNullOrEmpty().not()){ deleteRecursively() }
+                if (exists() && listFiles().isNullOrEmpty().not()) {
+                    deleteRecursively()
+                }
             }
         }
 
-        //Thread.setDefaultUncaughtExceptionHandler(CrashHandler)
+        // Thread.setDefaultUncaughtExceptionHandler(CrashHandler)
         ANRWatchDog().start()
 
         UpdateManager().onUpdate()
 
-        if (BuildConfig.DEBUG){
+        if (BuildConfig.DEBUG) {
             StrictMode.setVmPolicy(
-                StrictMode.VmPolicy.Builder().apply {
-                    detectAll()
-                    penaltyLog()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P){
-                        penaltyListener(Executors.newSingleThreadExecutor()) { violation ->
-                            println(violation.message)
-                            violation.printStackTrace()
-                            violation.cause?.let { throw it }
-                            println("vm policy error")
+                StrictMode.VmPolicy.Builder()
+                    .apply {
+                        detectAll()
+                        penaltyLog()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            penaltyListener(Executors.newSingleThreadExecutor()) { violation ->
+                                println(violation.message)
+                                violation.printStackTrace()
+                                violation.cause?.let { throw it }
+                                println("vm policy error")
+                            }
                         }
                     }
-                }.build()
+                    .build()
             )
         }
     }
