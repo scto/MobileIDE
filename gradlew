@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 
-
+# Dynamic AAPT2 path resolution for Termux/container environments
+if [ -f "/usr/bin/aapt2" ]; then
+    set -- "$@" "-Pandroid.aapt2FromMavenOverride=/usr/bin/aapt2"
+elif [ -f "/data/data/com.termux/files/usr/bin/aapt2" ]; then
+    set -- "$@" "-Pandroid.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2"
+fi
 
 ##############################################################################
 ##

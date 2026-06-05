@@ -40,13 +40,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.scto.mobile.ide.R
+import com.scto.mobile.ide.core.utils.PermissionHelper
 import com.scto.mobile.ide.core.utils.PermissionManager
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
@@ -56,13 +59,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit) {
+    val context = LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val themeState by themeViewModel.themeState.collectAsState()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 3 })
 
-    var storageGranted by remember { mutableStateOf(false) }
-    var installGranted by remember { mutableStateOf(true) }
+    var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
+    var installGranted by remember { mutableStateOf(PermissionHelper.hasInstallPermission(context)) }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }
@@ -148,9 +152,14 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
             onPermissionGranted = { storageGranted = true },
             onPermissionDenied = {},
         )
+    val requestInstallPermission =
+        PermissionHelper.rememberInstallPermissionRequest { granted -> installGranted = granted }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) storageGranted = permissionState.hasPermissions()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                storageGranted = permissionState.hasPermissions()
+                installGranted = PermissionHelper.hasInstallPermission(context)
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -213,7 +222,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                                 storageGranted = storageGranted,
                                 installGranted = installGranted,
                                 onRequestStoragePermission = { permissionState.requestPermissions() },
-                                onRequestInstallPermission = { /* ... */ },
+                                onRequestInstallPermission = requestInstallPermission,
                             )
 
                         2 ->
