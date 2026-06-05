@@ -46,7 +46,7 @@
     </queries>
   
     <application
-        android:name="com.rk.terminal.SessionService"
+        android:name=".MainScreen"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -61,8 +61,9 @@
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MobileIDE"
+        android:theme="@style/Theme.WebIDE"
         tools:targetApi="tiramisu">
+      
         <profileable
             android:shell="true"
             tools:targetApi="29" />
@@ -71,7 +72,6 @@
             android:name="com.rk.terminal.SessionService"
             android:foregroundServiceType="specialUse" />
 
-        
         <activity
             android:name=".MainActivity"
             android:exported="true"

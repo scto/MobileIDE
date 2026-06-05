@@ -54,10 +54,16 @@ ARGS="$ARGS -L"
 
 COMMAND="(cd $LOCAL/sandbox && tar -xf $TMP_DIR/sandbox.tar.gz)"
 
-if [ "$FDROID" = false ]; then
-    $LINKER $LOCAL/bin/proot $ARGS /system/bin/sh -c "$COMMAND"
+if [ -n "$PROOT_EXEC" ] && [ -f "$PROOT_EXEC" ]; then
+    PROOT_BIN="$PROOT_EXEC"
 else
-    $LOCAL/bin/proot $ARGS /system/bin/sh -c "$COMMAND"
+    PROOT_BIN="$LOCAL/bin/proot"
+fi
+
+if [ "$FDROID" = false ]; then
+    $LINKER "$PROOT_BIN" $ARGS /system/bin/sh -c "$COMMAND"
+else
+    "$PROOT_BIN" $ARGS /system/bin/sh -c "$COMMAND"
 fi
 
 SANDBOX_DIR="$LOCAL/sandbox"
