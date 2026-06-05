@@ -250,7 +250,7 @@ private fun IntroContent() {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(modifier = Modifier.size(250.dp)) { WebIDE_Icon() }
+            Box(modifier = Modifier.size(250.dp)) { MobileIDE_Icon() }
            // Spacer(Modifier.height(20.dp))
             Text(
                 stringResource(R.string.app_name),

@@ -1,6 +1,6 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-
+ 
 package com.scto.mobile.ide.ui.editor
 
 import android.annotation.SuppressLint
@@ -202,11 +201,9 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     // 构建结果状态
     var buildResult by remember { mutableStateOf<BuildResultState?>(null) }
 
-    // 检测 webapp.json 和 src/main/assets/ 是否同时存在
+    // 检测是否为 Gradle/Android 项目 (含有 build.gradle 或 build.gradle.kts)
     val hasWebAppConfig = remember(projectPath) {
-        val configFile = File(projectPath, "webapp.json")
-        val assetsDir = File(projectPath, "src/main/assets")
-        configFile.exists() && assetsDir.exists() && assetsDir.isDirectory
+        File(projectPath, "build.gradle.kts").exists() || File(projectPath, "build.gradle").exists()
     }
 
     // FileTree Config (Hoisted to persist across drawer toggles)
@@ -479,29 +476,20 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 )
                             },
                             actions = {
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        handleRunApk(context, projectPath, folderName, viewModel, snackbarHostState)
+                                    }
+                                }) {
+                                    Icon(Icons.Filled.PlayArrow, runText)
+                                }
                                 IconButton(onClick = { viewModel.undo() }) {
                                     Icon(Icons.AutoMirrored.Filled.Undo, undoText)
                                 }
                                 IconButton(onClick = { viewModel.redo() }) {
                                     Icon(Icons.AutoMirrored.Filled.Redo, redoText)
                                 }
-                                IconButton(onClick = {
-                                    // 🔥 修改：使用一个协程顺序执行
-                                    scope.launch {
-                                        // 1. 先保存所有文件 (这是一个 suspend 函数，会等待 IO 完成)
-                                        val success = viewModel.saveAllModifiedFiles(
-                                            context,
-                                            snackbarHostState
-                                        )
 
-                                        // 2. 保存完成后，再跳转 (Undo 栈不会丢失，因为 Editor 实例没变)
-                                        if (success) {
-                                            navController.safeNavigate("preview/$folderName")
-                                        }
-                                    }
-                                }) {
-                                    Icon(Icons.Filled.PlayArrow, runText)
-                                }
                                 Box {
                                     IconButton(onClick = { isMoreMenuExpanded = true }) {
                                         Icon(Icons.Filled.MoreVert, moreOptionsText)
@@ -888,6 +876,8 @@ fun EditCode(
     val openFiles = viewModel.openFiles
     val activeFileIndex = viewModel.activeFileIndex
     val context = LocalContext.current
+    val workspacePath = remember(context) { WorkspaceManager.getWorkspacePath(context) }
+    val projectPath = remember(workspacePath, folderName) { File(workspacePath, folderName).absolutePath }
     val visualConfigText = stringResource(R.string.editor_visual_config)
     val scope = rememberCoroutineScope()
     var expandedTabIndex by remember { mutableStateOf<Int?>(null) }
@@ -1155,11 +1145,7 @@ fun EditCode(
                                     onShowSearch = onShowSearch,
                                     onRun = {
                                         scope.launch {
-                                            viewModel.saveAllModifiedFiles(
-                                                context,
-                                                snackbarHostState
-                                            )
-                                            navController.safeNavigate("preview/$folderName")
+                                            handleRunApk(context, projectPath, folderName, viewModel, snackbarHostState)
                                         }
                                     },
                                     onNavigateToTerminal = onNavigateToTerminal,
@@ -1184,29 +1170,6 @@ fun EditCode(
                         ) {
                             CircularProgressIndicator()
                         }
-                    }
-                }
-
-                val activeTab = openFiles.getOrNull(pagerState.currentPage)
-                if (activeTab?.file?.name == "webapp.json") {
-                    FilledIconButton(
-                        onClick = {
-                            val encodedPath = URLEncoder.encode(
-                                activeTab.file.absolutePath,
-                                StandardCharsets.UTF_8.toString()
-                            )
-                            navController.navigate("project_config/$encodedPath")
-                        },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 16.dp, end = 16.dp)
-                            .size(35.dp)
-                    ) {
-                        Icon(
-                            Icons.Outlined.Settings,
-                            visualConfigText,
-                            modifier = Modifier.size(20.dp)
-                        )
                     }
                 }
             }
@@ -1788,128 +1751,39 @@ private suspend fun performBuild(
     snackbarHostState: SnackbarHostState,
     onResult: (BuildResultState) -> Unit
 ) {
-    if (!viewModel.saveAllModifiedFiles(context, snackbarHostState)) {
-        onResult(BuildResultState.Finished(context.getString(R.string.editor_build_cancelled)))
-        return
-    }
-    val prefs = context.getSharedPreferences("WebIDE_Project_Settings", Context.MODE_PRIVATE)
-    val isDebug = prefs.getBoolean("debug_$folderName", false)
+    onResult(BuildResultState.Finished("Build not supported directly. Please run Gradle in the terminal tab."))
+}
 
-    val configFile = File(projectPath, "webapp.json")
-
-    // 默认基础配置
-    var pkg = "com.example.webapp"
-    var verName = "1.0"
-    var verCode = "1"
-    var iconPath = ""
-    var permissions: Array<String>? = null
-
-    // 🔥 新增：签名变量初始化
-    var customKeyPath: String? = null
-    var customStorePass: String? = null
-    var customAlias: String? = null
-    var customKeyPass: String? = null
-
-    // 加密配置 (默认为 true)
-    var enableEncryption = true
-
-    if (configFile.exists()) {
-        try {
-            var jsonStr = withContext(Dispatchers.IO) {
-                configFile.readText()
+private suspend fun handleRunApk(
+    context: Context,
+    projectPath: String,
+    folderName: String,
+    viewModel: EditorViewModel,
+    snackbarHostState: SnackbarHostState
+) {
+    val success = viewModel.saveAllModifiedFiles(context, snackbarHostState)
+    if (success) {
+        val apkPaths = listOf(
+            "app/build/outputs/apk/debug/app-debug.apk",
+            "app/build/outputs/apk/release/app-release.apk",
+            "app/build/outputs/apk/release/app-release-unsigned.apk",
+            "build/outputs/apk/debug/app-debug.apk"
+        )
+        var foundApk: File? = null
+        for (path in apkPaths) {
+            val file = File(projectPath, path)
+            if (file.exists() && file.isFile) {
+                foundApk = file
+                break
             }
-            // 过滤注释
-            jsonStr = jsonStr.lines().filterNot { it.trim().startsWith("//") }.joinToString("\n")
-
-            val json = org.json.JSONObject(jsonStr)
-
-            // 1. 基础信息解析 (保持原有)
-            pkg = json.optString("package", pkg)
-            verName = json.optString("versionName", verName)
-            verCode = json.optString("versionCode", verCode)
-            enableEncryption = json.optBoolean("encryption", true)
-
-            val iconName = json.optString("icon", "")
-            if (iconName.isNotEmpty()) {
-                val iconFile = File(projectPath, iconName)
-                if (iconFile.exists()) iconPath = iconFile.absolutePath
-            }
-
-            val jsonPerms = json.optJSONArray("permissions")
-            if (jsonPerms != null && jsonPerms.length() > 0) {
-                val list = ArrayList<String>()
-                for (i in 0 until jsonPerms.length()) {
-                    list.add(jsonPerms.getString(i))
-                }
-                permissions = list.toTypedArray()
-            }
-
-            // 🔥 2. 解析签名配置 (新增逻辑)
-            val signingObj = json.optJSONObject("signing")
-            if (signingObj != null) {
-                val keyFileName = signingObj.optString("keystore")
-                if (keyFileName.isNotEmpty()) {
-                    // 拼接完整路径：项目目录 + key文件名
-                    val keyFile = File(projectPath, keyFileName)
-                    // 只有文件存在时才传递路径，否则 ApkBuilder 会回退到默认
-                    if (keyFile.exists()) {
-                        customKeyPath = keyFile.absolutePath
-                        customStorePass = signingObj.optString("storePassword")
-                        customAlias = signingObj.optString("alias")
-                        // 如果别名密码为空，通常默认与库密码相同，或者尝试读取 keyPassword
-                        customKeyPass = signingObj.optString("keyPassword", customStorePass)
-                    } else {
-                        LogCatcher.w(
-                            "Build",
-                            "webapp.json 中指定了 keystore 但文件未找到: $keyFileName"
-                        )
-                    }
-                }
-            }
-
-        } catch (e: Exception) {
-            LogCatcher.e("Build", "JSON Error", e)
-            onResult(
-                BuildResultState.Finished(
-                    context.getString(
-                        R.string.editor_webapp_json_error,
-                        e.message
-                    )
-                )
-            )
-            return
         }
-    }
 
-    val result = withContext(Dispatchers.IO) {
-        com.scto.mobile.ide.build.ApkBuilder.bin(
-            context,
-            WorkspaceManager.getWorkspacePath(context),
-            projectPath,
-            folderName,
-            pkg,
-            verName,
-            verCode,
-            iconPath,
-            permissions,
-            isDebug,
-            enableEncryption, // 🔥 传入加密配置
-            // 🔥 传入解析出的签名参数 (如果上面没解析到，这些就是 null)
-            customKeyPath,
-            customStorePass,
-            customAlias,
-            customKeyPass
-        )
-    }
-
-    if (result.startsWith("error:")) {
-        onResult(BuildResultState.Finished(result, null))
-    } else {
-        onResult(
-            BuildResultState.Finished(
-                context.getString(R.string.editor_build_success_simple),
-                result
+        if (foundApk != null) {
+            ApkInstaller.install(context, foundApk)
+        } else {
+            snackbarHostState.showSnackbar(
+                "No built APK found. Please run Gradle build in the Terminal tab first."
             )
-        )
+        }
     }
 }

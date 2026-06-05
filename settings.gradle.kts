@@ -52,19 +52,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "MobileIDE"
 
-/*
-include(
-    ":app",
-    ":signer",
-    ":webapp",
-    ":web-bridge",
-    ":editor",
-    ":editor-lsp",
-    ":language-treesitter"
-)
-*/
-
-include(":app",":signer",":web-bridge",":editor",":editor-lsp",":language-treesitter")
+include(":app",":editor",":editor-lsp",":language-treesitter")
 
 include(":core:main")
 include(":core:components")

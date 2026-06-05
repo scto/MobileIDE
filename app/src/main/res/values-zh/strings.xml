@@ -176,7 +176,6 @@
     <string name="new_project_create_now">立即创建</string>
     <string name="new_project_type_title">项目类型</string>
     <string name="new_project_type_web">Web</string>
-    <string name="new_project_type_webapp">WebApp</string>
     <string name="new_project_type_wrapper">Wrapper</string>
     <string name="new_project_name">项目名称</string>
     <string name="new_project_create_index_php">创建 index.php</string>
@@ -275,7 +274,6 @@
     <string name="editor_close_search">关闭搜索</string>
     <string name="editor_visual_config">可视化配置</string>
     <string name="editor_build_cancelled">保存失败，构建已取消</string>
-    <string name="editor_webapp_json_error">webapp.json 格式错误：%1$s</string>
     <string name="editor_build_success_simple">构建成功</string>
     <string name="editor_clipboard_hex_label">Hex 颜色</string>
 

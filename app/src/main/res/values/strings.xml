@@ -176,7 +176,6 @@
     <string name="new_project_create_now">Create Now</string>
     <string name="new_project_type_title">Project Type</string>
     <string name="new_project_type_web">Web</string>
-    <string name="new_project_type_webapp">WebApp</string>
     <string name="new_project_type_wrapper">Wrapper</string>
     <string name="new_project_name">Project Name</string>
     <string name="new_project_create_index_php">Create index.php</string>
@@ -275,7 +274,6 @@
     <string name="editor_close_search">Close Search</string>
     <string name="editor_visual_config">Visual Config</string>
     <string name="editor_build_cancelled">Save failed, build cancelled</string>
-    <string name="editor_webapp_json_error">webapp.json format error: %1$s</string>
     <string name="editor_build_success_simple">Build successful</string>
     <string name="editor_clipboard_hex_label">Hex Color</string>
 

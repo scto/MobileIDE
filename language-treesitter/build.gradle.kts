@@ -44,19 +44,23 @@ android {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
         }
 
+        /*
         externalNativeBuild {
             cmake {
                 // Fetch grammar sources via CMake FetchContent
             }
         }
+        */
     }
 
+    /*
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.31.6"
+            version = "4.3.0"
         }
     }
+    */
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -73,6 +77,12 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/*.so")
         }
     }
 }

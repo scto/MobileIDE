@@ -2,8 +2,8 @@
 # ── App identity ──────────────────────────────────────────────────────────────
 applicationId  = "com.scto.mobile.ide"
 
-compileSdk     = "36"
-targetSdk      = "35"
+compileSdk     = "34"
+targetSdk      = "34"
 minSdk         = "29"
 versionCode    = "1"
 versionName    = "0.0.1"

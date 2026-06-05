@@ -20,7 +20,7 @@ val gitCommitDate: Provider<String> =
 android {
     namespace = "com.rk.terminal"
     android.buildFeatures.buildConfig = true
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24

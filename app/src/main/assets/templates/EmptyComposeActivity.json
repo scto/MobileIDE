@@ -1,0 +1,8 @@
+{
+  "id": "EmptyComposeActivity",
+  "name": "Empty Compose Activity",
+  "description": "A barebones Jetpack Compose project with a simple Greeting activity.",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "FlutterApp",
+  "name": "Flutter Application",
+  "description": "A cross-platform Flutter project containing a Dart entry point and a basic counter interface.",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}

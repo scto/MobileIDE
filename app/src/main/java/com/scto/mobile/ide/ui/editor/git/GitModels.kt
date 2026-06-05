@@ -1,11 +1,6 @@
-
-
-
-
-
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-/*
- * GitModels.kt
- */
+ 
+ /*
+  * GitModels.kt
+  */
+ 
 package com.scto.mobile.ide.ui.editor.git
 
 import androidx.compose.ui.graphics.Color
 
-// --- 以下保持原有的 Git 模型不变 ---
-
+// --- The following maintains the original Git model unchanged ---
 data class GitCommitUI(
     val hash: String,
     val shortHash: String,

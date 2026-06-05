@@ -175,7 +175,6 @@
     <string name="new_project_create_now">Jetzt erstellen</string>
     <string name="new_project_type_title">Projekttyp</string>
     <string name="new_project_type_web">Web</string>
-    <string name="new_project_type_webapp">WebApp</string>
     <string name="new_project_type_wrapper">Wrapper</string>
     <string name="new_project_name">Projektname</string>
     <string name="new_project_create_index_php">index.php erstellen</string>
@@ -274,7 +273,6 @@
     <string name="editor_close_search">Suche schließen</string>
     <string name="editor_visual_config">Visuelle Konfiguration</string>
     <string name="editor_build_cancelled">Speichern fehlgeschlagen. Build abgebrochen.</string>
-    <string name="editor_webapp_json_error">webapp.json Formatfehler: %1$s</string>
     <string name="editor_build_success_simple">Build erfolgreich</string>
     <string name="editor_clipboard_hex_label">Hex-Farbe</string>
 
