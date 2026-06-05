@@ -43,6 +43,13 @@ object AlpineManager {
 
         val targetProjectPath = projectPath ?: currentProject ?: ""
 
+        val prootExec =
+            if (File(nativeLibDir, "libproot.so").exists()) {
+                File(nativeLibDir, "libproot.so").absolutePath
+            } else {
+                File(terminalDir, "bin/proot").absolutePath
+            }
+
         val env =
             mutableListOf(
                 "PATH=${System.getenv("PATH")}:/sbin:${terminalDir.absolutePath}:${terminalDir.absolutePath}/tools:${terminalDir.absolutePath}/bin",
@@ -59,6 +66,7 @@ object AlpineManager {
                 "MOBILEIDE_VERSION_CODE=$versionCode",
                 "MOBILEIDE_WORKSPACE=$workspacePath",
                 "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
+                "PROOT_EXEC=$prootExec",
             )
 
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
