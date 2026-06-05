@@ -16,32 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-val aapt2OverrideKey = "android.aapt2FromMavenOverride"
 
-// 1. Read from gradle properties (command line or gradle.properties)
-val gradleAapt2 = providers.gradleProperty(aapt2OverrideKey).orNull
-
-// 2. Read from local.properties
-val localPropertiesFile = java.io.File(rootDir, "local.properties")
-val localAapt2 = if (localPropertiesFile.exists()) {
-    java.util.Properties().apply {
-        localPropertiesFile.inputStream().use { load(it) }
-    }.getProperty(aapt2OverrideKey)
-} else null
-
-// 3. Find first path that actually exists on disk
-val customAapt2 = listOf(
-    gradleAapt2,
-    localAapt2,
-    "/usr/bin/aapt2",
-    "/data/data/com.termux/files/usr/bin/aapt2"
-).filterNotNull().firstOrNull { java.io.File(it).exists() }
-
-if (customAapt2 != null) {
-    gradle.beforeProject {
-        extensions.extraProperties.set(aapt2OverrideKey, customAapt2)
-    }
-}
 
 pluginManagement {
     repositories {
