@@ -1,21 +1,16 @@
 package com.scto.mobile.ide
 
+// import com.github.anrwatchdog.ANRWatchDog
+// import com.rk.libcommons.application
+// import com.rk.update.UpdateManager
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
-
-//import com.github.anrwatchdog.ANRWatchDog
-
 import com.rk.crashhandler.CrashHandler
-// import com.rk.libcommons.application
 import com.rk.resources.Res
-//import com.rk.update.UpdateManager
-
 import com.scto.mobile.ide.utils.application
-
 import java.io.File
 import java.util.concurrent.Executors
-
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -48,25 +43,26 @@ class App : Application() {
         }
 
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler)
-        //ANRWatchDog().start()
+        // ANRWatchDog().start()
 
-        //UpdateManager().onUpdate()
+        // UpdateManager().onUpdate()
 
         if (BuildConfig.DEBUG) {
             StrictMode.setVmPolicy(
-                StrictMode.VmPolicy.Builder().apply {
-                    detectAll()
-                    penaltyLog()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        penaltyListener(Executors.newSingleThreadExecutor()) { violation ->
-                            println(violation.message)
-                            violation.printStackTrace()
-                            violation.cause?.let { throw it }
-                            println("vm policy error")
+                StrictMode.VmPolicy.Builder()
+                    .apply {
+                        detectAll()
+                        penaltyLog()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            penaltyListener(Executors.newSingleThreadExecutor()) { violation ->
+                                println(violation.message)
+                                violation.printStackTrace()
+                                violation.cause?.let { throw it }
+                                println("vm policy error")
+                            }
                         }
                     }
-                }
-                .build()
+                    .build()
             )
         }
     }
