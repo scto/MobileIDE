@@ -94,9 +94,6 @@ fun TerminalScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                     factory = { ctx ->
                         VirtualKeysView(ctx, null).apply {
-                            // Hier wird der VirtualKeysListener angebunden
-                            val listener = VirtualKeysListener(currentSession)
-                            setVirtualKeysViewClient(listener)
                             // Keys aus deiner TerminalConfig laden
                             try {
                                 val info =
@@ -111,6 +108,14 @@ fun TerminalScreen(navController: NavController) {
                             }
                         }
                     },
+<<<<<<< HEAD
+=======
+                    update = { view ->
+                        // Hier wird der VirtualKeysListener angebunden und bei Session-Wechsel aktualisiert
+                        val listener = VirtualKeysListener(currentSession)
+                        view.setVirtualKeysViewClient(listener)
+                    }
+>>>>>>> 7df758f (Fix: Implementation & Changes Made:)
                 )
             }
         }

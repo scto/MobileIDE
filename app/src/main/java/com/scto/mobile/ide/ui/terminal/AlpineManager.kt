@@ -76,7 +76,9 @@ object AlpineManager {
         if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
 
         val shell = "/system/bin/sh"
-        val args = arrayOf("-cpp", initHostScript.absolutePath)
+        val args = arrayOf("-c", initHostScript.absolutePath)
+
+        android.util.Log.i("AlpineManager", "Creating TerminalSession: shell=$shell, args=${args.joinToString()}, envs=${env.size}")
 
         return TerminalSession(
             shell,
