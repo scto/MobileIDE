@@ -65,10 +65,10 @@ class MainActivity : ComponentActivity() {
         )
         window.isNavigationBarContrastEnforced = false
 
-        initApp()
+        initMainScreen()
     }
 
-    private fun initApp() {
+    private fun initMainScreen() {
         // Initialize base components
         TextMateInitializer.initialize(this)
         AppLanguageManager.initialize(this)
@@ -138,7 +138,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                     )
                                 } else {
-                                    App(
+                                    MainScreen(
                                         navController = navController,
                                         themeViewModel = themeViewModel,
                                         logConfigRepository = logConfigRepository,
