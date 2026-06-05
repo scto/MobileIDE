@@ -148,4 +148,65 @@ object PermissionManager {
         val showRationale: Boolean,
         val hasPermissions: () -> Boolean,
     )
+
+    /** Checks if the app can request package installations. */
+    fun hasInstallPermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.packageManager.canRequestPackageInstalls()
+        } else {
+            true
+        }
+    }
+
+    /** Checks if the WakeLock permission is granted. */
+    fun hasWakeLockPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WAKE_LOCK) ==
+            PackageManager.PERMISSION_GRANTED
+    }
+
+    /** Checks if the Foreground Service permission is granted. */
+    fun hasForegroundServicePermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.FOREGROUND_SERVICE) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    /** Checks if the Request Delete Packages permission is declared/granted. */
+    fun hasDeletePackagesPermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.REQUEST_DELETE_PACKAGES) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    /** Composable helper to remember and trigger package install permission request. */
+    @Composable
+    fun rememberInstallPermissionRequest(onPermissionResult: (Boolean) -> Unit): () -> Unit {
+        val context = LocalContext.current
+        val launcher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+                onPermissionResult(hasInstallPermission(context))
+            }
+
+        return {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val intent =
+                    Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                        data = android.net.Uri.parse("package:${context.packageName}")
+                    }
+                try {
+                    launcher.launch(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("PermissionManager", "Failed to launch ACTION_MANAGE_UNKNOWN_APP_SOURCES", e)
+                }
+            } else {
+                onPermissionResult(true)
+            }
+        }
+    }
 }
