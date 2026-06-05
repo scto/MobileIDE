@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.components
 
 import android.graphics.Typeface
@@ -52,12 +52,11 @@ import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.component.EditorTextActionWindow
 import java.io.File
-
-import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 
 @Composable
 fun CodeEditorView(
@@ -69,7 +68,7 @@ fun CodeEditorView(
     onNavigateToTerminal: () -> Unit = {},
     onShowJumpLine: () -> Unit = {},
     onShowCreate: () -> Unit = {},
-    onShowColorPicker: () -> Unit = {}
+    onShowColorPicker: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -80,9 +79,7 @@ fun CodeEditorView(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     var isEditorReady by remember { mutableStateOf(false) }
     var showCommandDialog by remember { mutableStateOf(false) }
@@ -90,33 +87,35 @@ fun CodeEditorView(
     val editorConfig = viewModel.editorConfig
 
     // === 字体加载逻辑 ===
-    val editorTypeface = remember(editorConfig.fontPath) {
-        if (editorConfig.fontPath.isBlank()) {
-            Typeface.MONOSPACE
-        } else {
-            try {
-                val file = File(editorConfig.fontPath)
-                if (file.exists() && file.isFile && file.canRead()) {
-                    Typeface.createFromFile(file)
-                } else {
-                    Typeface.createFromAsset(context.assets, editorConfig.fontPath)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+    val editorTypeface =
+        remember(editorConfig.fontPath) {
+            if (editorConfig.fontPath.isBlank()) {
                 Typeface.MONOSPACE
+            } else {
+                try {
+                    val file = File(editorConfig.fontPath)
+                    if (file.exists() && file.isFile && file.canRead()) {
+                        Typeface.createFromFile(file)
+                    } else {
+                        Typeface.createFromAsset(context.assets, editorConfig.fontPath)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Typeface.MONOSPACE
+                }
             }
         }
-    }
 
     val themeViewModel: ThemeViewModel = viewModel(factory = ThemeViewModelFactory(context))
     val themeState by themeViewModel.themeState.collectAsState()
     val systemDark = isSystemInDarkTheme()
-    val isDark = when (themeState.selectedModeIndex) {
-        0 -> systemDark
-        1 -> false
-        2 -> true
-        else -> systemDark
-    }
+    val isDark =
+        when (themeState.selectedModeIndex) {
+            0 -> systemDark
+            1 -> false
+            2 -> true
+            else -> systemDark
+        }
     val seedColor = if (themeState.isCustomTheme) themeState.customColor else MaterialTheme.colorScheme.primary
     val colorScheme = MaterialTheme.colorScheme
 
@@ -125,26 +124,26 @@ fun CodeEditorView(
     // 添加自定义文本操作按钮 (在双击/长按选区后的弹窗中)
     DisposableEffect(editor) {
         val textActionWindow = editor.getComponent(EditorTextActionWindow::class.java)
-        val provider = object : EditorTextActionWindow.ExtraButtonProvider {
-            override fun getIconResource(): Int = R.drawable.ic_command // 使用 Command 图标
-            override fun getContentDescription(): String = context.getString(R.string.content_desc_command)
-            override fun shouldShowButton(editor: CodeEditor): Boolean = true
-            override fun onButtonClick(editor: CodeEditor) {
-                showCommandDialog = true
+        val provider =
+            object : EditorTextActionWindow.ExtraButtonProvider {
+                override fun getIconResource(): Int = R.drawable.ic_command // 使用 Command 图标
+
+                override fun getContentDescription(): String = context.getString(R.string.content_desc_command)
+
+                override fun shouldShowButton(editor: CodeEditor): Boolean = true
+
+                override fun onButtonClick(editor: CodeEditor) {
+                    showCommandDialog = true
+                }
             }
-        }
         textActionWindow.addExtraButtonProvider(provider)
-        onDispose {
-            textActionWindow.removeExtraButtonProvider(provider)
-        }
+        onDispose { textActionWindow.removeExtraButtonProvider(provider) }
     }
 
     // 初始化 TextMate
     LaunchedEffect(Unit) {
         if (!TextMateInitializer.isReady()) {
-            TextMateInitializer.initialize(context) {
-                isEditorReady = true
-            }
+            TextMateInitializer.initialize(context) { isEditorReady = true }
         } else {
             isEditorReady = true
         }
@@ -164,16 +163,16 @@ fun CodeEditorView(
                 // 1. 设置 TextMate 主题 (语法高亮)
                 val targetTheme = if (isDark) TextMateInitializer.THEME_DARK else TextMateInitializer.THEME_LIGHT
                 ThemeRegistry.getInstance().setTheme(targetTheme)
-                
+
                 // 2. 重新创建配色方案 (只针对使用 TextMate 的编辑器)
                 if (editor.editorLanguage is TextMateLanguage) {
                     val newScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
                     editor.colorScheme = newScheme
                 }
-                
+
                 // 3. 应用 Material 主题颜色覆盖 (背景色、行号等)
                 viewModel.updateEditorTheme(colorScheme)
-                
+
                 // 4. 强制刷新
                 editor.invalidate()
             } catch (e: Exception) {
@@ -187,48 +186,44 @@ fun CodeEditorView(
 
         androidx.compose.ui.window.Dialog(
             onDismissRequest = { showCommandDialog = false },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()
-                    .imePadding(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxSize().systemBarsPadding().imePadding(),
+                contentAlignment = Alignment.Center,
             ) {
                 Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .fillMaxHeight(0.85f),
+                    modifier = Modifier.fillMaxWidth(0.9f).fillMaxHeight(0.85f),
                     shape = MaterialTheme.shapes.medium,
                     color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 6.dp
+                    tonalElevation = 6.dp,
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                         // 保持输入法焦点的隐形输入框
                         TextField(
                             value = "",
                             onValueChange = {},
-                            modifier = Modifier
-                                .focusRequester(focusRequester)
-                                .size(1.dp)
-                                .alpha(0f)
+                            modifier = Modifier.focusRequester(focusRequester).size(1.dp).alpha(0f),
                         )
 
                         val actions = remember {
                             listOf(
-                                Triple(context.getString(R.string.toolbar_cut), Icons.Filled.ContentCut) { editor.cutText() },
-                                Triple(context.getString(R.string.toolbar_copy), Icons.Filled.ContentCopy) { editor.copyText() },
-                                Triple(context.getString(R.string.toolbar_paste), Icons.Filled.ContentPaste) { editor.pasteText() },
-                                Triple(context.getString(R.string.toolbar_select_all), Icons.Filled.SelectAll) { editor.selectAll() },
-                                Triple(context.getString(R.string.toolbar_select_line), Icons.AutoMirrored.Filled.Segment) {
+                                Triple(context.getString(R.string.toolbar_cut), Icons.Filled.ContentCut) {
+                                    editor.cutText()
+                                },
+                                Triple(context.getString(R.string.toolbar_copy), Icons.Filled.ContentCopy) {
+                                    editor.copyText()
+                                },
+                                Triple(context.getString(R.string.toolbar_paste), Icons.Filled.ContentPaste) {
+                                    editor.pasteText()
+                                },
+                                Triple(context.getString(R.string.toolbar_select_all), Icons.Filled.SelectAll) {
+                                    editor.selectAll()
+                                },
+                                Triple(
+                                    context.getString(R.string.toolbar_select_line),
+                                    Icons.AutoMirrored.Filled.Segment,
+                                ) {
                                     val cursor = editor.cursor
                                     val line = cursor.leftLine
                                     if (line < editor.text.lineCount) {
@@ -244,21 +239,34 @@ fun CodeEditorView(
                                     state.onContentSaved()
                                 },
                                 Triple(context.getString(R.string.action_save_all), Icons.Filled.Save) {
-                                viewModel.openFiles.filterIsInstance<CodeEditorState>().filter { it.isModified }.forEach { s ->
-                                    viewModel.onContentChanged(s.file, s.content, saveToFile = true)
-                                    s.onContentSaved()
-                                }
-                            },
-                            Triple(context.getString(R.string.editor_undo), Icons.AutoMirrored.Filled.Undo) { editor.undo() },
-                            Triple(context.getString(R.string.editor_redo), Icons.AutoMirrored.Filled.Redo) { editor.redo() },
-                            Triple(context.getString(R.string.toolbar_jump_line), Icons.Filled.SwapVert) { onShowJumpLine() },
-                            Triple(context.getString(R.string.toolbar_format), Icons.Filled.Menu) { viewModel.formatCode() },
-                            Triple(context.getString(R.string.action_new), Icons.Filled.Add) { onShowCreate() },
-                            Triple(context.getString(R.string.toolbar_palette), Icons.Filled.ColorLens) { onShowColorPicker() },
-                            Triple(context.getString(R.string.action_terminal), Icons.Filled.Dns) { onNavigateToTerminal() },
-                            Triple(context.getString(R.string.action_run), Icons.Filled.PlayArrow) {
-                                onRun()
-                            },
+                                    viewModel.openFiles
+                                        .filterIsInstance<CodeEditorState>()
+                                        .filter { it.isModified }
+                                        .forEach { s ->
+                                            viewModel.onContentChanged(s.file, s.content, saveToFile = true)
+                                            s.onContentSaved()
+                                        }
+                                },
+                                Triple(context.getString(R.string.editor_undo), Icons.AutoMirrored.Filled.Undo) {
+                                    editor.undo()
+                                },
+                                Triple(context.getString(R.string.editor_redo), Icons.AutoMirrored.Filled.Redo) {
+                                    editor.redo()
+                                },
+                                Triple(context.getString(R.string.toolbar_jump_line), Icons.Filled.SwapVert) {
+                                    onShowJumpLine()
+                                },
+                                Triple(context.getString(R.string.toolbar_format), Icons.Filled.Menu) {
+                                    viewModel.formatCode()
+                                },
+                                Triple(context.getString(R.string.action_new), Icons.Filled.Add) { onShowCreate() },
+                                Triple(context.getString(R.string.toolbar_palette), Icons.Filled.ColorLens) {
+                                    onShowColorPicker()
+                                },
+                                Triple(context.getString(R.string.action_terminal), Icons.Filled.Dns) {
+                                    onNavigateToTerminal()
+                                },
+                                Triple(context.getString(R.string.action_run), Icons.Filled.PlayArrow) { onRun() },
                                 Triple(context.getString(R.string.toolbar_readonly), Icons.Filled.Lock) {
                                     editor.isEditable = !editor.isEditable
                                 },
@@ -267,7 +275,7 @@ fun CodeEditorView(
                                 },
                                 Triple(context.getString(R.string.toolbar_reload), Icons.Filled.Refresh) {
                                     viewModel.reloadAllEditors(context)
-                                }
+                                },
                             )
                         }
 
@@ -275,9 +283,7 @@ fun CodeEditorView(
                             columns = GridCells.Fixed(1),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
+                            modifier = Modifier.fillMaxWidth().weight(1f),
                         ) {
                             items(actions) { (label, icon, action) ->
                                 FilledTonalButton(
@@ -287,12 +293,12 @@ fun CodeEditorView(
                                     },
                                     contentPadding = PaddingValues(12.dp),
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = MaterialTheme.shapes.small
+                                    shape = MaterialTheme.shapes.small,
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Start
+                                        horizontalArrangement = Arrangement.Start,
                                     ) {
                                         Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
                                         Spacer(modifier = Modifier.width(16.dp))
@@ -306,15 +312,10 @@ fun CodeEditorView(
             }
         }
 
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
-        }
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
     }
 
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         // 始终显示编辑器，即使未完全初始化
         AndroidView(
             factory = { _ ->
@@ -335,9 +336,9 @@ fun CodeEditorView(
                 if (editorConfig.showInvisibles) {
                     view.nonPrintablePaintingFlags =
                         CodeEditor.FLAG_DRAW_WHITESPACE_LEADING or
-                                CodeEditor.FLAG_DRAW_WHITESPACE_INNER or
-                                CodeEditor.FLAG_DRAW_WHITESPACE_TRAILING or
-                                CodeEditor.FLAG_DRAW_LINE_SEPARATOR
+                            CodeEditor.FLAG_DRAW_WHITESPACE_INNER or
+                            CodeEditor.FLAG_DRAW_WHITESPACE_TRAILING or
+                            CodeEditor.FLAG_DRAW_LINE_SEPARATOR
                 } else {
                     view.nonPrintablePaintingFlags = 0
                 }
@@ -350,7 +351,8 @@ fun CodeEditorView(
                     try {
                         val lineCount = view.text.lineCount
                         val targetLine = cursorLine.coerceIn(0, lineCount - 1)
-                        val lineLength = if (targetLine < view.text.lineCount) view.text.getColumnCount(targetLine) else 0
+                        val lineLength =
+                            if (targetLine < view.text.lineCount) view.text.getColumnCount(targetLine) else 0
                         val targetColumn = cursorColumn.coerceIn(0, lineLength)
                         view.setSelection(targetLine, targetColumn)
                     } catch (e: Exception) {
@@ -360,7 +362,7 @@ fun CodeEditorView(
                 view.isEnabled = true
                 view.visibility = android.view.View.VISIBLE
                 view.requestLayout()
-            }
+            },
         )
     }
 }

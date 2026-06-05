@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.aicoding
 
 import androidx.compose.runtime.Composable
@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 
 enum class DockSide {
     Right,
-    Left
+    Left,
 }
 
 @Stable
@@ -41,7 +41,7 @@ class AICodingState {
     var windowOffset by mutableStateOf(Offset.Zero)
     var lastFloatingPosition by mutableStateOf<Offset?>(null)
     var isDragging by mutableStateOf(false)
-    
+
     var isMaximized by mutableStateOf(false)
     internal var restoreWidth by mutableStateOf(300.dp)
     internal var restoreHeight by mutableStateOf(400.dp)

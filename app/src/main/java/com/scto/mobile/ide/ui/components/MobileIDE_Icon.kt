@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.components
 
 import androidx.compose.foundation.layout.Box
@@ -26,23 +26,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-
 import com.scto.mobile.ide.R
 
 @Composable
-fun MobileIDE_Icon(){
+fun MobileIDE_Icon() {
     Box(contentAlignment = Alignment.Center) {
         Icon(
             painter = painterResource(id = R.drawable.ic_m),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_code),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }

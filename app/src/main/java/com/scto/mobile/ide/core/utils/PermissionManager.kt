@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.core.utils
 
 import android.Manifest
@@ -51,9 +51,8 @@ object PermissionManager {
     }
 
     /**
-     * ✅ Smart determination: Whether the specified path requires system permission requests
-     * Private directory (Android/data/...) -> Not required -> Return false
-     * Public directory (SDCard/...) -> Required -> Return true
+     * ✅ Smart determination: Whether the specified path requires system permission requests Private directory
+     * (Android/data/...) -> Not required -> Return false Public directory (SDCard/...) -> Required -> Return true
      */
     fun isSystemPermissionRequiredForPath(context: Context, path: String): Boolean {
         // Get the root path of the private directory .../Android/data/package_name
@@ -88,21 +87,24 @@ object PermissionManager {
     @Composable
     fun rememberPermissionRequest(
         onPermissionGranted: () -> Unit = {},
-        onPermissionDenied: () -> Unit = {}
+        onPermissionDenied: () -> Unit = {},
     ): PermissionRequestState {
         val context = LocalContext.current
         var showRationale by remember { mutableStateOf(false) }
 
-        val allFilesLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (hasAllFilesAccess()) onPermissionGranted() else onPermissionDenied()
-        }
-
-        val basicLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
-            if (perms.values.all { it }) onPermissionGranted() else {
-                onPermissionDenied()
-                showRationale = true
+        val allFilesLauncher =
+            rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (hasAllFilesAccess()) onPermissionGranted() else onPermissionDenied()
             }
-        }
+
+        val basicLauncher =
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
+                if (perms.values.all { it }) onPermissionGranted()
+                else {
+                    onPermissionDenied()
+                    showRationale = true
+                }
+            }
 
         return remember(context) {
             PermissionRequestState(
@@ -112,9 +114,10 @@ object PermissionManager {
                             onPermissionGranted()
                         } else {
                             try {
-                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                    data = "package:${context.packageName}".toUri()
-                                }
+                                val intent =
+                                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                        data = "package:${context.packageName}".toUri()
+                                    }
                                 allFilesLauncher.launch(intent)
                             } catch (_: Exception) {
                                 val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -125,12 +128,17 @@ object PermissionManager {
                         if (hasBasicStoragePermission(context)) {
                             onPermissionGranted()
                         } else {
-                            basicLauncher.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                            basicLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                )
+                            )
                         }
                     }
                 },
                 showRationale = showRationale,
-                hasPermissions = { hasRequiredPermissions(context) }
+                hasPermissions = { hasRequiredPermissions(context) },
             )
         }
     }
@@ -138,6 +146,6 @@ object PermissionManager {
     data class PermissionRequestState(
         val requestPermissions: () -> Unit,
         val showRationale: Boolean,
-        val hasPermissions: () -> Boolean
+        val hasPermissions: () -> Boolean,
     )
 }

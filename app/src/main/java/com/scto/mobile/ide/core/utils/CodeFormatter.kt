@@ -30,14 +30,22 @@ object CodeFormatter {
 
         return try {
             when (extension.lowercase()) {
-                "html", "htm" -> formatHtml(code, indentSize)
+                "html",
+                "htm" -> formatHtml(code, indentSize)
                 "json" -> formatJson(code, indentSize)
                 "css" -> formatCss(code, indentSize)
                 // Use a generic C-Style formatter for JS, Java, Kotlin, and Gradle
-                "js", "java", "kt", "kts", "gradle" -> formatCStyle(code, indentSize)
+                "js",
+                "java",
+                "kt",
+                "kts",
+                "gradle" -> formatCStyle(code, indentSize)
                 // Specific formatters for whitespace-sensitive or structured text
-                "md", "markdown" -> formatMarkdown(code)
-                "yaml", "yml", "toml" -> formatConfig(code)
+                "md",
+                "markdown" -> formatMarkdown(code)
+                "yaml",
+                "yml",
+                "toml" -> formatConfig(code)
                 else -> code
             }
         } catch (e: Exception) {
@@ -48,9 +56,7 @@ object CodeFormatter {
 
     private fun formatHtml(code: String, indentSize: Int): String {
         val doc = Jsoup.parse(code)
-        doc.outputSettings()
-            .indentAmount(indentSize)
-            .prettyPrint(true)
+        doc.outputSettings().indentAmount(indentSize).prettyPrint(true)
         return doc.html()
     }
 
@@ -77,8 +83,8 @@ object CodeFormatter {
     }
 
     /**
-     * A generic lightweight formatter for C-style languages (JS, Java, Kotlin, Groovy/Gradle).
-     * It properly tracks {}, [], and () to calculate indentation, ignoring contents inside strings.
+     * A generic lightweight formatter for C-style languages (JS, Java, Kotlin, Groovy/Gradle). It properly tracks {},
+     * [], and () to calculate indentation, ignoring contents inside strings.
      */
     private fun formatCStyle(code: String, indentSize: Int): String {
         val lines = code.split('\n')
@@ -118,8 +124,12 @@ object CodeFormatter {
                     '\\' -> escapeNext = true
                     '"' -> if (!inChar) inString = !inString
                     '\'' -> if (!inString) inChar = !inChar
-                    '{', '[', '(' -> if (!inString && !inChar) opens++
-                    '}', ']', ')' -> if (!inString && !inChar) closes++
+                    '{',
+                    '[',
+                    '(' -> if (!inString && !inChar) opens++
+                    '}',
+                    ']',
+                    ')' -> if (!inString && !inChar) closes++
                 }
             }
 
@@ -134,18 +144,17 @@ object CodeFormatter {
     }
 
     /**
-     * Formats Markdown by trimming trailing whitespaces and standardizing line breaks.
-     * Markdown relies heavily on specific whitespaces (e.g., 2 spaces for line break),
-     * so we only clean up trailing empty spaces at the very end of lines.
+     * Formats Markdown by trimming trailing whitespaces and standardizing line breaks. Markdown relies heavily on
+     * specific whitespaces (e.g., 2 spaces for line break), so we only clean up trailing empty spaces at the very end
+     * of lines.
      */
     private fun formatMarkdown(code: String): String {
         return code.lines().joinToString("\n") { it.trimEnd() }.trim() + "\n"
     }
 
     /**
-     * Formats YAML and TOML.
-     * YAML is extremely sensitive to indentation, so modifying leading spaces without a full AST is dangerous.
-     * This function performs a safe cleanup (removing trailing spaces and fixing line endings).
+     * Formats YAML and TOML. YAML is extremely sensitive to indentation, so modifying leading spaces without a full AST
+     * is dangerous. This function performs a safe cleanup (removing trailing spaces and fixing line endings).
      */
     private fun formatConfig(code: String): String {
         return code.lines().joinToString("\n") { it.trimEnd() }.trim() + "\n"

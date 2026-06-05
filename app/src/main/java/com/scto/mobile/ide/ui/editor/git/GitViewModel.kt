@@ -24,12 +24,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.R
 import kotlinx.coroutines.launch
 import org.eclipse.jgit.revwalk.RevCommit
-import androidx.core.content.edit
 
 class GitViewModel(application: Application) : AndroidViewModel(application) {
     var isGitProject by mutableStateOf(false)
@@ -48,26 +48,32 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
     var testConnectionResult by mutableStateOf<String?>(null)
     var testConnectionSuccess by mutableStateOf<Boolean?>(null)
     var isTestingConnection by mutableStateOf(false)
-    
-    private val laneColors = listOf(
-        Color(0xFFFF5252), Color(0xFF40C4FF), Color(0xFFE040FB),
-        Color(0xFF69F0AE), Color(0xFFFFAB40), Color(0xFFFFD740),
-        Color(0xFF9E9E9E), Color(0xFF795548)
-    )
+
+    private val laneColors =
+        listOf(
+            Color(0xFFFF5252),
+            Color(0xFF40C4FF),
+            Color(0xFFE040FB),
+            Color(0xFF69F0AE),
+            Color(0xFFFFAB40),
+            Color(0xFFFFD740),
+            Color(0xFF9E9E9E),
+            Color(0xFF795548),
+        )
 
     fun initialize(projectPath: String) {
         gitManager = GitManager(projectPath)
         loadConfig()
         refreshAll()
     }
-    
+
     fun testRemoteConnection(
         url: String,
         authType: AuthType,
         username: String,
         token: String,
         privateKey: String,
-        passphrase: String
+        passphrase: String,
     ) {
         viewModelScope.launch {
             isTestingConnection = true
@@ -80,25 +86,30 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
 
             val result = manager.testConnectivity(url, tempAuth)
             testConnectionSuccess = result.isSuccess
-            testConnectionResult = if (result.isSuccess) {
-                getApplication<Application>().getString(R.string.git_test_success_refs, result.refsCount)
-            } else {
-                when (result.error) {
-                    GitConnectivityError.AUTH_FAILED -> getApplication<Application>().getString(R.string.git_auth_failed_token)
-                    GitConnectivityError.REPO_NOT_FOUND -> getApplication<Application>().getString(R.string.git_repo_not_found)
-                    GitConnectivityError.TIMEOUT -> getApplication<Application>().getString(R.string.git_connection_timeout)
-                    GitConnectivityError.UNKNOWN_HOST -> getApplication<Application>().getString(R.string.git_connection_unknown_host)
-                    GitConnectivityError.SSH_ENV_FAILED -> getApplication<Application>().getString(R.string.git_connection_ssh_env_failed)
-                    else -> getApplication<Application>().getString(
-                        R.string.git_connection_failed,
-                        result.rawMessage.orEmpty()
-                    )
+            testConnectionResult =
+                if (result.isSuccess) {
+                    getApplication<Application>().getString(R.string.git_test_success_refs, result.refsCount)
+                } else {
+                    when (result.error) {
+                        GitConnectivityError.AUTH_FAILED ->
+                            getApplication<Application>().getString(R.string.git_auth_failed_token)
+                        GitConnectivityError.REPO_NOT_FOUND ->
+                            getApplication<Application>().getString(R.string.git_repo_not_found)
+                        GitConnectivityError.TIMEOUT ->
+                            getApplication<Application>().getString(R.string.git_connection_timeout)
+                        GitConnectivityError.UNKNOWN_HOST ->
+                            getApplication<Application>().getString(R.string.git_connection_unknown_host)
+                        GitConnectivityError.SSH_ENV_FAILED ->
+                            getApplication<Application>().getString(R.string.git_connection_ssh_env_failed)
+                        else ->
+                            getApplication<Application>()
+                                .getString(R.string.git_connection_failed, result.rawMessage.orEmpty())
+                    }
                 }
-            }
             isTestingConnection = false
         }
     }
-    
+
     private fun loadConfig() {
         val context = getApplication<Application>()
         val prefs = context.getSharedPreferences("git_config", Context.MODE_PRIVATE)
@@ -115,13 +126,14 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
 
         val authType = if (authTypeStr == "SSH") AuthType.SSH else AuthType.HTTPS
 
-        savedAuth = GitAuth(
-            type = authType,
-            username = username,
-            token = token,
-            privateKey = privateKey,
-            passphrase = passphrase
-        )
+        savedAuth =
+            GitAuth(
+                type = authType,
+                username = username,
+                token = token,
+                privateKey = privateKey,
+                passphrase = passphrase,
+            )
     }
 
     fun saveConfig(
@@ -131,7 +143,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         username: String,
         token: String,
         privateKey: String,
-        passphrase: String
+        passphrase: String,
     ) {
         viewModelScope.launch {
             gitManager?.addRemote("origin", remote)
@@ -173,10 +185,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun calculateGraph(
-        commits: List<RevCommit>,
-        refMap: Map<String, List<GitRefUI>>
-    ): List<GitCommitUI> {
+    private fun calculateGraph(commits: List<RevCommit>, refMap: Map<String, List<GitRefUI>>): List<GitCommitUI> {
         val result = mutableListOf<GitCommitUI>()
         val slots = ArrayList<String?>()
         val colorMap = HashMap<String, Int>()
@@ -233,28 +242,35 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
 
             while (slots.isNotEmpty() && slots.last() == null) slots.removeAt(slots.lastIndex)
 
-            result.add(GitCommitUI(
-                hash = hash,
-                shortHash = hash.substring(0, 7),
-                message = commit.shortMessage.trim(),
-                fullMessage = commit.fullMessage.trim(),
-                author = commit.authorIdent.name,
-                email = commit.authorIdent.emailAddress ?: "",
-                time = commit.commitTime * 1000L,
-                parents = parents,
-                refs = refMap[hash] ?: emptyList(),
-                lane = myLane,
-                totalLanes = slots.size,
-                childLanes = emptyList(),
-                parentLanes = parentLanes,
-                color = myColor
-            ))
+            result.add(
+                GitCommitUI(
+                    hash = hash,
+                    shortHash = hash.substring(0, 7),
+                    message = commit.shortMessage.trim(),
+                    fullMessage = commit.fullMessage.trim(),
+                    author = commit.authorIdent.name,
+                    email = commit.authorIdent.emailAddress ?: "",
+                    time = commit.commitTime * 1000L,
+                    parents = parents,
+                    refs = refMap[hash] ?: emptyList(),
+                    lane = myLane,
+                    totalLanes = slots.size,
+                    childLanes = emptyList(),
+                    parentLanes = parentLanes,
+                    color = myColor,
+                )
+            )
         }
         return result
     }
 
     // --- Git Operations ---
-    fun initRepo() { viewModelScope.launch { gitManager?.initRepo(); refreshAll() } }
+    fun initRepo() {
+        viewModelScope.launch {
+            gitManager?.initRepo()
+            refreshAll()
+        }
+    }
 
     fun commit(msg: String, pushAfter: Boolean) {
         viewModelScope.launch {
@@ -263,11 +279,14 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
                 val author = savedAuth?.username?.ifEmpty { "AndroidUser" } ?: "AndroidUser"
                 val email = userEmail.ifEmpty { "user@ide.com" }
                 gitManager?.commitAll(msg, author, email)
-                if (pushAfter) push() else statusMessage = getApplication<Application>().getString(R.string.git_status_commit_success)
+                if (pushAfter) push()
+                else statusMessage = getApplication<Application>().getString(R.string.git_status_commit_success)
                 refreshAll()
             } catch (e: Exception) {
                 statusMessage = getApplication<Application>().getString(R.string.git_status_operation_failed, e.message)
-            } finally { isLoading = false }
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -275,29 +294,43 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             isLoading = true
             try {
-                val auth = savedAuth ?: throw Exception(getApplication<Application>().getString(R.string.git_error_account_not_configured))
+                val auth =
+                    savedAuth
+                        ?: throw Exception(
+                            getApplication<Application>().getString(R.string.git_error_account_not_configured)
+                        )
                 gitManager?.push(auth)
                 statusMessage = getApplication<Application>().getString(R.string.git_status_push_success)
             } catch (e: Exception) {
                 statusMessage = getApplication<Application>().getString(R.string.git_status_push_failed, e.message)
                 e.printStackTrace()
-            } finally { isLoading = false }
+            } finally {
+                isLoading = false
+            }
         }
     }
 
-    fun pull() { updateProject(false) }
+    fun pull() {
+        updateProject(false)
+    }
 
     fun updateProject(rebase: Boolean) {
         viewModelScope.launch {
             isLoading = true
             try {
-                val auth = savedAuth ?: throw Exception(getApplication<Application>().getString(R.string.git_error_account_not_configured))
+                val auth =
+                    savedAuth
+                        ?: throw Exception(
+                            getApplication<Application>().getString(R.string.git_error_account_not_configured)
+                        )
                 if (rebase) gitManager?.pullRebase(auth) else gitManager?.pull(auth)
                 statusMessage = getApplication<Application>().getString(R.string.git_status_update_success)
                 refreshAll()
             } catch (e: Exception) {
                 statusMessage = getApplication<Application>().getString(R.string.git_status_update_failed, e.message)
-            } finally { isLoading = false }
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -308,8 +341,12 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
                 gitManager?.createBranch(name)
                 statusMessage = getApplication<Application>().getString(R.string.git_status_branch_created, name)
                 refreshAll()
-            } catch (e: Exception) { statusMessage = getApplication<Application>().getString(R.string.git_status_branch_create_failed, e.message) }
-            finally { isLoading = false }
+            } catch (e: Exception) {
+                statusMessage =
+                    getApplication<Application>().getString(R.string.git_status_branch_create_failed, e.message)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -320,8 +357,12 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
                 gitManager?.createTag(name, msg)
                 statusMessage = getApplication<Application>().getString(R.string.git_status_tag_created, name)
                 refreshAll()
-            } catch (e: Exception) { statusMessage = getApplication<Application>().getString(R.string.git_status_tag_create_failed, e.message) }
-            finally { isLoading = false }
+            } catch (e: Exception) {
+                statusMessage =
+                    getApplication<Application>().getString(R.string.git_status_tag_create_failed, e.message)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -332,12 +373,17 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
                 gitManager?.checkout(name)
                 statusMessage = getApplication<Application>().getString(R.string.git_status_checked_out, name)
                 refreshAll()
-            } catch (e: Exception) { statusMessage = getApplication<Application>().getString(R.string.git_status_checkout_failed, e.message) }
-            finally { isLoading = false }
+            } catch (e: Exception) {
+                statusMessage = getApplication<Application>().getString(R.string.git_status_checkout_failed, e.message)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
     suspend fun getBranches() = gitManager?.getBranches() ?: emptyList()
-    
-    fun clearMessage() { statusMessage = null }
+
+    fun clearMessage() {
+        statusMessage = null
+    }
 }

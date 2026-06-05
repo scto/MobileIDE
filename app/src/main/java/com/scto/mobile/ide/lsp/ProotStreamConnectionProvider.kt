@@ -28,10 +28,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlin.concurrent.thread
 
-class ProotStreamConnectionProvider(
-    private val context: Context,
-    private val command: List<String>
-) : StreamConnectionProvider {
+class ProotStreamConnectionProvider(private val context: Context, private val command: List<String>) :
+    StreamConnectionProvider {
 
     private var process: Process? = null
 
@@ -52,9 +50,7 @@ class ProotStreamConnectionProvider(
             // === 修复崩溃的关键点：监控错误流时增加 try-catch ===
             thread {
                 try {
-                    process?.errorStream?.bufferedReader()?.forEachLine {
-                        Log.e("LSP-Stderr", it)
-                    }
+                    process?.errorStream?.bufferedReader()?.forEachLine { Log.e("LSP-Stderr", it) }
                 } catch (_: IOException) {
                     // 正常现象：当 destroy() 被调用时，流被关闭会抛出此异常，忽略即可
                 } catch (e: Exception) {
@@ -73,36 +69,38 @@ class ProotStreamConnectionProvider(
 
     // 包装输入流，打印 LSP 回复给 Editor 的内容 (LSP -> App)
     override val inputStream: InputStream
-        get() = object : FilterInputStream(process?.inputStream) {
-            override fun read(b: ByteArray, off: Int, len: Int): Int {
-                try {
-                    val read = super.read(b, off, len)
-                    if (read > 0) {
-                        // 这里的日志用于调试，内容太多可以注释掉
-                         Log.v("LSP-RX", "收到 $read 字节数据")
+        get() =
+            object : FilterInputStream(process?.inputStream) {
+                override fun read(b: ByteArray, off: Int, len: Int): Int {
+                    try {
+                        val read = super.read(b, off, len)
+                        if (read > 0) {
+                            // 这里的日志用于调试，内容太多可以注释掉
+                            Log.v("LSP-RX", "收到 $read 字节数据")
+                        }
+                        return read
+                    } catch (e: IOException) {
+                        throw e
                     }
-                    return read
-                } catch (e: IOException) {
-                    throw e
                 }
             }
-        }
 
     // 包装输出流，打印 Editor 发送给 LSP 的内容 (App -> LSP)
     override val outputStream: OutputStream
-        get() = object : FilterOutputStream(process?.outputStream) {
-            override fun write(b: ByteArray, off: Int, len: Int) {
-                try {
-                    val content = String(b, off, len)
-                    val logContent = if (content.length > 200) content.substring(0, 200) + "..." else content
-                    Log.d("LSP-TX", "发送: $logContent")
+        get() =
+            object : FilterOutputStream(process?.outputStream) {
+                override fun write(b: ByteArray, off: Int, len: Int) {
+                    try {
+                        val content = String(b, off, len)
+                        val logContent = if (content.length > 200) content.substring(0, 200) + "..." else content
+                        Log.d("LSP-TX", "发送: $logContent")
 
-                    super.write(b, off, len)
-                } catch (e: IOException) {
-                    throw e
+                        super.write(b, off, len)
+                    } catch (e: IOException) {
+                        throw e
+                    }
                 }
             }
-        }
 
     override fun close() {
         Log.d("LSP-Process", "正在关闭 LSP 进程...")

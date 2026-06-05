@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.components
 
 import androidx.compose.foundation.horizontalScroll
@@ -35,22 +35,22 @@ import com.scto.mobile.ide.R
 fun EditorToolbar(
     onSave: () -> Unit,
     onSearch: () -> Unit,
-    onJump: () -> Unit,      // 新增
-    onCreate: () -> Unit,    // 新增
-    onPalette: () -> Unit,   // 新增
+    onJump: () -> Unit, // 新增
+    onCreate: () -> Unit, // 新增
+    onPalette: () -> Unit, // 新增
     onBuild: () -> Unit,
     onFormat: () -> Unit,
     isBuilding: Boolean,
-    hasWebAppConfig: Boolean
+    hasWebAppConfig: Boolean,
 ) {
     Surface {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier.fillMaxWidth()
+                    .height(48.dp)
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             ToolbarItem(stringResource(R.string.action_save), onSave)
             ToolbarItem(stringResource(R.string.action_new), onCreate)
@@ -60,11 +60,13 @@ fun EditorToolbar(
             ToolbarItem(stringResource(R.string.toolbar_color_scheme), onPalette)
 
             if (hasWebAppConfig) {
-                 ToolbarItem(
-                    label = if (isBuilding) stringResource(R.string.toolbar_building) else stringResource(R.string.toolbar_build_apk),
+                ToolbarItem(
+                    label =
+                        if (isBuilding) stringResource(R.string.toolbar_building)
+                        else stringResource(R.string.toolbar_build_apk),
                     onClick = onBuild,
                     enabled = !isBuilding,
-                    colors = if (isBuilding) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                    colors = if (isBuilding) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -76,23 +78,19 @@ private fun ToolbarItem(
     label: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    colors: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant
+    colors: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
-   // VerticalDivider(modifier = Modifier.padding(vertical = 12.dp).width(1.dp))
+    // VerticalDivider(modifier = Modifier.padding(vertical = 12.dp).width(1.dp))
 
     TextButton(
         onClick = onClick,
         enabled = enabled,
         contentPadding = PaddingValues(horizontal = 12.dp),
         modifier = Modifier.height(20.dp),
-        shape = RoundedCornerShape(4.dp)
+        shape = RoundedCornerShape(4.dp),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = label,
-                fontSize = 10.sp,
-                color = if (enabled) colors else MaterialTheme.colorScheme.outline
-            )
+            Text(text = label, fontSize = 10.sp, color = if (enabled) colors else MaterialTheme.colorScheme.outline)
         }
     }
 }

@@ -16,7 +16,6 @@ import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -47,18 +46,18 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.WorkspaceManager
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URL
+import java.util.Locale
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
-import java.util.Locale
-import com.scto.mobile.ide.R
 
 enum class ProjectType {
     BASIC_COMPOSE_ACTIVITY,
@@ -66,7 +65,7 @@ enum class ProjectType {
     BOTTOM_NAVIGATION,
     NAVIGATION_DRAWER_ACTIVITY,
     FLUTTER_APP,
-    CMAKE_APP
+    CMAKE_APP,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,7 +96,10 @@ fun NewProjectScreen(navController: NavController) {
         focusManager.clearFocus()
 
         createNewProject(
-            context, projectName, packageName, selectedType,
+            context,
+            projectName,
+            packageName,
+            selectedType,
             onSuccess = { dir ->
                 isLoading = false
                 scope.launch {
@@ -106,7 +108,10 @@ fun NewProjectScreen(navController: NavController) {
                     navController.popBackStack()
                 }
             },
-            onError = { msg -> isLoading = false; scope.launch { snackbarHostState.showSnackbar(msg) } }
+            onError = { msg ->
+                isLoading = false
+                scope.launch { snackbarHostState.showSnackbar(msg) }
+            },
         )
     }
 
@@ -115,58 +120,118 @@ fun NewProjectScreen(navController: NavController) {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.new_project_title), fontSize = 18.sp, fontWeight = FontWeight.Medium) },
-                navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back)) } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                title = {
+                    Text(stringResource(R.string.new_project_title), fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },
         bottomBar = {
             AnimatedVisibility(
                 visible = isScreenVisible,
                 enter = slideInVertically { it } + fadeIn(),
-                exit = slideOutVertically { it } + fadeOut()
+                exit = slideOutVertically { it } + fadeOut(),
             ) {
                 Surface(modifier = Modifier.fillMaxWidth().imePadding(), color = MaterialTheme.colorScheme.background) {
                     BouncyButton(
                         onClick = { handleCreate() },
                         enabled = !isLoading,
-                        modifier = Modifier.fillMaxWidth().padding(20.dp).navigationBarsPadding().height(54.dp)
+                        modifier = Modifier.fillMaxWidth().padding(20.dp).navigationBarsPadding().height(54.dp),
                     ) {
-                        if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
-                        else Text(stringResource(R.string.new_project_create_now), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        if (isLoading)
+                            CircularProgressIndicator(Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                        else
+                            Text(
+                                stringResource(R.string.new_project_create_now),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
                     }
                 }
             }
-        }
+        },
     ) { innerPadding ->
         AnimatedVisibility(
             visible = isScreenVisible,
-            enter = slideInVertically(initialOffsetY = { 50 }, animationSpec = tween(500, easing = FastOutSlowInEasing)) + fadeIn(tween(500)),
-            modifier = Modifier.padding(innerPadding)
+            enter =
+                slideInVertically(initialOffsetY = { 50 }, animationSpec = tween(500, easing = FastOutSlowInEasing)) +
+                    fadeIn(tween(500)),
+            modifier = Modifier.padding(innerPadding),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .animateContentSize(animationSpec = tween(300, easing = FastOutSlowInEasing))
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier =
+                    Modifier.fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .animateContentSize(animationSpec = tween(300, easing = FastOutSlowInEasing))
+                        .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Text(stringResource(R.string.new_project_type_title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    stringResource(R.string.new_project_type_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        MinimalTypeCard("Basic Compose", Icons.Default.Android, selectedType == ProjectType.BASIC_COMPOSE_ACTIVITY, Modifier.weight(1f)) { selectedType = ProjectType.BASIC_COMPOSE_ACTIVITY }
-                        MinimalTypeCard("Empty Compose", Icons.Default.Layers, selectedType == ProjectType.EMPTY_COMPOSE_ACTIVITY, Modifier.weight(1f)) { selectedType = ProjectType.EMPTY_COMPOSE_ACTIVITY }
-                        MinimalTypeCard("Bottom Nav", Icons.Default.Menu, selectedType == ProjectType.BOTTOM_NAVIGATION, Modifier.weight(1f)) { selectedType = ProjectType.BOTTOM_NAVIGATION }
+                        MinimalTypeCard(
+                            "Basic Compose",
+                            Icons.Default.Android,
+                            selectedType == ProjectType.BASIC_COMPOSE_ACTIVITY,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.BASIC_COMPOSE_ACTIVITY
+                        }
+                        MinimalTypeCard(
+                            "Empty Compose",
+                            Icons.Default.Layers,
+                            selectedType == ProjectType.EMPTY_COMPOSE_ACTIVITY,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.EMPTY_COMPOSE_ACTIVITY
+                        }
+                        MinimalTypeCard(
+                            "Bottom Nav",
+                            Icons.Default.Menu,
+                            selectedType == ProjectType.BOTTOM_NAVIGATION,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.BOTTOM_NAVIGATION
+                        }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        MinimalTypeCard("Drawer Nav", Icons.Default.VerticalSplit, selectedType == ProjectType.NAVIGATION_DRAWER_ACTIVITY, Modifier.weight(1f)) { selectedType = ProjectType.NAVIGATION_DRAWER_ACTIVITY }
-                        MinimalTypeCard("Flutter App", Icons.Default.Code, selectedType == ProjectType.FLUTTER_APP, Modifier.weight(1f)) { selectedType = ProjectType.FLUTTER_APP }
-                        MinimalTypeCard("CMake C++", Icons.Default.Build, selectedType == ProjectType.CMAKE_APP, Modifier.weight(1f)) { selectedType = ProjectType.CMAKE_APP }
+                        MinimalTypeCard(
+                            "Drawer Nav",
+                            Icons.Default.VerticalSplit,
+                            selectedType == ProjectType.NAVIGATION_DRAWER_ACTIVITY,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.NAVIGATION_DRAWER_ACTIVITY
+                        }
+                        MinimalTypeCard(
+                            "Flutter App",
+                            Icons.Default.Code,
+                            selectedType == ProjectType.FLUTTER_APP,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.FLUTTER_APP
+                        }
+                        MinimalTypeCard(
+                            "CMake C++",
+                            Icons.Default.Build,
+                            selectedType == ProjectType.CMAKE_APP,
+                            Modifier.weight(1f),
+                        ) {
+                            selectedType = ProjectType.CMAKE_APP
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -182,7 +247,8 @@ fun NewProjectScreen(navController: NavController) {
                             }
                         }
                     },
-                    placeholder = stringResource(R.string.new_project_name), icon = Icons.Outlined.Edit
+                    placeholder = stringResource(R.string.new_project_name),
+                    icon = Icons.Outlined.Edit,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -191,7 +257,7 @@ fun NewProjectScreen(navController: NavController) {
                     onValueChange = { packageName = it },
                     placeholder = stringResource(R.string.new_project_package_name),
                     icon = Icons.Outlined.AlternateEmail,
-                    keyboardType = KeyboardType.Ascii
+                    keyboardType = KeyboardType.Ascii,
                 )
 
                 Spacer(modifier = Modifier.height(100.dp))
@@ -205,7 +271,7 @@ fun BouncyButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -218,14 +284,30 @@ fun BouncyButton(
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
         interactionSource = interactionSource,
-        content = content
+        content = content,
     )
 }
 
 @Composable
-fun MinimalTypeCard(title: String, icon: ImageVector, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val bg by animateColorAsState(if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow, label = "bg")
-    val contentColor by animateColorAsState(if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant, label = "content")
+fun MinimalTypeCard(
+    title: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val bg by
+        animateColorAsState(
+            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.surfaceContainerLow,
+            label = "bg",
+        )
+    val contentColor by
+        animateColorAsState(
+            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+            label = "content",
+        )
     val scale by animateFloatAsState(if (isSelected) 1.05f else 1f, label = "scale")
 
     Column(
@@ -238,7 +320,7 @@ fun MinimalTypeCard(title: String, icon: ImageVector, isSelected: Boolean, modif
             .background(bg)
             .clickable { onClick() }
             .padding(vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(icon, null, tint = contentColor, modifier = Modifier.size(24.dp))
         Spacer(Modifier.height(4.dp))
@@ -248,41 +330,67 @@ fun MinimalTypeCard(title: String, icon: ImageVector, isSelected: Boolean, modif
 
 @Composable
 fun CleanTextField(
-    value: String, onValueChange: (String) -> Unit, placeholder: String, icon: ImageVector?,
-    keyboardType: KeyboardType = KeyboardType.Text, isSmall: Boolean = false, isPassword: Boolean = false, @SuppressLint(
-        "ModifierParameter"
-    ) modifier: Modifier = Modifier
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    icon: ImageVector?,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isSmall: Boolean = false,
+    isPassword: Boolean = false,
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {
     TextField(
-        value = value, onValueChange = onValueChange,
-        placeholder = { Text(placeholder, style = if (isSmall) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline) },
-        leadingIcon = if (icon != null) {
-            { Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(if (isSmall) 18.dp else 24.dp)) }
-        } else null,
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = {
+            Text(
+                placeholder,
+                style = if (isSmall) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+        leadingIcon =
+            if (icon != null) {
+                {
+                    Icon(
+                        icon,
+                        null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(if (isSmall) 18.dp else 24.dp),
+                    )
+                }
+            } else null,
         modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent
-        ),
+        colors =
+            TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
         singleLine = true,
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Next),
-        textStyle = if (isSmall) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+        textStyle = if (isSmall) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
     )
 }
 
 @OptIn(DelicateCoroutinesApi::class)
 private fun createNewProject(
-    context: Context, name: String, packageName: String, type: ProjectType,
-    onSuccess: (File) -> Unit, onError: (String) -> Unit
+    context: Context,
+    name: String,
+    packageName: String,
+    type: ProjectType,
+    onSuccess: (File) -> Unit,
+    onError: (String) -> Unit,
 ) {
     val wsPath = WorkspaceManager.getWorkspacePath(context)
     val appPkg = context.packageName
 
     GlobalScope.launch(Dispatchers.IO) {
         try {
-            val parentDir = if (wsPath.contains("/Android/data/$appPkg")) context.getExternalFilesDir(null)!! else File(wsPath)
+            val parentDir =
+                if (wsPath.contains("/Android/data/$appPkg")) context.getExternalFilesDir(null)!! else File(wsPath)
             val projectDir = File(parentDir, name)
             if (projectDir.exists()) {
                 withContext(Dispatchers.Main) { onError(context.getString(R.string.new_project_exists)) }
@@ -305,7 +413,9 @@ private fun createNewProject(
             withContext(Dispatchers.Main) { onSuccess(projectDir) }
         } catch (e: Exception) {
             e.printStackTrace()
-            withContext(Dispatchers.Main) { onError(e.message ?: context.getString(R.string.new_project_unknown_error)) }
+            withContext(Dispatchers.Main) {
+                onError(e.message ?: context.getString(R.string.new_project_unknown_error))
+            }
         }
     }
 }
@@ -313,12 +423,12 @@ private fun createNewProject(
 private fun setupGradleWrapper(dir: File, context: Context) {
     val gradleDir = File(dir, "gradle/wrapper")
     gradleDir.mkdirs()
-    
+
     val sourceJar = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.jar")
     val sourceProps = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.properties")
     val sourceGradlew = File("/data/data/com.termux/files/home/MobileIDE/gradlew")
     val sourceGradlewBat = File("/data/data/com.termux/files/home/MobileIDE/gradlew.bat")
-    
+
     val targetJar = File(gradleDir, "gradle-wrapper.jar")
     val targetProps = File(gradleDir, "gradle-wrapper.properties")
     val targetGradlew = File(dir, "gradlew")
@@ -341,25 +451,26 @@ private fun setupGradleWrapper(dir: File, context: Context) {
     }
 
     if (!copiedLocal) {
-        safeWrite(targetProps, """
+        safeWrite(
+            targetProps,
+            """
             distributionBase=GRADLE_USER_HOME
             distributionPath=wrapper/dists
             distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
             zipStoreBase=GRADLE_USER_HOME
             zipStorePath=wrapper/dists
-        """.trimIndent())
-        
+            """
+                .trimIndent(),
+        )
+
         safeWrite(targetGradlew, ProjectTemplates.gradlewScript)
         targetGradlew.setExecutable(true)
-        
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val url = URL("https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar")
-                url.openStream().use { input ->
-                    FileOutputStream(targetJar).use { output ->
-                        input.copyTo(output)
-                    }
-                }
+                val url =
+                    URL("https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar")
+                url.openStream().use { input -> FileOutputStream(targetJar).use { output -> input.copyTo(output) } }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -374,13 +485,7 @@ private fun setupTomlVersions(dir: File) {
     safeWrite(tomlFile, ProjectTemplates.libsVersionsToml)
 }
 
-data class AndroidDirs(
-    val appDir: File,
-    val mainDir: File,
-    val resDir: File,
-    val valuesDir: File,
-    val javaDir: File
-)
+data class AndroidDirs(val appDir: File, val mainDir: File, val resDir: File, val valuesDir: File, val javaDir: File)
 
 private fun setupCommonAndroidDirs(dir: File, packageName: String): AndroidDirs {
     val appDir = File(dir, "app")
@@ -461,7 +566,7 @@ private fun createFlutterStructure(dir: File, name: String, packageName: String)
 
     safeWrite(File(dir, "pubspec.yaml"), ProjectTemplates.flutterPubspec)
     safeWrite(File(libDir, "main.dart"), ProjectTemplates.flutterMainDart)
-    
+
     safeWrite(File(androidDir, "build.gradle"), ProjectTemplates.flutterAndroidBuildGradle)
     safeWrite(File(androidDir, "settings.gradle"), ProjectTemplates.flutterAndroidSettingsGradle)
     safeWrite(File(androidAppDir, "build.gradle"), ProjectTemplates.flutterAndroidAppBuildGradle)

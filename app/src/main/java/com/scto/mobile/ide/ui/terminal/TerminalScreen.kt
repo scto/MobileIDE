@@ -7,10 +7,9 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  */
- 
+
 package com.scto.mobile.ide.ui.terminal
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -19,22 +18,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.viewinterop.AndroidView
-import com.termux.view.TerminalView
-import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
-import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
-import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
-
-import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
+import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
+import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
+import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
+import com.termux.view.TerminalView
 
 @Composable
 fun TerminalScreen(navController: NavController) {
     val context = LocalContext.current
     val isSystemDark = isSystemInDarkTheme()
-    
+
     // Status für den Ladebildschirm
     var isEnvironmentReady by remember { mutableStateOf(false) }
 
@@ -42,7 +40,7 @@ fun TerminalScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         SetupWorker.prepareEnvironment(context)
         isEnvironmentReady = true
-        
+
         if (SessionManager.sessions.isEmpty()) {
             SessionManager.addNewSession(context)
         }
@@ -64,8 +62,10 @@ fun TerminalScreen(navController: NavController) {
             val sessionWrapper = SessionManager.sessions[currentSessionIndex]
             val currentSession = sessionWrapper.session
 
-            Column(modifier = Modifier.fillMaxSize().background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))) {
-                
+            Column(
+                modifier = Modifier.fillMaxSize().background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
+            ) {
+
                 // 1. TERMINAL VIEW
                 AndroidView(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -86,7 +86,7 @@ fun TerminalScreen(navController: NavController) {
                             view.attachSession(currentSession)
                             view.onScreenUpdated()
                         }
-                    }
+                    },
                 )
 
                 // 2. VIRTUAL KEYS VIEW
@@ -99,17 +99,18 @@ fun TerminalScreen(navController: NavController) {
                             setVirtualKeysViewClient(listener)
                             // Keys aus deiner TerminalConfig laden
                             try {
-                                val info = VirtualKeysInfo(
-                                    TerminalConfig.VIRTUAL_KEYS_JSON,
-                                    null,
-                                    VirtualKeysConstants.CONTROL_CHARS_ALIASES
-                                )
+                                val info =
+                                    VirtualKeysInfo(
+                                        TerminalConfig.VIRTUAL_KEYS_JSON,
+                                        null,
+                                        VirtualKeysConstants.CONTROL_CHARS_ALIASES,
+                                    )
                                 reload(info)
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
                         }
-                    }
+                    },
                 )
             }
         }

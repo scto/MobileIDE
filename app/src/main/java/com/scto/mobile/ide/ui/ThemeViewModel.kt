@@ -24,27 +24,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-
+import com.materialkolor.PaletteStyle
+import com.scto.mobile.ide.core.utils.LogCatcher // Import log utility
 import com.scto.mobile.ide.core.utils.ThemeDataStoreRepository
 import com.scto.mobile.ide.core.utils.ThemeState
-import com.scto.mobile.ide.core.utils.LogCatcher // Import log utility
-
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-import com.materialkolor.PaletteStyle
-
 class ThemeViewModel(private val repository: ThemeDataStoreRepository) : ViewModel() {
 
-    val themeState: StateFlow<ThemeState> = repository.themeStateFlow.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ThemeState(
-            0, 0, Build.VERSION.SDK_INT >= Build.VERSION_CODES.S, false, Color(0xFF6750A4), PaletteStyle.TonalSpot, false
+    val themeState: StateFlow<ThemeState> =
+        repository.themeStateFlow.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue =
+                ThemeState(
+                    0,
+                    0,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+                    false,
+                    Color(0xFF6750A4),
+                    PaletteStyle.TonalSpot,
+                    false,
+                ),
         )
-    )
 
     fun saveThemeConfig(
         selectedModeIndex: Int,
@@ -52,13 +57,23 @@ class ThemeViewModel(private val repository: ThemeDataStoreRepository) : ViewMod
         customColor: Color,
         isMonetEnabled: Boolean,
         isCustom: Boolean,
-        style: PaletteStyle = PaletteStyle.TonalSpot
+        style: PaletteStyle = PaletteStyle.TonalSpot,
     ) {
         // [Debug Log] ViewModel reception layer
-        LogCatcher.d("ThemeDebug_VM", "ViewModel preparing to save: Monet=$isMonetEnabled, Custom=$isCustom, Style=$style, Color=${customColor.value}")
+        LogCatcher.d(
+            "ThemeDebug_VM",
+            "ViewModel preparing to save: Monet=$isMonetEnabled, Custom=$isCustom, Style=$style, Color=${customColor.value}",
+        )
 
         viewModelScope.launch {
-            repository.saveThemeConfig(selectedModeIndex, selectedThemeIndex, customColor, isMonetEnabled, isCustom, style)
+            repository.saveThemeConfig(
+                selectedModeIndex,
+                selectedThemeIndex,
+                customColor,
+                isMonetEnabled,
+                isCustom,
+                style,
+            )
         }
     }
 }

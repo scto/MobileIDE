@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 // File: java/com/example/sorarunrun/terminal/TerminalConfig.kt
 
 package com.scto.mobile.ide.ui.terminal
@@ -23,7 +23,8 @@ package com.scto.mobile.ide.ui.terminal
 object TerminalConfig {
 
     // === Dynamic color configuration ===
-    const val VIRTUAL_KEYS_JSON = """
+    const val VIRTUAL_KEYS_JSON =
+        """
 [
   [
     "ESC",
@@ -51,6 +52,7 @@ object TerminalConfig {
   ]
 ]
 """
+
     // Get background color
     fun getBackgroundColor(isDark: Boolean): Int {
         return if (isDark) {
@@ -59,5 +61,4 @@ object TerminalConfig {
             0xFFFFFFFF.toInt() // Light mode: pure white
         }
     }
-
 }

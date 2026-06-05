@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
@@ -64,8 +63,8 @@ import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.ThemeState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.safeNavigate
-import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
+import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.welcome.themeColors
 
 // 自动保存选项枚举
@@ -74,7 +73,7 @@ enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
     SEC_30(R.string.auto_save_30_seconds, 30_000L),
     MIN_1(R.string.auto_save_1_minute, 60_000L),
     MIN_5(R.string.auto_save_5_minutes, 300_000L),
-    MIN_10(R.string.auto_save_10_minutes, 600_000L)
+    MIN_10(R.string.auto_save_10_minutes, 600_000L),
 }
 
 // 扩展函数解决 luminance 报错
@@ -93,7 +92,7 @@ fun SettingsScreen(
     logConfigState: LogConfigState,
     onThemeChange: (modeIndex: Int, themeIndex: Int, customColor: Color, isMonet: Boolean, isCustom: Boolean) -> Unit,
     onLogConfigChange: (enabled: Boolean, filePath: String) -> Unit,
-    editorViewModel: com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel? = null
+    editorViewModel: com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel? = null,
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE) }
@@ -112,14 +111,29 @@ fun SettingsScreen(
     var lspEnabled by remember { mutableStateOf(prefs.getBoolean("editor_lsp_enabled", false)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var fontPath by remember { mutableStateOf(prefs.getString("editor_font_path", "") ?: "") }
-    var customSymbols by remember { mutableStateOf(prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: "") }
+    var customSymbols by remember {
+        mutableStateOf(
+            prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
+        )
+    }
     var autoSaveInterval by remember { mutableLongStateOf(generalPrefs.getLong("auto_save_interval", 0L)) }
     var showAutoSaveDialog by remember { mutableStateOf(false) }
     // 保存之前的 LSP 状态，用于检测变化
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
 
     // 自动保存
-    LaunchedEffect(tabWidth, wordWrap, showInvisibles, codeFolding, showToolbar, showHistory, lspEnabled, aiEnabled, fontPath, customSymbols) {
+    LaunchedEffect(
+        tabWidth,
+        wordWrap,
+        showInvisibles,
+        codeFolding,
+        showToolbar,
+        showHistory,
+        lspEnabled,
+        aiEnabled,
+        fontPath,
+        customSymbols,
+    ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)
             putInt("editor_tab_width", tabWidth)
@@ -157,24 +171,20 @@ fun SettingsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         }
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item(key = "theme_settings") {
                 ThemeSettingsItem(
                     currentThemeState = currentThemeState,
                     onThemeChange = onThemeChange,
-                    onCustomColorClick = { showColorPicker = true }
+                    onCustomColorClick = { showColorPicker = true },
                 )
             }
 
@@ -199,7 +209,7 @@ fun SettingsScreen(
                     fontPath = fontPath,
                     onFontPathChange = { fontPath = it },
                     customSymbols = customSymbols,
-                    onCustomSymbolsChange = { customSymbols = it }
+                    onCustomSymbolsChange = { customSymbols = it },
                 )
             }
 
@@ -208,7 +218,7 @@ fun SettingsScreen(
                     text = stringResource(R.string.settings_general),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, top = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, top = 8.dp),
                 )
             }
             // 🔥 新增：自动保存设置入口
@@ -217,21 +227,23 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Language,
                     title = stringResource(R.string.settings_language_title),
                     subtitle = stringResource(currentLanguageOption.labelRes),
-                    onClick = { showLanguageDialog = true }
+                    onClick = { showLanguageDialog = true },
                 )
             }
             item {
-                val currentOption = AutoSaveOption.entries.find { it.interval == autoSaveInterval } ?: AutoSaveOption.OFF
+                val currentOption =
+                    AutoSaveOption.entries.find { it.interval == autoSaveInterval } ?: AutoSaveOption.OFF
                 val currentOptionLabel = stringResource(currentOption.labelRes)
                 SimpleSettingsCard(
                     icon = Icons.Outlined.SaveAs, // 需要确保有此图标，如果没有可以使用 Icons.Default.Save
                     title = stringResource(R.string.settings_auto_save_backup_title),
-                    subtitle = if (currentOption == AutoSaveOption.OFF) {
-                        stringResource(R.string.status_disabled)
-                    } else {
-                        stringResource(R.string.settings_auto_save_frequency, currentOptionLabel)
-                    },
-                    onClick = { showAutoSaveDialog = true }
+                    subtitle =
+                        if (currentOption == AutoSaveOption.OFF) {
+                            stringResource(R.string.status_disabled)
+                        } else {
+                            stringResource(R.string.settings_auto_save_frequency, currentOptionLabel)
+                        },
+                    onClick = { showAutoSaveDialog = true },
                 )
             }
             item {
@@ -239,7 +251,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Folder,
                     title = stringResource(R.string.settings_workspace_title),
                     subtitle = selectedWorkspace,
-                    onClick = { showFileSelector = true }
+                    onClick = { showFileSelector = true },
                 )
             }
 
@@ -247,7 +259,7 @@ fun SettingsScreen(
                 LogSettingsItem(
                     logConfigState = logConfigState,
                     onLogConfigChange = onLogConfigChange,
-                    onPathClick = { showLogPathSelector = true }
+                    onPathClick = { showLogPathSelector = true },
                 )
             }
 
@@ -256,7 +268,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.WavingHand,
                     title = stringResource(R.string.settings_welcome_title),
                     subtitle = stringResource(R.string.settings_welcome_subtitle),
-                    onClick = { navController.safeNavigate("welcome") }
+                    onClick = { navController.safeNavigate("welcome") },
                 )
             }
 
@@ -265,7 +277,7 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Info,
                     title = stringResource(R.string.about_title),
                     subtitle = stringResource(R.string.settings_about_subtitle),
-                    onClick = { navController.safeNavigate("about") }
+                    onClick = { navController.safeNavigate("about") },
                 )
             }
 
@@ -283,7 +295,7 @@ fun SettingsScreen(
                 showFileSelector = false
                 Toast.makeText(context, context.getString(R.string.toast_workspace_updated), Toast.LENGTH_SHORT).show()
             },
-            onDismissRequest = { showFileSelector = false }
+            onDismissRequest = { showFileSelector = false },
         )
     }
 
@@ -295,7 +307,7 @@ fun SettingsScreen(
                 showLogPathSelector = false
                 Toast.makeText(context, context.getString(R.string.toast_log_path_updated), Toast.LENGTH_SHORT).show()
             },
-            onDismissRequest = { showLogPathSelector = false }
+            onDismissRequest = { showLogPathSelector = false },
         )
     }
     if (showAutoSaveDialog) {
@@ -307,7 +319,7 @@ fun SettingsScreen(
                 generalPrefs.edit { putLong("auto_save_interval", option.interval) }
                 showAutoSaveDialog = false
                 Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
-            }
+            },
         )
     }
 
@@ -320,38 +332,30 @@ fun SettingsScreen(
                     Text(
                         text = stringResource(R.string.settings_language_dialog_description),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(16.dp))
                     AppLanguageOption.entries.forEach { option ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showLanguageDialog = false
-                                    AppLanguageManager.updateLanguage(context, option)
-                                }
-                                .padding(vertical = 12.dp)
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .clickable {
+                                        showLanguageDialog = false
+                                        AppLanguageManager.updateLanguage(context, option)
+                                    }
+                                    .padding(vertical = 12.dp),
                         ) {
-                            RadioButton(
-                                selected = option == currentLanguageOption,
-                                onClick = null
-                            )
+                            RadioButton(selected = option == currentLanguageOption, onClick = null)
                             Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(option.labelRes),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Text(text = stringResource(option.labelRes), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-            }
+                TextButton(onClick = { showLanguageDialog = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
         )
     }
 
@@ -362,7 +366,7 @@ fun SettingsScreen(
             onColorSelected = { color ->
                 onThemeChange(currentThemeState.selectedModeIndex, themeColors.size, color, false, true)
                 showColorPicker = false
-            }
+            },
         )
     }
 }
@@ -372,22 +376,28 @@ fun SettingsScreen(
 private fun AutoSaveDialog(
     selectedInterval: Long,
     onDismiss: () -> Unit,
-    onOptionSelected: (AutoSaveOption, String) -> Unit
+    onOptionSelected: (AutoSaveOption, String) -> Unit,
 ) {
-    val optionLabels = mapOf(
-        AutoSaveOption.OFF to stringResource(R.string.auto_save_off),
-        AutoSaveOption.SEC_30 to stringResource(R.string.auto_save_30_seconds),
-        AutoSaveOption.MIN_1 to stringResource(R.string.auto_save_1_minute),
-        AutoSaveOption.MIN_5 to stringResource(R.string.auto_save_5_minutes),
-        AutoSaveOption.MIN_10 to stringResource(R.string.auto_save_10_minutes)
-    )
-    val optionToastMessages = mapOf(
-        AutoSaveOption.OFF to stringResource(R.string.toast_auto_save_disabled),
-        AutoSaveOption.SEC_30 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.SEC_30)),
-        AutoSaveOption.MIN_1 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_1)),
-        AutoSaveOption.MIN_5 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_5)),
-        AutoSaveOption.MIN_10 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_10))
-    )
+    val optionLabels =
+        mapOf(
+            AutoSaveOption.OFF to stringResource(R.string.auto_save_off),
+            AutoSaveOption.SEC_30 to stringResource(R.string.auto_save_30_seconds),
+            AutoSaveOption.MIN_1 to stringResource(R.string.auto_save_1_minute),
+            AutoSaveOption.MIN_5 to stringResource(R.string.auto_save_5_minutes),
+            AutoSaveOption.MIN_10 to stringResource(R.string.auto_save_10_minutes),
+        )
+    val optionToastMessages =
+        mapOf(
+            AutoSaveOption.OFF to stringResource(R.string.toast_auto_save_disabled),
+            AutoSaveOption.SEC_30 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.SEC_30)),
+            AutoSaveOption.MIN_1 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_1)),
+            AutoSaveOption.MIN_5 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_5)),
+            AutoSaveOption.MIN_10 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_10)),
+        )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -397,37 +407,25 @@ private fun AutoSaveDialog(
                 Text(
                     text = stringResource(R.string.settings_auto_save_dialog_description),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(16.dp))
                 AutoSaveOption.entries.forEach { option ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onOptionSelected(option, optionToastMessages.getValue(option))
-                            }
-                            .padding(vertical = 12.dp)
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable { onOptionSelected(option, optionToastMessages.getValue(option)) }
+                                .padding(vertical = 12.dp),
                     ) {
-                        RadioButton(
-                            selected = option.interval == selectedInterval,
-                            onClick = null
-                        )
+                        RadioButton(selected = option.interval == selectedInterval, onClick = null)
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = optionLabels.getValue(option),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text(text = optionLabels.getValue(option), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel))
-            }
-        }
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
 
@@ -453,7 +451,7 @@ fun EditorSettingsItem(
     fontPath: String,
     onFontPathChange: (String) -> Unit,
     customSymbols: String,
-    onCustomSymbolsChange: (String) -> Unit
+    onCustomSymbolsChange: (String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val expandDuration = 200
@@ -461,127 +459,156 @@ fun EditorSettingsItem(
     val snappyEasing = LinearOutSlowInEasing
 
     var isFontDropdownExpanded by remember { mutableStateOf(false) }
-    val fontPresetOptions = listOf(
-        FontPresetOption(stringResource(R.string.font_default), ""),
-        FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf")
-    )
+    val fontPresetOptions =
+        listOf(
+            FontPresetOption(stringResource(R.string.font_default), ""),
+            FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf"),
+        )
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-            )
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             // Header
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Code,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.settings_editor_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                     AnimatedVisibility(
                         visible = !expanded,
-                        enter = fadeIn(tween(textFadeDuration)) + expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top)
+                        enter =
+                            fadeIn(tween(textFadeDuration)) +
+                                expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
+                        exit =
+                            fadeOut(tween(textFadeDuration)) +
+                                shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
                     ) {
-                        val displayFont = if (fontPath.isBlank()) {
-                            stringResource(R.string.font_system_default)
-                        } else {
-                            fontPath.substringAfterLast("/")
-                        }
+                        val displayFont =
+                            if (fontPath.isBlank()) {
+                                stringResource(R.string.font_system_default)
+                            } else {
+                                fontPath.substringAfterLast("/")
+                            }
                         Text(
                             text = stringResource(R.string.settings_editor_summary, tabWidth, displayFont),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 2.dp),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration)
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(
                     imageVector = Icons.Filled.ExpandMore,
                     contentDescription = null,
-                    modifier = Modifier.rotate(rotation)
+                    modifier = Modifier.rotate(rotation),
                 )
             }
 
             // Expanded Content
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(animationSpec = tween(expandDuration, easing = snappyEasing), expandFrom = Alignment.Top),
-                exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(animationSpec = tween(textFadeDuration, easing = snappyEasing), shrinkTowards = Alignment.Top)
+                enter =
+                    fadeIn(tween(expandDuration)) +
+                        expandVertically(
+                            animationSpec = tween(expandDuration, easing = snappyEasing),
+                            expandFrom = Alignment.Top,
+                        ),
+                exit =
+                    fadeOut(tween(textFadeDuration)) +
+                        shrinkVertically(
+                            animationSpec = tween(textFadeDuration, easing = snappyEasing),
+                            shrinkTowards = Alignment.Top,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(stringResource(R.string.settings_assistance), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_assistance),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_ai_assistant), isAiEnabled, onIsAiEnabledChange)
                     CompactSwitchRow(stringResource(R.string.settings_lsp_completion), lspEnabled, onLspEnabledChange)
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // === 1. 缩进设置 (Segmented Style) ===
-                    Text(stringResource(R.string.settings_indent_width), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_indent_width),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp) // 按钮之间的间距
+                        horizontalArrangement = Arrangement.spacedBy(12.dp), // 按钮之间的间距
                     ) {
                         val options = listOf(2, 4, 8)
                         options.forEach { option ->
                             val isSelected = tabWidth == option
 
                             // 颜色动画：选中用主色(Primary)，未选中用高色调表面色(SurfaceContainerHigh)
-                            val containerColor by animateColorAsState(
-                                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                animationSpec = tween(200),
-                                label = "ButtonContainer"
-                            )
-                            val contentColor by animateColorAsState(
-                                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                animationSpec = tween(200),
-                                label = "ButtonContent"
-                            )
+                            val containerColor by
+                                animateColorAsState(
+                                    targetValue =
+                                        if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    animationSpec = tween(200),
+                                    label = "ButtonContainer",
+                                )
+                            val contentColor by
+                                animateColorAsState(
+                                    targetValue =
+                                        if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                        else MaterialTheme.colorScheme.onSurface,
+                                    animationSpec = tween(200),
+                                    label = "ButtonContent",
+                                )
 
                             Surface(
                                 onClick = { onTabWidthChange(option) },
-                                modifier = Modifier
-                                    .weight(1f)      // 三个按钮平分宽度
-                                    .height(32.dp),  // 【关键】高度压小，显得精致
+                                modifier =
+                                    Modifier.weight(1f) // 三个按钮平分宽度
+                                        .height(32.dp), // 【关键】高度压小，显得精致
                                 shape = RoundedCornerShape(4.dp), // 【关键】4dp 小圆角，硬朗风格
                                 color = containerColor,
-                                contentColor = contentColor
+                                contentColor = contentColor,
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = stringResource(R.string.settings_spaces_format, option),
                                         style = MaterialTheme.typography.labelMedium, // 使用较小的字号
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                     )
                                 }
                             }
@@ -591,7 +618,11 @@ fun EditorSettingsItem(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // === 2. 字体设置 (Combo Box 模式) ===
-                    Text(stringResource(R.string.settings_editor_font), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_editor_font),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Box 容器用于定位 DropdownMenu
@@ -606,7 +637,7 @@ fun EditorSettingsItem(
                                 IconButton(onClick = { isFontDropdownExpanded = !isFontDropdownExpanded }) {
                                     Icon(Icons.Filled.ArrowDropDown, stringResource(R.string.settings_select_preset))
                                 }
-                            }
+                            },
                         )
 
                         // 下拉菜单
@@ -614,7 +645,7 @@ fun EditorSettingsItem(
                             expanded = isFontDropdownExpanded,
                             onDismissRequest = { isFontDropdownExpanded = false },
                             offset = DpOffset(0.dp, 0.dp),
-                            modifier = Modifier.fillMaxWidth(0.9f) // 稍微调整宽度适应
+                            modifier = Modifier.fillMaxWidth(0.9f), // 稍微调整宽度适应
                         ) {
                             fontPresetOptions.forEach { preset ->
                                 DropdownMenuItem(
@@ -622,14 +653,18 @@ fun EditorSettingsItem(
                                         Column {
                                             Text(preset.label, style = MaterialTheme.typography.bodyLarge)
                                             if (preset.file.isNotEmpty()) {
-                                                Text(preset.file, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                                Text(
+                                                    preset.file,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.outline,
+                                                )
                                             }
                                         }
                                     },
                                     onClick = {
                                         onFontPathChange(preset.file)
                                         isFontDropdownExpanded = false
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -638,17 +673,33 @@ fun EditorSettingsItem(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // === 3. 行为开关 ===
-                    Text(stringResource(R.string.settings_behavior), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_behavior),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_show_toolbar), showToolbar, onShowToolbarChange)
-                    CompactSwitchRow(stringResource(R.string.settings_show_history_tabs), showHistory, onShowHistoryChange)
+                    CompactSwitchRow(
+                        stringResource(R.string.settings_show_history_tabs),
+                        showHistory,
+                        onShowHistoryChange,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_word_wrap), wordWrap, onWordWrapChange)
-                    CompactSwitchRow(stringResource(R.string.settings_show_whitespace), showInvisibles, onShowInvisiblesChange)
+                    CompactSwitchRow(
+                        stringResource(R.string.settings_show_whitespace),
+                        showInvisibles,
+                        onShowInvisiblesChange,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_code_folding), codeFolding, onCodeFoldingChange)
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
                     // === 4. 符号栏 ===
-                    Text(stringResource(R.string.settings_custom_symbols), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_custom_symbols),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = customSymbols,
@@ -656,7 +707,7 @@ fun EditorSettingsItem(
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyMedium,
                         maxLines = 2,
-                        placeholder = { Text(stringResource(R.string.settings_symbols_placeholder)) }
+                        placeholder = { Text(stringResource(R.string.settings_symbols_placeholder)) },
                     )
                 }
             }
@@ -667,18 +718,12 @@ fun EditorSettingsItem(
 @Composable
 fun CompactSwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }.padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(title, style = MaterialTheme.typography.bodyMedium)
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -690,7 +735,7 @@ fun Modifier.scale(scale: Float) = this.graphicsLayer(scaleX = scale, scaleY = s
 fun ThemeSettingsItem(
     currentThemeState: ThemeState,
     onThemeChange: (Int, Int, Color, Boolean, Boolean) -> Unit,
-    onCustomColorClick: () -> Unit
+    onCustomColorClick: () -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val expandDuration = 200
@@ -699,66 +744,78 @@ fun ThemeSettingsItem(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-            )
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Palette,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.settings_theme_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     )
                     AnimatedVisibility(
                         visible = !expanded,
-                        enter = fadeIn(tween(textFadeDuration)) + expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top)
+                        enter =
+                            fadeIn(tween(textFadeDuration)) +
+                                expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
+                        exit =
+                            fadeOut(tween(textFadeDuration)) +
+                                shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
                     ) {
                         Text(
-                            text = if (currentThemeState.isMonetEnabled) {
-                                stringResource(R.string.settings_dynamic_color)
-                            } else {
-                                stringResource(R.string.settings_custom_appearance)
-                            },
+                            text =
+                                if (currentThemeState.isMonetEnabled) {
+                                    stringResource(R.string.settings_dynamic_color)
+                                } else {
+                                    stringResource(R.string.settings_custom_appearance)
+                                },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp),
                         )
                     }
                 }
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration)
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(
                     imageVector = Icons.Filled.ExpandMore,
                     contentDescription = null,
-                    modifier = Modifier.rotate(rotation)
+                    modifier = Modifier.rotate(rotation),
                 )
             }
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(tween(expandDuration)) +
-                        expandVertically(animationSpec = tween(expandDuration, easing = snappyEasing), expandFrom = Alignment.Top),
-                exit = fadeOut(tween(textFadeDuration)) +
-                        shrinkVertically(animationSpec = tween(textFadeDuration, easing = snappyEasing), shrinkTowards = Alignment.Top),
+                enter =
+                    fadeIn(tween(expandDuration)) +
+                        expandVertically(
+                            animationSpec = tween(expandDuration, easing = snappyEasing),
+                            expandFrom = Alignment.Top,
+                        ),
+                exit =
+                    fadeOut(tween(textFadeDuration)) +
+                        shrinkVertically(
+                            animationSpec = tween(textFadeDuration, easing = snappyEasing),
+                            shrinkTowards = Alignment.Top,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -768,67 +825,101 @@ fun ThemeSettingsItem(
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.settings_dynamic_color), style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    stringResource(R.string.settings_dynamic_color),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
                             }
                             Switch(
                                 checked = currentThemeState.isMonetEnabled,
                                 onCheckedChange = {
                                     // 互斥逻辑：启用 Monet 时，强制关闭 CustomTheme
                                     val newIsCustom = if (it) false else currentThemeState.isCustomTheme
-                                    onThemeChange(currentThemeState.selectedModeIndex, currentThemeState.selectedThemeIndex, currentThemeState.customColor, it, newIsCustom)
-                                }
+                                    onThemeChange(
+                                        currentThemeState.selectedModeIndex,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        it,
+                                        newIsCustom,
+                                    )
+                                },
                             )
                         }
                     }
 
                     AnimatedVisibility(visible = !currentThemeState.isMonetEnabled) {
                         Column {
-                            Text(stringResource(R.string.settings_theme_color), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                stringResource(R.string.settings_theme_color),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+                                contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                             ) {
                                 itemsIndexed(themeColors) { index, theme ->
-                                    val isSelected = !currentThemeState.isCustomTheme && currentThemeState.selectedThemeIndex == index
+                                    val isSelected =
+                                        !currentThemeState.isCustomTheme &&
+                                            currentThemeState.selectedThemeIndex == index
                                     ColorSelectionItem(
                                         color = theme.primaryColor,
                                         name = theme.name,
                                         isSelected = isSelected,
                                         onClick = {
-                                            onThemeChange(currentThemeState.selectedModeIndex, index, currentThemeState.customColor, false, false)
-                                        }
+                                            onThemeChange(
+                                                currentThemeState.selectedModeIndex,
+                                                index,
+                                                currentThemeState.customColor,
+                                                false,
+                                                false,
+                                            )
+                                        },
                                     )
                                 }
                                 item {
                                     CustomColorButton(
                                         isSelected = currentThemeState.isCustomTheme,
                                         customColor = currentThemeState.customColor,
-                                        onClick = onCustomColorClick
+                                        onClick = onCustomColorClick,
                                     )
                                 }
                             }
                         }
                     }
 
-                    Text(stringResource(R.string.settings_display_mode), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_display_mode),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        val modes = listOf(
-                            stringResource(R.string.action_follow_system),
-                            stringResource(R.string.action_light),
-                            stringResource(R.string.action_dark)
-                        )
+                        val modes =
+                            listOf(
+                                stringResource(R.string.action_follow_system),
+                                stringResource(R.string.action_light),
+                                stringResource(R.string.action_dark),
+                            )
                         modes.forEachIndexed { index, label ->
                             SmoothFilterChip(
                                 selected = currentThemeState.selectedModeIndex == index,
                                 label = label,
-                                onClick = { onThemeChange(index, currentThemeState.selectedThemeIndex, currentThemeState.customColor, currentThemeState.isMonetEnabled, currentThemeState.isCustomTheme) },
-                                modifier = Modifier.weight(1f)
+                                onClick = {
+                                    onThemeChange(
+                                        index,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        currentThemeState.isMonetEnabled,
+                                        currentThemeState.isCustomTheme,
+                                    )
+                                },
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
@@ -839,18 +930,29 @@ fun ThemeSettingsItem(
 }
 
 @Composable
-fun SimpleSettingsCard(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
+fun SimpleSettingsCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
+        onClick = onClick,
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -861,22 +963,23 @@ fun SimpleSettingsCard(icon: androidx.compose.ui.graphics.vector.ImageVector, ti
 fun LogSettingsItem(
     logConfigState: LogConfigState,
     onLogConfigChange: (Boolean, String) -> Unit,
-    onPathClick: () -> Unit
+    onPathClick: () -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp).animateContentSize()
-        ) {
+        Column(modifier = Modifier.padding(16.dp).animateContentSize()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.BugReport, null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_enable_log), style = MaterialTheme.typography.titleMedium)
                 }
-                Switch(checked = logConfigState.isLogEnabled, onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) })
+                Switch(
+                    checked = logConfigState.isLogEnabled,
+                    onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) },
+                )
             }
             AnimatedVisibility(visible = logConfigState.isLogEnabled) {
                 Column {
@@ -884,9 +987,14 @@ fun LogSettingsItem(
                     OutlinedButton(
                         onClick = onPathClick,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
                     ) {
-                        Text(logConfigState.logFilePath, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        Text(
+                            logConfigState.logFilePath,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
                         Icon(Icons.Outlined.Edit, null, modifier = Modifier.size(16.dp))
                     }
                 }
@@ -894,19 +1002,30 @@ fun LogSettingsItem(
         }
     }
 }
+
 @Composable
-fun SmoothFilterChip(
-    selected: Boolean,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SmoothFilterChip(selected: Boolean, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val duration = 200
     val fastEasing = LinearEasing
     val colorAnimSpec = tween<Color>(durationMillis = duration, easing = fastEasing)
-    val containerColor by animateColorAsState(if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface, colorAnimSpec, "Container")
-    val borderColor by animateColorAsState(if (selected) Color.Transparent else MaterialTheme.colorScheme.outline, colorAnimSpec, "Border")
-    val contentColor by animateColorAsState(if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface, colorAnimSpec, "Content")
+    val containerColor by
+        animateColorAsState(
+            if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+            colorAnimSpec,
+            "Container",
+        )
+    val borderColor by
+        animateColorAsState(
+            if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
+            colorAnimSpec,
+            "Border",
+        )
+    val contentColor by
+        animateColorAsState(
+            if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+            colorAnimSpec,
+            "Content",
+        )
 
     Surface(
         onClick = onClick,
@@ -918,7 +1037,7 @@ fun SmoothFilterChip(
         Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             AnimatedVisibility(visible = selected) {
                 Row {
@@ -930,35 +1049,83 @@ fun SmoothFilterChip(
         }
     }
 }
+
 @Composable
 fun ColorSelectionItem(color: Color, name: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(48.dp).border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape).padding(4.dp).clip(CircleShape).background(color)
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(color),
         ) {
-            if (isSelected) Icon(Icons.Default.Check, null, tint = if (color.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(24.dp))
+            if (isSelected)
+                Icon(
+                    Icons.Default.Check,
+                    null,
+                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(name, style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            name,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 @Composable
 fun CustomColorButton(isSelected: Boolean, customColor: Color, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(48.dp).border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape).padding(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             if (isSelected) {
                 Box(Modifier.fillMaxSize().background(customColor))
-                Icon(Icons.Default.Edit, null, tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Edit,
+                    null,
+                    tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
             } else {
-                Icon(Icons.Default.Add, stringResource(R.string.settings_custom), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    Icons.Default.Add,
+                    stringResource(R.string.settings_custom),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(stringResource(R.string.settings_custom), style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            stringResource(R.string.settings_custom),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

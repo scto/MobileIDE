@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.git
 
 import androidx.compose.foundation.background
@@ -42,22 +42,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-import kotlinx.coroutines.launch
-import java.io.File
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
+import java.io.File
+import kotlinx.coroutines.launch
 
 // Define a sidebar Tab enumeration for external use.
-enum class SidebarTab { FILES, GIT }
+enum class SidebarTab {
+    FILES,
+    GIT,
+}
 
 @Composable
 fun GitPanel(
     projectPath: String,
     modifier: Modifier = Modifier,
     viewModel: GitViewModel,
-    editorViewModel: EditorViewModel
+    editorViewModel: EditorViewModel,
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -70,7 +71,10 @@ fun GitPanel(
 
     LaunchedEffect(projectPath) { viewModel.initialize(projectPath) }
     LaunchedEffect(viewModel.statusMessage) {
-        viewModel.statusMessage?.let { snackbarHostState.showSnackbar(it); viewModel.clearMessage() }
+        viewModel.statusMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessage()
+        }
     }
 
     Scaffold(
@@ -86,7 +90,7 @@ fun GitPanel(
                         }
                     },
                     onSettingsClick = { showConfigDialog = true },
-                    onRefreshClick = { viewModel.refreshAll() }
+                    onRefreshClick = { viewModel.refreshAll() },
                 )
 
                 if (viewModel.isGitProject) {
@@ -94,20 +98,20 @@ fun GitPanel(
                         selectedTabIndex = selectedTabIndex,
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.primary,
-                        divider = { HorizontalDivider() }
+                        divider = { HorizontalDivider() },
                     ) {
                         tabs.forEachIndexed { index, title ->
                             Tab(
                                 selected = selectedTabIndex == index,
                                 onClick = { selectedTabIndex = index },
-                                text = { Text(title, style = MaterialTheme.typography.labelMedium) }
+                                text = { Text(title, style = MaterialTheme.typography.labelMedium) },
                             )
                         }
                     }
                 }
             }
         },
-        modifier = modifier
+        modifier = modifier,
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (viewModel.isLoading) {
@@ -134,7 +138,7 @@ fun GitToolbarCompact(
     viewModel: GitViewModel,
     onBranchClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onRefreshClick: () -> Unit
+    onRefreshClick: () -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val pushContentDescription = stringResource(R.string.content_desc_push)
@@ -147,11 +151,11 @@ fun GitToolbarCompact(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .padding(horizontal = 8.dp)
-            .background(MaterialTheme.colorScheme.surface)
+        modifier =
+            Modifier.fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 8.dp)
+                .background(MaterialTheme.colorScheme.surface),
     ) {
         AssistChip(
             onClick = onBranchClick,
@@ -160,12 +164,12 @@ fun GitToolbarCompact(
                     text = viewModel.currentBranch.ifEmpty { headText },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
                 )
             },
             leadingIcon = { Icon(Icons.AutoMirrored.Filled.CallSplit, null, Modifier.size(14.dp)) },
             modifier = Modifier.weight(1f).height(32.dp),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
         )
 
         Spacer(Modifier.width(4.dp))
@@ -187,16 +191,25 @@ fun GitToolbarCompact(
                 DropdownMenuItem(
                     text = { Text(refreshText) },
                     leadingIcon = { Icon(Icons.Default.Refresh, null) },
-                    onClick = { onRefreshClick(); showMenu = false }
+                    onClick = {
+                        onRefreshClick()
+                        showMenu = false
+                    },
                 )
                 DropdownMenuItem(
                     text = { Text(settingsText) },
                     leadingIcon = { Icon(Icons.Default.Settings, null) },
-                    onClick = { onSettingsClick(); showMenu = false }
+                    onClick = {
+                        onSettingsClick()
+                        showMenu = false
+                    },
                 )
                 DropdownMenuItem(
                     text = { Text(rebaseUpdateText) },
-                    onClick = { viewModel.updateProject(true); showMenu = false }
+                    onClick = {
+                        viewModel.updateProject(true)
+                        showMenu = false
+                    },
                 )
             }
         }
@@ -204,11 +217,7 @@ fun GitToolbarCompact(
 }
 
 @Composable
-fun GitChangesPageCompact(
-    viewModel: GitViewModel,
-    editorViewModel: EditorViewModel,
-    projectPath: String
-) {
+fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewModel, projectPath: String) {
     var message by remember { mutableStateOf("") }
     var pushAfter by remember { mutableStateOf(false) }
 
@@ -216,24 +225,25 @@ fun GitChangesPageCompact(
         if (viewModel.remoteUrl.isEmpty()) {
             Card(
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.padding(8.dp).fillMaxWidth()
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
             ) {
                 Text(
                     stringResource(R.string.git_no_remote),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(8.dp),
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    color = MaterialTheme.colorScheme.onErrorContainer,
                 )
             }
         }
-        LazyColumn(
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(bottom = 8.dp)
-        ) {
+        LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(bottom = 8.dp)) {
             if (viewModel.changedFiles.isEmpty()) {
                 item {
                     Box(Modifier.fillParentMaxSize().height(200.dp), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.git_no_changes), color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(R.string.git_no_changes),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                     }
                 }
             } else {
@@ -243,37 +253,35 @@ fun GitChangesPageCompact(
                         onClick = {
                             val targetFile = File(projectPath, file.filePath)
                             editorViewModel.openDiff(projectPath, targetFile)
-                        }
+                        },
                     )
                 }
             }
         }
-        Surface(
-            shadowElevation = 8.dp,
-            tonalElevation = 2.dp,
-            modifier = Modifier.fillMaxWidth().imePadding()
-        ) {
+        Surface(shadowElevation = 8.dp, tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth().imePadding()) {
             Column(modifier = Modifier.padding(8.dp)) {
                 OutlinedTextField(
                     value = message,
                     onValueChange = { message = it },
                     placeholder = { Text(stringResource(R.string.git_commit_message_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
-                    textStyle = MaterialTheme.typography.bodyMedium
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 4.dp)
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                     Checkbox(checked = pushAfter, onCheckedChange = { pushAfter = it }, modifier = Modifier.scale(0.8f))
                     Text(stringResource(R.string.action_push), style = MaterialTheme.typography.labelMedium)
                     Spacer(Modifier.weight(1f))
                     Button(
-                        onClick = { viewModel.commit(message, pushAfter); message = "" },
+                        onClick = {
+                            viewModel.commit(message, pushAfter)
+                            message = ""
+                        },
                         enabled = viewModel.changedFiles.isNotEmpty() && message.isNotBlank(),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                        modifier = Modifier.height(36.dp)
-                    ) { Text(stringResource(R.string.action_commit)) }
+                        modifier = Modifier.height(36.dp),
+                    ) {
+                        Text(stringResource(R.string.action_commit))
+                    }
                 }
             }
         }
@@ -285,31 +293,46 @@ fun GitFileItemCompact(file: GitFileChange, onClick: () -> Unit) {
     val fileName = file.filePath.substringAfterLast("/")
     val fileDir = file.filePath.substringBeforeLast("/", "")
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val color = when (file.status) {
-            GitFileStatus.ADDED -> Color(0xFF4CAF50)
-            GitFileStatus.MODIFIED -> Color(0xFF2196F3)
-            else -> Color(0xFFF44336)
-        }
+        val color =
+            when (file.status) {
+                GitFileStatus.ADDED -> Color(0xFF4CAF50)
+                GitFileStatus.MODIFIED -> Color(0xFF2196F3)
+                else -> Color(0xFFF44336)
+            }
         Surface(
             color = color.copy(alpha = 0.1f),
             shape = MaterialTheme.shapes.extraSmall,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(text = file.status.name.first().toString(), color = color, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                Text(
+                    text = file.status.name.first().toString(),
+                    color = color,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                )
             }
         }
         Spacer(Modifier.width(8.dp))
         Column {
-            Text(text = fileName, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = fileName,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             if (fileDir.isNotEmpty()) {
-                Text(text = fileDir, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 10.sp)
+                Text(
+                    text = fileDir,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp,
+                )
             }
         }
     }
@@ -317,11 +340,17 @@ fun GitFileItemCompact(file: GitFileChange, onClick: () -> Unit) {
 
 @Composable
 fun EmptyGitState(onInit: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Icon(Icons.Default.Source, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
         Spacer(Modifier.height(16.dp))
         Text(stringResource(R.string.git_not_repo), color = MaterialTheme.colorScheme.outline)
-        Button(onClick = onInit, modifier = Modifier.padding(top = 16.dp)) { Text(stringResource(R.string.git_init_repo)) }
+        Button(onClick = onInit, modifier = Modifier.padding(top = 16.dp)) {
+            Text(stringResource(R.string.git_init_repo))
+        }
     }
 }
 
@@ -340,10 +369,10 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
     val isTesting = viewModel.isTestingConnection
     val repoConfigTitleText = stringResource(R.string.git_repo_config)
     val remoteUrlText = stringResource(R.string.git_remote_url)
-    val remotePlaceholderText = stringResource(
-        if (authType == AuthType.SSH) R.string.git_remote_placeholder_ssh
-        else R.string.git_remote_placeholder_https
-    )
+    val remotePlaceholderText =
+        stringResource(
+            if (authType == AuthType.SSH) R.string.git_remote_placeholder_ssh else R.string.git_remote_placeholder_https
+        )
     val committerEmailText = stringResource(R.string.git_committer_email)
     val authMethodText = stringResource(R.string.git_auth_method)
     val httpsText = stringResource(R.string.git_https)
@@ -369,10 +398,8 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
         title = { Text(repoConfigTitleText) },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
                     value = remote,
@@ -380,26 +407,30 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                     label = { Text(remoteUrlText) },
                     placeholder = { Text(remotePlaceholderText) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
                 )
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text(committerEmailText) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
                 )
 
                 HorizontalDivider()
 
-                Text(authMethodText, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(
+                    authMethodText,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
                 Row(modifier = Modifier.fillMaxWidth()) {
                     FilterChip(
                         selected = authType == AuthType.HTTPS,
                         onClick = { authType = AuthType.HTTPS },
                         label = { Text(httpsText) },
                         leadingIcon = { if (authType == AuthType.HTTPS) Icon(Icons.Default.Check, null) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     Spacer(Modifier.width(8.dp))
                     FilterChip(
@@ -407,7 +438,7 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                         onClick = { authType = AuthType.SSH },
                         label = { Text(sshKeyText) },
                         leadingIcon = { if (authType == AuthType.SSH) Icon(Icons.Default.Check, null) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                 }
 
@@ -417,7 +448,7 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                         onValueChange = { username = it },
                         label = { Text(usernameText) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
                     )
                     OutlinedTextField(
                         value = token,
@@ -425,12 +456,12 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                         label = { Text(tokenLabelText) },
                         placeholder = { Text(tokenPlaceholderText) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
                     )
                     Text(
                         patNoteText,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.outline,
                     )
                 } else {
                     OutlinedTextField(
@@ -439,33 +470,40 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                         label = { Text(privateKeyText) },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
-                        placeholder = { Text(privateKeyPlaceholderText) }
+                        placeholder = { Text(privateKeyPlaceholderText) },
                     )
                     OutlinedTextField(
                         value = passphrase,
                         onValueChange = { passphrase = it },
                         label = { Text(passphraseOptionalText) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
                     )
                 }
 
                 if (testResult != null || isTesting) {
                     val isSuccess = viewModel.testConnectionSuccess == true
-                    val containerColor = if (isTesting) MaterialTheme.colorScheme.surfaceVariant else if (isSuccess) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
-                    val contentColor = if (isTesting) MaterialTheme.colorScheme.onSurfaceVariant else if (isSuccess) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+                    val containerColor =
+                        if (isTesting) MaterialTheme.colorScheme.surfaceVariant
+                        else if (isSuccess) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.errorContainer
+                    val contentColor =
+                        if (isTesting) MaterialTheme.colorScheme.onSurfaceVariant
+                        else if (isSuccess) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onErrorContainer
 
                     Surface(
                         color = containerColor,
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             if (isTesting) {
-                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = contentColor)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = contentColor,
+                                )
                                 Spacer(Modifier.width(8.dp))
                                 Text(connectingText, style = MaterialTheme.typography.bodySmall, color = contentColor)
                             } else {
@@ -473,14 +511,14 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                                     imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
                                     contentDescription = null,
                                     tint = contentColor,
-                                    modifier = Modifier.size(18.dp)
+                                    modifier = Modifier.size(18.dp),
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = testResult ?: "",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = contentColor,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                             }
                         }
@@ -492,8 +530,10 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
             Column(horizontalAlignment = Alignment.End) {
                 Row {
                     TextButton(
-                        onClick = { viewModel.testRemoteConnection(remote, authType, username, token, privateKey, passphrase) },
-                        enabled = !isTesting && remote.isNotBlank()
+                        onClick = {
+                            viewModel.testRemoteConnection(remote, authType, username, token, privateKey, passphrase)
+                        },
+                        enabled = !isTesting && remote.isNotBlank(),
                     ) {
                         Text(testConnectionText)
                     }
@@ -507,7 +547,7 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                             viewModel.testConnectionSuccess = null
                             onDismiss()
                         },
-                        enabled = !isTesting
+                        enabled = !isTesting,
                     ) {
                         Text(saveConfigText)
                     }
@@ -515,12 +555,16 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
             }
         },
         dismissButton = {
-            TextButton(onClick = {
-                viewModel.testConnectionResult = null
-                viewModel.testConnectionSuccess = null
-                onDismiss()
-            }) { Text(cancelText) }
-        }
+            TextButton(
+                onClick = {
+                    viewModel.testConnectionResult = null
+                    viewModel.testConnectionSuccess = null
+                    onDismiss()
+                }
+            ) {
+                Text(cancelText)
+            }
+        },
     )
 }
 
@@ -566,14 +610,11 @@ fun BranchListDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton(
                         onClick = { showNewBranchInput = true },
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
                     ) {
                         Icon(Icons.Default.Add, null, Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
@@ -583,7 +624,7 @@ fun BranchListDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                     OutlinedButton(
                         onClick = { showNewTagInput = true },
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Label, null, Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
@@ -598,7 +639,12 @@ fun BranchListDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                     val localBranches = branches.filter { it.type == BranchType.LOCAL }
                     if (localBranches.isNotEmpty()) {
                         item {
-                            Text(localBranchesText, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
+                            Text(
+                                localBranchesText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+                            )
                         }
                         items(localBranches) { b -> BranchItem(b, viewModel, onDismiss) }
                     }
@@ -606,46 +652,58 @@ fun BranchListDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                     val remoteBranches = branches.filter { it.type == BranchType.REMOTE }
                     if (remoteBranches.isNotEmpty()) {
                         item {
-                            Text(remoteBranchesText, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp, bottom = 8.dp))
+                            Text(
+                                remoteBranchesText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+                            )
                         }
                         items(remoteBranches) { b -> BranchItem(b, viewModel, onDismiss) }
                     }
 
                     if (localBranches.isEmpty() && remoteBranches.isEmpty()) {
-                        item { Box(modifier = Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) { Text(noBranchesText, color = Color.Gray) } }
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(noBranchesText, color = Color.Gray)
+                            }
+                        }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(closeText) } }
+        confirmButton = { TextButton(onClick = onDismiss) { Text(closeText) } },
     )
 }
 
 @Composable
 fun BranchItem(branch: GitBranch, viewModel: GitViewModel, onDismiss: () -> Unit) {
-    
+
     val isCurrent = branch.isCurrent
     val bgColor = if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(bgColor)
-            .clickable {
-                if (!isCurrent) {
-                    viewModel.checkout(branch.name)
-                    onDismiss()
+        modifier =
+            Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(bgColor)
+                .clickable {
+                    if (!isCurrent) {
+                        viewModel.checkout(branch.name)
+                        onDismiss()
+                    }
                 }
-            }
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = if (branch.type == BranchType.LOCAL) Icons.Default.Computer else Icons.Default.Cloud,
             contentDescription = null,
             tint = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Gray,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(18.dp),
         )
         Spacer(Modifier.width(12.dp))
         Text(
@@ -655,7 +713,7 @@ fun BranchItem(branch: GitBranch, viewModel: GitViewModel, onDismiss: () -> Unit
             color = if (isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
         if (isCurrent) {
             Icon(Icons.Default.Check, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
@@ -671,7 +729,7 @@ fun NewBranchDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
     val branchNameText = stringResource(R.string.git_branch_name)
     val createAndSwitchText = stringResource(R.string.git_create_and_switch)
     val cancelText = stringResource(R.string.action_cancel)
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(newBranchText) },
@@ -684,14 +742,22 @@ fun NewBranchDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
                     onValueChange = { name = it },
                     label = { Text(branchNameText) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { viewModel.createBranch(name); onDismiss() }, enabled = name.isNotBlank()) { Text(createAndSwitchText) }
+            Button(
+                onClick = {
+                    viewModel.createBranch(name)
+                    onDismiss()
+                },
+                enabled = name.isNotBlank(),
+            ) {
+                Text(createAndSwitchText)
+            }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(cancelText) } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(cancelText) } },
     )
 }
 
@@ -704,17 +770,37 @@ fun NewTagDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
     val descriptionText = stringResource(R.string.git_description)
     val createText = stringResource(R.string.action_create)
     val cancelText = stringResource(R.string.action_cancel)
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(newTagText) },
-        text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(name, { name = it }, label = { Text(tagNameText) }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(msg, { msg = it }, label = { Text(descriptionText) }, modifier = Modifier.fillMaxWidth())
-        }},
-        confirmButton = {
-            Button(onClick = { viewModel.createTag(name, msg); onDismiss() }, enabled = name.isNotBlank()) { Text(createText) }
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    name,
+                    { name = it },
+                    label = { Text(tagNameText) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    msg,
+                    { msg = it },
+                    label = { Text(descriptionText) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(cancelText) } }
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.createTag(name, msg)
+                    onDismiss()
+                },
+                enabled = name.isNotBlank(),
+            ) {
+                Text(createText)
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(cancelText) } },
     )
 }

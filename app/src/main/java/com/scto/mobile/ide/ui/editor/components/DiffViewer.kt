@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.components
 
 import android.annotation.SuppressLint
@@ -43,18 +43,18 @@ import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.viewmodel.DiffEditorState
 import com.scto.mobile.ide.ui.editor.viewmodel.DiffViewMode
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
-import io.github.rosemoe.sora.widget.CodeEditor
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
-import io.github.rosemoe.sora.lang.styling.HighlightTextContainer
-import io.github.rosemoe.sora.lang.styling.color.ResolvableColor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import io.github.rosemoe.sora.event.SubscriptionReceipt
 import io.github.rosemoe.sora.event.TextSizeChangeEvent
+import io.github.rosemoe.sora.lang.styling.HighlightTextContainer
+import io.github.rosemoe.sora.lang.styling.color.ResolvableColor
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentListener
+import io.github.rosemoe.sora.widget.CodeEditor
+import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 import java.util.LinkedList
 import kotlin.math.max
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // ==========================================
 // 1. 核心逻辑：Wake + Lock 同步器 (Ultimate Fix)
@@ -156,10 +156,10 @@ class ScrollSynchronizer {
         leftEditor?.setOnScrollChangeListener(null)
         rightEditor?.setOnTouchListener(null)
         rightEditor?.setOnScrollChangeListener(null)
-        
+
         receipts.forEach { it.unsubscribe() }
         receipts.clear()
-        
+
         // SoraEditor 的事件订阅系统没有直接的 "unsubscribeAll"，但我们重新创建实例时会丢弃旧对象
         // 如果要严谨，应该保存 SubscriptionReceipt 并取消订阅，但这里我们简化处理，
         // 依赖 Garbage Collection，因为 SubscriptionReceipt 是强引用
@@ -178,7 +178,7 @@ data class AlignedDiffResult(
     val leftHighlights: HighlightTextContainer,
     val rightHighlights: HighlightTextContainer,
     val adds: Int,
-    val deletes: Int
+    val deletes: Int,
 )
 
 // ==========================================
@@ -186,16 +186,10 @@ data class AlignedDiffResult(
 // ==========================================
 
 @Composable
-fun DiffViewer(
-    viewModel: EditorViewModel,
-    state: DiffEditorState,
-    modifier: Modifier = Modifier
-) {
+fun DiffViewer(viewModel: EditorViewModel, state: DiffEditorState, modifier: Modifier = Modifier) {
     // 异步计算差异
     // 使用 state 作为 key，确保切换文件时重置，但修改内容时不重置 (防止闪烁)
-    var diffData by remember(state) {
-        mutableStateOf<AlignedDiffResult?>(null)
-    }
+    var diffData by remember(state) { mutableStateOf<AlignedDiffResult?>(null) }
 
     LaunchedEffect(state.originalContent, state.currentContent) {
         // 防抖：避免每次击键都重新计算差异，导致左侧编辑器频繁跳动
@@ -203,7 +197,7 @@ fun DiffViewer(
         if (diffData != null) {
             kotlinx.coroutines.delay(500)
         }
-        
+
         withContext(Dispatchers.Default) {
             val newData = DiffAligner.align(state.originalContent, state.currentContent)
             // 只有当差异真正变化时才更新 UI
@@ -237,20 +231,17 @@ fun DiffToolbar(state: DiffEditorState, data: AlignedDiffResult?) {
     val added = data?.adds ?: 0
     val deleted = data?.deletes ?: 0
 
-    Surface(
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth().height(42.dp)
-    ) {
+    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth().height(42.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 8.dp),
         ) {
             Text(
                 text = state.file.name,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp),
             )
             Spacer(Modifier.width(16.dp))
             if (added > 0) {
@@ -261,23 +252,32 @@ fun DiffToolbar(state: DiffEditorState, data: AlignedDiffResult?) {
                 Text("-$deleted", color = Color(0xFFEF5350), style = MaterialTheme.typography.labelSmall)
             }
             Spacer(Modifier.weight(1f))
-            
+
             IconButton(onClick = { state.viewMode = DiffViewMode.SPLIT }) {
                 Icon(
-                    Icons.Default.ViewColumn, stringResource(R.string.diff_side_by_side),
-                    tint = if (state.viewMode == DiffViewMode.SPLIT) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icons.Default.ViewColumn,
+                    stringResource(R.string.diff_side_by_side),
+                    tint =
+                        if (state.viewMode == DiffViewMode.SPLIT) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IconButton(onClick = { state.viewMode = DiffViewMode.SPLIT_VERTICAL }) {
                 Icon(
-                    Icons.Filled.ViewAgenda, stringResource(R.string.diff_top_bottom),
-                    tint = if (state.viewMode == DiffViewMode.SPLIT_VERTICAL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icons.Filled.ViewAgenda,
+                    stringResource(R.string.diff_top_bottom),
+                    tint =
+                        if (state.viewMode == DiffViewMode.SPLIT_VERTICAL) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IconButton(onClick = { state.viewMode = DiffViewMode.UNIFIED }) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ViewList, stringResource(R.string.diff_unified),
-                    tint = if (state.viewMode == DiffViewMode.UNIFIED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icons.AutoMirrored.Filled.ViewList,
+                    stringResource(R.string.diff_unified),
+                    tint =
+                        if (state.viewMode == DiffViewMode.UNIFIED) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -285,11 +285,7 @@ fun DiffToolbar(state: DiffEditorState, data: AlignedDiffResult?) {
 }
 
 @Composable
-fun SplitDiffView(
-    state: DiffEditorState,
-    viewModel: EditorViewModel,
-    data: AlignedDiffResult
-) {
+fun SplitDiffView(state: DiffEditorState, viewModel: EditorViewModel, data: AlignedDiffResult) {
     // 保持 Synchronizer 实例
     val synchronizer = remember { ScrollSynchronizer() }
 
@@ -319,7 +315,7 @@ fun SplitDiffView(
                     fileName = state.file.name,
                     viewModel = viewModel,
                     readOnly = true,
-                    onEditorCreated = { leftEditorRef = it }
+                    onEditorCreated = { leftEditorRef = it },
                 )
             }
             HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
@@ -331,13 +327,11 @@ fun SplitDiffView(
                     fileName = state.file.name,
                     viewModel = viewModel,
                     readOnly = false,
-                    onEditorCreated = { 
+                    onEditorCreated = {
                         rightEditorRef = it
                         state.activeDiffEditor = it
                     },
-                    onContentChanged = { newContent ->
-                        viewModel.updateDiffContent(state, newContent)
-                    }
+                    onContentChanged = { newContent -> viewModel.updateDiffContent(state, newContent) },
                 )
             }
         }
@@ -352,7 +346,7 @@ fun SplitDiffView(
                     fileName = state.file.name,
                     viewModel = viewModel,
                     readOnly = true,
-                    onEditorCreated = { leftEditorRef = it }
+                    onEditorCreated = { leftEditorRef = it },
                 )
             }
             VerticalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
@@ -364,13 +358,11 @@ fun SplitDiffView(
                     fileName = state.file.name,
                     viewModel = viewModel,
                     readOnly = false,
-                    onEditorCreated = { 
+                    onEditorCreated = {
                         rightEditorRef = it
                         state.activeDiffEditor = it
                     },
-                    onContentChanged = { newContent ->
-                        viewModel.updateDiffContent(state, newContent)
-                    }
+                    onContentChanged = { newContent -> viewModel.updateDiffContent(state, newContent) },
                 )
             }
         }
@@ -387,9 +379,7 @@ fun UnifiedDiffView(state: DiffEditorState, viewModel: EditorViewModel, data: Al
             viewModel = viewModel,
             readOnly = false,
             onEditorCreated = { state.activeDiffEditor = it },
-            onContentChanged = { newContent ->
-                viewModel.updateDiffContent(state, newContent)
-            }
+            onContentChanged = { newContent -> viewModel.updateDiffContent(state, newContent) },
         )
     }
 }
@@ -399,7 +389,7 @@ fun DiffHeader(text: String, color: Color) {
     Surface(color = color.copy(alpha = 0.15f), modifier = Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         ) {
             Box(modifier = Modifier.size(6.dp).background(color, MaterialTheme.shapes.small))
             Spacer(Modifier.width(8.dp))
@@ -416,7 +406,7 @@ fun DiffEditorInstance(
     viewModel: EditorViewModel,
     readOnly: Boolean,
     onEditorCreated: (CodeEditor) -> Unit,
-    onContentChanged: ((String) -> Unit)? = null
+    onContentChanged: ((String) -> Unit)? = null,
 ) {
     val editorConfig = viewModel.editorConfig
 
@@ -433,10 +423,8 @@ fun DiffEditorInstance(
     AndroidView(
         factory = { ctx ->
             CodeEditor(ctx).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
+                layoutParams =
+                    FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
                 // --- 基础 ---
                 isEditable = !readOnly
@@ -446,10 +434,14 @@ fun DiffEditorInstance(
                 // Remove zoom limits
                 setScaleTextSizes(2f, 100f)
 
-
-                colorScheme.setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BACKGROUND, android.graphics.Color.TRANSPARENT) // 去掉背景遮罩
-                colorScheme.setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BORDER, android.graphics.Color.TRANSPARENT)     // 去掉外框
-
+                colorScheme.setColor(
+                    EditorColorScheme.HIGHLIGHTED_DELIMITERS_BACKGROUND,
+                    android.graphics.Color.TRANSPARENT,
+                ) // 去掉背景遮罩
+                colorScheme.setColor(
+                    EditorColorScheme.HIGHLIGHTED_DELIMITERS_BORDER,
+                    android.graphics.Color.TRANSPARENT,
+                ) // 去掉外框
 
                 // --- 核心优化 ---
                 // 1. 关闭换行：保证每一行的“高度”绝对一致，防止左右行高错位
@@ -471,33 +463,47 @@ fun DiffEditorInstance(
                 } catch (_: Exception) {}
 
                 EditorColorSchemeManager.applyThemeColors(colorScheme, currentColorScheme)
-                
+
                 // 5. 监听内容变更
-                text.addContentListener(object : ContentListener {
-                    override fun beforeReplace(content: Content) {}
-                    override fun afterInsert(content: Content, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int, inserted: CharSequence) {
-                        if (!isUpdatingRef.value) {
-                            lastUserInputTime.longValue = System.currentTimeMillis()
-                            // 过滤掉 Diff 对齐用的占位符 (\u200B)
-                            // 1. 先移除整行占位符 (防止产生空行)
-                            // 2. 再移除残留的占位符 (防止用户编辑了占位行)
-                            val cleanText = text.toString()
-                                .replace("\u200B\n", "")
-                                .replace("\u200B", "")
-                            currentOnContentChanged?.invoke(cleanText)
+                text.addContentListener(
+                    object : ContentListener {
+                        override fun beforeReplace(content: Content) {}
+
+                        override fun afterInsert(
+                            content: Content,
+                            startLine: Int,
+                            startColumn: Int,
+                            endLine: Int,
+                            endColumn: Int,
+                            inserted: CharSequence,
+                        ) {
+                            if (!isUpdatingRef.value) {
+                                lastUserInputTime.longValue = System.currentTimeMillis()
+                                // 过滤掉 Diff 对齐用的占位符 (\u200B)
+                                // 1. 先移除整行占位符 (防止产生空行)
+                                // 2. 再移除残留的占位符 (防止用户编辑了占位行)
+                                val cleanText = text.toString().replace("\u200B\n", "").replace("\u200B", "")
+                                currentOnContentChanged?.invoke(cleanText)
+                            }
+                        }
+
+                        override fun afterDelete(
+                            content: Content,
+                            startLine: Int,
+                            startColumn: Int,
+                            endLine: Int,
+                            endColumn: Int,
+                            deleted: CharSequence,
+                        ) {
+                            if (!isUpdatingRef.value) {
+                                lastUserInputTime.longValue = System.currentTimeMillis()
+                                // 过滤掉 Diff 对齐用的占位符 (\u200B)
+                                val cleanText = text.toString().replace("\u200B\n", "").replace("\u200B", "")
+                                currentOnContentChanged?.invoke(cleanText)
+                            }
                         }
                     }
-                    override fun afterDelete(content: Content, startLine: Int, startColumn: Int, endLine: Int, endColumn: Int, deleted: CharSequence) {
-                        if (!isUpdatingRef.value) {
-                            lastUserInputTime.longValue = System.currentTimeMillis()
-                            // 过滤掉 Diff 对齐用的占位符 (\u200B)
-                            val cleanText = text.toString()
-                                .replace("\u200B\n", "")
-                                .replace("\u200B", "")
-                            currentOnContentChanged?.invoke(cleanText)
-                        }
-                    }
-                })
+                )
 
                 onEditorCreated(this)
             }
@@ -528,7 +534,7 @@ fun DiffEditorInstance(
             // 防抖：如果用户最近在输入（1000ms内），则不要强制覆盖内容，除非内容差异巨大（这里简化为只看时间）
             // 注意：这会导致对齐暂时失效，但能保证输入流畅和保存成功
             val isUserTyping = (System.currentTimeMillis() - lastUserInputTime.longValue) < 1000
-            
+
             // 如果是只读模式，或者是第一次加载，或者不是用户正在输入，则更新
             if (contentChanged && (readOnly || !isUserTyping)) {
                 isUpdatingRef.value = true
@@ -539,14 +545,14 @@ fun DiffEditorInstance(
                     val scroller = editor.eventHandler.scroller
                     val scrollX = scroller.currX
                     val scrollY = scroller.currY
-                    
+
                     editor.setText(content)
-                    
+
                     // 尝试恢复光标位置
                     if (line < editor.text.lineCount) {
-                         editor.setSelection(line, column.coerceAtMost(editor.text.getColumnCount(line)))
+                        editor.setSelection(line, column.coerceAtMost(editor.text.getColumnCount(line)))
                     }
-                    
+
                     // 恢复滚动位置 (Fix: 防止左侧编辑器跳动)
                     if (!scroller.isFinished) scroller.forceFinished(true)
                     scroller.startScroll(scrollX, scrollY, 0, 0, 0)
@@ -555,14 +561,14 @@ fun DiffEditorInstance(
                     isUpdatingRef.value = false
                 }
             }
-            
+
             // 确保高亮始终同步，修复切换模式后的高亮偏移和丢失问题
             if (contentChanged || editor.highlightTexts != highlights) {
                 editor.highlightTexts = highlights
                 editor.postInvalidate()
             }
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     )
 }
 
@@ -572,13 +578,14 @@ fun DiffEditorInstance(
 object DiffAligner {
     private const val PHANTOM_TEXT = "\u200B\n"
 
-    private data class DiffLine(
-        val text: String,
-        val type: LineType,
-        val originalText: String? = null
-    )
+    private data class DiffLine(val text: String, val type: LineType, val originalText: String? = null)
 
-    enum class LineType { NORMAL, ADD, DELETE, MODIFY }
+    enum class LineType {
+        NORMAL,
+        ADD,
+        DELETE,
+        MODIFY,
+    }
 
     private object AddColor : ResolvableColor {
         override fun resolve(colorScheme: EditorColorScheme) = EditorColorSchemeManager.getDiffAddColor(colorScheme)
@@ -593,7 +600,8 @@ object DiffAligner {
     }
 
     private object DeleteWordColor : ResolvableColor {
-        override fun resolve(colorScheme: EditorColorScheme) = EditorColorSchemeManager.getDiffDeleteWordColor(colorScheme)
+        override fun resolve(colorScheme: EditorColorScheme) =
+            EditorColorSchemeManager.getDiffDeleteWordColor(colorScheme)
     }
 
     fun align(oldText: String, newText: String): AlignedDiffResult {
@@ -673,7 +681,7 @@ object DiffAligner {
             leftContainer,
             rightContainer,
             adds,
-            deletes
+            deletes,
         )
     }
 
@@ -681,10 +689,10 @@ object DiffAligner {
         if (a.isEmpty() || b.isEmpty()) return false
         val maxLen = max(a.length, b.length)
         if (maxLen == 0) return true
-        
+
         val prefix = commonPrefixLength(a, b)
         val suffix = commonSuffixLength(a, b, prefix)
-        
+
         // If more than 40% matches, consider it a modification
         return (prefix + suffix).toFloat() / maxLen > 0.4f
     }
@@ -710,51 +718,42 @@ object DiffAligner {
         stack: LinkedList<DiffLine>,
         builder: StringBuilder,
         container: HighlightTextContainer,
-        isLeft: Boolean
+        isLeft: Boolean,
     ) {
         var currentLine = 0
         stack.forEach { line ->
             val text = line.text
             builder.append(text)
-            
+
             if (line.type != LineType.NORMAL) {
-                val color = when (line.type) {
-                    LineType.ADD -> AddColor
-                    LineType.DELETE -> DeleteColor
-                    LineType.MODIFY -> if (isLeft) DeleteColor else AddColor
-                    else -> null
-                }
-                
+                val color =
+                    when (line.type) {
+                        LineType.ADD -> AddColor
+                        LineType.DELETE -> DeleteColor
+                        LineType.MODIFY -> if (isLeft) DeleteColor else AddColor
+                        else -> null
+                    }
+
                 if (color != null) {
                     // Highlight the entire line
-                    container.add(
-                        HighlightTextContainer.HighlightText(
-                            currentLine, 0,
-                            currentLine, text.length,
-                            color
-                        )
-                    )
+                    container.add(HighlightTextContainer.HighlightText(currentLine, 0, currentLine, text.length, color))
                 }
 
                 // Highlight Word Diff for Modify
                 if (line.type == LineType.MODIFY && line.originalText != null) {
                     val otherStr = line.originalText
                     val thisStr = text.removeSuffix("\n")
-                    
+
                     val prefix = commonPrefixLength(thisStr, otherStr)
                     val suffix = commonSuffixLength(thisStr, otherStr, prefix)
-                    
+
                     val start = prefix
                     val end = thisStr.length - suffix
-                    
+
                     if (end > start) {
                         val wordColor = if (isLeft) DeleteWordColor else AddWordColor
                         container.add(
-                            HighlightTextContainer.HighlightText(
-                                currentLine, start,
-                                currentLine, end,
-                                wordColor
-                            )
+                            HighlightTextContainer.HighlightText(currentLine, start, currentLine, end, wordColor)
                         )
                     }
                 }
@@ -766,4 +765,3 @@ object DiffAligner {
         }
     }
 }
-

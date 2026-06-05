@@ -15,50 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor.aicoding
 
 import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.StringRes
 import com.scto.mobile.ide.R
+import java.util.Locale
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Locale
 
 object AICodingLocalizedText {
     private const val PREFIX = "__ai_localized_text__:"
     private val placeholderRegex = Regex("%(\\d+)\\$([sd])")
-    private val migratableResIds = intArrayOf(
-        R.string.ai_status_settings_updated,
-        R.string.ai_error_set_api_key_before_fetch,
-        R.string.ai_status_try_fetch_models_from,
-        R.string.ai_status_models_fetched,
-        R.string.ai_status_base_url_autocorrected,
-        R.string.ai_status_no_models_in_response,
-        R.string.ai_error_fetch_models,
-        R.string.ai_error_fetch_models_404,
-        R.string.ai_error_set_api_key_first,
-        R.string.ai_error_chat,
-        R.string.ai_status_chat_history_cleared,
-        R.string.ai_error_no_response_content,
-        R.string.ai_error_failed_connect_api,
-        R.string.ai_error_failed_fetch_models_http,
-        R.string.ai_error_api_call_failed
-    )
+    private val migratableResIds =
+        intArrayOf(
+            R.string.ai_status_settings_updated,
+            R.string.ai_error_set_api_key_before_fetch,
+            R.string.ai_status_try_fetch_models_from,
+            R.string.ai_status_models_fetched,
+            R.string.ai_status_base_url_autocorrected,
+            R.string.ai_status_no_models_in_response,
+            R.string.ai_error_fetch_models,
+            R.string.ai_error_fetch_models_404,
+            R.string.ai_error_set_api_key_first,
+            R.string.ai_error_chat,
+            R.string.ai_status_chat_history_cleared,
+            R.string.ai_error_no_response_content,
+            R.string.ai_error_failed_connect_api,
+            R.string.ai_error_failed_fetch_models_http,
+            R.string.ai_error_api_call_failed,
+        )
 
-    data class Payload(
-        val key: String,
-        val args: List<String>
-    )
+    data class Payload(val key: String, val args: List<String>)
 
     fun encode(context: Context, @StringRes resId: Int, vararg args: Any): String {
-        val payload = JSONObject().apply {
-            put("key", context.resources.getResourceEntryName(resId))
-            put("args", JSONArray().apply {
-                args.forEach { put(it.toString()) }
-            })
-        }
+        val payload =
+            JSONObject().apply {
+                put("key", context.resources.getResourceEntryName(resId))
+                put("args", JSONArray().apply { args.forEach { put(it.toString()) } })
+            }
         return PREFIX + payload.toString()
     }
 
@@ -67,17 +64,19 @@ object AICodingLocalizedText {
     fun decode(content: String): Payload? {
         if (!isEncoded(content)) return null
         return runCatching {
-            val payload = JSONObject(content.removePrefix(PREFIX))
-            val argsArray = payload.optJSONArray("args") ?: JSONArray()
-            Payload(
-                key = payload.getString("key"),
-                args = buildList(argsArray.length()) {
-                    for (index in 0 until argsArray.length()) {
-                        add(argsArray.optString(index))
-                    }
-                }
-            )
-        }.getOrNull()
+                val payload = JSONObject(content.removePrefix(PREFIX))
+                val argsArray = payload.optJSONArray("args") ?: JSONArray()
+                Payload(
+                    key = payload.getString("key"),
+                    args =
+                        buildList(argsArray.length()) {
+                            for (index in 0 until argsArray.length()) {
+                                add(argsArray.optString(index))
+                            }
+                        },
+                )
+            }
+            .getOrNull()
     }
 
     fun resolve(context: Context, content: String): String? {
@@ -85,42 +84,36 @@ object AICodingLocalizedText {
         return when (payload.key) {
             "ai_status_settings_updated" -> context.getString(R.string.ai_status_settings_updated)
             "ai_error_set_api_key_before_fetch" -> context.getString(R.string.ai_error_set_api_key_before_fetch)
-            "ai_status_try_fetch_models_from" -> context.getString(
-                R.string.ai_status_try_fetch_models_from,
-                payload.args.getOrElse(0) { "" }
-            )
-            "ai_status_models_fetched" -> context.getString(
-                R.string.ai_status_models_fetched,
-                payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0
-            )
-            "ai_status_base_url_autocorrected" -> context.getString(
-                R.string.ai_status_base_url_autocorrected,
-                payload.args.getOrElse(0) { "" }
-            )
+            "ai_status_try_fetch_models_from" ->
+                context.getString(R.string.ai_status_try_fetch_models_from, payload.args.getOrElse(0) { "" })
+            "ai_status_models_fetched" ->
+                context.getString(
+                    R.string.ai_status_models_fetched,
+                    payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0,
+                )
+            "ai_status_base_url_autocorrected" ->
+                context.getString(R.string.ai_status_base_url_autocorrected, payload.args.getOrElse(0) { "" })
             "ai_status_no_models_in_response" -> context.getString(R.string.ai_status_no_models_in_response)
-            "ai_error_fetch_models" -> context.getString(
-                R.string.ai_error_fetch_models,
-                payload.args.getOrElse(0) { "" }
-            )
+            "ai_error_fetch_models" ->
+                context.getString(R.string.ai_error_fetch_models, payload.args.getOrElse(0) { "" })
             "ai_error_fetch_models_404" -> context.getString(R.string.ai_error_fetch_models_404)
             "ai_error_set_api_key_first" -> context.getString(R.string.ai_error_set_api_key_first)
-            "ai_error_chat" -> context.getString(
-                R.string.ai_error_chat,
-                payload.args.getOrElse(0) { "" }
-            )
+            "ai_error_chat" -> context.getString(R.string.ai_error_chat, payload.args.getOrElse(0) { "" })
             "ai_status_chat_history_cleared" -> context.getString(R.string.ai_status_chat_history_cleared)
             "ai_error_no_response_content" -> context.getString(R.string.ai_error_no_response_content)
             "ai_error_failed_connect_api" -> context.getString(R.string.ai_error_failed_connect_api)
-            "ai_error_failed_fetch_models_http" -> context.getString(
-                R.string.ai_error_failed_fetch_models_http,
-                payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0,
-                payload.args.getOrElse(1) { "" }
-            )
-            "ai_error_api_call_failed" -> context.getString(
-                R.string.ai_error_api_call_failed,
-                payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0,
-                payload.args.getOrElse(1) { "" }
-            )
+            "ai_error_failed_fetch_models_http" ->
+                context.getString(
+                    R.string.ai_error_failed_fetch_models_http,
+                    payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0,
+                    payload.args.getOrElse(1) { "" },
+                )
+            "ai_error_api_call_failed" ->
+                context.getString(
+                    R.string.ai_error_api_call_failed,
+                    payload.args.getOrElse(0) { "0" }.toIntOrNull() ?: 0,
+                    payload.args.getOrElse(1) { "" },
+                )
             else -> null
         }
     }

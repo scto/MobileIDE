@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.ui.editor
 
 import android.content.Context
@@ -33,8 +33,7 @@ import kotlinx.coroutines.sync.withLock
 import org.eclipse.tm4e.core.registry.IThemeSource
 
 object TextMateInitializer {
-    @Volatile
-    private var isInitialized = false
+    @Volatile private var isInitialized = false
     private val mutex = Mutex()
     private val callbacks = mutableListOf<() -> Unit>()
 
@@ -49,10 +48,8 @@ object TextMateInitializer {
             onComplete?.invoke()
             return
         }
-        
-        synchronized(callbacks) {
-            if (onComplete != null) callbacks.add(onComplete)
-        }
+
+        synchronized(callbacks) { if (onComplete != null) callbacks.add(onComplete) }
 
         GlobalScope.launch(Dispatchers.IO) {
             mutex.withLock {
@@ -69,19 +66,14 @@ object TextMateInitializer {
                     } catch (_: Exception) {}
 
                     val themeRegistry = ThemeRegistry.getInstance()
-                    val themes = mapOf(
-                        THEME_LIGHT to "textmate/$THEME_LIGHT.json",
-                        THEME_DARK to "textmate/$THEME_DARK.json"
-                    )
+                    val themes =
+                        mapOf(THEME_LIGHT to "textmate/$THEME_LIGHT.json", THEME_DARK to "textmate/$THEME_DARK.json")
 
                     themes.forEach { (name, path) ->
                         try {
                             FileProviderRegistry.getInstance().tryGetInputStream(path)?.use { inputStream ->
                                 themeRegistry.loadTheme(
-                                    ThemeModel(
-                                        IThemeSource.fromInputStream(inputStream, path, null),
-                                        name
-                                    )
+                                    ThemeModel(IThemeSource.fromInputStream(inputStream, path, null), name)
                                 )
                             }
                         } catch (e: Exception) {

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 package com.scto.mobile.ide.build
 
 import android.content.Context
@@ -33,6 +32,7 @@ object ApkInstaller {
 
     /**
      * 调起安装器
+     *
      * @param context 上下文
      * @param apkFile apk文件对象
      */
@@ -46,11 +46,13 @@ object ApkInstaller {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!context.packageManager.canRequestPackageInstalls()) {
                 // 如果没有权限，引导用户去设置页开启
-                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                    data = Uri.parse("package:${context.packageName}")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                Toast.makeText(context, context.getString(R.string.apk_install_permission_required), Toast.LENGTH_LONG).show()
+                val intent =
+                    Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                Toast.makeText(context, context.getString(R.string.apk_install_permission_required), Toast.LENGTH_LONG)
+                    .show()
                 context.startActivity(intent)
                 return
             }
@@ -78,10 +80,14 @@ object ApkInstaller {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // 非 Activity 环境启动必须加
 
             context.startActivity(intent)
-
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(context, context.getString(R.string.apk_install_launch_failed, e.message), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                    context,
+                    context.getString(R.string.apk_install_launch_failed, e.message),
+                    Toast.LENGTH_SHORT,
+                )
+                .show()
         }
     }
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide
 
 import androidx.compose.animation.*
@@ -30,7 +30,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-
 import com.scto.mobile.ide.core.utils.LogConfigRepository
 import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
@@ -45,7 +44,6 @@ import com.scto.mobile.ide.ui.settings.AboutScreen
 import com.scto.mobile.ide.ui.settings.SettingsScreen
 import com.scto.mobile.ide.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
-
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,24 +51,21 @@ fun App(
     navController: NavHostController,
     themeViewModel: ThemeViewModel,
     logConfigRepository: LogConfigRepository,
-    logConfigState: LogConfigState
+    logConfigState: LogConfigState,
 ) {
     val mainViewModel: EditorViewModel = viewModel()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        mainViewModel.initializePermissions(context)
-    }
+    LaunchedEffect(Unit) { mainViewModel.initializePermissions(context) }
 
-    val startDestination = if (
-        WorkspaceManager.getWorkspacePath(context) != WorkspaceManager.getDefaultPath(context)
-    ) {
-        "project_list"
-    } else {
-        "workspace_selection"
-    }
-    
+    val startDestination =
+        if (WorkspaceManager.getWorkspacePath(context) != WorkspaceManager.getDefaultPath(context)) {
+            "project_list"
+        } else {
+            "workspace_selection"
+        }
+
     val themeState by themeViewModel.themeState.collectAsState()
 
     // Optimized animation configuration
@@ -80,51 +75,33 @@ fun App(
 
     // Enter transition (forward navigation)
     val enterTransition = {
-        slideInHorizontally(
-            initialOffsetX = { it },
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + fadeIn(
-            animationSpec = tween(duration, easing = predictiveEasing)
-        )
+        slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(duration, easing = predictiveEasing)) +
+            fadeIn(animationSpec = tween(duration, easing = predictiveEasing))
     }
 
     // Exit transition (when navigating forward)
     val exitTransition = {
         slideOutHorizontally(
             targetOffsetX = { -(it * 0.3f).toInt() },
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + fadeOut(
-            targetAlpha = 0.7f,
-            animationSpec = tween(duration, easing = predictiveEasing)
-        )
+            animationSpec = tween(duration, easing = predictiveEasing),
+        ) + fadeOut(targetAlpha = 0.7f, animationSpec = tween(duration, easing = predictiveEasing))
     }
 
     // Pop enter transition (underlying page reappears on back)
     val popEnterTransition = {
         slideInHorizontally(
             initialOffsetX = { -(it * 0.3f).toInt() },
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + fadeIn(
-            initialAlpha = 0.7f,
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + scaleIn(
-            initialScale = 0.95f,
-            animationSpec = tween(duration, easing = predictiveEasing)
-        )
+            animationSpec = tween(duration, easing = predictiveEasing),
+        ) +
+            fadeIn(initialAlpha = 0.7f, animationSpec = tween(duration, easing = predictiveEasing)) +
+            scaleIn(initialScale = 0.95f, animationSpec = tween(duration, easing = predictiveEasing))
     }
 
     // Pop exit transition (current page disappears on back)
     val popExitTransition = {
-        slideOutHorizontally(
-            targetOffsetX = { it },
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + fadeOut(
-            targetAlpha = 0f,
-            animationSpec = tween(duration, easing = predictiveEasing)
-        ) + scaleOut(
-            targetScale = 1.1f,
-            animationSpec = tween(duration, easing = predictiveEasing)
-        )
+        slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(duration, easing = predictiveEasing)) +
+            fadeOut(targetAlpha = 0f, animationSpec = tween(duration, easing = predictiveEasing)) +
+            scaleOut(targetScale = 1.1f, animationSpec = tween(duration, easing = predictiveEasing))
     }
 
     NavHost(
@@ -135,19 +112,15 @@ fun App(
         enterTransition = { enterTransition() },
         exitTransition = { exitTransition() },
         popEnterTransition = { popEnterTransition() },
-        popExitTransition = { popExitTransition() }
+        popExitTransition = { popExitTransition() },
     ) {
-        composable("workspace_selection") {
-            WorkspaceSelectionScreen(navController = navController)
-        }
+        composable("workspace_selection") { WorkspaceSelectionScreen(navController = navController) }
 
-        composable("project_list") {
-            ProjectListScreen(navController = navController)
-        }
+        composable("project_list") { ProjectListScreen(navController = navController) }
 
         composable(
             route = "code_edit/{folderName}",
-            arguments = listOf(navArgument("folderName") { type = NavType.StringType })
+            arguments = listOf(navArgument("folderName") { type = NavType.StringType }),
         ) { backStackEntry ->
             val folderName = backStackEntry.arguments?.getString("folderName")
             if (folderName != null) {
@@ -155,13 +128,7 @@ fun App(
             }
         }
 
-
-
-        composable("new_project") {
-            NewProjectScreen(navController = navController)
-        }
-
-
+        composable("new_project") { NewProjectScreen(navController = navController) }
 
         composable("settings") {
             SettingsScreen(
@@ -174,38 +141,25 @@ fun App(
                 onLogConfigChange = { enabled, path ->
                     scope.launch { logConfigRepository.saveLogConfig(enabled, path) }
                 },
-                editorViewModel = mainViewModel
+                editorViewModel = mainViewModel,
             )
-        }
-        
-        composable("welcome") {
-            WelcomeScreen(
-                themeViewModel = themeViewModel,
-                onWelcomeFinished = {
-                    navController.popBackStack()
-                }
-            )
-        }
-        
-        composable("js_interface_doc") {
-            JsInterfaceDocScreen(navController)
         }
 
-        composable("about") {
-            AboutScreen(navController = navController)
+        composable("welcome") {
+            WelcomeScreen(themeViewModel = themeViewModel, onWelcomeFinished = { navController.popBackStack() })
         }
-        
-        composable("terminal") {
-            TerminalScreen(navController = navController)
-        }
+
+        composable("js_interface_doc") { JsInterfaceDocScreen(navController) }
+
+        composable("about") { AboutScreen(navController = navController) }
+
+        composable("terminal") { TerminalScreen(navController = navController) }
     }
 }
 
 fun NavController.safeNavigate(route: String) {
     val current = currentBackStackEntry?.destination?.route
     if (current != route) {
-        navigate(route) {
-            launchSingleTop = true
-        }
+        navigate(route) { launchSingleTop = true }
     }
 }

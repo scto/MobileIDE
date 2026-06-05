@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 // LogConfigRepository.kt
 package com.scto.mobile.ide.core.utils
 
@@ -26,34 +26,23 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mobileide_log_config")
 
-data class LogEntry(
-    val timestamp: Long,
-    val level: String,
-    val tag: String,
-    val message: String
-)
+data class LogEntry(val timestamp: Long, val level: String, val tag: String, val message: String)
 
-data class LogConfigState(
-    val isLogEnabled: Boolean = true,
-    val logFilePath: String = "",
-    val isLoaded: Boolean = false
-)
+data class LogConfigState(val isLogEnabled: Boolean = true, val logFilePath: String = "", val isLoaded: Boolean = false)
 
 class LogConfigRepository(private val context: Context) {
     private object PreferencesKeys {
@@ -62,11 +51,11 @@ class LogConfigRepository(private val context: Context) {
     }
 
     /**
-     * ✅ Core fix: Use combine to merge DataStore and WorkspaceManager flows
-     * This way, it recalculates here whether log settings or the workspace directory are modified
+     * ✅ Core fix: Use combine to merge DataStore and WorkspaceManager flows This way, it recalculates here whether log
+     * settings or the workspace directory are modified
      */
-    val logConfigFlow: Flow<LogConfigState> = context.dataStore.data
-        .combine(WorkspaceManager.getWorkspacePathFlow(context)) { preferences, workspacePath ->
+    val logConfigFlow: Flow<LogConfigState> =
+        context.dataStore.data.combine(WorkspaceManager.getWorkspacePathFlow(context)) { preferences, workspacePath ->
 
             // 1. Get the dynamic workspace directory
             // workspacePath is passed in real-time from the Flow
@@ -75,7 +64,8 @@ class LogConfigRepository(private val context: Context) {
             val defaultLogPath = File(workspacePath, "logs").absolutePath
 
             // 3. Determine the final path:
-            // If the user manually specified a path in DataStore (savedPath is not empty), prioritize the manually specified one
+            // If the user manually specified a path in DataStore (savedPath is not empty), prioritize the manually
+            // specified one
             // If not manually specified (null or empty), automatically follow the workspace directory
             val savedPath = preferences[PreferencesKeys.LOG_FILE_PATH]
             val finalPath = if (savedPath.isNullOrEmpty()) defaultLogPath else savedPath
@@ -83,7 +73,7 @@ class LogConfigRepository(private val context: Context) {
             LogConfigState(
                 isLogEnabled = preferences[PreferencesKeys.LOG_ENABLED] ?: true,
                 logFilePath = finalPath,
-                isLoaded = true
+                isLoaded = true,
             )
         }
 
@@ -91,7 +81,8 @@ class LogConfigRepository(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LOG_ENABLED] = isEnabled
 
-            // Optional optimization: If the path saved by the user matches the current default path, save as null/empty,
+            // Optional optimization: If the path saved by the user matches the current default path, save as
+            // null/empty,
             // so that the log path can continue to automatically follow when modifying the workspace directory later.
             val currentWorkspace = WorkspaceManager.getWorkspacePath(context)
             val defaultPath = File(currentWorkspace, "logs").absolutePath
@@ -103,11 +94,9 @@ class LogConfigRepository(private val context: Context) {
             }
         }
     }
-    
+
     suspend fun resetLogPath() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(PreferencesKeys.LOG_FILE_PATH)
-        }
+        context.dataStore.edit { preferences -> preferences.remove(PreferencesKeys.LOG_FILE_PATH) }
     }
 }
 
@@ -116,8 +105,7 @@ object LogCatcher {
     // ✅ After fixing, the type reference becomes the simpler LogConfigState
     private var logConfig: LogConfigState? = null
 
-    @Volatile
-    private var isInitialized = false
+    @Volatile private var isInitialized = false
 
     private val _logFlow = MutableSharedFlow<LogEntry>(extraBufferCapacity = 1000)
     val logFlow = _logFlow.asSharedFlow()
@@ -176,12 +164,12 @@ object LogCatcher {
 
     private fun emitLog(level: String, tag: String, message: String) {
         val entry = LogEntry(System.currentTimeMillis(), level, tag, message)
-        
+
         // If it is a build-related log, save it to the history
         if (tag == "ApkBuilder" || tag == "Build") {
             _buildLogs.add(entry)
         }
-        
+
         _logFlow.tryEmit(entry)
     }
 

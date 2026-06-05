@@ -15,25 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.core.utils
 
 import android.content.Context
 import android.os.Build
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb // This extension function must be imported
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb // This extension function must be imported
-
-import com.materialkolor.PaletteStyle
-
 import androidx.datastore.preferences.core.stringPreferencesKey
-
+import androidx.datastore.preferences.preferencesDataStore
+import com.materialkolor.PaletteStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -46,7 +43,7 @@ data class ThemeState(
     val isCustomTheme: Boolean,
     val customColor: Color,
     val style: PaletteStyle = PaletteStyle.TonalSpot,
-    val isLoaded: Boolean = false
+    val isLoaded: Boolean = false,
 )
 
 class ThemeDataStoreRepository(private val context: Context) {
@@ -60,25 +57,30 @@ class ThemeDataStoreRepository(private val context: Context) {
         val SELECTED_STYLE = stringPreferencesKey("selected_style")
     }
 
-    val themeStateFlow: Flow<ThemeState> = context.dataStore.data
-        .map { preferences ->
+    val themeStateFlow: Flow<ThemeState> =
+        context.dataStore.data.map { preferences ->
             val modeIndex = preferences[PreferencesKeys.SELECTED_MODE] ?: 0
             val themeIndex = preferences[PreferencesKeys.SELECTED_THEME] ?: 0
-            val isMonet = preferences[PreferencesKeys.IS_MONET_ENABLED] ?: (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            val isMonet =
+                preferences[PreferencesKeys.IS_MONET_ENABLED] ?: (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             val isCustom = preferences[PreferencesKeys.IS_CUSTOM] ?: false
-            
+
             val styleName = preferences[PreferencesKeys.SELECTED_STYLE] ?: PaletteStyle.TonalSpot.name
-            val style = try {
-                PaletteStyle.valueOf(styleName)
-            } catch (_: IllegalArgumentException) {
-                PaletteStyle.TonalSpot
-            }
+            val style =
+                try {
+                    PaletteStyle.valueOf(styleName)
+                } catch (_: IllegalArgumentException) {
+                    PaletteStyle.TonalSpot
+                }
 
             // ✅ [Fix 1] Read logic: Convert to Int first, then use Color(Int) constructor
             val customColorValue = preferences[PreferencesKeys.CUSTOM_COLOR] ?: 0xFF6750A4
             val decodedColor = Color(customColorValue.toInt())
 
-            LogCatcher.d("ThemeDebug_Repo", "Repo read: Monet=$isMonet, Custom=$isCustom, Style=$style, DecodedColorArg=${decodedColor.toArgb()}")
+            LogCatcher.d(
+                "ThemeDebug_Repo",
+                "Repo read: Monet=$isMonet, Custom=$isCustom, Style=$style, DecodedColorArg=${decodedColor.toArgb()}",
+            )
 
             ThemeState(
                 selectedModeIndex = modeIndex,
@@ -87,7 +89,7 @@ class ThemeDataStoreRepository(private val context: Context) {
                 isCustomTheme = isCustom,
                 customColor = decodedColor,
                 style = style,
-                isLoaded = true
+                isLoaded = true,
             )
         }
 
@@ -97,13 +99,16 @@ class ThemeDataStoreRepository(private val context: Context) {
         customColor: Color,
         isMonetEnabled: Boolean,
         isCustom: Boolean,
-        style: PaletteStyle
+        style: PaletteStyle,
     ) {
         // ✅ [Fix 2] Write logic: Use .toArgb() to get the standard Int value
         // This masks the difference of whether Color is Float or Int internally
         val colorInt = customColor.toArgb()
 
-        LogCatcher.w("ThemeDebug_Repo", "Repo write: Monet=$isMonetEnabled, Custom=$isCustom, Style=$style, ColorInt=$colorInt")
+        LogCatcher.w(
+            "ThemeDebug_Repo",
+            "Repo write: Monet=$isMonetEnabled, Custom=$isCustom, Style=$style, ColorInt=$colorInt",
+        )
 
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SELECTED_MODE] = selectedModeIndex

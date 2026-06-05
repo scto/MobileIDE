@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
- /*
-  * GitModels.kt
-  */
- 
+
+/*
+ * GitModels.kt
+ */
+
 package com.scto.mobile.ide.ui.editor.git
 
 import androidx.compose.ui.graphics.Color
@@ -39,20 +39,24 @@ data class GitCommitUI(
     val totalLanes: Int,
     val childLanes: List<Int>,
     val parentLanes: List<Int>,
-    val color: Color
+    val color: Color,
 )
 
 data class GitRefUI(val name: String, val type: RefType)
-enum class RefType { HEAD, LOCAL_BRANCH, REMOTE_BRANCH, TAG }
 
-data class GitBranch(
-    val name: String,
-    val fullRef: String,
-    val type: BranchType,
-    val isCurrent: Boolean
-)
+enum class RefType {
+    HEAD,
+    LOCAL_BRANCH,
+    REMOTE_BRANCH,
+    TAG,
+}
 
-enum class BranchType { LOCAL, REMOTE }
+data class GitBranch(val name: String, val fullRef: String, val type: BranchType, val isCurrent: Boolean)
+
+enum class BranchType {
+    LOCAL,
+    REMOTE,
+}
 
 data class GitFileChange(val filePath: String, val status: GitFileStatus)
 
@@ -61,9 +65,19 @@ data class GitAuth(
     val username: String = "",
     val token: String = "",
     val privateKey: String = "",
-    val passphrase: String = ""
+    val passphrase: String = "",
 )
 
-enum class AuthType { HTTPS, SSH }
+enum class AuthType {
+    HTTPS,
+    SSH,
+}
 
-enum class GitFileStatus { ADDED, MODIFIED, UNTRACKED, MISSING, REMOVED, CONFLICTING }
+enum class GitFileStatus {
+    ADDED,
+    MODIFIED,
+    UNTRACKED,
+    MISSING,
+    REMOVED,
+    CONFLICTING,
+}

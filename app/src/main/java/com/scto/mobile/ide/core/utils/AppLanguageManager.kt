@@ -23,14 +23,11 @@ import android.content.res.Configuration
 import android.os.LocaleList
 import androidx.annotation.StringRes
 import androidx.core.content.edit
-
 import com.scto.mobile.ide.R
-
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-import java.util.Locale
 
 enum class AppLanguageOption(@StringRes val labelRes: Int, val languageTag: String) {
     SYSTEM(R.string.action_follow_system, ""),
@@ -86,11 +83,12 @@ object AppLanguageManager {
     }
 
     private fun updateDefaultLocale(context: Context, option: AppLanguageOption) {
-        val locale = if (option == AppLanguageOption.SYSTEM) {
-            context.resources.configuration.locales[0]
-        } else {
-            Locale.forLanguageTag(option.languageTag)
-        }
+        val locale =
+            if (option == AppLanguageOption.SYSTEM) {
+                context.resources.configuration.locales[0]
+            } else {
+                Locale.forLanguageTag(option.languageTag)
+            }
         Locale.setDefault(locale)
     }
 }

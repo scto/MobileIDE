@@ -32,14 +32,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.*
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-
 import com.scto.mobile.ide.core.utils.*
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
@@ -53,14 +52,16 @@ class MainActivity : ComponentActivity() {
         getExternalFilesDir("logs")
 
         enableEdgeToEdge(
-            statusBarStyle = androidx.activity.SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            ),
-            navigationBarStyle = androidx.activity.SystemBarStyle.auto(
-                android.graphics.Color.TRANSPARENT,
-                android.graphics.Color.TRANSPARENT
-            )
+            statusBarStyle =
+                androidx.activity.SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ),
+            navigationBarStyle =
+                androidx.activity.SystemBarStyle.auto(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                ),
         )
         window.isNavigationBarContrastEnforced = false
 
@@ -75,14 +76,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             val activityContext = this@MainActivity
             val currentLanguageOption by AppLanguageManager.currentOption.collectAsState()
-            val localizedContext = remember(activityContext, currentLanguageOption) {
-                AppLanguageManager.createLocalizedContext(activityContext, currentLanguageOption)
-            }
+            val localizedContext =
+                remember(activityContext, currentLanguageOption) {
+                    AppLanguageManager.createLocalizedContext(activityContext, currentLanguageOption)
+                }
 
             CompositionLocalProvider(
                 LocalContext provides localizedContext,
                 androidx.activity.compose.LocalActivityResultRegistryOwner provides activityContext,
-                androidx.activity.compose.LocalOnBackPressedDispatcherOwner provides activityContext
+                androidx.activity.compose.LocalOnBackPressedDispatcherOwner provides activityContext,
             ) {
                 val context = LocalContext.current
                 val navController = rememberNavController()
@@ -91,16 +93,17 @@ class MainActivity : ComponentActivity() {
 
                 // Log configuration
                 val logConfigRepository = remember { LogConfigRepository(activityContext) }
-                val logConfigState by logConfigRepository.logConfigFlow.collectAsState(
-                    initial = LogConfigState()
-                )
+                val logConfigState by logConfigRepository.logConfigFlow.collectAsState(initial = LogConfigState())
 
                 // ✅ Core change 1: Change dependencies to logConfigState to re-initialize upon config changes
                 LaunchedEffect(logConfigState) {
                     if (logConfigState.isLoaded) {
                         // ✅ Change: Call updateConfig to update configuration dynamically
                         LogCatcher.updateConfig(logConfigState)
-                        LogCatcher.i("MainActivity", "Log system configuration updated - Enabled: ${logConfigState.isLogEnabled}")
+                        LogCatcher.i(
+                            "MainActivity",
+                            "Log system configuration updated - Enabled: ${logConfigState.isLogEnabled}",
+                        )
                     }
                 }
 
@@ -122,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                 transitionSpec = {
                                     fadeIn(animationSpec = tween(durationMillis = 500)) togetherWith
                                         fadeOut(animationSpec = tween(durationMillis = 500))
-                                }
+                                },
                             ) { isWelcomeTarget ->
                                 if (isWelcomeTarget) {
                                     WelcomeScreen(
@@ -132,14 +135,14 @@ class MainActivity : ComponentActivity() {
                                             WelcomePreferences.setWelcomeCompleted(context)
                                             LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
                                             showWelcomeScreen = false
-                                        }
+                                        },
                                     )
                                 } else {
                                     App(
                                         navController = navController,
                                         themeViewModel = themeViewModel,
                                         logConfigRepository = logConfigRepository,
-                                        logConfigState = logConfigState
+                                        logConfigState = logConfigState,
                                     )
                                 }
                             }

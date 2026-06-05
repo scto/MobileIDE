@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.core.utils
 
 import android.content.Context
@@ -25,21 +25,17 @@ import androidx.core.content.edit
 object WelcomePreferences {
     private const val PREFS_NAME = "welcome_prefs"
     private const val KEY_WELCOME_COMPLETED = "welcome_completed"
-    
+
     private fun getPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
-    
-    /**
-     * Check if the welcome flow has been completed
-     */
+
+    /** Check if the welcome flow has been completed */
     fun isWelcomeCompleted(context: Context): Boolean {
         return getPreferences(context).getBoolean(KEY_WELCOME_COMPLETED, false)
     }
-    
-    /**
-     * Mark the welcome flow as completed
-     */
+
+    /** Mark the welcome flow as completed */
     fun setWelcomeCompleted(context: Context) {
         getPreferences(context).edit { putBoolean(KEY_WELCOME_COMPLETED, true) }
         LogCatcher.i("WelcomePreferences", "Welcome flow marked as completed")

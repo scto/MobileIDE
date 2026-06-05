@@ -15,16 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 package com.scto.mobile.ide.core.utils
 
 import android.content.Context
-
 import com.scto.mobile.ide.R
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -33,45 +28,44 @@ import java.util.Date
 import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object BackupUtils {
     // 保留最近 5 个备份
     private const val MAX_BACKUP_COUNT = 5
 
-    /**
-     * 备份项目：打包成 ZIP 存入私有目录
-     */
-    suspend fun backupProject(context: Context, projectPath: String): String = withContext(Dispatchers.IO) {
-        val projectDir = File(projectPath)
-        if (!projectDir.exists()) return@withContext context.getString(R.string.backup_project_not_exists)
+    /** 备份项目：打包成 ZIP 存入私有目录 */
+    suspend fun backupProject(context: Context, projectPath: String): String =
+        withContext(Dispatchers.IO) {
+            val projectDir = File(projectPath)
+            if (!projectDir.exists()) return@withContext context.getString(R.string.backup_project_not_exists)
 
-        val folderName = projectDir.name
-        // 私有目录: /data/data/包名/files/project_backups/项目名/
-        val backupRootDir = File(context.filesDir, "project_backups/$folderName")
-        if (!backupRootDir.exists()) backupRootDir.mkdirs()
+            val folderName = projectDir.name
+            // 私有目录: /data/data/包名/files/project_backups/项目名/
+            val backupRootDir = File(context.filesDir, "project_backups/$folderName")
+            if (!backupRootDir.exists()) backupRootDir.mkdirs()
 
-        // 命名: 项目名_时间戳.zip
-        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val backupFile = File(backupRootDir, "${folderName}_$timestamp.zip")
+            // 命名: 项目名_时间戳.zip
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val backupFile = File(backupRootDir, "${folderName}_$timestamp.zip")
 
-        try {
-            zipFolder(projectDir, backupFile) { file ->
-                val path = file.absolutePath
-                // 过滤 build, .git 和 .gradle 目录
-                !path.contains("/build/") && !path.contains("/.git/") && !path.contains("/.gradle/")
+            try {
+                zipFolder(projectDir, backupFile) { file ->
+                    val path = file.absolutePath
+                    // 过滤 build, .git 和 .gradle 目录
+                    !path.contains("/build/") && !path.contains("/.git/") && !path.contains("/.gradle/")
+                }
+                cleanOldBackups(backupRootDir)
+                return@withContext backupFile.absolutePath
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@withContext context.getString(R.string.backup_failed, e.message)
             }
-            cleanOldBackups(backupRootDir)
-            return@withContext backupFile.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return@withContext context.getString(R.string.backup_failed, e.message)
         }
-    }
 
     private fun zipFolder(srcFolder: File, destZipFile: File, filter: (File) -> Boolean) {
-        ZipOutputStream(FileOutputStream(destZipFile)).use { zos ->
-            addFolderToZip(srcFolder, srcFolder, zos, filter)
-        }
+        ZipOutputStream(FileOutputStream(destZipFile)).use { zos -> addFolderToZip(srcFolder, srcFolder, zos, filter) }
     }
 
     private fun addFolderToZip(rootFolder: File, srcFolder: File, zos: ZipOutputStream, filter: (File) -> Boolean) {
