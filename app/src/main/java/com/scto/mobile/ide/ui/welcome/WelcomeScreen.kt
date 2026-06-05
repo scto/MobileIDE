@@ -107,7 +107,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                         primary = customColor,
                         accent =
                             customColor, // Make both light blobs your custom color, or make the second blob slightly
-                                        // lighter
+                        // lighter
                     )
                 val customSpecLight =
                     ThemeColorSpec(

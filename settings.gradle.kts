@@ -16,6 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+val aapt2OverrideKey = "android.aapt2FromMavenOverride"
+val customAapt2 = listOf(
+    providers.gradleProperty(aapt2OverrideKey).orNull,
+    "/usr/bin/aapt2",
+    "/data/data/com.termux/files/usr/bin/aapt2"
+).filterNotNull().firstOrNull { java.io.File(it).exists() }
+
+if (customAapt2 != null) {
+    gradle.beforeProject {
+        extensions.extraProperties.set(aapt2OverrideKey, customAapt2)
+    }
+}
+
 pluginManagement {
     repositories {
         google()
