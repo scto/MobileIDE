@@ -88,10 +88,10 @@ android {
     /*
     signingConfigs {
         create("release") {
-            storeFile = file("WebIDE.jks")
-            keyAlias = "WebIDE"
-            storePassword = "WebIDE"
-            keyPassword = "WebIDE"
+            storeFile = file("MobileIDE.jks")
+            keyAlias = "MobileIDE"
+            storePassword = "MobileIDE"
+            keyPassword = "MobileIDE"
             enableV1Signing = true
             enableV2Signing = true
         }

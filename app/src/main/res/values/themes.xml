@@ -19,5 +19,5 @@
 
 <resources>
 
-    <style name="Theme.WebIDE" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.MobileIDE" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
