@@ -293,7 +293,7 @@ fun DiagnosticItem(diagnostic: Diagnostic, onClick: () -> Unit) {
 @Composable
 private fun PanelTopBar(viewModel: EditorViewModel, hasActiveEditor: Boolean, showLspAndCursor: Boolean) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE) }
+    val prefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
     val lspEnabled = prefs.getBoolean("editor_lsp_enabled", false)
 
     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 16.dp).height(24.dp)) {

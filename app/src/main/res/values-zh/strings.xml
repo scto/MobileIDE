@@ -68,7 +68,7 @@
 
     <string name="welcome_tagline">在 Android 上构建未来</string>
     <string name="welcome_permissions_title">所需权限</string>
-    <string name="welcome_permissions_description">WebIDE 需要以下权限来读写代码和运行应用。</string>
+    <string name="welcome_permissions_description">MobileIDE 需要以下权限来读写代码和运行应用。</string>
     <string name="welcome_permission_storage_title">存储空间</string>
     <string name="welcome_permission_storage_description">用于访问和保存项目文件</string>
     <string name="welcome_permission_install_title">应用安装</string>
@@ -407,12 +407,12 @@
     <string name="terminal_new_session">新建会话</string>
     <string name="terminal_input_hint">输入命令...</string>
 
-    <string name="about_team_title">WebIDE 团队</string>
+    <string name="about_team_title">MobileIDE 团队</string>
     <string name="about_special_thanks_title">特别鸣谢</string>
     <string name="about_donors_title">捐赠者</string>
     <string name="about_licenses_title">开源许可</string>
     <string name="about_author_note">本项目由人类开发者和 AI 共同开发，探索代码生成的无限可能。</string>
-    <string name="about_copyright">Copyright © 2025 WebIDE</string>
+    <string name="about_copyright">Copyright © 2025 MobileIDE</string>
     <string name="about_license_title">许可证</string>
     <string name="about_see_project_website">请访问项目网站查看许可证。</string>
     <string name="about_no_license_info">暂无许可信息。</string>

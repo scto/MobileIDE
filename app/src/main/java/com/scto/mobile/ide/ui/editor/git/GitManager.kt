@@ -42,8 +42,8 @@ import org.eclipse.jgit.transport.sshd.SshdSessionFactory
 import org.eclipse.jgit.treewalk.TreeWalk
 import org.eclipse.jgit.treewalk.filter.PathFilter
 
-// Log tag, search in Logcat "WebIDE_Git"
-private const val TAG = "WebIDE_Git"
+// Log tag, search in Logcat "MobileIDE_Git"
+private const val TAG = "MobileIDE_Git"
 
 enum class GitConnectivityError {
     AUTH_FAILED,
@@ -63,7 +63,7 @@ data class GitConnectivityResult(
 
 private val DEFAULT_GITIGNORE =
     """
-    # --- WebIDE Security (Must never be uploaded) ---
+    # --- MobileIDE Security (Must never be uploaded) ---
     .git_ssh_config/
     id_rsa
     id_rsa.pub

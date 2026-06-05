@@ -67,7 +67,7 @@
 
     <string name="welcome_tagline">Baue die Zukunft auf Android</string>
     <string name="welcome_permissions_title">Erforderliche Berechtigungen</string>
-    <string name="welcome_permissions_description">WebIDE benötigt die folgenden Berechtigungen, um deine Apps zu lesen, zu schreiben und auszuführen.</string>
+    <string name="welcome_permissions_description">MobileIDE benötigt die folgenden Berechtigungen, um deine Apps zu lesen, zu schreiben und auszuführen.</string>
     <string name="welcome_permission_storage_title">Speicher</string>
     <string name="welcome_permission_storage_description">Wird verwendet, um auf Projektdateien zuzugreifen und diese zu speichern</string>
     <string name="welcome_permission_install_title">App-Installation</string>
@@ -406,12 +406,12 @@
     <string name="terminal_new_session">Neue Sitzung</string>
     <string name="terminal_input_hint">Befehl eingeben...</string>
 
-    <string name="about_team_title">WebIDE Team</string>
+    <string name="about_team_title">MobileIDE Team</string>
     <string name="about_special_thanks_title">Besonderer Dank</string>
     <string name="about_donors_title">Spender</string>
     <string name="about_licenses_title">Lizenzen</string>
     <string name="about_author_note">Dieses Projekt entstand in Zusammenarbeit zwischen menschlichen Entwicklern und KI, um die Möglichkeiten der Codegenerierung zu erkunden.</string>
-    <string name="about_copyright">Copyright © 2025 WebIDE</string>
+    <string name="about_copyright">Copyright © 2025 MobileIDE</string>
     <string name="about_license_title">Lizenz</string>
     <string name="about_see_project_website">Details zur Lizenz auf der Projektwebsite.</string>
     <string name="about_no_license_info">Keine Lizenzinformationen.</string>

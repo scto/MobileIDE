@@ -95,10 +95,10 @@ fun SettingsScreen(
     editorViewModel: com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel? = null,
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("WebIDE_Editor_Settings", Context.MODE_PRIVATE) }
+    val prefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
 
     // 使用与 ViewModel 中加载自动保存设置一致的 SharedPreferences 文件名
-    val generalPrefs = remember { context.getSharedPreferences("WebIDE_Settings", Context.MODE_PRIVATE) }
+    val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE) }
 
     val fontSize = prefs.getFloat("editor_font_size", 14f)
 
