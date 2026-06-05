@@ -62,6 +62,7 @@ object SessionManager {
                     // Temporarily left blank to use static title.
                 }
 
+<<<<<<< HEAD
                 override fun onSessionFinished(finishedSession: TerminalSession) {
                     // When Shell exits (e.g., user enters 'exit'), automatically remove this session
                     // 1. Find the wrapper containing this session in the list
@@ -106,6 +107,53 @@ object SessionManager {
                 }
             }
 
+=======
+            override fun onSessionFinished(finishedSession: TerminalSession) {
+                val exitStatus = finishedSession.exitStatus
+                android.util.Log.i("SessionManager", "Terminal session finished: exitStatus=$exitStatus")
+                // When Shell exits (e.g., user enters 'exit'), automatically remove this session
+                // 1. Find the wrapper containing this session in the list
+                val wrapper = sessions.find { it.session == finishedSession }
+                // 2. Remove it
+                if (wrapper != null) {
+                    removeSession(wrapper)
+                }
+            }
+
+            // --- Below are other interfaces that must be implemented but are temporarily not needed ---
+            override fun onCopyTextToClipboard(session: TerminalSession, text: String) {}
+            override fun onPasteTextFromClipboard(session: TerminalSession?) {}
+            override fun onBell(session: TerminalSession) {}
+            override fun onColorsChanged(session: TerminalSession) {}
+            override fun onTerminalCursorStateChange(state: Boolean) {}
+            override fun setTerminalShellPid(session: TerminalSession, pid: Int) {
+                android.util.Log.i("SessionManager", "Terminal session shell PID set: $pid")
+            }
+            override fun getTerminalCursorStyle(): Int = 0
+            override fun logError(tag: String, message: String) {
+                android.util.Log.e(tag, message)
+            }
+            override fun logWarn(tag: String, message: String) {
+                android.util.Log.w(tag, message)
+            }
+            override fun logInfo(tag: String, message: String) {
+                android.util.Log.i(tag, message)
+            }
+            override fun logDebug(tag: String, message: String) {
+                android.util.Log.d(tag, message)
+            }
+            override fun logVerbose(tag: String, message: String) {
+                android.util.Log.v(tag, message)
+            }
+            override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
+                android.util.Log.e(tag, message, e)
+            }
+            override fun logStackTrace(tag: String, e: Exception) {
+                android.util.Log.e(tag, "Terminal Exception", e)
+            }
+        }
+
+>>>>>>> 7df758f (Fix: Implementation & Changes Made:)
         // Call AlpineManager to create core session
         val session = AlpineManager.createSession(context, client)
 
