@@ -44,7 +44,7 @@ import com.scto.mobile.ide.core.utils.*
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
-import com.scto.mobile.ide.ui.theme.MyComposeApplicationTheme
+import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                         Box(contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                     }
                 } else {
-                    MyComposeApplicationTheme(themeState = themeState) {
+                    AppTheme(themeState = themeState) {
                         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                             // ✅ Core change 2: Initialize state according to WelcomePreferences
                             var showWelcomeScreen by remember {

@@ -1,0 +1,8 @@
+{
+  "id": "BottomNavigation",
+  "name": "Bottom Navigation Activity",
+  "description": "A Jetpack Compose project pre-configured with a Bottom Navigation Bar and 3 screens (Home, Profile, Settings).",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}

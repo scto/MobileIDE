@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktfmt)
     alias(libs.plugins.aboutlibraries)
 }
 
@@ -43,6 +44,14 @@ val gitCommitHash = getGitInfo("rev-parse", "--short=8", "HEAD")
 val fullGitCommitHash = getGitInfo("rev-parse", "HEAD")
 val gitCommitDate = getGitInfo("show", "-s", "--format=%cI", "HEAD")
 
+// ACS_SIGNING_CONFIG_START
+val keystorePropertiesFile = file("keystore.properties")
+val acsProps = if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.readLines()
+        .filter { '=' in it }
+        .associate { it.substringBefore('=').trim() to it.substringAfter('=').trim() }
+} else emptyMap()
+// ACS_SIGNING_CONFIG_END
 
 android {
     namespace = libs.versions.applicationId.get()
@@ -66,6 +75,19 @@ android {
     }
     
     signingConfigs {
+        maybeCreate("release").apply {
+            val sf = acsProps["storeFile"]
+            val sp = acsProps["storePassword"]
+            val ka = acsProps["keyAlias"]
+            val kp = acsProps["keyPassword"]
+            if (!sf.isNullOrBlank()) storeFile = file(sf)
+            if (!sp.isNullOrBlank()) storePassword = sp
+            if (!ka.isNullOrBlank()) keyAlias = ka
+            if (!kp.isNullOrBlank()) keyPassword = kp
+        }
+    }
+    /*
+    signingConfigs {
         create("release") {
             storeFile = file("WebIDE.jks")
             keyAlias = "WebIDE"
@@ -75,7 +97,7 @@ android {
             enableV2Signing = true
         }
     }
-    
+    */
     // 3. Now use them directly in buildConfigField without .get()
     buildTypes {
         debug {
@@ -83,18 +105,19 @@ android {
             buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"$gitCommitHash\"")
             buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
     
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-beta-debug"
-            signingConfig = signingConfigs.getByName("release")
-        }
+            //applicationIdSuffix = ".debug"
+            //versionNameSuffix = "-beta-debug"
+            
+            //signingConfig = signingConfigs.getByName("release")
+	  }
         release {
             buildConfigField("String", "GIT_COMMIT_HASH", "\"$fullGitCommitHash\"")
             buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"$gitCommitHash\"")
             buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
         
-            versionNameSuffix = "-release"
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+            
             signingConfig = signingConfigs.getByName("release")
         
             proguardFiles(
@@ -126,6 +149,7 @@ android {
         // Add jniLibs legacy packaging
         jniLibs {
             useLegacyPackaging = true
+            keepDebugSymbols.add("**/*.so")
         }
     }
 
@@ -203,7 +227,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
     
-    implementation(project(":web-bridge"))
     implementation(libs.accompanist.navigation.animation)
     implementation(libs.compose.icons.simple)
     implementation(libs.compose.icons.font.awesome)
@@ -255,8 +278,6 @@ dependencies {
     implementation(libs.androidx.datastore.core)
 
     implementation(files("libs/xml.jar"))
-
-    implementation(project(":signer"))
 
     implementation(libs.zipalign.java)
 

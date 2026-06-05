@@ -1,6 +1,6 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package com.scto.mobile.ide.ui.editor.git
 
 import android.app.Application
@@ -31,7 +32,6 @@ import org.eclipse.jgit.revwalk.RevCommit
 import androidx.core.content.edit
 
 class GitViewModel(application: Application) : AndroidViewModel(application) {
-
     var isGitProject by mutableStateOf(false)
     var changedFiles by mutableStateOf<List<GitFileChange>>(emptyList())
     var currentBranch by mutableStateOf("")
@@ -39,7 +39,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
     var isLoading by mutableStateOf(false)
     var statusMessage by mutableStateOf<String?>(null)
 
-    // 🔥 配置相关
+    // Configuration
     var remoteUrl by mutableStateOf("")
     var userEmail by mutableStateOf("")
     var savedAuth by mutableStateOf<GitAuth?>(null)
@@ -48,6 +48,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
     var testConnectionResult by mutableStateOf<String?>(null)
     var testConnectionSuccess by mutableStateOf<Boolean?>(null)
     var isTestingConnection by mutableStateOf(false)
+    
     private val laneColors = listOf(
         Color(0xFFFF5252), Color(0xFF40C4FF), Color(0xFFE040FB),
         Color(0xFF69F0AE), Color(0xFFFFAB40), Color(0xFFFFD740),
@@ -59,6 +60,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         loadConfig()
         refreshAll()
     }
+    
     fun testRemoteConnection(
         url: String,
         authType: AuthType,
@@ -73,7 +75,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
             testConnectionResult = getApplication<Application>().getString(R.string.status_connecting)
 
             val tempAuth = GitAuth(authType, username, token, privateKey, passphrase)
-            // 如果 manager 为空，临时创建一个（针对还没 init 的情况）
+            // If manager is null, create a temporary instance (for cases where init has not run yet)
             val manager = gitManager ?: GitManager(getApplication<Application>().filesDir.absolutePath)
 
             val result = manager.testConnectivity(url, tempAuth)
@@ -96,6 +98,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
             isTestingConnection = false
         }
     }
+    
     private fun loadConfig() {
         val context = getApplication<Application>()
         val prefs = context.getSharedPreferences("git_config", Context.MODE_PRIVATE)
@@ -103,7 +106,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         remoteUrl = prefs.getString("remote_url", "") ?: ""
         userEmail = prefs.getString("user_email", "") ?: ""
 
-        // 读取认证信息
+        // Read authentication information
         val authTypeStr = prefs.getString("auth_type", "HTTPS") ?: "HTTPS"
         val username = prefs.getString("username", "") ?: ""
         val token = prefs.getString("token", "") ?: ""
@@ -250,7 +253,7 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         return result
     }
 
-    // --- Git 操作 ---
+    // --- Git Operations ---
     fun initRepo() { viewModelScope.launch { gitManager?.initRepo(); refreshAll() } }
 
     fun commit(msg: String, pushAfter: Boolean) {
@@ -335,5 +338,6 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun getBranches() = gitManager?.getBranches() ?: emptyList()
+    
     fun clearMessage() { statusMessage = null }
 }

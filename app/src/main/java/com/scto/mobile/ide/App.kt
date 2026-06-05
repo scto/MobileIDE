@@ -38,9 +38,7 @@ import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.editor.CodeEditScreen
 import com.scto.mobile.ide.ui.editor.doc.JsInterfaceDocScreen
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
-import com.scto.mobile.ide.ui.preview.WebPreviewScreen
 import com.scto.mobile.ide.ui.projects.NewProjectScreen
-import com.scto.mobile.ide.ui.projects.ProjectConfigScreen
 import com.scto.mobile.ide.ui.projects.ProjectListScreen
 import com.scto.mobile.ide.ui.projects.WorkspaceSelectionScreen
 import com.scto.mobile.ide.ui.settings.AboutScreen
@@ -157,29 +155,13 @@ fun App(
             }
         }
 
-        composable(
-            route = "preview/{folderName}",
-            arguments = listOf(navArgument("folderName") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val folderName = backStackEntry.arguments?.getString("folderName")
-            if (folderName != null) {
-                WebPreviewScreen(folderName, navController)
-            }
-        }
+
 
         composable("new_project") {
             NewProjectScreen(navController = navController)
         }
 
-        composable(
-            route = "project_config/{filePath}",
-            arguments = listOf(navArgument("filePath") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val filePath = backStackEntry.arguments?.getString("filePath")
-            if (filePath != null) {
-                ProjectConfigScreen(navController, filePath, mainViewModel)
-            }
-        }
+
 
         composable("settings") {
             SettingsScreen(

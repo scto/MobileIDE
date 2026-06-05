@@ -1,0 +1,8 @@
+{
+  "id": "CmakeApp",
+  "name": "CMake C++ Application",
+  "description": "An Android project equipped with native C++ support managed through a CMake build script.",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}

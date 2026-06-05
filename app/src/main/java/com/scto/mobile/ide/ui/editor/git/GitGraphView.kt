@@ -1,6 +1,6 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+ 
 package com.scto.mobile.ide.ui.editor.git
 
 import android.content.ClipData
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -57,8 +59,8 @@ fun GitGraphListCompact(commits: List<GitCommitUI>) {
             .background(MaterialTheme.colorScheme.surface)
     ) {
         itemsIndexed(commits) { index, commit ->
-            // 为了画出连续的线，我们需要知道下一个 commit 的 totalLanes
-            // 但在 compose 绘制中，我们只画 "Downwards" 线，所以只需要当前 commit 的数据即可
+            // To draw continuous lines, we need to know the next commit's totalLanes
+            // In Compose rendering, we only draw downward lines, so only the current commit data is required
             GitLogItemAligned(commit)
             HorizontalDivider(
                 thickness = 0.5.dp,
@@ -73,18 +75,18 @@ fun GitLogItemAligned(commit: GitCommitUI) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // 配色池 (View层使用，保持一致)
+    // Color palette (used by the view layer for consistency)
     val laneColors = listOf(
         Color(0xFFFF5252), Color(0xFF40C4FF), Color(0xFFE040FB),
         Color(0xFF69F0AE), Color(0xFFFFAB40), Color(0xFFFFD740),
         Color(0xFF9E9E9E), Color(0xFF795548)
     )
 
-    // 尺寸常量
-    val rowHeight = if (expanded) 80.dp else 40.dp // IDEA 默认是比较矮的
-    val graphWidth = 40.dp // 🔥 强制固定左侧宽度，保证右侧对齐！
-    val laneW = 12.dp      // 轨道间距
-    val dotR = 5.dp        // 圆点半径
+    // Size constants
+    val rowHeight = if (expanded) 80.dp else 40.dp // IDEA Default is relatively compact
+    val graphWidth = 40.dp // Force a fixed left width to keep the right side aligned
+    val laneW = 12.dp      // Lane spacing
+    val dotR = 5.dp        // Node radius
 
     val surfaceColor = MaterialTheme.colorScheme.surface
     val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
@@ -95,9 +97,9 @@ fun GitLogItemAligned(commit: GitCommitUI) {
             .height(rowHeight)
             .background(if (expanded) highlightColor else Color.Transparent)
             .clickable { expanded = !expanded },
-        verticalAlignment = Alignment.CenterVertically // 垂直居中
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // --- 1. 左侧绘图区 (固定宽度) ---
+        // --- 1. Left graph area (fixed width) ---
         Box(
             modifier = Modifier
                 .width(graphWidth)
@@ -106,17 +108,11 @@ fun GitLogItemAligned(commit: GitCommitUI) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val centerY = size.height / 2
 
-                // 1. 画穿透竖线 (Passing Lines)
-                // 逻辑：假设最大轨道数为 totalLanes。
-                // 凡是不等于 myLane 的，且在 parentLanes 范围内的(或者上一行遗留的)，通常都需要画竖线。
-                // 这里简化：除了 myLane，其他 < totalLanes 的都画竖线
-                // 注意：这只是为了视觉连贯。
-
-                // 更精确的逻辑：画所有 "Active" 的线。
-                // 也就是：所有 < max(lane, parentLanes.max) 的轨道，如果不是当前点，就画线连接上下。
-                // 这里我们画所有非当前的轨道直线。
+                // Logic: assume the maximum lane count is totalLanes.
+                // Note: this is only for visual continuity.
                 val maxLaneIdx = max(commit.lane, commit.parentLanes.maxOrNull() ?: 0)
-                // 限制一下最大绘制轨道，防止画到屏幕外面
+                
+                // Limit the maximum rendered lanes to avoid drawing outside the screen
                 val drawLimit = 4
 
                 for (i in 0..minOf(maxLaneIdx + 1, drawLimit)) {
@@ -124,7 +120,7 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                         val x = (i * laneW.toPx()) + (laneW.toPx() / 2) + 6f
                         val color = laneColors[i % laneColors.size]
 
-                        // 画一条贯穿线
+                        // Draw a continuous vertical line for passing branches
                         drawLine(
                             color = color,
                             start = Offset(x, 0f),
@@ -134,10 +130,10 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                     }
                 }
 
-                // 2. 画当前点 -> 父节点的线 (Bezier)
+                // 2. Draw a Bezier line from the current node to its parent
                 val myX = (commit.lane * laneW.toPx()) + (laneW.toPx() / 2) + 6f
 
-                // 先画上半截 (从天上来)，连接到自己
+                // Draw the upper segment first and connect it to the current node
                 drawLine(
                     color = commit.color,
                     start = Offset(myX, 0f),
@@ -146,16 +142,16 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                 )
 
                 commit.parentLanes.forEach { pLane ->
-                    if (pLane <= drawLimit) { // 只画可视区域内的线
+                    if (pLane <= drawLimit) { // Only draw lines within the visible area
                         val pX = (pLane * laneW.toPx()) + (laneW.toPx() / 2) + 6f
-                        val color = commit.color // 用自己的颜色连接父节点
+                        val color = commit.color // Connect to the parent node using the node's own color
 
                         val path = Path().apply {
                             moveTo(myX, centerY)
                             if (pLane == commit.lane) {
                                 lineTo(pX, size.height)
                             } else {
-                                // S 型曲线
+                                // Draw a curved line to the parent lane
                                 cubicTo(
                                     myX, size.height * 0.9f,
                                     pX, centerY + (size.height - centerY) * 0.1f,
@@ -167,7 +163,7 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                     }
                 }
 
-                // 3. 画圆点 (在最上层)
+                // 3. Draw node circle (top layer)
                 if (commit.lane <= drawLimit) {
                     drawCircle(color = surfaceColor, radius = dotR.toPx() + 3f, center = Offset(myX, centerY))
                     drawCircle(color = commit.color, radius = dotR.toPx(), center = Offset(myX, centerY))
@@ -175,14 +171,14 @@ fun GitLogItemAligned(commit: GitCommitUI) {
             }
         }
 
-        // --- 2. 右侧文字区 (对齐！) ---
+        // --- 2. Right text area ---
         Column(
             modifier = Modifier
-                .weight(1f) // 占据剩余所有空间
+                .weight(1f) // Occupy remaining space
                 .padding(end = 8.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            // 第一行：[标签] 消息
+            // First row: [Tag] Message
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (commit.refs.isNotEmpty()) {
                     commit.refs.forEach { ref ->
@@ -198,11 +194,11 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                     maxLines = if (expanded) 10 else 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f) // 让文字自适应宽度
+                    modifier = Modifier.weight(1f) // Allow text to adapt to available width
                 )
             }
 
-            // 第二行：作者 · 时间
+            // Second row: Author · Time
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(top = 1.dp)
@@ -224,9 +220,9 @@ fun GitLogItemAligned(commit: GitCommitUI) {
                     color = MaterialTheme.colorScheme.outline
                 )
 
-                Spacer(Modifier.weight(1f)) // 撑开中间
+                Spacer(Modifier.weight(1f)) // Expand middle section
 
-                // 只有展开时显示 Hash 复制
+                // Show hash copy action only when expanded
                 if (expanded) {
                     Icon(
                         Icons.Default.ContentCopy, null,
@@ -253,7 +249,7 @@ fun GitLogItemAligned(commit: GitCommitUI) {
 
 @Composable
 fun GitRefChipNano(ref: GitRefUI) {
-    // 极简风格标签
+    // Minimalist style tag
     val bgColor = when(ref.type) {
         RefType.HEAD -> Color(0xFF607D8B)
         RefType.LOCAL_BRANCH -> Color(0xFF009688)

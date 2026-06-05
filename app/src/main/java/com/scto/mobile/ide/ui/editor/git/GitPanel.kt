@@ -1,6 +1,6 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+ 
 package com.scto.mobile.ide.ui.editor.git
 
 import androidx.compose.foundation.background
@@ -41,12 +42,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scto.mobile.ide.R
+
 import kotlinx.coroutines.launch
-import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import java.io.File
 
-// 定义侧边栏 Tab 枚举，供外部使用
+import com.scto.mobile.ide.R
+import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
+
+// Define a sidebar Tab enumeration for external use.
 enum class SidebarTab { FILES, GIT }
 
 @Composable
@@ -255,7 +258,7 @@ fun GitChangesPageCompact(
                     value = message,
                     onValueChange = { message = it },
                     placeholder = { Text(stringResource(R.string.git_commit_message_placeholder)) },
-                    modifier = Modifier.fillMaxWidth(),//.height(80.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.typography.bodyMedium
                 )
                 Row(
@@ -620,6 +623,7 @@ fun BranchListDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
 
 @Composable
 fun BranchItem(branch: GitBranch, viewModel: GitViewModel, onDismiss: () -> Unit) {
+    
     val isCurrent = branch.isCurrent
     val bgColor = if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent
 
@@ -667,6 +671,7 @@ fun NewBranchDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
     val branchNameText = stringResource(R.string.git_branch_name)
     val createAndSwitchText = stringResource(R.string.git_create_and_switch)
     val cancelText = stringResource(R.string.action_cancel)
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(newBranchText) },
@@ -699,6 +704,7 @@ fun NewTagDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
     val descriptionText = stringResource(R.string.git_description)
     val createText = stringResource(R.string.action_create)
     val cancelText = stringResource(R.string.action_cancel)
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(newTagText) },

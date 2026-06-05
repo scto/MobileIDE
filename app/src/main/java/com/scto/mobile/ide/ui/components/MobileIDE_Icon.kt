@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import com.scto.mobile.ide.R
 
 @Composable
-fun WebIDE_Icon(){
+fun MobileIDE_Icon(){
     Box(contentAlignment = Alignment.Center) {
         Icon(
             painter = painterResource(id = R.drawable.ic_m),

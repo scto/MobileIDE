@@ -1,6 +1,6 @@
 /*
- * WebIDE - A powerful IDE for Android web development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 
 package com.scto.mobile.ide.ui.settings
 
@@ -57,6 +56,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
+
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption

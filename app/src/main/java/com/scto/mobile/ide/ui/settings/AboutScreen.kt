@@ -77,7 +77,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.scto.mobile.ide.BuildConfig
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.ui.components.WebIDE_Icon
+import com.scto.mobile.ide.ui.components.MobileIDE_Icon
 
 // --- 1. 数据模型定义 ---
 
@@ -545,7 +545,7 @@ private fun AppHeaderSection() {
                 .height(250.dp),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                WebIDE_Icon()
+                MobileIDE_Icon()
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -554,7 +554,7 @@ private fun AppHeaderSection() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "WebIDE",
+                        text = "MobileIDE",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
