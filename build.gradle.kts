@@ -36,26 +36,32 @@ subprojects {
         }
     }
 
-    // Disable AarMetadata checks to allow compiling with API 34 even if libraries demand API 36
-    tasks.configureEach {
-        if (name.contains("AarMetadata", ignoreCase = true)) {
-            enabled = false
-        }
-    }
 
     // Globale Java Toolchain Lösung (Behebt den Compiler-Fehler)
     // Wir nutzen hier 'kotlinOptions' statt jvmToolchain, da dies
     // in eingeschränkten Umgebungen wie Android/Termux zuverlässiger ist.
     // Globale Konfiguration der Kotlin Compiler-Optionen
-    /*
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-            // HIER die Sprachversion explizit auf 2.0 oder höher setzen
             languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
             apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
-            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        
+            // addAll nutzen, um eine Liste von Argumenten sauber zu übergeben
+            freeCompilerArgs.addAll(
+                "-opt-in=kotlin.RequiresOptIn"
+                // "-nowarn" <- Dies würde ALLE Kotlin-Warnungen global unterdrücken. 
+                // Davon ist stark abzuraten, aber das wäre das Kotlin-Äquivalent.
+            )
         }
     }
-    */
+
+    tasks.withType<JavaCompile>().configureEach {
+        // Das Minuszeichen schaltet die Warnung explizit ab
+        options.compilerArgs.add("-Xlint:-deprecation")
+    
+        // Falls du in Zukunft die genauen Warnungen stattdessen SEHEN willst, 
+        // um den Code aufzuräumen, nutzt du:
+        // options.compilerArgs.add("-Xlint:deprecation")
+    }
 }
