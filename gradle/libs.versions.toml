@@ -4,7 +4,7 @@ applicationId  = "com.scto.mobile.ide"
 
 compileSdk     = "36"
 targetSdk      = "35"
-minSdk         = "24"
+minSdk         = "26"
 versionCode    = "1"
 versionName    = "0.0.1"
 
