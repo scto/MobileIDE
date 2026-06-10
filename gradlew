@@ -1,11 +1,6 @@
 #!/usr/bin/env sh
 
-# Dynamic AAPT2 path resolution for Termux/container environments
-if [ -f "/usr/bin/aapt2" ]; then
-    set -- "$@" "-Pandroid.aapt2FromMavenOverride=/usr/bin/aapt2"
-elif [ -f "/data/data/com.termux/files/usr/bin/aapt2" ]; then
-    set -- "$@" "-Pandroid.aapt2FromMavenOverride=/data/data/com.termux/files/usr/bin/aapt2"
-fi
+
 
 ##############################################################################
 ##
@@ -16,7 +11,7 @@ fi
 # Attempt to set APP_HOME
 # Resolve links: $0 may be a link
 #
-# MobileIDE - A powerful IDE for Android app development.
+# WebIDE - A powerful IDE for Android web development.
 # Copyright (C) 2025  如日中天  <3382198490@qq.com>
 #
 # This program is free software: you can redistribute it and/or modify
