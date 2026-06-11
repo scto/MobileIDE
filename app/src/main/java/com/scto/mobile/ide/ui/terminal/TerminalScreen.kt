@@ -47,24 +47,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavController
-
-import com.termux.view.TerminalView
-
-import java.lang.ref.WeakReference
-
-import com.rk.terminal.ui.screens.terminal.TerminalBackEnd
 import com.rk.libcommons.application
+import com.rk.terminal.ui.screens.terminal.TerminalBackEnd
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
-
+import com.termux.view.TerminalView
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-
 
 // 🔥 Global VirtualKeysView reference, used by TerminalBackEnd to read Ctrl/Alt key states
 var virtualKeysView: WeakReference<VirtualKeysView>? = null
@@ -80,9 +73,7 @@ fun TerminalScreen(navController: NavController) {
     // === Initialization Logic ===
     LaunchedEffect(Unit) {
         if (application == null) application = context.applicationContext as Application
-        withContext(Dispatchers.IO) {
-            SetupWorker.prepareEnvironment(context)
-        }
+        withContext(Dispatchers.IO) { SetupWorker.prepareEnvironment(context) }
         isEnvironmentReady = true
         if (SessionManager.sessions.isEmpty()) {
             SessionManager.addNewSession(context)
@@ -90,32 +81,29 @@ fun TerminalScreen(navController: NavController) {
     }
 
     if (!isEnvironmentReady) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         return
     }
 
     val currentSession = SessionManager.currentSession
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
 
-    val buttonTextColor =
-        if (isSystemDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+    val buttonTextColor = if (isSystemDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
     val buttonBgColor = if (isSystemDark) 0xFF21222C.toInt() else 0xFFE0E0E0.toInt()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            // Only handle left/right safe areas, leave top and bottom to topBar/bottomBar
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+        modifier =
+            Modifier.fillMaxSize()
+                // Only handle left/right safe areas, leave top and bottom to topBar/bottomBar
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
 
         // === Top Area ===
         topBar = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .statusBarsPadding() // 1. Ensure status bar is avoided
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .statusBarsPadding() // 1. Ensure status bar is avoided
             ) {
                 // 1. Title bar
                 TopAppBar(
@@ -124,23 +112,24 @@ fun TerminalScreen(navController: NavController) {
                             stringResource(R.string.terminal_title),
                             fontSize = 18.sp,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.action_back)
+                                contentDescription = stringResource(R.string.action_back),
                             )
                         }
                     },
                     windowInsets = WindowInsets(0.dp),
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
                 )
 
                 // 2. Tabs + Add Button
@@ -148,10 +137,8 @@ fun TerminalScreen(navController: NavController) {
                 // 1. Set a fixed height (45dp) to prevent taking too much space
                 // 2. Remove CenterVertically, change to Bottom alignment, right against the divider
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(45.dp),
-                    verticalAlignment = Alignment.Bottom // 🔥 Core modification: Bottom alignment
+                    modifier = Modifier.fillMaxWidth().height(45.dp),
+                    verticalAlignment = Alignment.Bottom, // 🔥 Core modification: Bottom alignment
                 ) {
                     if (SessionManager.sessions.isNotEmpty()) {
                         SecondaryScrollableTabRow(
@@ -165,45 +152,40 @@ fun TerminalScreen(navController: NavController) {
                                 TabRowDefaults.SecondaryIndicator(
                                     modifier = Modifier.tabIndicatorOffset(SessionManager.currentSessionIndex),
                                     height = 3.dp, // Indicator slightly thicker for better clarity
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
-                            }
+                            },
                         ) {
                             SessionManager.sessions.forEachIndexed { index, session ->
                                 val isSelected = SessionManager.currentSessionIndex == index
                                 Tab(
                                     selected = isSelected,
                                     onClick = { SessionManager.switchTo(index) },
-                                    modifier = Modifier.fillMaxHeight()
+                                    modifier = Modifier.fillMaxHeight(),
                                 ) {
                                     // Tab content
                                     Row(
                                         // 🔥 Remove vertical centering, let text fall naturally
                                         // Add slight padding to adjust left/right and bottom spacing
-                                        modifier = Modifier.padding(
-                                            start = 12.dp,
-                                            end = 12.dp,
-                                            bottom = 10.dp
-                                        )
+                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
                                     ) {
                                         Text(
                                             text = session.title,
                                             style = MaterialTheme.typography.labelMedium,
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                            color =
+                                                if (isSelected) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                         if (isSelected) {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Icon(
                                                 imageVector = Icons.Default.Close,
                                                 contentDescription = stringResource(R.string.action_close),
-                                                modifier = Modifier
-                                                    .size(14.dp)
-                                                    .clickable {
-                                                        SessionManager.removeSession(
-                                                            session
-                                                        )
+                                                modifier =
+                                                    Modifier.size(14.dp).clickable {
+                                                        SessionManager.removeSession(session)
                                                     },
-                                                tint = MaterialTheme.colorScheme.error
+                                                tint = MaterialTheme.colorScheme.error,
                                             )
                                         }
                                     }
@@ -216,35 +198,32 @@ fun TerminalScreen(navController: NavController) {
 
                     // Vertical divider
                     VerticalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 10.dp) // Top and bottom whitespace
-                            .height(20.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant
+                        modifier =
+                            Modifier.padding(vertical = 10.dp) // Top and bottom whitespace
+                                .height(20.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
                     )
 
                     // Add button
                     // Because the Row is bottom-aligned, the button might sink to the bottom.
                     // Here we still center the button slightly for a better look, or just let it sink.
                     Box(
-                        modifier = Modifier
-                            .size(45.dp) // Width and height fill the Row
-                            .clickable { SessionManager.addNewSession(context) },
-                        contentAlignment = Alignment.Center // Button icon centered in the grid
+                        modifier =
+                            Modifier.size(45.dp) // Width and height fill the Row
+                                .clickable { SessionManager.addNewSession(context) },
+                        contentAlignment = Alignment.Center, // Button icon centered in the grid
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(R.string.terminal_new_session),
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         )
                     }
                 }
 
                 // 3. Bottom divider (Tabs are right above this line)
-                HorizontalDivider(
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
             }
         },
 
@@ -252,16 +231,12 @@ fun TerminalScreen(navController: NavController) {
         bottomBar = {
             Surface(
                 color = Color(buttonBgColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding() // Ensure it is pushed up by the IME (Input Method Editor)
+                modifier =
+                    Modifier.fillMaxWidth().imePadding(), // Ensure it is pushed up by the IME (Input Method Editor)
             ) {
                 val pagerState = rememberPagerState(pageCount = { 2 })
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.height(75.dp),
-                    userScrollEnabled = true
-                ) { page ->
+                HorizontalPager(state = pagerState, modifier = Modifier.height(75.dp), userScrollEnabled = true) { page
+                    ->
                     when (page) {
                         0 -> {
                             AndroidView(
@@ -278,7 +253,7 @@ fun TerminalScreen(navController: NavController) {
                                             VirtualKeysInfo(
                                                 VIRTUAL_KEYS_JSON,
                                                 "",
-                                                VirtualKeysConstants.CONTROL_CHARS_ALIASES
+                                                VirtualKeysConstants.CONTROL_CHARS_ALIASES,
                                             )
                                         )
                                     }
@@ -289,28 +264,30 @@ fun TerminalScreen(navController: NavController) {
                                         buttonTextColor,
                                         0xFFf44336.toInt(),
                                         0x00000000,
-                                        0xFF7F7F7F.toInt()
+                                        0xFF7F7F7F.toInt(),
                                     )
-                                }
+                                },
                             )
                         }
 
                         1 -> {
                             var text by rememberSaveable { mutableStateOf("") }
                             Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 AndroidView(
                                     modifier = Modifier.fillMaxSize(),
                                     factory = { ctx ->
                                         EditText(ctx).apply {
-                                            maxLines = 1; isSingleLine = true; imeOptions =
-                                            EditorInfo.IME_ACTION_DONE
-                                            background = null; hint = context.getString(R.string.terminal_input_hint)
-                                            setHintTextColor(if (isSystemDark) 0xFF888888.toInt() else 0xFFAAAAAA.toInt())
+                                            maxLines = 1
+                                            isSingleLine = true
+                                            imeOptions = EditorInfo.IME_ACTION_DONE
+                                            background = null
+                                            hint = context.getString(R.string.terminal_input_hint)
+                                            setHintTextColor(
+                                                if (isSystemDark) 0xFF888888.toInt() else 0xFFAAAAAA.toInt()
+                                            )
                                             setTextColor(if (isSystemDark) 0xFFFFFFFF.toInt() else 0xFF000000.toInt())
                                             doOnTextChanged { t, _, _, _ ->
                                                 val inputChar = t.toString()
@@ -323,14 +300,13 @@ fun TerminalScreen(navController: NavController) {
                                             setOnEditorActionListener { _, actionId, _ ->
                                                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                                                     val term = terminalViewRef?.get()
-                                                    if (text.isEmpty()) term?.dispatchKeyEvent(
-                                                        KeyEvent(
-                                                            KeyEvent.ACTION_DOWN,
-                                                            KeyEvent.KEYCODE_ENTER
+                                                    if (text.isEmpty())
+                                                        term?.dispatchKeyEvent(
+                                                            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
                                                         )
-                                                    )
                                                     else {
-                                                        term?.mTermSession?.write(text); setText("")
+                                                        term?.mTermSession?.write(text)
+                                                        setText("")
                                                     }
                                                     true
                                                 } else false
@@ -338,27 +314,26 @@ fun TerminalScreen(navController: NavController) {
                                         }
                                     },
                                     update = {
-                                        if (it.text.toString() != text) it.setText(text); it.setTextColor(
-                                        if (isSystemDark) 0xFFFFFFFF.toInt() else 0xFF000000.toInt()
-                                    )
-                                    }
+                                        if (it.text.toString() != text) it.setText(text)
+                                        it.setTextColor(if (isSystemDark) 0xFFFFFFFF.toInt() else 0xFF000000.toInt())
+                                    },
                                 )
                             }
                         }
                     }
                 }
             }
-        }
+        },
     ) { innerPadding ->
         // === Terminal Content Area ===
         // 🔥🔥🔥 The innerPadding here is crucial! It contains the height of the TopBar.
         // If padding is not added here, the TopBar will directly overlap the terminal.
         if (currentSession != null) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding) // Padding passed from Scaffold must be applied
-                    .background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
+                modifier =
+                    Modifier.fillMaxSize()
+                        .padding(innerPadding) // Padding passed from Scaffold must be applied
+                        .background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
             ) {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
@@ -386,7 +361,7 @@ fun TerminalScreen(navController: NavController) {
                             currentSession.updateTerminalSessionClient(client)
                             view.onScreenUpdated()
                         }
-                    }
+                    },
                 )
             }
         }

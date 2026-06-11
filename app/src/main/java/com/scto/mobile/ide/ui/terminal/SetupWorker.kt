@@ -19,12 +19,10 @@
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-
 import java.io.File
 import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object SetupWorker {
     suspend fun prepareEnvironment(context: Context) {
@@ -63,8 +61,11 @@ object SetupWorker {
                     val process = Runtime.getRuntime().exec(cmd)
                     process.waitFor()
                     if (process.exitValue() != 0) {
-                        // If gzip extraction fails, try without the z parameter (in case some tar versions do not support it)
-                        Runtime.getRuntime().exec("tar -xf ${rootfsTar.absolutePath} -C ${alpineDir.absolutePath}").waitFor()
+                        // If gzip extraction fails, try without the z parameter (in case some tar versions do not
+                        // support it)
+                        Runtime.getRuntime()
+                            .exec("tar -xf ${rootfsTar.absolutePath} -C ${alpineDir.absolutePath}")
+                            .waitFor()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -88,9 +89,7 @@ object SetupWorker {
         if (!destFile.exists() || assetName.contains("so") || assetName == "proot") {
             try {
                 context.assets.open(assetName).use { input ->
-                    FileOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
+                    FileOutputStream(destFile).use { output -> input.copyTo(output) }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

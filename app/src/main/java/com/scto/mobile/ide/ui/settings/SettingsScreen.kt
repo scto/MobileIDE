@@ -56,14 +56,13 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
-
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
 import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.ThemeState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.welcome.themeColors
@@ -631,7 +630,10 @@ fun EditorSettingsItem(
                         OutlinedTextField(
                             value = fontPath,
                             onValueChange = onFontPathChange, // Allow direct input
-                            modifier = Modifier.fillMaxWidth(), // Don't use menuAnchor to prevent click on input field from triggering Menu
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth(), // Don't use menuAnchor to prevent click on input field from
+                                                     // triggering Menu
                             label = { Text(stringResource(R.string.settings_input_hint)) },
                             singleLine = true,
                             trailingIcon = {
@@ -731,7 +733,8 @@ fun CompactSwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean)
 // Helper
 fun Modifier.scale(scale: Float) = this.graphicsLayer(scaleX = scale, scaleY = scale)
 
-// ... Other components like ThemeSettingsItem, LogSettingsItem, etc., remain unchanged (refer to previously provided full code) ...
+// ... Other components like ThemeSettingsItem, LogSettingsItem, etc., remain unchanged (refer to previously provided
+// full code) ...
 @Composable
 fun ThemeSettingsItem(
     currentThemeState: ThemeState,

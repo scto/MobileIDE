@@ -21,25 +21,26 @@ package com.scto.mobile.ide.ui.terminal
 import android.content.Context
 import com.rk.terminal.ui.screens.terminal.stat
 import com.rk.terminal.ui.screens.terminal.vmstat
+import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
-
-import com.scto.mobile.ide.core.utils.WorkspaceManager
-
 import java.io.File
 import java.io.FileOutputStream
 
 object AlpineManager {
     var currentProject: String? = null
+
     private fun getPrefixDir(context: Context): File = context.filesDir.parentFile!!
+
     private fun getLocalDir(context: Context): File = File(getPrefixDir(context), "local").apply { mkdirs() }
+
     private fun getBinDir(context: Context): File = File(getLocalDir(context), "bin").apply { mkdirs() }
+
     private fun getLibDir(context: Context): File = File(getLocalDir(context), "lib").apply { mkdirs() }
 
     /**
-     * Build the Proot command list
-     * Used to start the LSP background process (ProotStreamConnectionProvider)
+     * Build the Proot command list Used to start the LSP background process (ProotStreamConnectionProvider)
      *
      * @param context Android Context
      * @param command The array of commands to execute inside Alpine, e.g., ["vscode-html-language-server", "--stdio"]
@@ -64,10 +65,7 @@ object AlpineManager {
         args.add("-0")
 
         // [🔥 Fix 2] Mount points
-        val mounts = listOf(
-            "/proc", "/sys", "/dev", "/data", "/storage",
-            "/system"
-        )
+        val mounts = listOf("/proc", "/sys", "/dev", "/data", "/storage", "/system")
         mounts.forEach {
             if (File(it).exists()) {
                 args.add("-b")
@@ -104,7 +102,8 @@ object AlpineManager {
         // Ensure PATH contains npm's bin directory
         args.add("NODE_PATH=/root/lsp/node_modules")
 
-        // 🔥🔥🔥 Modification 2: Add /root/lsp/node_modules/.bin to PATH (Although we plan to use absolute paths, this prevents internal invocation errors)
+        // 🔥🔥🔥 Modification 2: Add /root/lsp/node_modules/.bin to PATH (Although we plan to use absolute paths, this
+        // prevents internal invocation errors)
         args.add("PATH=/root/lsp/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
         args.add("LANG=C.UTF-8")
@@ -117,8 +116,8 @@ object AlpineManager {
     }
 
     /**
-     * Get host environment variables required to run Proot.
-     * Mainly for injecting libproot-loader.so to bypass Android's Seccomp restrictions.
+     * Get host environment variables required to run Proot. Mainly for injecting libproot-loader.so to bypass Android's
+     * Seccomp restrictions.
      */
     fun getProotEnv(context: Context): Map<String, String> {
         val env = mutableMapOf<String, String>()
@@ -170,24 +169,25 @@ object AlpineManager {
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
         // 2. Environment variables (Host environment)
-        val env = mutableListOf(
-            "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
-            "HOME=/root",
-            "TERM=xterm-256color",
-            "LANG=C.UTF-8",
-            "PREFIX=${prefixDir.absolutePath}",
-            "LD_LIBRARY_PATH=${libDir.absolutePath}",
-            // Try to adapt to linkers of different architectures
-            "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
-            "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
-            "TMPDIR=${context.cacheDir.absolutePath}",
+        val env =
+            mutableListOf(
+                "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
+                "HOME=/root",
+                "TERM=xterm-256color",
+                "LANG=C.UTF-8",
+                "PREFIX=${prefixDir.absolutePath}",
+                "LD_LIBRARY_PATH=${libDir.absolutePath}",
+                // Try to adapt to linkers of different architectures
+                "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+                "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
+                "TMPDIR=${context.cacheDir.absolutePath}",
 
-            // Custom environment variables
-            "WEBIDE_VERSION_NAME=$versionName",
-            "WEBIDE_VERSION_CODE=$versionCode",
-            "WEBIDE_WORKSPACE=$workspacePath",
-            "WEBIDE_PROJECT_DIR=$targetProjectPath"
-        )
+                // Custom environment variables
+                "WEBIDE_VERSION_NAME=$versionName",
+                "WEBIDE_VERSION_CODE=$versionCode",
+                "WEBIDE_WORKSPACE=$workspacePath",
+                "WEBIDE_PROJECT_DIR=$targetProjectPath",
+            )
 
         // Inject Loader
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
@@ -206,7 +206,8 @@ object AlpineManager {
         // 4. Start Shell
         // Note: We still use init-host.sh here. If your init-host.sh hardcodes calling ./proot,
         // it might cause issues on Android 10+. But in a Terminal environment, it's usually more tolerant.
-        // If Terminal still throws Permission denied, you need to modify init-host.sh or call libproot.so directly here.
+        // If Terminal still throws Permission denied, you need to modify init-host.sh or call libproot.so directly
+        // here.
         val shell = "/system/bin/sh"
         val args = arrayOf("-cpp", initHostScript.absolutePath)
 
@@ -216,16 +217,14 @@ object AlpineManager {
             args,
             env.toTypedArray(),
             TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
-            client
+            client,
         )
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {
         try {
             context.assets.open(assetName).use { input ->
-                FileOutputStream(destFile).use { output ->
-                    input.copyTo(output)
-                }
+                FileOutputStream(destFile).use { output -> input.copyTo(output) }
             }
         } catch (e: Exception) {
             e.printStackTrace()
