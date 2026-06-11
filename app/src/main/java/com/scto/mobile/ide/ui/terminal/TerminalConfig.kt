@@ -21,7 +21,8 @@ package com.scto.mobile.ide.ui.terminal
 object TerminalConfig {
 
     // === Dynamic Color Configuration ===
-    const val VIRTUAL_KEYS_JSON = """
+    const val VIRTUAL_KEYS_JSON =
+        """
 [
   [
     "ESC",
@@ -49,6 +50,7 @@ object TerminalConfig {
   ]
 ]
 """
+
     // Get background color
     fun getBackgroundColor(isDark: Boolean): Int {
         return if (isDark) {

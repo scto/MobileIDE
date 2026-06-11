@@ -28,9 +28,7 @@ object TerminalFontManager {
     // Cache Typeface to avoid redundant loading
     private var cachedTypeface: Typeface? = null
 
-    /**
-     * Get global terminal font
-     */
+    /** Get global terminal font */
     fun getTypeface(context: Context): Typeface {
         // If already loaded, return cached instance directly
         if (cachedTypeface != null) {

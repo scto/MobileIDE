@@ -20,20 +20,14 @@ package com.scto.mobile.ide.ui.terminal
 
 import android.view.View
 import android.widget.Button
-
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeyButton
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
-
 import com.termux.terminal.TerminalSession
 
 // 🔥 Directly porting the implementation from rk terminal
 class VirtualKeysListener(val session: TerminalSession) : VirtualKeysView.IVirtualKeysView {
 
-    override fun onVirtualKeyButtonClick(
-        view: View?,
-        buttonInfo: VirtualKeyButton?,
-        button: Button?,
-    ) {
+    override fun onVirtualKeyButtonClick(view: View?, buttonInfo: VirtualKeyButton?, button: Button?) {
 
         val key = buttonInfo?.key ?: return
         val writeable: String =

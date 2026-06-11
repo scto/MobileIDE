@@ -67,18 +67,14 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
 import com.mikepenz.aboutlibraries.util.withContext
-
 import com.scto.mobile.ide.BuildConfig
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
