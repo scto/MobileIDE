@@ -6,109 +6,95 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
-import android.util.Log
-import java.io.File
-import java.io.FileOutputStream
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-object SetupWorker {
-    private const val TAG = "SetupWorker"
+import java.io.File
+import java.io.FileOutputStream
 
+object SetupWorker {
     suspend fun prepareEnvironment(context: Context) {
         withContext(Dispatchers.IO) {
             val filesDir = context.filesDir
-            val terminalDir = File(filesDir, "terminal")
+            // The parentFile here is usually /data/user/0/com.example.mytermux/
+            val prefixDir = filesDir.parentFile!!
+            val alpineDir = File(prefixDir, "local/alpine")
+            val binDir = File(prefixDir, "local/bin")
+            val libDir = File(prefixDir, "local/lib")
 
-            // 1. Gesamten "terminal" Ordner aus den Assets rekursiv kopieren
-            Log.i(TAG, "Kopiere Terminal-Ressourcen...")
-            copyAssetFolder(context, "terminal", terminalDir.absolutePath)
+            // 1. Copy binary files
+            copyAsset(context, "proot", File(filesDir, "proot"))
+            copyAsset(context, "libtalloc.so.2", File(filesDir, "libtalloc.so.2"))
 
-            // 2. OS-Archiv erkennen (Ubuntu oder Alpine)
-            val ubuntuTar = File(terminalDir, "ubuntu.tar.gz")
-            val alpineTar = File(terminalDir, "alpine.tar.gz")
-            val rootfsBin = File(terminalDir, "rootfs.bin")
+            // Ensure binary files have execution permissions
+            File(filesDir, "proot").setExecutable(true)
 
-            val osDir: File
-            val archiveFile: File
-
-            when {
-                ubuntuTar.exists() -> {
-                    osDir = File(terminalDir, "ubuntu")
-                    archiveFile = ubuntuTar
-                }
-                alpineTar.exists() -> {
-                    osDir = File(terminalDir, "alpine")
-                    archiveFile = alpineTar
-                }
-                rootfsBin.exists() -> {
-                    osDir = File(terminalDir, "alpine") // Fallback
-                    archiveFile = rootfsBin
-                }
-                else -> {
-                    Log.w(TAG, "Kein OS-Archiv (ubuntu.tar.gz, alpine.tar.gz oder rootfs.bin) gefunden!")
-                    return@withContext
-                }
+            // 2. Copy Rootfs archive (Note: source file is rootfs.bin, target saved as alpine.tar.gz)
+            val rootfsTar = File(filesDir, "alpine.tar.gz")
+            if (!rootfsTar.exists()) {
+                copyAsset(context, "rootfs.bin", rootfsTar)
             }
 
-            // 3. Rootfs entpacken, falls noch nicht geschehen
-            val etcDir = File(osDir, "etc")
-            if (!etcDir.exists() && archiveFile.exists()) {
-                osDir.mkdirs()
-                val cmd = "tar -xf ${archiveFile.absolutePath} -C ${osDir.absolutePath}"
+            // 3. Critical fix: Force extract Rootfs.
+            // Check if the /etc directory exists, if not, it means it hasn't been extracted or extraction failed.
+            val etcDir = File(alpineDir, "etc")
+            if (!etcDir.exists()) {
+                // Create target directory
+                alpineDir.mkdirs()
+
+                // Use system tar command to extract.
+                // -z: gzip, -x: extract, -f: file, -C: target directory
+                val cmd = "tar -zxf ${rootfsTar.absolutePath} -C ${alpineDir.absolutePath}"
                 try {
-                    Log.i(TAG, "Entpacke Rootfs: $cmd")
                     val process = Runtime.getRuntime().exec(cmd)
                     process.waitFor()
+                    if (process.exitValue() != 0) {
+                        // If gzip extraction fails, try without the z parameter (in case some tar versions do not support it)
+                        Runtime.getRuntime().exec("tar -xf ${rootfsTar.absolutePath} -C ${alpineDir.absolutePath}").waitFor()
+                    }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Fehler beim Entpacken des Rootfs", e)
+                    e.printStackTrace()
                 }
             }
+
+            // 4. Ensure the init script is up-to-date (overwrite on every startup for easier debugging)
+            binDir.mkdirs()
+            libDir.mkdirs()
+
+            // Copy Proot dependencies to local/lib (Required by ReTerminal logic)
+            copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
+            // Copy Proot to local/bin
+            copyAsset(context, "proot", File(binDir, "proot"))
+            File(binDir, "proot").setExecutable(true)
         }
     }
 
-    private fun copyAssetFolder(context: Context, fromAssetPath: String, toPath: String) {
-        val assetManager = context.assets
-        val assets =
+    private fun copyAsset(context: Context, assetName: String, destFile: File) {
+        // Only copy when the file does not exist (except for scripts, which are usually small and need updates)
+        if (!destFile.exists() || assetName.contains("so") || assetName == "proot") {
             try {
-                assetManager.list(fromAssetPath)
+                context.assets.open(assetName).use { input ->
+                    FileOutputStream(destFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
             } catch (e: Exception) {
-                null
+                e.printStackTrace()
             }
-
-        if (assets.isNullOrEmpty()) {
-            copySingleAsset(context, fromAssetPath, File(toPath))
-        } else {
-            val dir = File(toPath)
-            if (!dir.exists()) dir.mkdirs()
-
-            for (asset in assets) {
-                val subAssetPath = if (fromAssetPath.isEmpty()) asset else "$fromAssetPath/$asset"
-                copyAssetFolder(context, subAssetPath, "$toPath/$asset")
-            }
-        }
-    }
-
-    private fun copySingleAsset(context: Context, assetPath: String, destFile: File) {
-        // Rootfs-Archive nicht überschreiben, wenn sie schon existieren
-        if (destFile.exists() && (assetPath.contains("rootfs") || assetPath.contains("tar.gz"))) return
-
-        try {
-            context.assets.open(assetPath).use { input ->
-                FileOutputStream(destFile).use { output -> input.copyTo(output) }
-            }
-
-            // Ausführungsrechte für Shell-Skripte, Binaries und Libs
-            if (destFile.name.endsWith(".sh") || destFile.name == "proot" || destFile.name.contains(".so")) {
-                destFile.setExecutable(true, false)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Asset nicht gefunden oder Kopierfehler: $assetPath", e)
         }
     }
 }

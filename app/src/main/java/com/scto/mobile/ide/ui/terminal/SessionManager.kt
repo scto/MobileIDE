@@ -19,135 +19,116 @@
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
+
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 
 /**
- * Wrapper class: Resolves the issue of mTitle being invisible inside TerminalSession. We maintain the Session object
- * and its title ourselves.
+ * Wrapper class: Solves the issue where mTitle inside TerminalSession is invisible.
+ * We maintain the Session object and its title ourselves.
  */
-data class SessionWrapper(val session: TerminalSession, val title: String)
+data class SessionWrapper(
+    val session: TerminalSession,
+    val title: String
+)
 
 object SessionManager {
-    // Use Compose's mutableStateListOf to ensure UI listens to list changes
+    // Use Compose's mutableStateListOf to ensure the UI can listen to list changes
     val sessions = mutableStateListOf<SessionWrapper>()
 
     // Currently selected session index
     var currentSessionIndex by mutableIntStateOf(0)
 
-    // Get currently active Session object (for UI use)
-    // Return null if list is empty or index is out of bounds
+    // Get the currently active Session object (for UI use).
+    // Returns null if the list is empty or the index is out of bounds.
     val currentSession: TerminalSession?
-        get() =
-            if (sessions.isNotEmpty() && currentSessionIndex in sessions.indices) {
-                sessions[currentSessionIndex].session
-            } else null
+        get() = if (sessions.isNotEmpty() && currentSessionIndex in sessions.indices) {
+            sessions[currentSessionIndex].session
+        } else null
 
-    /** Create new session and add to list */
+    /**
+     * Create a new session and add it to the list
+     */
     fun addNewSession(context: Context) {
-        // Define Session callback interface
-        val client =
-            object : TerminalSessionClient {
-                override fun onTextChanged(changedSession: TerminalSession) {
-                    // When text changes, TerminalView on UI layer automatically redraws
-                }
+        // Define the callback interface for Session
+        val client = object : TerminalSessionClient {
+            override fun onTextChanged(changedSession: TerminalSession) {
+                // When text changes, the TerminalView in the UI layer automatically redraws
+            }
 
-                override fun onTitleChanged(changedSession: TerminalSession) {
-                    // If you want to support dynamic titles (e.g., show current directory),
-                    // you can update wrapper's title here.
-                    // Temporarily left blank to use static title.
-                }
+            override fun onTitleChanged(changedSession: TerminalSession) {
+                // If you want to support dynamic titles (e.g., displaying the current directory),
+                // you can update the wrapper's title here. Leaving it blank for now, using a static title.
+            }
 
-                override fun onSessionFinished(finishedSession: TerminalSession) {
-                    val exitStatus = finishedSession.exitStatus
-                    android.util.Log.i("SessionManager", "Terminal session finished: exitStatus=$exitStatus")
-                    // When Shell exits (e.g., user enters 'exit'), automatically remove this session
-                    // 1. Find the wrapper containing this session in the list
-                    val wrapper = sessions.find { it.session == finishedSession }
-                    // 2. Remove it
-                    if (wrapper != null) {
-                        removeSession(wrapper)
-                    }
-                }
-
-                // --- Below are other interfaces that must be implemented but are temporarily not needed ---
-                override fun onCopyTextToClipboard(session: TerminalSession, text: String) {}
-
-                override fun onPasteTextFromClipboard(session: TerminalSession?) {}
-
-                override fun onBell(session: TerminalSession) {}
-
-                override fun onColorsChanged(session: TerminalSession) {}
-
-                override fun onTerminalCursorStateChange(state: Boolean) {}
-
-                override fun setTerminalShellPid(session: TerminalSession, pid: Int) {
-                    android.util.Log.i("SessionManager", "Terminal session shell PID set: $pid")
-                }
-
-                override fun getTerminalCursorStyle(): Int = 0
-
-                override fun logError(tag: String, message: String) {
-                    android.util.Log.e(tag, message)
-                }
-
-                override fun logWarn(tag: String, message: String) {
-                    android.util.Log.w(tag, message)
-                }
-
-                override fun logInfo(tag: String, message: String) {
-                    android.util.Log.i(tag, message)
-                }
-
-                override fun logDebug(tag: String, message: String) {
-                    android.util.Log.d(tag, message)
-                }
-
-                override fun logVerbose(tag: String, message: String) {
-                    android.util.Log.v(tag, message)
-                }
-
-                override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
-                    android.util.Log.e(tag, message, e)
-                }
-
-                override fun logStackTrace(tag: String, e: Exception) {
-                    android.util.Log.e(tag, "Terminal Exception", e)
+            override fun onSessionFinished(finishedSession: TerminalSession) {
+                // When the Shell exits (e.g., user inputs 'exit'), automatically remove this session
+                // 1. Find the wrapper containing this session in the list
+                val wrapper = sessions.find { it.session == finishedSession }
+                // 2. Remove it
+                if (wrapper != null) {
+                    removeSession(wrapper)
                 }
             }
 
-        // Call AlpineManager to create core session
+            // --- Below are other interfaces that must be implemented but are not needed temporarily ---
+            override fun onCopyTextToClipboard(session: TerminalSession, text: String) {}
+            override fun onPasteTextFromClipboard(session: TerminalSession?) {}
+            override fun onBell(session: TerminalSession) {}
+            override fun onColorsChanged(session: TerminalSession) {}
+            override fun onTerminalCursorStateChange(state: Boolean) {}
+            override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
+            override fun getTerminalCursorStyle(): Int = 0
+            override fun logError(tag: String, message: String) {}
+            override fun logWarn(tag: String, message: String) {}
+            override fun logInfo(tag: String, message: String) {}
+            override fun logDebug(tag: String, message: String) {}
+            override fun logVerbose(tag: String, message: String) {}
+            override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
+                e.printStackTrace()
+            }
+            override fun logStackTrace(tag: String, e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Call AlpineManager to create the core session
         val session = AlpineManager.createSession(context, client)
 
-        // Generate title (e.g., Term 1, Term 2)
+        // Generate title (e.g.: Term 1, Term 2)
         val title = "Term ${sessions.size + 1}"
 
-        // Wrap and add to list
+        // Wrap and add to the list
         sessions.add(SessionWrapper(session, title))
 
-        // Automatically switch to newly created session
+        // Automatically switch to the newly created session
         currentSessionIndex = sessions.lastIndex
     }
 
-    /** Remove specified session */
+    /**
+     * Remove the specified session
+     */
     fun removeSession(wrapper: SessionWrapper) {
-        // 1. Ensure underlying session stops
+        // 1. Ensure the underlying session stops
         wrapper.session.finishIfRunning()
 
-        // 2. Remove from list
+        // 2. Remove from the list
         sessions.remove(wrapper)
 
-        // 3. Fix current index to prevent out of bounds
+        // 3. Fix the current index to prevent out of bounds
         if (currentSessionIndex >= sessions.size) {
             currentSessionIndex = (sessions.size - 1).coerceAtLeast(0)
         }
     }
 
-    /** Switch to session at specified index */
+    /**
+     * Switch to the session at the specified index
+     */
     fun switchTo(index: Int) {
         if (index in sessions.indices) {
             currentSessionIndex = index

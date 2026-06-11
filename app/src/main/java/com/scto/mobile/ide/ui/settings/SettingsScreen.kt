@@ -56,18 +56,19 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
+
 import com.scto.mobile.ide.R
+import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
 import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.ThemeState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
-import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.welcome.themeColors
 
-// 自动保存选项枚举
+// Auto-save option enumeration
 enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
     OFF(R.string.auto_save_off, 0L),
     SEC_30(R.string.auto_save_30_seconds, 30_000L),
@@ -76,7 +77,7 @@ enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
     MIN_10(R.string.auto_save_10_minutes, 600_000L),
 }
 
-// 扩展函数解决 luminance 报错
+// Extension function to resolve luminance error
 fun Color.luminance(): Float {
     return 0.2126f * this.red + 0.7152f * this.green + 0.0722f * this.blue
 }
@@ -97,7 +98,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
 
-    // 使用与 ViewModel 中加载自动保存设置一致的 SharedPreferences 文件名
+    // Use the same SharedPreferences filename as the one used in ViewModel for loading auto-save settings
     val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE) }
 
     val fontSize = prefs.getFloat("editor_font_size", 14f)
@@ -118,10 +119,10 @@ fun SettingsScreen(
     }
     var autoSaveInterval by remember { mutableLongStateOf(generalPrefs.getLong("auto_save_interval", 0L)) }
     var showAutoSaveDialog by remember { mutableStateOf(false) }
-    // 保存之前的 LSP 状态，用于检测变化
+    // Save the previous LSP state to detect changes
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
 
-    // 自动保存
+    // Auto save
     LaunchedEffect(
         tabWidth,
         wordWrap,
@@ -148,7 +149,7 @@ fun SettingsScreen(
             putString("editor_custom_symbols", customSymbols)
         }
 
-        // 检测 LSP 状态变化，重新加载所有编辑器
+        // Detect LSP state changes and reload all editors
         if (lspEnabled != previousLspEnabled) {
             editorViewModel?.reloadAllEditors(context)
             previousLspEnabled = lspEnabled
@@ -221,7 +222,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = 4.dp, top = 8.dp),
                 )
             }
-            // 🔥 新增：自动保存设置入口
+            // 🔥 New: Auto-save settings entry
             item {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Language,
@@ -235,7 +236,7 @@ fun SettingsScreen(
                     AutoSaveOption.entries.find { it.interval == autoSaveInterval } ?: AutoSaveOption.OFF
                 val currentOptionLabel = stringResource(currentOption.labelRes)
                 SimpleSettingsCard(
-                    icon = Icons.Outlined.SaveAs, // 需要确保有此图标，如果没有可以使用 Icons.Default.Save
+                    icon = Icons.Outlined.SaveAs, // Ensure this icon exists; fallback to Icons.Default.Save if needed
                     title = stringResource(R.string.settings_auto_save_backup_title),
                     subtitle =
                         if (currentOption == AutoSaveOption.OFF) {
@@ -371,7 +372,7 @@ fun SettingsScreen(
     }
 }
 
-// ================= 编辑器设置组件 (重构优化版) =================
+// ================= Editor Settings Component (Refactored & Optimized) =================
 @Composable
 private fun AutoSaveDialog(
     selectedInterval: Long,
@@ -561,7 +562,7 @@ fun EditorSettingsItem(
                     CompactSwitchRow(stringResource(R.string.settings_lsp_completion), lspEnabled, onLspEnabledChange)
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // === 1. 缩进设置 (Segmented Style) ===
+                    // === 1. Indentation Settings (Segmented Style) ===
                     Text(
                         stringResource(R.string.settings_indent_width),
                         style = MaterialTheme.typography.labelSmall,
@@ -571,13 +572,13 @@ fun EditorSettingsItem(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp), // 按钮之间的间距
+                        horizontalArrangement = Arrangement.spacedBy(12.dp), // Spacing between buttons
                     ) {
                         val options = listOf(2, 4, 8)
                         options.forEach { option ->
                             val isSelected = tabWidth == option
 
-                            // 颜色动画：选中用主色(Primary)，未选中用高色调表面色(SurfaceContainerHigh)
+                            // Color animation: Use primary color when selected, SurfaceContainerHigh when unselected
                             val containerColor by
                                 animateColorAsState(
                                     targetValue =
@@ -598,16 +599,16 @@ fun EditorSettingsItem(
                             Surface(
                                 onClick = { onTabWidthChange(option) },
                                 modifier =
-                                    Modifier.weight(1f) // 三个按钮平分宽度
-                                        .height(32.dp), // 【关键】高度压小，显得精致
-                                shape = RoundedCornerShape(4.dp), // 【关键】4dp 小圆角，硬朗风格
+                                    Modifier.weight(1f) // Three buttons divide the width equally
+                                        .height(32.dp), // [Key] Reduce height for a more refined look
+                                shape = RoundedCornerShape(4.dp), // [Key] 4dp small rounded corners, robust style
                                 color = containerColor,
                                 contentColor = contentColor,
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
                                         text = stringResource(R.string.settings_spaces_format, option),
-                                        style = MaterialTheme.typography.labelMedium, // 使用较小的字号
+                                        style = MaterialTheme.typography.labelMedium, // Use smaller font size
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                     )
                                 }
@@ -617,7 +618,7 @@ fun EditorSettingsItem(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // === 2. 字体设置 (Combo Box 模式) ===
+                    // === 2. Font Settings (Combo Box mode) ===
                     Text(
                         stringResource(R.string.settings_editor_font),
                         style = MaterialTheme.typography.labelSmall,
@@ -625,12 +626,12 @@ fun EditorSettingsItem(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Box 容器用于定位 DropdownMenu
+                    // Box container used to position DropdownMenu
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = fontPath,
-                            onValueChange = onFontPathChange, // 允许直接输入
-                            modifier = Modifier.fillMaxWidth(), // 不使用 menuAnchor，防止输入框点击触发 Menu
+                            onValueChange = onFontPathChange, // Allow direct input
+                            modifier = Modifier.fillMaxWidth(), // Don't use menuAnchor to prevent click on input field from triggering Menu
                             label = { Text(stringResource(R.string.settings_input_hint)) },
                             singleLine = true,
                             trailingIcon = {
@@ -640,12 +641,12 @@ fun EditorSettingsItem(
                             },
                         )
 
-                        // 下拉菜单
+                        // Dropdown menu
                         DropdownMenu(
                             expanded = isFontDropdownExpanded,
                             onDismissRequest = { isFontDropdownExpanded = false },
                             offset = DpOffset(0.dp, 0.dp),
-                            modifier = Modifier.fillMaxWidth(0.9f), // 稍微调整宽度适应
+                            modifier = Modifier.fillMaxWidth(0.9f), // Slightly adjust width to fit
                         ) {
                             fontPresetOptions.forEach { preset ->
                                 DropdownMenuItem(
@@ -672,7 +673,7 @@ fun EditorSettingsItem(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // === 3. 行为开关 ===
+                    // === 3. Behavior Switches ===
                     Text(
                         stringResource(R.string.settings_behavior),
                         style = MaterialTheme.typography.labelSmall,
@@ -694,7 +695,7 @@ fun EditorSettingsItem(
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                    // === 4. 符号栏 ===
+                    // === 4. Symbol Bar ===
                     Text(
                         stringResource(R.string.settings_custom_symbols),
                         style = MaterialTheme.typography.labelSmall,
@@ -727,10 +728,10 @@ fun CompactSwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean)
     }
 }
 
-// 辅助
+// Helper
 fun Modifier.scale(scale: Float) = this.graphicsLayer(scaleX = scale, scaleY = scale)
 
-// ... 其他组件 ThemeSettingsItem, LogSettingsItem 等保持不变 (参考之前提供的完整代码) ...
+// ... Other components like ThemeSettingsItem, LogSettingsItem, etc., remain unchanged (refer to previously provided full code) ...
 @Composable
 fun ThemeSettingsItem(
     currentThemeState: ThemeState,
@@ -836,7 +837,7 @@ fun ThemeSettingsItem(
                             Switch(
                                 checked = currentThemeState.isMonetEnabled,
                                 onCheckedChange = {
-                                    // 互斥逻辑：启用 Monet 时，强制关闭 CustomTheme
+                                    // Mutually exclusive logic: When Monet is enabled, force close CustomTheme
                                     val newIsCustom = if (it) false else currentThemeState.isCustomTheme
                                     onThemeChange(
                                         currentThemeState.selectedModeIndex,

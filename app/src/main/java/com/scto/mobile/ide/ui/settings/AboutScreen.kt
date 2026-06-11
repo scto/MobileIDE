@@ -1,6 +1,6 @@
 /*
  * MobileIDE - A powerful IDE for Android app development.
- * Copyright (C) 2025  如日中天  <3382198490@qq.com>
+ * Copyright (C) 2025  Ru Ri Zhong Tian (Midday Sun) <3382198490@qq.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,20 +67,24 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
 import com.mikepenz.aboutlibraries.util.withContext
+
 import com.scto.mobile.ide.BuildConfig
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// --- 1. 数据模型定义 ---
+// --- 1. Data Model Definitions ---
 
-// 开发者
+// Developer
 data class Developer(
     val name: String,
     val role: String,
@@ -89,24 +93,24 @@ data class Developer(
     val url: String = "",
 )
 
-// 2. 感谢名单 (增加 qq 字段)
+// 2. Special Thanks List (added qq field)
 data class SpecialThanks(
-    val qq: String, // 新增：QQ号
+    val qq: String, // New: QQ Number
     val name: String,
     val title: String,
     val message: String,
-    val url: String = "", // 点击跳转链接
+    val url: String = "", // Click to jump link
 )
 
-// 3. 捐赠名单 (增加 qq 字段)
+// 3. Donor List (added qq field)
 data class Donor(
-    val qq: String, // 新增：QQ号
+    val qq: String, // New: QQ Number
     val name: String,
     val amount: String,
     val date: String,
 )
 
-// 全局缓存
+// Global cache
 private var cachedLibraries: List<Library>? = null
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,7 +123,7 @@ fun AboutScreen(navController: NavController) {
 
     var showAuthorNote by remember { mutableStateOf(prefs.getBoolean("show_author_note", true)) }
 
-    // --- 数据加载 ---
+    // --- Data Loading ---
     var libraries by remember { mutableStateOf(cachedLibraries ?: emptyList()) }
     var isLoading by remember { mutableStateOf(cachedLibraries == null) }
     var selectedLib by remember { mutableStateOf<Library?>(null) }
@@ -135,9 +139,9 @@ fun AboutScreen(navController: NavController) {
         }
     }
 
-    // --- 数据源 ---
+    // --- Data Sources ---
 
-    // 1. 开发团队
+    // 1. Development Team
     val teamMembers =
         listOf(
             Developer(
@@ -188,7 +192,7 @@ fun AboutScreen(navController: NavController) {
             ),
         )
 
-    // 2. 感谢名单
+    // 2. Special Thanks List
     val thanksList =
         listOf(
             SpecialThanks(
@@ -214,7 +218,7 @@ fun AboutScreen(navController: NavController) {
             ),
         )
 
-    // 3. 捐赠名单
+    // 3. Donor List
     val donorList = remember {
         listOf(
             Donor("2051775505", "・是小浣熊哦・", "¥ 66.66", "2025.12"),
@@ -251,10 +255,10 @@ fun AboutScreen(navController: NavController) {
             contentPadding = PaddingValues(bottom = 52.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // 1. App 头部
+            // 1. App Header
             item { AppHeaderSection() }
 
-            // 2. 开发团队 (Chip 风格)
+            // 2. Development Team (Chip style)
             item {
                 SectionTitle(stringResource(R.string.about_team_title))
                 LazyRow(
@@ -291,26 +295,26 @@ fun AboutScreen(navController: NavController) {
                 }
             }
 
-            // 4. 捐赠名单
+            // 4. Donor List
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 SectionTitle(stringResource(R.string.about_donors_title))
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp), // 间距适中
+                    horizontalArrangement = Arrangement.spacedBy(10.dp), // Moderate spacing
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     items(donorList) { item -> DonorCard(item) }
                 }
             }
 
-            // 5. 开源协议
+            // 5. Open Source Licenses
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 SectionTitle(stringResource(R.string.about_licenses_title))
             }
 
-            // 6. 库列表
+            // 6. Library List
             if (isLoading) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -370,13 +374,13 @@ fun AboutScreen(navController: NavController) {
     }
 }
 
-// 辅助函数：生成 QQ 头像 URL
+// Helper function: Generate QQ avatar URL
 private fun getQQAvatar(qq: String): String {
-    // 使用您提供的接口，规格 640 保证高清
+    // Using the API you provided, spec 640 guarantees high definition
     return "https://q.qlogo.cn/headimg_dl?dst_uin=$qq&spec=640&img_type=jpg"
 }
 
-// 1. 感谢名单卡片 (MD3 风格：左侧头像 + 右侧信息)
+// 1. Special Thanks Card (MD3 Style: Avatar on left + Info on right)
 @Composable
 private fun ThanksCard(item: SpecialThanks) {
     val context = LocalContext.current
@@ -390,30 +394,30 @@ private fun ThanksCard(item: SpecialThanks) {
             }
         },
         modifier =
-            Modifier.width(300.dp) // 宽度
-                .height(110.dp), // 高度
+            Modifier.width(300.dp) // Width
+                .height(110.dp), // Height
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer // 柔和的容器色
+                containerColor = MaterialTheme.colorScheme.surfaceContainer // Soft container color
             ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(0.dp),
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            // 头像区域
+            // Avatar area
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current).data(getQQAvatar(item.qq)).crossfade(true).build(),
                 contentDescription = item.name,
                 modifier =
-                    Modifier.size(56.dp) // 头像稍大，突出显示
+                    Modifier.size(56.dp) // Slightly larger avatar for emphasis
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant), // 加载时的背景
+                        .background(MaterialTheme.colorScheme.surfaceVariant), // Background during loading
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop,
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // 文字信息区域
+            // Text info area
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -425,7 +429,7 @@ private fun ThanksCard(item: SpecialThanks) {
                         overflow = TextOverflow.Ellipsis,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    // 头衔胶囊
+                    // Title capsule
                     Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(6.dp)) {
                         Text(
                             text = item.title,
@@ -439,7 +443,7 @@ private fun ThanksCard(item: SpecialThanks) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // 感言
+                // Testimonial / Message
                 Text(
                     text = item.message,
                     style = MaterialTheme.typography.bodySmall,
@@ -453,12 +457,12 @@ private fun ThanksCard(item: SpecialThanks) {
     }
 }
 
-// 2. 捐赠名单卡片 (MD3 风格：微型垂直卡片，圆形头像)
+// 2. Donor Card (MD3 Style: Miniature vertical card, circular avatar)
 @Composable
 private fun DonorCard(item: Donor) {
     OutlinedCard(
         modifier =
-            Modifier.width(100.dp) // 依然保持小巧
+            Modifier.width(100.dp) // Keep it small
                 .height(120.dp),
         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
@@ -469,7 +473,7 @@ private fun DonorCard(item: Donor) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // 圆形小头像
+            // Small circular avatar
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current).data(getQQAvatar(item.qq)).crossfade(true).build(),
                 contentDescription = item.name,
@@ -480,7 +484,7 @@ private fun DonorCard(item: Donor) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 名字
+            // Name
             Text(
                 text = item.name,
                 style = MaterialTheme.typography.labelMedium,
@@ -492,7 +496,7 @@ private fun DonorCard(item: Donor) {
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // 金额 (高亮显示)
+            // Amount (Highlighted)
             Surface(color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f), shape = CircleShape) {
                 Text(
                     text = item.amount,

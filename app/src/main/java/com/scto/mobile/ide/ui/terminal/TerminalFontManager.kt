@@ -25,24 +25,26 @@ object TerminalFontManager {
     // Default font path
     private const val DEFAULT_FONT_PATH = "ttf/JetBrainsMono-Regular.ttf"
 
-    // Cache Typeface to avoid repeated loading
+    // Cache Typeface to avoid redundant loading
     private var cachedTypeface: Typeface? = null
 
-    /** Get global terminal font */
+    /**
+     * Get global terminal font
+     */
     fun getTypeface(context: Context): Typeface {
-        // If already loaded, return cache directly
+        // If already loaded, return cached instance directly
         if (cachedTypeface != null) {
             return cachedTypeface!!
         }
 
-        // Attempt to load font
+        // Try to load the font
         return try {
             val font = Typeface.createFromAsset(context.assets, DEFAULT_FONT_PATH)
             cachedTypeface = font
             font
         } catch (e: Exception) {
             e.printStackTrace()
-            // If loading fails (file does not exist), fallback to system monospace font
+            // If loading fails (file does not exist), fallback to the system monospace font
             Typeface.MONOSPACE
         }
     }
