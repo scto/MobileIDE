@@ -1666,10 +1666,11 @@ private suspend fun performBuild(
         com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing command: ${cmd.joinToString(" ")}")
 
         try {
-            val processBuilder = ProcessBuilder(cmd).apply {
-                environment().putAll(env)
-                directory(File(projectPath))
-            }
+            val processBuilder =
+                ProcessBuilder(cmd).apply {
+                    environment().putAll(env)
+                    directory(File(projectPath))
+                }
 
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")
