@@ -7,6 +7,8 @@ export ANDROID_HOME=/opt/android-sdk
 export ANDROID_ROOT=/system
 export PROJECTS=/storage/emulated/0/MobileIDEProjects
 export HOME=/root
+export _JAVA_OPTIONS="-Xint"
+export JAVA_TOOL_OPTIONS="-Xint"
 export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmake/3.22.1/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
 
 # 2. Write MobileIDETerminal style welcome message to /etc/motd
@@ -49,6 +51,8 @@ fi
 export ANDROID_HOME=/opt/android-sdk
 export ANDROID_ROOT=/system
 export PROJECTS=/storage/emulated/0/MobileIDEProjects
+export _JAVA_OPTIONS="-Xint"
+export JAVA_TOOL_OPTIONS="-Xint"
 export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmake/3.22.1/bin:$PATH
 
 # Colorized aliases
