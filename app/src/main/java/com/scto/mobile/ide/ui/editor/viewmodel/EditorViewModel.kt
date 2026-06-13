@@ -1157,22 +1157,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         "java" ->
                             CustomLanguageServerDefinition(
                                 ext = "java",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("jdtls"),
-                                    )
-                                },
+                                serverConnectProvider = { ProotStreamConnectionProvider(context, listOf("jdtls")) },
                             )
                         "kt",
                         "kotlin" ->
                             CustomLanguageServerDefinition(
                                 ext = "kt",
                                 serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("kotlin-language-server"),
-                                    )
+                                    ProotStreamConnectionProvider(context, listOf("kotlin-language-server"))
                                 },
                             )
                         else -> null

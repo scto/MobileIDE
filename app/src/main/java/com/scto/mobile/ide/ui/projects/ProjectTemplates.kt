@@ -840,7 +840,8 @@ object ProjectTemplates {
             val Purple40 = Color(0xFF6650a4)
             val PurpleGrey40 = Color(0xFF625b71)
             val Pink40 = Color(0xFF7D5260)
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getTypeKt(packageName: String): String {
@@ -862,7 +863,8 @@ object ProjectTemplates {
                     letterSpacing = 0.5.sp
                 )
             )
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getThemeKt(packageName: String): String {
@@ -925,6 +927,7 @@ object ProjectTemplates {
                     content = content
                 )
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 }
