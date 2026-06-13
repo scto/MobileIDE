@@ -182,10 +182,10 @@ object AlpineManager {
                 "TMPDIR=${context.cacheDir.absolutePath}",
 
                 // Custom environment variables
-                "WEBIDE_VERSION_NAME=$versionName",
-                "WEBIDE_VERSION_CODE=$versionCode",
-                "WEBIDE_WORKSPACE=$workspacePath",
-                "WEBIDE_PROJECT_DIR=$targetProjectPath",
+                "MOBILEIDE_VERSION_NAME=$versionName",
+                "MOBILEIDE_VERSION_CODE=$versionCode",
+                "MOBILEIDE_WORKSPACE=$workspacePath",
+                "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
             )
 
         // Inject Loader

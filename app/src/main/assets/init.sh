@@ -38,7 +38,7 @@ if ! command -v node > /dev/null 2>&1 || ! command -v jdtls > /dev/null 2>&1 || 
         # Install basic dependencies
         apk add bash gcompat glib nano nodejs npm
 
-        # Install LSP services (WebIDE core function)
+        # Install LSP services (MobileIDE core function)
         echo -e "\e[34;1m[*] \e[0mInstalling JS/TS/HTML/CSS Language Servers...\e[0m"
         rm -rf /usr/local/lib/node_modules
         npm install -g typescript typescript-language-server vscode-langservers-extracted
@@ -71,10 +71,10 @@ if [ "$#" -eq 0 ]; then
     fi
 
     # [🔥 Core modification] Enter project directory or workspace if available
-    if [ -n "$WEBIDE_PROJECT_DIR" ] && [ -d "$WEBIDE_PROJECT_DIR" ]; then
-        cd "$WEBIDE_PROJECT_DIR"
-    elif [ -n "$WEBIDE_WORKSPACE" ] && [ -d "$WEBIDE_WORKSPACE" ]; then
-        cd "$WEBIDE_WORKSPACE"
+    if [ -n "$MOBILEIDE_PROJECT_DIR" ] && [ -d "$MOBILEIDE_PROJECT_DIR" ]; then
+        cd "$MOBILEIDE_PROJECT_DIR"
+    elif [ -n "$MOBILEIDE_WORKSPACE" ] && [ -d "$MOBILEIDE_WORKSPACE" ]; then
+        cd "$MOBILEIDE_WORKSPACE"
     else
         cd /
     fi
