@@ -270,10 +270,7 @@ fun NewProjectScreen(navController: NavController) {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Box(modifier = Modifier.weight(1f)) {
                         CleanTextField(
                             value = minSdk,
@@ -298,17 +295,14 @@ fun NewProjectScreen(navController: NavController) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = stringResource(R.string.new_project_kotlin_dsl),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
-                    Switch(
-                        checked = useKotlinDsl,
-                        onCheckedChange = { useKotlinDsl = it }
-                    )
+                    Switch(checked = useKotlinDsl, onCheckedChange = { useKotlinDsl = it })
                 }
 
                 Spacer(modifier = Modifier.height(100.dp))

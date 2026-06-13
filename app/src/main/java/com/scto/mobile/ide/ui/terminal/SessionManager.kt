@@ -25,7 +25,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -109,9 +108,7 @@ object SessionManager {
             }
 
         // Call AlpineManager to create the core session
-        val session = withContext(Dispatchers.IO) {
-            AlpineManager.createSession(context, client)
-        }
+        val session = withContext(Dispatchers.IO) { AlpineManager.createSession(context, client) }
 
         withContext(Dispatchers.Main) {
             // Generate title (e.g.: Term 1, Term 2)

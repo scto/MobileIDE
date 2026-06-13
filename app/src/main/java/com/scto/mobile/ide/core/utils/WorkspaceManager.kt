@@ -32,8 +32,7 @@ object WorkspaceManager {
     private const val KEY_IS_CONFIGURED = "is_workspace_configured"
 
     fun cleanPath(path: String): String {
-        return path.replace(".debug", "")
-            .replace(".release", "")
+        return path.replace(".debug", "").replace(".release", "")
     }
 
     fun getDefaultPath(context: Context): String {
