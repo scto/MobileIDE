@@ -59,6 +59,7 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
+import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.ThemeState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
@@ -251,6 +252,7 @@ fun SettingsScreen(
         activeInstallElapsedTime = "00:00"
         activeInstallRemainingTime = "--:--"
         Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
+        LogCatcher.i("SettingsScreen", "Starting installation of: $jobName")
 
         val expectedDurationSec =
             when (jobName) {
@@ -305,6 +307,7 @@ fun SettingsScreen(
                     (context as android.app.Activity).runOnUiThread {
                         jobFinished = true
                         activeInstallJobName = null
+                        LogCatcher.i("SettingsScreen", "Terminal environment reinstall success")
                         Toast.makeText(
                                 context,
                                 context.getString(R.string.toast_terminal_reinstall_success),
@@ -334,6 +337,7 @@ fun SettingsScreen(
                         jobFinished = true
                         activeInstallJobName = null
                         if (success) {
+                            LogCatcher.i("SettingsScreen", "Install success: $jobName")
                             Toast.makeText(
                                     context,
                                     context.getString(R.string.toast_install_success, jobName),
@@ -341,6 +345,7 @@ fun SettingsScreen(
                                 )
                                 .show()
                         } else {
+                            LogCatcher.w("SettingsScreen", "Install failed: $jobName (Exit code ${process.exitValue()})")
                             Toast.makeText(
                                     context,
                                     context.getString(
@@ -359,6 +364,7 @@ fun SettingsScreen(
                 (context as android.app.Activity).runOnUiThread {
                     jobFinished = true
                     activeInstallJobName = null
+                    LogCatcher.e("SettingsScreen", "Install error for $jobName", e)
                     Toast.makeText(
                             context,
                             context.getString(
