@@ -36,18 +36,20 @@ class App : Application() {
         application = this
         Res.application = this
 
-        Timber.plant(object : Timber.DebugTree() {
-            override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-                val finalTag = tag ?: "ApkBuilder"
-                when (priority) {
-                    android.util.Log.DEBUG -> LogCatcher.d(finalTag, message)
-                    android.util.Log.INFO -> LogCatcher.i(finalTag, message)
-                    android.util.Log.WARN -> LogCatcher.w(finalTag, message)
-                    android.util.Log.ERROR -> LogCatcher.e(finalTag, message, t as? Exception)
-                    else -> LogCatcher.i(finalTag, message)
+        Timber.plant(
+            object : Timber.DebugTree() {
+                override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+                    val finalTag = tag ?: "ApkBuilder"
+                    when (priority) {
+                        android.util.Log.DEBUG -> LogCatcher.d(finalTag, message)
+                        android.util.Log.INFO -> LogCatcher.i(finalTag, message)
+                        android.util.Log.WARN -> LogCatcher.w(finalTag, message)
+                        android.util.Log.ERROR -> LogCatcher.e(finalTag, message, t as? Exception)
+                        else -> LogCatcher.i(finalTag, message)
+                    }
                 }
             }
-        })
+        )
 
         GlobalScope.launch(Dispatchers.IO) {
             getTempDir().apply {

@@ -631,9 +631,8 @@ fun EditorSettingsItem(
                             value = fontPath,
                             onValueChange = onFontPathChange, // Allow direct input
                             modifier =
-                                Modifier
-                                    .fillMaxWidth(), // Don't use menuAnchor to prevent click on input field from
-                                                     // triggering Menu
+                                Modifier.fillMaxWidth(), // Don't use menuAnchor to prevent click on input field from
+                            // triggering Menu
                             label = { Text(stringResource(R.string.settings_input_hint)) },
                             singleLine = true,
                             trailingIcon = {

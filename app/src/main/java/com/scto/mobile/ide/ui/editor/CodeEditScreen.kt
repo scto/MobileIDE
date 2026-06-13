@@ -1653,28 +1653,34 @@ private suspend fun performBuild(
         }
 
         val gradlewFile = File(projectPath, "gradlew")
-        val cmd = if (gradlewFile.exists()) {
-            if (!gradlewFile.canExecute()) {
-                gradlewFile.setExecutable(true)
+        val cmd =
+            if (gradlewFile.exists()) {
+                if (!gradlewFile.canExecute()) {
+                    gradlewFile.setExecutable(true)
+                }
+                listOf(gradlewFile.absolutePath, "assembleDebug")
+            } else {
+                listOf("gradle", "assembleDebug")
             }
-            listOf(gradlewFile.absolutePath, "assembleDebug")
-        } else {
-            listOf("gradle", "assembleDebug")
-        }
 
         com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing command: ${cmd.joinToString(" ")}")
 
         try {
             val processBuilder = ProcessBuilder(cmd)
             processBuilder.directory(File(projectPath))
-            
+
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")
             if (!localProperties.exists()) {
                 val sdkDir = File("/data/data/com.termux/files/home/android-sdk")
                 if (sdkDir.exists()) {
-                    localProperties.writeText("sdk.dir=${sdkDir.absolutePath.replace("\\", "\\\\").replace(":", "\\:")}\n")
-                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Created local.properties with sdk.dir=${sdkDir.absolutePath}")
+                    localProperties.writeText(
+                        "sdk.dir=${sdkDir.absolutePath.replace("\\", "\\\\").replace(":", "\\:")}\n"
+                    )
+                    com.scto.mobile.ide.core.utils.LogCatcher.i(
+                        "Build",
+                        "Created local.properties with sdk.dir=${sdkDir.absolutePath}",
+                    )
                 }
             }
 
@@ -1706,11 +1712,12 @@ private suspend fun performBuild(
             com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Build process finished with exit code: $exitCode")
 
             if (exitCode == 0) {
-                val apkPaths = listOf(
-                    "app/build/outputs/apk/debug/app-debug.apk",
-                    "app/build/outputs/apk/release/app-release.apk",
-                    "build/outputs/apk/debug/app-debug.apk",
-                )
+                val apkPaths =
+                    listOf(
+                        "app/build/outputs/apk/debug/app-debug.apk",
+                        "app/build/outputs/apk/release/app-release.apk",
+                        "build/outputs/apk/debug/app-debug.apk",
+                    )
                 var foundApk: File? = null
                 for (path in apkPaths) {
                     val file = File(projectPath, path)
@@ -1722,17 +1729,22 @@ private suspend fun performBuild(
 
                 if (foundApk != null) {
                     com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Found built APK: ${foundApk.absolutePath}")
-                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Sign/Align verification via ApkAligner/ApkSigner is ready.")
+                    com.scto.mobile.ide.core.utils.LogCatcher.i(
+                        "Build",
+                        "Sign/Align verification via ApkAligner/ApkSigner is ready.",
+                    )
                     onResult(BuildResultState.Finished("Build succeeded", foundApk.absolutePath))
                 } else {
-                    com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Build succeeded but no APK file was found in expected paths.")
+                    com.scto.mobile.ide.core.utils.LogCatcher.e(
+                        "Build",
+                        "Build succeeded but no APK file was found in expected paths.",
+                    )
                     onResult(BuildResultState.Finished("No built APK found."))
                 }
             } else {
                 com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Build failed with exit code $exitCode")
                 onResult(BuildResultState.Finished("Build failed with exit code $exitCode"))
             }
-
         } catch (e: Exception) {
             com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Exception during build execution", e)
             onResult(BuildResultState.Finished("Error: ${e.message}"))
