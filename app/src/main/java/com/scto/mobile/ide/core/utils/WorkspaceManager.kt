@@ -31,8 +31,17 @@ object WorkspaceManager {
     private const val KEY_WORKSPACE_PATH = "workspace_path"
     private const val KEY_IS_CONFIGURED = "is_workspace_configured"
 
-    fun cleanPath(path: String): String {
-        return path.replace(".debug", "").replace(".release", "")
+    fun cleanPath(context: Context, path: String): String {
+        if (path.contains("/Android/data/")) {
+            val parts = path.split("/Android/data/")
+            if (parts.size == 2) {
+                val subPath = parts[1]
+                val remaining = subPath.substringAfter("/", "")
+                return "${parts[0]}/Android/data/${context.packageName}${if (remaining.isNotEmpty()) "/$remaining" else ""}"
+            }
+        }
+        return path.replace(".debug", "")
+            .replace(".release", "")
     }
 
     fun getDefaultPath(context: Context): String {
@@ -45,7 +54,7 @@ object WorkspaceManager {
         }
         val dir = context.getExternalFilesDir(null)
         val path = dir?.absolutePath ?: context.filesDir.absolutePath
-        return cleanPath(path)
+        return cleanPath(context, path)
     }
 
     /** Get workspace directory (with automatic error correction) */
@@ -55,10 +64,10 @@ object WorkspaceManager {
 
         // 1. If not saved before, return default
         if (savedPath.isNullOrBlank()) {
-            return cleanPath(getDefaultPath(context))
+            return cleanPath(context, getDefaultPath(context))
         }
 
-        val cleanedPath = cleanPath(savedPath)
+        val cleanedPath = cleanPath(context, savedPath)
 
         // Check if path is in private Android/data directory
         if (cleanedPath.contains("/Android/data/")) {
@@ -69,7 +78,7 @@ object WorkspaceManager {
                     "WorkspaceManager",
                     "Invalid path detected (package name mismatch): $cleanedPath, resetting to default",
                 )
-                val validPath = cleanPath(getDefaultPath(context))
+                val validPath = cleanPath(context, getDefaultPath(context))
                 saveWorkspacePath(context, validPath)
                 return validPath
             }
@@ -97,7 +106,7 @@ object WorkspaceManager {
     }
 
     fun saveWorkspacePath(context: Context, path: String) {
-        val cleanedPath = cleanPath(path)
+        val cleanedPath = cleanPath(context, path)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit {
             putString(KEY_WORKSPACE_PATH, cleanedPath)

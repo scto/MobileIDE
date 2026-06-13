@@ -57,6 +57,7 @@ import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
 import com.termux.view.TerminalView
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 // 🔥 Global VirtualKeysView reference, used by TerminalBackEnd to read Ctrl/Alt key states

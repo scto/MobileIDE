@@ -11,6 +11,11 @@
 
 package com.scto.mobile.ide.ui.projects
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+
 object ProjectTemplates {
 
     val libsVersionsToml =
