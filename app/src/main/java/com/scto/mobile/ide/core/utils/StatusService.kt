@@ -1,18 +1,15 @@
 package com.scto.mobile.ide.core.utils
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.R
 
@@ -22,10 +19,10 @@ class StatusService : Service() {
         const val NOTIFICATION_ID = 9999
         const val ACTION_EXIT = "com.scto.mobile.ide.ACTION_EXIT"
         const val ACTION_TOGGLE_WAKELOCK = "com.scto.mobile.ide.ACTION_TOGGLE_WAKELOCK"
-        
+
         var isRunning = false
             private set
-            
+
         fun start(context: Context) {
             if (!isRunning) {
                 val intent = Intent(context, StatusService::class.java)
@@ -74,9 +71,10 @@ class StatusService : Service() {
     private fun acquireWakeLock() {
         if (!isWakeLockAcquired) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::StatusServiceWakeLock").apply {
-                acquire()
-            }
+            wakeLock =
+                powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::StatusServiceWakeLock").apply {
+                    acquire()
+                }
             isWakeLockAcquired = true
             LogCatcher.i("StatusService", "WakeLock acquired")
         }
@@ -96,57 +94,53 @@ class StatusService : Service() {
     }
 
     private fun updateNotification() {
-        val exitIntent = Intent(this, StatusService::class.java).apply {
-            this.action = ACTION_EXIT
-        }
-        val exitPendingIntent = PendingIntent.getService(
-            this,
-            0,
-            exitIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val exitIntent = Intent(this, StatusService::class.java).apply { this.action = ACTION_EXIT }
+        val exitPendingIntent =
+            PendingIntent.getService(
+                this,
+                0,
+                exitIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
-        val wakeLockIntent = Intent(this, StatusService::class.java).apply {
-            this.action = ACTION_TOGGLE_WAKELOCK
-        }
-        val wakeLockPendingIntent = PendingIntent.getService(
-            this,
-            1,
-            wakeLockIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val wakeLockIntent = Intent(this, StatusService::class.java).apply { this.action = ACTION_TOGGLE_WAKELOCK }
+        val wakeLockPendingIntent =
+            PendingIntent.getService(
+                this,
+                1,
+                wakeLockIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
         val mainActivityIntent = Intent(this, MainActivity::class.java)
-        val mainActivityPendingIntent = PendingIntent.getActivity(
-            this,
-            2,
-            mainActivityIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val mainActivityPendingIntent =
+            PendingIntent.getActivity(
+                this,
+                2,
+                mainActivityIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
         val wakeLockBtnText = if (isWakeLockAcquired) "Release WakeLock" else "Acquire WakeLock"
         val wakeLockStatusText = if (isWakeLockAcquired) "WakeLock: Active" else "WakeLock: Inactive"
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("MobileIDE")
-            .setContentText("App is running | $wakeLockStatusText")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(mainActivityPendingIntent)
-            .setOngoing(true)
-            .addAction(0, "Exit", exitPendingIntent)
-            .addAction(0, wakeLockBtnText, wakeLockPendingIntent)
-            .build()
+        val notification =
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("MobileIDE")
+                .setContentText("App is running | $wakeLockStatusText")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(mainActivityPendingIntent)
+                .setOngoing(true)
+                .addAction(0, "Exit", exitPendingIntent)
+                .addAction(0, wakeLockBtnText, wakeLockPendingIntent)
+                .build()
 
         startForeground(NOTIFICATION_ID, notification)
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Status Service",
-                NotificationManager.IMPORTANCE_LOW
-            )
+            val channel = NotificationChannel(CHANNEL_ID, "Status Service", NotificationManager.IMPORTANCE_LOW)
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
