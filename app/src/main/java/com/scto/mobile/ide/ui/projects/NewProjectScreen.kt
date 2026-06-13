@@ -485,25 +485,17 @@ private fun setupGradleWrapper(dir: File, context: Context) {
     var copiedFromAssets = false
     try {
         context.assets.open("templates/gradle-wrapper.jar").use { input ->
-            FileOutputStream(targetJar).use { output ->
-                input.copyTo(output)
-            }
+            FileOutputStream(targetJar).use { output -> input.copyTo(output) }
         }
         context.assets.open("templates/gradle-wrapper.properties").use { input ->
-            FileOutputStream(targetProps).use { output ->
-                input.copyTo(output)
-            }
+            FileOutputStream(targetProps).use { output -> input.copyTo(output) }
         }
         context.assets.open("templates/gradlew").use { input ->
-            FileOutputStream(targetGradlew).use { output ->
-                input.copyTo(output)
-            }
+            FileOutputStream(targetGradlew).use { output -> input.copyTo(output) }
         }
         try {
             context.assets.open("templates/gradlew.bat").use { input ->
-                FileOutputStream(targetGradlewBat).use { output ->
-                    input.copyTo(output)
-                }
+                FileOutputStream(targetGradlewBat).use { output -> input.copyTo(output) }
             }
         } catch (e: Exception) {
             // Ignore missing gradlew.bat
