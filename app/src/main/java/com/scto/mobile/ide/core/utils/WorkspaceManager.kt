@@ -40,8 +40,7 @@ object WorkspaceManager {
                 return "${parts[0]}/Android/data/${context.packageName}${if (remaining.isNotEmpty()) "/$remaining" else ""}"
             }
         }
-        return path.replace(".debug", "")
-            .replace(".release", "")
+        return path.replace(".debug", "").replace(".release", "")
     }
 
     fun getDefaultPath(context: Context): String {
