@@ -26,9 +26,11 @@ import kotlinx.coroutines.withContext
 
 object SetupWorker {
     suspend fun reinstallTerminal(context: Context) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Main) {
             val list = ArrayList(SessionManager.sessions)
             list.forEach { SessionManager.removeSession(it) }
+        }
+        withContext(Dispatchers.IO) {
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
             val alpineDir = File(prefixDir, "local/alpine")
@@ -38,8 +40,8 @@ object SetupWorker {
             rootfsTar.delete()
 
             prepareEnvironment(context)
-            SessionManager.addNewSession(context)
         }
+        SessionManager.addNewSession(context)
     }
 
     suspend fun resetTerminal(context: Context) {
