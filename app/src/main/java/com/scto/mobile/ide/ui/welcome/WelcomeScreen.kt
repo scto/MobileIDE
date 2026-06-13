@@ -18,7 +18,13 @@
 
 package com.scto.mobile.ide.ui.welcome
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Notifications
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -66,6 +72,21 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
 
     var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
     var installGranted by remember { mutableStateOf(PermissionManager.hasInstallPermission(context)) }
+    var notificationGranted by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        notificationGranted = granted
+    }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }
@@ -158,6 +179,11 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
             if (event == Lifecycle.Event.ON_RESUME) {
                 storageGranted = permissionState.hasPermissions()
                 installGranted = PermissionManager.hasInstallPermission(context)
+                notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -220,8 +246,14 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                             PermissionsContent(
                                 storageGranted = storageGranted,
                                 installGranted = installGranted,
+                                notificationGranted = notificationGranted,
                                 onRequestStoragePermission = { permissionState.requestPermissions() },
                                 onRequestInstallPermission = requestInstallPermission,
+                                onRequestNotificationPermission = {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    }
+                                },
                             )
 
                         2 ->
@@ -284,8 +316,10 @@ private fun IntroContent() {
 private fun PermissionsContent(
     storageGranted: Boolean,
     installGranted: Boolean,
+    notificationGranted: Boolean,
     onRequestStoragePermission: () -> Unit,
     onRequestInstallPermission: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
@@ -319,6 +353,16 @@ private fun PermissionsContent(
             installGranted,
             onRequestInstallPermission,
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Spacer(Modifier.height(12.dp))
+            PermissionCard(
+                Icons.Default.Notifications,
+                stringResource(R.string.welcome_permission_notification_title),
+                stringResource(R.string.welcome_permission_notification_description),
+                notificationGranted,
+                onRequestNotificationPermission,
+            )
+        }
     }
 }
 

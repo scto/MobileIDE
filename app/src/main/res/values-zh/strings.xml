@@ -69,10 +69,12 @@
     <string name="welcome_tagline">在 Android 上构建未来</string>
     <string name="welcome_permissions_title">所需权限</string>
     <string name="welcome_permissions_description">MobileIDE 需要以下权限来读写代码和运行应用。</string>
-    <string name="welcome_permission_storage_title">存储空间</string>
-    <string name="welcome_permission_storage_description">用于访问和保存项目文件</string>
+    <string name="welcome_permission_storage_title">所有文件访问权限 (Manage External Storage)</string>
+    <string name="welcome_permission_storage_description">需要管理、克隆和构建外部存储中的项目（全部文件访问权限）</string>
     <string name="welcome_permission_install_title">应用安装</string>
     <string name="welcome_permission_install_description">安装已编译的 APK 文件</string>
+    <string name="welcome_permission_notification_title">通知</string>
+    <string name="welcome_permission_notification_description">请求通知权限以显示应用状态、Wakelock状态和终端会话</string>
     <string name="welcome_appearance_title">外观</string>
     <string name="welcome_dynamic_color">动态取色 (Monet)</string>
     <string name="welcome_custom_theme">自定义</string>
