@@ -127,6 +127,13 @@ if [ ! -d "$ANDROID_HOME/platforms/android-33" ] || [ ! -d "$ANDROID_HOME/build-
     echo -e "\e[32;1m[+] \e[0mAndroid SDK components installed successfully.\e[0m"
 fi
 
+# Apply paxctl -m to all executables in the Android SDK and JVM to bypass PaX/grsecurity MPROTECT restrictions
+if command -v paxctl > /dev/null 2>&1; then
+    echo -e "\e[34;1m[*] \e[0mApplying paxctl -m to Android SDK and JVM executables..."
+    find /opt/android-sdk -type f -executable -exec paxctl -m {} \; 2>/dev/null || true
+    find /usr/lib/jvm -type f -executable -exec paxctl -m {} \; 2>/dev/null || true
+fi
+
 # 7. Start an interactive Shell
 if [ "$#" -eq 0 ]; then
     # Load system configuration
