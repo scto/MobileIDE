@@ -345,7 +345,10 @@ fun SettingsScreen(
                                 )
                                 .show()
                         } else {
-                            LogCatcher.w("SettingsScreen", "Install failed: $jobName (Exit code ${process.exitValue()})")
+                            LogCatcher.w(
+                                "SettingsScreen",
+                                "Install failed: $jobName (Exit code ${process.exitValue()})",
+                            )
                             Toast.makeText(
                                     context,
                                     context.getString(
