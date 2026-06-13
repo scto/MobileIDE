@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MobileIDE – Standalone Adaptive Icon  (API 26+)
+  ─────────────────────────────────────────────────────────────────────────────
+  Self-contained adaptive icon definition usable anywhere in the app:
+    android:icon="@drawable/ic_launcher_adaptive"
+
+  Layer composition (back → front):
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  BACKGROUND   @drawable/ic_launcher_background                      │
+  │               Dark navy radial gradient (#1A1A2E → #080C16)        │
+  │                                                                     │
+  │  FOREGROUND   @drawable/ic_launcher_foreground                      │
+  │               4 vibrant rotated cards + dark centre square          │
+  │               + "</>" + "Mobile" + "IDE" text                       │
+  │                                                                     │
+  │  MONOCHROME   @drawable/ic_launcher_monochrome   (API 33+ only)    │
+  │               White silhouette — tinted by system wallpaper colour  │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  Card colours:
+    Top-right    #0082FF  Electric Blue
+    Top-left     #00D2C8  Neon Teal
+    Bottom-left  #8232FF  Deep Violet
+    Bottom-right #32D25A  Vivid Green
+
+  Centre square:  #16162A  (dark navy, matches IDE background)
+
+  PNG fallbacks (legacy devices, API < 26):
+    mipmap-mdpi     48 × 48 px
+    mipmap-hdpi     72 × 72 px
+    mipmap-xhdpi    96 × 96 px
+    mipmap-xxhdpi  144 × 144 px
+    mipmap-xxxhdpi 192 × 192 px
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>
