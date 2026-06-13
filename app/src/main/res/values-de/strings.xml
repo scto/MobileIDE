@@ -517,4 +517,43 @@
     <string name="about_developer_role_localization">Lokalisierung</string>
     <string name="about_developer_desc_language">Englische Übersetzung</string>
     <string name="file_tree_remember_expanded_states">Erweiterte Ordner merken</string>
+
+    <!-- Terminal settings -->
+    <string name="settings_terminal_title">Terminal-Einstellungen</string>
+    <string name="settings_terminal_summary">Terminal-Sessions zurücksetzen oder die Umgebung neu installieren</string>
+    <string name="settings_terminal_reset">Terminal zurücksetzen</string>
+    <string name="settings_terminal_reset_desc">Löscht alle aktiven Terminal-Sessions und startet eine saubere Session.</string>
+    <string name="settings_terminal_reinstall">Terminal neu installieren</string>
+    <string name="settings_terminal_reinstall_desc">Löscht die Alpine-Umgebung vollständig und erstellt sie neu. (Dauert eine Minute)</string>
+    <string name="toast_terminal_reset_success">Terminal wurde zurückgesetzt</string>
+    <string name="toast_terminal_reinstall_start">Terminal wird neu installiert, bitte warten...</string>
+    <string name="toast_terminal_reinstall_success">Terminal wurde erfolgreich neu installiert</string>
+    
+    <!-- Editor Font Size -->
+    <string name="settings_editor_font_size">Schriftgröße</string>
+    <string name="settings_editor_font_size_val">%1$.0f sp</string>
+    
+    <!-- Build settings group -->
+    <string name="settings_build_title">Build-Einstellungen</string>
+    <string name="settings_build_summary">JDK auswählen, SDKs, Build-Tools, NDK und Dienstprogramme konfigurieren</string>
+    <string name="settings_build_jdk">JDK-Version (17 vs. 21)</string>
+    <string name="settings_build_gradle">Gradle-Build-System</string>
+    <string name="settings_build_android_sdk">Android SDK</string>
+    <string name="settings_build_tools">Build-Tools v35 / v36</string>
+    <string name="settings_build_platforms">Plattformen (API 34/35)</string>
+    <string name="settings_build_cmake_ndk">CMake &amp; NDK</string>
+    <string name="settings_build_base_utils">Basis-Build-Werkzeuge (make, gcc, git...)</string>
+    <string name="status_installed">Installiert</string>
+    <string name="status_not_installed">Nicht installiert</string>
+    <string name="action_uninstall">Deinstallieren</string>
+    <string name="toast_install_success">%1$s erfolgreich installiert</string>
+    <string name="toast_install_failed">%1$s konnte nicht installiert werden: %2$s</string>
+    
+    <!-- LSP Group -->
+    <string name="settings_lsp_title">LSP-Status</string>
+    <string name="settings_lsp_summary">Installationsstatus des Language Server Protocol überprüfen</string>
+    <string name="settings_lsp_java">Java Language Server (jdtls)</string>
+    <string name="settings_lsp_kotlin">Kotlin Language Server</string>
+    <string name="settings_lsp_typescript">TypeScript/JavaScript Language Server</string>
+    <string name="settings_lsp_web">HTML/CSS/JSON Language Server</string>
 </resources>

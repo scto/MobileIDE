@@ -529,4 +529,43 @@
     <string name="apk_builder_debug_keystore_unavailable">Default signing is unavailable. Place debug.keystore in assets/apk_templates/.</string>
     <string name="apk_builder_failed">APK build failed: %1$s</string>
     <string name="apk_builder_terminal_executable_missing">Terminal template requires an executable file.</string>
+
+    <!-- Terminal settings -->
+    <string name="settings_terminal_title">Terminal Settings</string>
+    <string name="settings_terminal_summary">Reset terminal sessions or reinstall the environment</string>
+    <string name="settings_terminal_reset">Reset Terminal</string>
+    <string name="settings_terminal_reset_desc">Clears all active terminal sessions and starts a clean one.</string>
+    <string name="settings_terminal_reinstall">Reinstall Terminal</string>
+    <string name="settings_terminal_reinstall_desc">Deletes the Alpine environment and recreates it. (Takes a minute)</string>
+    <string name="toast_terminal_reset_success">Terminal has been reset</string>
+    <string name="toast_terminal_reinstall_start">Reinstalling Terminal, please wait...</string>
+    <string name="toast_terminal_reinstall_success">Terminal has been reinstalled successfully</string>
+    
+    <!-- Editor Font Size -->
+    <string name="settings_editor_font_size">Font Size</string>
+    <string name="settings_editor_font_size_val">%1$.0f sp</string>
+    
+    <!-- Build settings group -->
+    <string name="settings_build_title">Build Config</string>
+    <string name="settings_build_summary">Select OpenJDK, configure SDKs, build-tools, NDK, and utilities</string>
+    <string name="settings_build_jdk">JDK Version (17 vs 21)</string>
+    <string name="settings_build_gradle">Gradle Build System</string>
+    <string name="settings_build_android_sdk">Android SDK</string>
+    <string name="settings_build_tools">Build-Tools v35 / v36</string>
+    <string name="settings_build_platforms">Platforms (API 34/35)</string>
+    <string name="settings_build_cmake_ndk">CMake &amp; NDK</string>
+    <string name="settings_build_base_utils">Base Build Utilities (make, gcc, git...)</string>
+    <string name="status_installed">Installed</string>
+    <string name="status_not_installed">Not Installed</string>
+    <string name="action_uninstall">Uninstall</string>
+    <string name="toast_install_success">%1$s installed successfully</string>
+    <string name="toast_install_failed">Failed to install %1$s: %2$s</string>
+    
+    <!-- LSP Group -->
+    <string name="settings_lsp_title">LSP Status</string>
+    <string name="settings_lsp_summary">Check status of Language Server Protocol installations</string>
+    <string name="settings_lsp_java">Java Language Server (jdtls)</string>
+    <string name="settings_lsp_kotlin">Kotlin Language Server</string>
+    <string name="settings_lsp_typescript">TypeScript/JavaScript Language Server</string>
+    <string name="settings_lsp_web">HTML/CSS/JSON Language Server</string>
 </resources>

@@ -5,7 +5,7 @@
 [![UI](https://img.shields.io/badge/UI-Jetpack_Compose-green?style=flat-square)](https://developer.android.com/jetpack/compose)
 [![License](https://img.shields.io/badge/License-GPLv3-orange?style=flat-square)](LICENSE)
 
-[ [**English**] ] |  [Deutsch](README_DE.md) ]
+[ [English](README.md) | [**Deutsch**] | [Projekt-Status](status.md) ]
 
 MobileIDE ist eine native Android-Entwicklungsumgebung (IDE) für die App-Entwicklung. Dieses vollständig mit Jetpack Compose entwickelte Projekt implementiert einen kompletten Workflow von der Codebearbeitung bis zum Erstellen von APKs direkt auf Ihrem Mobilgerät.
 

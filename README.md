@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-GPLv3-orange?style=flat-square)](LICENSE)
 
 
-[ [**English**] ] | [ German](README_DE.md) ]
+[ [**English**] | [German](README_DE.md) | [Project Status](status.md) ]
 
 MobileIDE is a native Android Integrated Development Environment (IDE) for app development. Built entirely with Jetpack Compose, this project implements a complete workflow ranging from code editing to building APKs directly on your mobile device.
 
