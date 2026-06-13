@@ -31,9 +31,22 @@ object WorkspaceManager {
     private const val KEY_WORKSPACE_PATH = "workspace_path"
     private const val KEY_IS_CONFIGURED = "is_workspace_configured"
 
+    fun cleanPath(path: String): String {
+        return path.replace(".debug", "")
+            .replace(".release", "")
+    }
+
     fun getDefaultPath(context: Context): String {
+        val externalDir = File("/storage/emulated/0/MobileIDEProjects")
+        if (!externalDir.exists()) {
+            externalDir.mkdirs()
+        }
+        if (externalDir.exists()) {
+            return externalDir.absolutePath
+        }
         val dir = context.getExternalFilesDir(null)
-        return dir?.absolutePath ?: context.filesDir.absolutePath
+        val path = dir?.absolutePath ?: context.filesDir.absolutePath
+        return cleanPath(path)
     }
 
     /** Get workspace directory (with automatic error correction) */
@@ -43,35 +56,31 @@ object WorkspaceManager {
 
         // 1. If not saved before, return default
         if (savedPath.isNullOrBlank()) {
-            return getDefaultPath(context)
+            return cleanPath(getDefaultPath(context))
         }
 
-        // 🔥🔥🔥 Fix 2: More robust path checking logic 🔥🔥🔥
-        // The previous logic relied on absolute path string matching, which easily caused misjudgments due to the
-        // difference between /sdcard and /storage/emulated/0
-        // Current logic: As long as the path contains "Android/data", check if it contains "the current App's package
-        // name"
-        if (savedPath.contains("/Android/data/")) {
-            val packageName = context.packageName
-            // If the path does not even contain the package name, it means this path definitely belongs to other Apps
-            // (or old package names). We have no permission and must reset it.
-            if (!savedPath.contains(packageName)) {
+        val cleanedPath = cleanPath(savedPath)
+
+        // Check if path is in private Android/data directory
+        if (cleanedPath.contains("/Android/data/")) {
+            // Strip .debug or other build suffixes to see if it belongs to MobileIDE
+            val basePackage = context.packageName.substringBefore(".debug").substringBefore(".release")
+            if (!cleanedPath.contains(basePackage)) {
                 android.util.Log.e(
                     "WorkspaceManager",
-                    "Invalid path detected (package name mismatch): $savedPath, resetting to default",
+                    "Invalid path detected (package name mismatch): $cleanedPath, resetting to default",
                 )
-                val validPath = getDefaultPath(context)
-                saveWorkspacePath(context, validPath) // Automatically save the corrected path
+                val validPath = cleanPath(getDefaultPath(context))
+                saveWorkspacePath(context, validPath)
                 return validPath
             }
         }
 
-        return savedPath
+        return cleanedPath
     }
 
     fun isWorkspaceConfigured(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        // As long as this value is true, it means the user has clicked "Confirm and continue"
         return prefs.getBoolean(KEY_IS_CONFIGURED, false)
     }
 
@@ -89,26 +98,24 @@ object WorkspaceManager {
     }
 
     fun saveWorkspacePath(context: Context, path: String) {
+        val cleanedPath = cleanPath(path)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit {
-            putString(KEY_WORKSPACE_PATH, path)
-            // ✅ Key: Set to true, indicating that the user has completed the initialization wizard
+            putString(KEY_WORKSPACE_PATH, cleanedPath)
             putBoolean(KEY_IS_CONFIGURED, true)
         }
-        ensurePathExists(context, path)
+        ensurePathExists(context, cleanedPath)
     }
 
     fun ensurePathExists(context: Context, path: String): Boolean {
         val file = File(path)
         if (file.exists() && file.isDirectory) return true
 
-        try {
-            if (path.contains(context.packageName)) {
-                return file.mkdirs() || file.exists()
-            }
+        return try {
+            file.mkdirs() || file.exists()
         } catch (e: Exception) {
             e.printStackTrace()
+            file.exists()
         }
-        return file.mkdirs() || file.exists()
     }
 }

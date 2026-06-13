@@ -74,6 +74,9 @@ fun NewProjectScreen(navController: NavController) {
     var projectName by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(ProjectType.BASIC_COMPOSE_ACTIVITY) }
     var packageName by remember { mutableStateOf("com.example.myapp") }
+    var minSdk by remember { mutableStateOf("24") }
+    var targetSdk by remember { mutableStateOf("34") }
+    var useKotlinDsl by remember { mutableStateOf(true) }
 
     var isScreenVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { isScreenVisible = true }
@@ -95,11 +98,17 @@ fun NewProjectScreen(navController: NavController) {
         isLoading = true
         focusManager.clearFocus()
 
+        val parsedMinSdk = minSdk.toIntOrNull() ?: 24
+        val parsedTargetSdk = targetSdk.toIntOrNull() ?: 34
+
         createNewProject(
             context,
             projectName,
             packageName,
             selectedType,
+            parsedMinSdk,
+            parsedTargetSdk,
+            useKotlinDsl,
             onSuccess = { dir ->
                 isLoading = false
                 scope.launch {
@@ -259,6 +268,48 @@ fun NewProjectScreen(navController: NavController) {
                     icon = Icons.Outlined.AlternateEmail,
                     keyboardType = KeyboardType.Ascii,
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        CleanTextField(
+                            value = minSdk,
+                            onValueChange = { minSdk = it.filter { c -> c.isDigit() } },
+                            placeholder = stringResource(R.string.new_project_minsdk),
+                            icon = Icons.Outlined.Layers,
+                            keyboardType = KeyboardType.Number,
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        CleanTextField(
+                            value = targetSdk,
+                            onValueChange = { targetSdk = it.filter { c -> c.isDigit() } },
+                            placeholder = stringResource(R.string.new_project_targetsdk),
+                            icon = Icons.Outlined.CheckCircle,
+                            keyboardType = KeyboardType.Number,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.new_project_kotlin_dsl),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Switch(
+                        checked = useKotlinDsl,
+                        onCheckedChange = { useKotlinDsl = it }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(100.dp))
             }

@@ -70,8 +70,14 @@ if [ "$#" -eq 0 ]; then
         echo "" # Leave a blank line for aesthetics
     fi
 
-    # [🔥 Core modification] Enter the Alpine system root directory / by default
-    cd /
+    # [🔥 Core modification] Enter project directory or workspace if available
+    if [ -n "$WEBIDE_PROJECT_DIR" ] && [ -d "$WEBIDE_PROJECT_DIR" ]; then
+        cd "$WEBIDE_PROJECT_DIR"
+    elif [ -n "$WEBIDE_WORKSPACE" ] && [ -d "$WEBIDE_WORKSPACE" ]; then
+        cd "$WEBIDE_WORKSPACE"
+    else
+        cd /
+    fi
 
     # Start Bash
     /bin/bash

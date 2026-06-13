@@ -206,6 +206,9 @@
     <string name="new_project_exists">Projekt existiert bereits</string>
     <string name="new_project_unknown_error">Unbekannter Fehler</string>
     <string name="new_project_json_format_error">JSON-Formatfehler: %1$s</string>
+    <string name="new_project_minsdk">Min. SDK</string>
+    <string name="new_project_targetsdk">Ziel-SDK</string>
+    <string name="new_project_kotlin_dsl">Kotlin DSL verwenden</string>
     <string name="orientation_portrait">Hochformat</string>
     <string name="orientation_landscape">Querformat</string>
     <string name="orientation_auto">Auto</string>

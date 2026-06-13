@@ -42,10 +42,14 @@ object SetupWorker {
         }
     }
 
-    fun resetTerminal(context: Context) {
-        val list = ArrayList(SessionManager.sessions)
-        list.forEach { SessionManager.removeSession(it) }
-        AlpineManager.currentProject = null
+    suspend fun resetTerminal(context: Context) {
+        withContext(Dispatchers.Main) {
+            val list = ArrayList(SessionManager.sessions)
+            list.forEach {
+                SessionManager.removeSession(it)
+            }
+            AlpineManager.currentProject = null
+        }
         SessionManager.addNewSession(context)
     }
 
