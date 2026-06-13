@@ -477,33 +477,44 @@ private fun setupGradleWrapper(dir: File, context: Context) {
     val gradleDir = File(dir, "gradle/wrapper")
     gradleDir.mkdirs()
 
-    val sourceJar = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.jar")
-    val sourceProps = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.properties")
-    val sourceGradlew = File("/data/data/com.termux/files/home/MobileIDE/gradlew")
-    val sourceGradlewBat = File("/data/data/com.termux/files/home/MobileIDE/gradlew.bat")
-
     val targetJar = File(gradleDir, "gradle-wrapper.jar")
     val targetProps = File(gradleDir, "gradle-wrapper.properties")
     val targetGradlew = File(dir, "gradlew")
     val targetGradlewBat = File(dir, "gradlew.bat")
 
-    var copiedLocal = false
+    var copiedFromAssets = false
     try {
-        if (sourceJar.exists() && sourceProps.exists() && sourceGradlew.exists()) {
-            sourceJar.copyTo(targetJar, overwrite = true)
-            sourceProps.copyTo(targetProps, overwrite = true)
-            sourceGradlew.copyTo(targetGradlew, overwrite = true)
-            if (sourceGradlewBat.exists()) {
-                sourceGradlewBat.copyTo(targetGradlewBat, overwrite = true)
+        context.assets.open("templates/gradle-wrapper.jar").use { input ->
+            FileOutputStream(targetJar).use { output ->
+                input.copyTo(output)
             }
-            targetGradlew.setExecutable(true)
-            copiedLocal = true
         }
+        context.assets.open("templates/gradle-wrapper.properties").use { input ->
+            FileOutputStream(targetProps).use { output ->
+                input.copyTo(output)
+            }
+        }
+        context.assets.open("templates/gradlew").use { input ->
+            FileOutputStream(targetGradlew).use { output ->
+                input.copyTo(output)
+            }
+        }
+        try {
+            context.assets.open("templates/gradlew.bat").use { input ->
+                FileOutputStream(targetGradlewBat).use { output ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore missing gradlew.bat
+        }
+        targetGradlew.setExecutable(true)
+        copiedFromAssets = true
     } catch (e: Exception) {
         e.printStackTrace()
     }
 
-    if (!copiedLocal) {
+    if (!copiedFromAssets) {
         safeWrite(
             targetProps,
             """
