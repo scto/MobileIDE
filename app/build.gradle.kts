@@ -316,6 +316,8 @@ dependencies {
     // Editor
     implementation(project(":editor"))
     implementation(project(":language-treesitter"))
+    implementation(project(":core:apk-builder"))
+    implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)

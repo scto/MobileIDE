@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.StrictMode
 import com.rk.crashhandler.CrashHandler
 import com.rk.resources.Res
+import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.concurrent.Executors
@@ -15,6 +16,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class App : Application() {
     @OptIn(DelicateCoroutinesApi::class)
@@ -33,6 +35,19 @@ class App : Application() {
         super.onCreate()
         application = this
         Res.application = this
+
+        Timber.plant(object : Timber.DebugTree() {
+            override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+                val finalTag = tag ?: "ApkBuilder"
+                when (priority) {
+                    android.util.Log.DEBUG -> LogCatcher.d(finalTag, message)
+                    android.util.Log.INFO -> LogCatcher.i(finalTag, message)
+                    android.util.Log.WARN -> LogCatcher.w(finalTag, message)
+                    android.util.Log.ERROR -> LogCatcher.e(finalTag, message, t as? Exception)
+                    else -> LogCatcher.i(finalTag, message)
+                }
+            }
+        })
 
         GlobalScope.launch(Dispatchers.IO) {
             getTempDir().apply {
