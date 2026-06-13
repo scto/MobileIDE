@@ -110,7 +110,6 @@ android {
             buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"$gitCommitHash\"")
             buildConfigField("String", "GIT_COMMIT_DATE", "\"$gitCommitDate\"")
 
-            applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
             resValue("string", "app_name", "MobileIDE-Debug")
         }
