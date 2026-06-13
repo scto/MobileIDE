@@ -75,7 +75,7 @@ EOF
 
 # 5. Check and initialize Alpine packages
 echo -e "\e[34;1m[*] \e[0mChecking system packages...\e[0m"
-REQUIRED_PACKAGES="bash gcompat glib nano nodejs npm bash-completion openjdk17 jdtls wget unzip clang llvm make gcc g++ binutils musl-dev git libc-dev"
+REQUIRED_PACKAGES="bash gcompat glib nano nodejs npm bash-completion openjdk17 jdtls wget unzip clang llvm make gcc g++ binutils musl-dev git libc-dev paxctl"
 MISSING_PACKAGES=""
 for pkg in $REQUIRED_PACKAGES; do
     if ! apk info -e $pkg >/dev/null 2>&1; then
