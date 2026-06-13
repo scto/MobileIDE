@@ -1653,21 +1653,23 @@ private suspend fun performBuild(
         }
 
         val gradlewFile = File(projectPath, "gradlew")
+        val env = AlpineManager.getProotEnv(context)
         val cmd =
             if (gradlewFile.exists()) {
-                if (!gradlewFile.canExecute()) {
-                    gradlewFile.setExecutable(true)
-                }
-                listOf(gradlewFile.absolutePath, "assembleDebug")
+                val commandArgs = arrayOf("sh", "gradlew", "assembleDebug")
+                AlpineManager.buildProotCommand(context, commandArgs)
             } else {
-                listOf("gradle", "assembleDebug")
+                val commandArgs = arrayOf("gradle", "assembleDebug")
+                AlpineManager.buildProotCommand(context, commandArgs)
             }
 
         com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing command: ${cmd.joinToString(" ")}")
 
         try {
-            val processBuilder = ProcessBuilder(cmd)
-            processBuilder.directory(File(projectPath))
+            val processBuilder = ProcessBuilder(cmd).apply {
+                environment().putAll(env)
+                directory(File(projectPath))
+            }
 
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")
