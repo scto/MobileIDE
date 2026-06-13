@@ -23,8 +23,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.filled.Notifications
-import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -40,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -75,18 +75,18 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     var notificationGranted by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED
             } else {
                 true
             }
         )
     }
 
-    val notificationLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationGranted = granted
-    }
+    val notificationLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
+            notificationGranted = granted
+        }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }
@@ -179,11 +179,13 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
             if (event == Lifecycle.Event.ON_RESUME) {
                 storageGranted = permissionState.hasPermissions()
                 installGranted = PermissionManager.hasInstallPermission(context)
-                notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-                } else {
-                    true
-                }
+                notificationGranted =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                            PackageManager.PERMISSION_GRANTED
+                    } else {
+                        true
+                    }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
