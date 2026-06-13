@@ -28,17 +28,15 @@ object SetupWorker {
     suspend fun reinstallTerminal(context: Context) {
         withContext(Dispatchers.IO) {
             val list = ArrayList(SessionManager.sessions)
-            list.forEach {
-                SessionManager.removeSession(it)
-            }
+            list.forEach { SessionManager.removeSession(it) }
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
             val alpineDir = File(prefixDir, "local/alpine")
             val rootfsTar = File(filesDir, "alpine.tar.gz")
-            
+
             alpineDir.deleteRecursively()
             rootfsTar.delete()
-            
+
             prepareEnvironment(context)
             SessionManager.addNewSession(context)
         }
@@ -46,9 +44,7 @@ object SetupWorker {
 
     fun resetTerminal(context: Context) {
         val list = ArrayList(SessionManager.sessions)
-        list.forEach {
-            SessionManager.removeSession(it)
-        }
+        list.forEach { SessionManager.removeSession(it) }
         AlpineManager.currentProject = null
         SessionManager.addNewSession(context)
     }
