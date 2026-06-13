@@ -175,21 +175,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (!mideDir.exists()) {
             mideDir.mkdirs()
         }
-        
+
         try {
-            val json = org.json.JSONObject().apply {
-                put("activeFileIndex", activeFileIndex)
-                val filesArray = org.json.JSONArray()
-                openFiles.forEach { tab ->
-                    filesArray.put(tab.file.absolutePath)
+            val json =
+                org.json.JSONObject().apply {
+                    put("activeFileIndex", activeFileIndex)
+                    val filesArray = org.json.JSONArray()
+                    openFiles.forEach { tab -> filesArray.put(tab.file.absolutePath) }
+                    put("files", filesArray)
                 }
-                put("files", filesArray)
-            }
             val jsonStr = json.toString(4)
-            
+
             val openFilesFile = File(mideDir, "openen_files.json")
             val openFilesBakFile = File(mideDir, "open_files_bak.json")
-            
+
             if (openFilesFile.exists()) {
                 openFilesFile.copyTo(openFilesBakFile, overwrite = true)
             }
@@ -203,43 +202,60 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val mideDir = File(projectPath, ".mide/editor")
         val openFilesFile = File(mideDir, "openen_files.json")
         val openFilesBakFile = File(mideDir, "open_files_bak.json")
-        
-        val fileToLoad = when {
-            openFilesFile.exists() -> openFilesFile
-            openFilesBakFile.exists() -> openFilesBakFile
-            else -> return false
-        }
-        
+
+        val fileToLoad =
+            when {
+                openFilesFile.exists() -> openFilesFile
+                openFilesBakFile.exists() -> openFilesBakFile
+                else -> return false
+            }
+
         return withContext(Dispatchers.IO) {
             try {
                 val jsonStr = fileToLoad.readText()
                 val json = org.json.JSONObject(jsonStr)
                 val filesArray = json.getJSONArray("files")
                 val targetActiveIndex = json.optInt("activeFileIndex", 0)
-                
+
                 val newTabs = mutableListOf<IEditorTab>()
                 for (i in 0 until filesArray.length()) {
                     val filePath = filesArray.getString(i)
                     val file = File(filePath)
                     if (file.exists() && !file.isDirectory) {
                         val extension = file.extension.lowercase()
-                        val mediaType = when (extension) {
-                            "png", "jpg", "jpeg", "gif", "webp", "bmp", "ico" -> MediaType.IMAGE
-                            "svg" -> MediaType.SVG
-                            "mp4", "mkv", "webm", "avi", "3gp" -> MediaType.VIDEO
-                            else -> null
-                        }
+                        val mediaType =
+                            when (extension) {
+                                "png",
+                                "jpg",
+                                "jpeg",
+                                "gif",
+                                "webp",
+                                "bmp",
+                                "ico" -> MediaType.IMAGE
+                                "svg" -> MediaType.SVG
+                                "mp4",
+                                "mkv",
+                                "webm",
+                                "avi",
+                                "3gp" -> MediaType.VIDEO
+                                else -> null
+                            }
                         if (mediaType != null) {
                             newTabs.add(MediaEditorState(file = file, mediaType = mediaType))
                         } else {
-                            val content = try { file.readText(Charsets.UTF_8) } catch (e: Exception) { "" }
+                            val content =
+                                try {
+                                    file.readText(Charsets.UTF_8)
+                                } catch (e: Exception) {
+                                    ""
+                                }
                             val state = CodeEditorState(file = file)
                             state.onContentLoaded(content)
                             newTabs.add(state)
                         }
                     }
                 }
-                
+
                 withContext(Dispatchers.Main) {
                     closeAllFiles()
                     _openFiles.value = newTabs

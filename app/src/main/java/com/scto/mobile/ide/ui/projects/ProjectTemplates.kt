@@ -109,14 +109,16 @@ object ProjectTemplates {
                 alias(libs.plugins.android.application) apply false
                 alias(libs.plugins.kotlin.android) apply false
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         } else {
             """
             plugins {
                 alias libs.plugins.android.application apply false
                 alias libs.plugins.kotlin.android apply false
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         }
     }
 
@@ -125,7 +127,7 @@ object ProjectTemplates {
         addNavigation: Boolean = false,
         minSdk: Int = 24,
         targetSdk: Int = 34,
-        useKotlinDsl: Boolean = true
+        useKotlinDsl: Boolean = true,
     ): String {
         return if (useKotlinDsl) {
             """
@@ -198,7 +200,8 @@ object ProjectTemplates {
                 debugImplementation(libs.androidx.ui.tooling)
                 debugImplementation(libs.androidx.ui.test.manifest)
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         } else {
             """
             plugins {
@@ -267,7 +270,8 @@ object ProjectTemplates {
                 debugImplementation libs.androidx.ui.tooling
                 debugImplementation libs.androidx.ui.test.manifest
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         }
     }
 
@@ -275,7 +279,7 @@ object ProjectTemplates {
         packageName: String,
         minSdk: Int = 24,
         targetSdk: Int = 34,
-        useKotlinDsl: Boolean = true
+        useKotlinDsl: Boolean = true,
     ): String {
         return if (useKotlinDsl) {
             """
@@ -343,7 +347,8 @@ object ProjectTemplates {
                 implementation(libs.androidx.ui.tooling.preview)
                 implementation(libs.androidx.material3)
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         } else {
             """
             plugins {
@@ -407,7 +412,8 @@ object ProjectTemplates {
                 implementation libs.androidx.ui.tooling.preview
                 implementation libs.androidx.material3
             }
-            """.trimIndent()
+            """
+                .trimIndent()
         }
     }
 
@@ -1091,7 +1097,7 @@ object ProjectTemplates {
         version: String = "8.5",
         onProgress: (Float) -> Unit = {},
         onSuccess: (java.io.File) -> Unit,
-        onFailure: (Exception) -> Unit
+        onFailure: (Exception) -> Unit,
     ) {
         val cacheDir = context.cacheDir
         val gradleZip = java.io.File(cacheDir, "gradle-$version-bin.zip")
@@ -1109,7 +1115,9 @@ object ProjectTemplates {
                 connection.connect()
 
                 if (connection.responseCode != java.net.HttpURLConnection.HTTP_OK) {
-                    throw java.io.IOException("Server returned HTTP ${connection.responseCode} ${connection.responseMessage}")
+                    throw java.io.IOException(
+                        "Server returned HTTP ${connection.responseCode} ${connection.responseMessage}"
+                    )
                 }
 
                 val fileLength = connection.contentLength
@@ -1130,14 +1138,10 @@ object ProjectTemplates {
                     }
                 }
 
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    onSuccess(gradleZip)
-                }
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { onSuccess(gradleZip) }
             } catch (e: Exception) {
                 e.printStackTrace()
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    onFailure(e)
-                }
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { onFailure(e) }
             }
         }
     }

@@ -45,9 +45,7 @@ object SetupWorker {
     suspend fun resetTerminal(context: Context) {
         withContext(Dispatchers.Main) {
             val list = ArrayList(SessionManager.sessions)
-            list.forEach {
-                SessionManager.removeSession(it)
-            }
+            list.forEach { SessionManager.removeSession(it) }
             AlpineManager.currentProject = null
         }
         SessionManager.addNewSession(context)
