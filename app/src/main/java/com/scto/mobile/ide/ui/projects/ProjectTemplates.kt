@@ -11,10 +11,10 @@
 
 package com.scto.mobile.ide.ui.projects
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object ProjectTemplates {
 
