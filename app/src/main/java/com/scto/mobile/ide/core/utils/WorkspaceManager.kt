@@ -44,16 +44,11 @@ object WorkspaceManager {
     }
 
     fun getDefaultPath(context: Context): String {
-        val externalDir = File("/storage/emulated/0/MobileIDEProjects")
-        if (!externalDir.exists()) {
-            externalDir.mkdirs()
+        val internalDir = File(context.filesDir, "MobileIDEProjects")
+        if (!internalDir.exists()) {
+            internalDir.mkdirs()
         }
-        if (externalDir.exists()) {
-            return externalDir.absolutePath
-        }
-        val dir = context.getExternalFilesDir(null)
-        val path = dir?.absolutePath ?: context.filesDir.absolutePath
-        return cleanPath(context, path)
+        return internalDir.absolutePath
     }
 
     /** Get workspace directory (with automatic error correction) */
@@ -67,6 +62,13 @@ object WorkspaceManager {
         }
 
         val cleanedPath = cleanPath(context, savedPath)
+
+        // Migrate legacy shared storage path which is incompatible with Gradle/PRoot executions
+        if (cleanedPath.startsWith("/storage/emulated/0/MobileIDEProjects")) {
+            val validPath = cleanPath(context, getDefaultPath(context))
+            saveWorkspacePath(context, validPath)
+            return validPath
+        }
 
         // Check if path is in private Android/data directory
         if (cleanedPath.contains("/Android/data/")) {
