@@ -299,7 +299,9 @@ fun SettingsScreen(
             try {
                 if (command == "reinstall_terminal") {
                     // Reinstall Terminal directly using SetupWorker (runs suspend function)
-                    kotlinx.coroutines.runBlocking { SetupWorker.reinstallTerminal(context) }
+                    kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+                        SetupWorker.reinstallTerminal(context)
+                    }
                     (context as android.app.Activity).runOnUiThread {
                         jobFinished = true
                         activeInstallJobName = null
