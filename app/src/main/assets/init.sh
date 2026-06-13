@@ -28,18 +28,31 @@ fi
 export PS1="\[\e[38;5;46m\]\u\[\033[39m\]@localhost \[\033[39m\]\w \[\033[0m\]\\$ "
 
 # 5. Check and initialize environment (Node.js & LSP)
-# Only execute on the first run (when the node command is not found)
-if ! command -v node > /dev/null 2>&1; then
+if ! command -v node > /dev/null 2>&1 || ! command -v jdtls > /dev/null 2>&1 || ! command -v kotlin-language-server > /dev/null 2>&1; then
     echo -e "\e[34;1m[*] \e[0mInitializing Environment (Alpine 3.21.0)...\e[0m"
 
-    # Update the repository index and install basic dependencies
+    # Update the repository index
     apk update
-    apk add bash gcompat glib nano nodejs npm
 
-    # Install LSP services (WebIDE core function)
-    echo -e "\e[34;1m[*] \e[0mInstalling Language Servers...\e[0m"
-    rm -rf /usr/local/lib/node_modules
-    npm install -g typescript typescript-language-server vscode-langservers-extracted
+    if ! command -v node > /dev/null 2>&1; then
+        # Install basic dependencies
+        apk add bash gcompat glib nano nodejs npm
+
+        # Install LSP services (WebIDE core function)
+        echo -e "\e[34;1m[*] \e[0mInstalling JS/TS/HTML/CSS Language Servers...\e[0m"
+        rm -rf /usr/local/lib/node_modules
+        npm install -g typescript typescript-language-server vscode-langservers-extracted
+    fi
+
+    if ! command -v jdtls > /dev/null 2>&1; then
+        echo -e "\e[34;1m[*] \e[0mInstalling Java Language Server (jdtls)..."
+        apk add openjdk17 jdtls
+    fi
+
+    if ! command -v kotlin-language-server > /dev/null 2>&1; then
+        echo -e "\e[34;1m[*] \e[0mInstalling Kotlin Language Server..."
+        apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server
+    fi
 
     echo -e "\e[32;1m[+] \e[0mEnvironment Ready! Please restart the app if LSP doesn't work immediately.\e[0m"
 fi

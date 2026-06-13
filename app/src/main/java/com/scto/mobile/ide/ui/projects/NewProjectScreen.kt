@@ -499,6 +499,14 @@ private fun setupCommonAndroidDirs(dir: File, packageName: String): AndroidDirs 
     return AndroidDirs(appDir, mainDir, resDir, valuesDir, javaDir)
 }
 
+private fun createComposeThemeStructure(dirs: AndroidDirs, packageName: String) {
+    val themeDir = File(dirs.javaDir, "ui/theme")
+    themeDir.mkdirs()
+    safeWrite(File(themeDir, "Color.kt"), ProjectTemplates.getColorKt(packageName))
+    safeWrite(File(themeDir, "Type.kt"), ProjectTemplates.getTypeKt(packageName))
+    safeWrite(File(themeDir, "Theme.kt"), ProjectTemplates.getThemeKt(packageName))
+}
+
 private fun createEmptyComposeStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
     safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
@@ -510,6 +518,7 @@ private fun createEmptyComposeStructure(dir: File, name: String, packageName: St
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
     safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getEmptyComposeMainActivity(packageName))
+    createComposeThemeStructure(dirs, packageName)
 }
 
 private fun createBasicComposeStructure(dir: File, name: String, packageName: String) {
@@ -523,6 +532,7 @@ private fun createBasicComposeStructure(dir: File, name: String, packageName: St
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
     safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getBasicComposeMainActivity(packageName))
+    createComposeThemeStructure(dirs, packageName)
 }
 
 private fun createBottomNavigationStructure(dir: File, name: String, packageName: String) {
@@ -536,6 +546,7 @@ private fun createBottomNavigationStructure(dir: File, name: String, packageName
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
     safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getBottomNavigationMainActivity(packageName))
+    createComposeThemeStructure(dirs, packageName)
 }
 
 private fun createNavigationDrawerStructure(dir: File, name: String, packageName: String) {
@@ -549,6 +560,7 @@ private fun createNavigationDrawerStructure(dir: File, name: String, packageName
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
     safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getNavigationDrawerMainActivity(packageName))
+    createComposeThemeStructure(dirs, packageName)
 }
 
 private fun createFlutterStructure(dir: File, name: String, packageName: String) {
