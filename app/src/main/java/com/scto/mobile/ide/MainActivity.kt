@@ -19,6 +19,9 @@
 package com.scto.mobile.ide
 
 import android.os.Bundle
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -66,6 +69,17 @@ class MainActivity : ComponentActivity() {
         window.isNavigationBarContrastEnforced = false
 
         init()
+
+        if (WelcomePreferences.isWelcomeCompleted(this)) {
+            val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+            if (hasNotificationPermission) {
+                StatusService.start(this)
+            }
+        }
     }
 
     private fun init() {
@@ -135,6 +149,15 @@ class MainActivity : ComponentActivity() {
                                             WelcomePreferences.setWelcomeCompleted(context)
                                             LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
                                             showWelcomeScreen = false
+                                            
+                                            val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                                ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                                            } else {
+                                                true
+                                            }
+                                            if (hasNotificationPermission) {
+                                                StatusService.start(context)
+                                            }
                                         },
                                     )
                                 } else {

@@ -69,10 +69,12 @@
     <string name="welcome_tagline">Build the Future on Android</string>
     <string name="welcome_permissions_title">Required Permissions</string>
     <string name="welcome_permissions_description">MobileIDE needs the following permissions to read/write code and run apps.</string>
-    <string name="welcome_permission_storage_title">Storage</string>
-    <string name="welcome_permission_storage_description">Used to access and save project files</string>
+    <string name="welcome_permission_storage_title">Manage External Storage</string>
+    <string name="welcome_permission_storage_description">Required to manage, clone, and build projects in external storage (All Files Access)</string>
     <string name="welcome_permission_install_title">App Installation</string>
     <string name="welcome_permission_install_description">Install built APK files</string>
+    <string name="welcome_permission_notification_title">Notifications</string>
+    <string name="welcome_permission_notification_description">Request notification access to display the app status, wakelock status, and terminal sessions</string>
     <string name="welcome_appearance_title">Appearance</string>
     <string name="welcome_dynamic_color">Dynamic Color (Monet)</string>
     <string name="welcome_custom_theme">Custom</string>
