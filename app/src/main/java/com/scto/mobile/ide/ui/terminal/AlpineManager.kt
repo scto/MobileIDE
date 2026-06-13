@@ -210,14 +210,16 @@ object AlpineManager {
         val shell = "/system/bin/sh"
         val args = arrayOf("-c", initHostScript.absolutePath)
 
-        return TerminalSession(
-            shell,
-            context.filesDir.absolutePath,
-            args,
-            env.toTypedArray(),
-            TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
-            client,
-        )
+        return kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.Main) {
+            TerminalSession(
+                shell,
+                context.filesDir.absolutePath,
+                args,
+                env.toTypedArray(),
+                TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
+                client,
+            )
+        }
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {
