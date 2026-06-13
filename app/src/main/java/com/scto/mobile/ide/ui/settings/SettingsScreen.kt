@@ -190,6 +190,9 @@ fun SettingsScreen(
 
     // Loading / Installation State
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
+    var activeInstallProgress by remember { mutableFloatStateOf(0f) }
+    var activeInstallElapsedTime by remember { mutableStateOf("00:00") }
+    var activeInstallRemainingTime by remember { mutableStateOf("--:--") }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(refreshTrigger) {
@@ -244,35 +247,86 @@ fun SettingsScreen(
 
     fun runInstall(jobName: String, command: String) {
         activeInstallJobName = jobName
+        activeInstallProgress = 0f
+        activeInstallElapsedTime = "00:00"
+        activeInstallRemainingTime = "--:--"
         Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
 
-        val fullCommand =
-            com.scto.mobile.ide.ui.terminal.AlpineManager.buildProotCommand(context, arrayOf("sh", "-c", command))
-        val env = com.scto.mobile.ide.ui.terminal.AlpineManager.getProotEnv(context)
+        val expectedDurationSec = when (jobName) {
+            "Terminal environment" -> 60
+            "OpenJDK 17", "OpenJDK 21" -> 90
+            "Gradle" -> 45
+            "Android SDK" -> 120
+            "Build-Tools v35", "Build-Tools v36" -> 80
+            "Platform API 34", "Platform API 35" -> 100
+            "CMake" -> 30
+            "NDK" -> 180
+            "Base Build Utils" -> 65
+            else -> 60
+        }
+
+        val startTime = System.currentTimeMillis()
+        var jobFinished = false
+
+        // Timer thread to calculate elapsed time and remaining time
+        thread {
+            while (!jobFinished) {
+                Thread.sleep(1000)
+                if (jobFinished) break
+                val elapsedMs = System.currentTimeMillis() - startTime
+                val elapsedSec = (elapsedMs / 1000).toInt()
+                val progress = (elapsedSec.toFloat() / expectedDurationSec.toFloat()).coerceAtMost(0.99f)
+                val remainingSec = (expectedDurationSec - elapsedSec).coerceAtLeast(1)
+
+                val elapsedMinStr = String.format("%02d", elapsedSec / 60)
+                val elapsedSecStr = String.format("%02d", elapsedSec % 60)
+                val remainingMinStr = String.format("%02d", remainingSec / 60)
+                val remainingSecStr = String.format("%02d", remainingSec % 60)
+
+                (context as android.app.Activity).runOnUiThread {
+                    activeInstallProgress = progress
+                    activeInstallElapsedTime = "$elapsedMinStr:$elapsedSecStr"
+                    activeInstallRemainingTime = "$remainingMinStr:$remainingSecStr"
+                }
+            }
+        }
 
         thread {
             try {
-                val process =
-                    ProcessBuilder(fullCommand)
+                if (command == "reinstall_terminal") {
+                    // Reinstall Terminal directly using SetupWorker (runs suspend function)
+                    kotlinx.coroutines.runBlocking {
+                        SetupWorker.reinstallTerminal(context)
+                    }
+                    (context as android.app.Activity).runOnUiThread {
+                        jobFinished = true
+                        activeInstallJobName = null
+                        Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_success), Toast.LENGTH_LONG).show()
+                        refreshTrigger++
+                    }
+                } else {
+                    val fullCommand = com.scto.mobile.ide.ui.terminal.AlpineManager.buildProotCommand(context, arrayOf("sh", "-c", command))
+                    val env = com.scto.mobile.ide.ui.terminal.AlpineManager.getProotEnv(context)
+                    val process = ProcessBuilder(fullCommand)
                         .apply {
                             environment().putAll(env)
                             redirectErrorStream(true)
                         }
                         .start()
-                process.waitFor()
-                val success = process.exitValue() == 0
+                    process.waitFor()
+                    val success = process.exitValue() == 0
 
-                (context as android.app.Activity).runOnUiThread {
-                    activeInstallJobName = null
-                    if (success) {
-                        Toast.makeText(
+                    (context as android.app.Activity).runOnUiThread {
+                        jobFinished = true
+                        activeInstallJobName = null
+                        if (success) {
+                            Toast.makeText(
                                 context,
                                 context.getString(R.string.toast_install_success, jobName),
                                 Toast.LENGTH_LONG,
-                            )
-                            .show()
-                    } else {
-                        Toast.makeText(
+                            ).show()
+                        } else {
+                            Toast.makeText(
                                 context,
                                 context.getString(
                                     R.string.toast_install_failed,
@@ -280,24 +334,24 @@ fun SettingsScreen(
                                     "Exit code " + process.exitValue(),
                                 ),
                                 Toast.LENGTH_LONG,
-                            )
-                            .show()
+                            ).show()
+                        }
+                        refreshTrigger++
                     }
-                    refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
+                    jobFinished = true
                     activeInstallJobName = null
                     Toast.makeText(
-                            context,
-                            context.getString(
-                                R.string.toast_install_failed,
-                                jobName,
-                                e.localizedMessage ?: "Unknown Error",
-                            ),
-                            Toast.LENGTH_LONG,
-                        )
-                        .show()
+                        context,
+                        context.getString(
+                            R.string.toast_install_failed,
+                            jobName,
+                            e.localizedMessage ?: "Unknown Error",
+                        ),
+                        Toast.LENGTH_LONG,
+                    ).show()
                     refreshTrigger++
                 }
             }
@@ -366,13 +420,7 @@ fun SettingsScreen(
                         }
                     },
                     onReinstall = {
-                        Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch {
-                            SetupWorker.reinstallTerminal(context)
-                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
-                                .show()
-                            refreshTrigger++
-                        }
+                        runInstall("Terminal environment", "reinstall_terminal")
                     },
                 )
             }
@@ -558,6 +606,44 @@ fun SettingsScreen(
                 onThemeChange(currentThemeState.selectedModeIndex, themeColors.size, color, false, true)
                 showColorPicker = false
             },
+        )
+    }
+
+    if (activeInstallJobName != null) {
+        AlertDialog(
+            onDismissRequest = {}, // Force non-cancellable
+            title = {
+                Text(
+                    text = "Installing " + activeInstallJobName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Elapsed Time: $activeInstallElapsedTime",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Estimated Remaining: $activeInstallRemainingTime",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    LinearProgressIndicator(
+                        progress = { activeInstallProgress },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = String.format("%.0f%%", activeInstallProgress * 100),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.End)
+                    )
+                }
+            },
+            confirmButton = {} // No dismiss button to ensure safe install completion
         )
     }
 }
