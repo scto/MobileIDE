@@ -209,7 +209,7 @@ object AlpineManager {
         // If Terminal still throws Permission denied, you need to modify init-host.sh or call libproot.so directly
         // here.
         val shell = "/system/bin/sh"
-        val args = arrayOf("-cpp", initHostScript.absolutePath)
+        val args = arrayOf("-c", initHostScript.absolutePath)
 
         return TerminalSession(
             shell,

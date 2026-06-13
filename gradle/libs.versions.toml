@@ -202,6 +202,13 @@ accompanist-permissions = { group = "com.google.accompanist", name = "accompanis
 # Documentation & Plugins
 dokka-mermaid = { module = "org.jetbrains.dokka:mermaid-plugin", version.ref = "dokkaMermaid" }
 
+# apk-builder dependencies
+bouncycastle-prov = { module = "org.bouncycastle:bcprov-jdk18on", version = "1.78.1" }
+bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version = "1.78.1" }
+android-tools-apksig = { module = "com.android.tools.build:apksig", version = "8.11.1" }
+arsclib = { module = "io.github.reandroid:ARSCLib", version = "1.3.8" }
+timber = { module = "com.jakewharton.timber:timber", version = "5.0.1" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }

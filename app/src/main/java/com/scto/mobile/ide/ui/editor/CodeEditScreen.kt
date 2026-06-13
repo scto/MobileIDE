@@ -1640,7 +1640,104 @@ private suspend fun performBuild(
     snackbarHostState: SnackbarHostState,
     onResult: (BuildResultState) -> Unit,
 ) {
-    onResult(BuildResultState.Finished("Build not supported directly. Please run Gradle in the terminal tab."))
+    withContext(Dispatchers.IO) {
+        com.scto.mobile.ide.core.utils.LogCatcher.clearBuildLogs()
+        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
+        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Project Path: $projectPath")
+
+        val saved = viewModel.saveAllModifiedFiles(context, snackbarHostState)
+        if (!saved) {
+            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Failed to save modified files. Build aborted.")
+            onResult(BuildResultState.Finished("Failed to save files."))
+            return@withContext
+        }
+
+        val gradlewFile = File(projectPath, "gradlew")
+        val cmd = if (gradlewFile.exists()) {
+            if (!gradlewFile.canExecute()) {
+                gradlewFile.setExecutable(true)
+            }
+            listOf(gradlewFile.absolutePath, "assembleDebug")
+        } else {
+            listOf("gradle", "assembleDebug")
+        }
+
+        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing command: ${cmd.joinToString(" ")}")
+
+        try {
+            val processBuilder = ProcessBuilder(cmd)
+            processBuilder.directory(File(projectPath))
+            
+            // Auto-configure local.properties if missing
+            val localProperties = File(projectPath, "local.properties")
+            if (!localProperties.exists()) {
+                val sdkDir = File("/data/data/com.termux/files/home/android-sdk")
+                if (sdkDir.exists()) {
+                    localProperties.writeText("sdk.dir=${sdkDir.absolutePath.replace("\\", "\\\\").replace(":", "\\:")}\n")
+                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Created local.properties with sdk.dir=${sdkDir.absolutePath}")
+                }
+            }
+
+            val process = processBuilder.start()
+
+            val inputReader = process.inputStream.bufferedReader()
+            val errorReader = process.errorStream.bufferedReader()
+
+            val jobInput = launch {
+                var line = inputReader.readLine()
+                while (line != null) {
+                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", line)
+                    line = inputReader.readLine()
+                }
+            }
+
+            val jobError = launch {
+                var line = errorReader.readLine()
+                while (line != null) {
+                    com.scto.mobile.ide.core.utils.LogCatcher.e("Build", line)
+                    line = errorReader.readLine()
+                }
+            }
+
+            val exitCode = process.waitFor()
+            jobInput.join()
+            jobError.join()
+
+            com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Build process finished with exit code: $exitCode")
+
+            if (exitCode == 0) {
+                val apkPaths = listOf(
+                    "app/build/outputs/apk/debug/app-debug.apk",
+                    "app/build/outputs/apk/release/app-release.apk",
+                    "build/outputs/apk/debug/app-debug.apk",
+                )
+                var foundApk: File? = null
+                for (path in apkPaths) {
+                    val file = File(projectPath, path)
+                    if (file.exists() && file.isFile) {
+                        foundApk = file
+                        break
+                    }
+                }
+
+                if (foundApk != null) {
+                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Found built APK: ${foundApk.absolutePath}")
+                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Sign/Align verification via ApkAligner/ApkSigner is ready.")
+                    onResult(BuildResultState.Finished("Build succeeded", foundApk.absolutePath))
+                } else {
+                    com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Build succeeded but no APK file was found in expected paths.")
+                    onResult(BuildResultState.Finished("No built APK found."))
+                }
+            } else {
+                com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Build failed with exit code $exitCode")
+                onResult(BuildResultState.Finished("Build failed with exit code $exitCode"))
+            }
+
+        } catch (e: Exception) {
+            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Exception during build execution", e)
+            onResult(BuildResultState.Finished("Error: ${e.message}"))
+        }
+    }
 }
 
 private suspend fun handleRunApk(

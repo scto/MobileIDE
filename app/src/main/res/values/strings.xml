@@ -517,4 +517,16 @@
     <string name="about_developer_role_localization">Localization</string>
     <string name="about_developer_desc_language">English translation and maintenance</string>
     <string name="file_tree_remember_expanded_states">Remember folder expansion state</string>
+
+    <!-- apk-builder strings -->
+    <string name="apk_builder_step_prepare_template">Preparing template...</string>
+    <string name="apk_builder_step_inject_so">Injecting .so files...</string>
+    <string name="apk_builder_step_inject_terminal_payload">Injecting terminal payload...</string>
+    <string name="apk_builder_step_align">Aligning APK...</string>
+    <string name="apk_builder_step_sign">Signing APK...</string>
+    <string name="apk_builder_step_completed">Build completed.</string>
+    <string name="apk_builder_template_missing">Template APK unavailable: %1$s</string>
+    <string name="apk_builder_debug_keystore_unavailable">Default signing is unavailable. Place debug.keystore in assets/apk_templates/.</string>
+    <string name="apk_builder_failed">APK build failed: %1$s</string>
+    <string name="apk_builder_terminal_executable_missing">Terminal template requires an executable file.</string>
 </resources>

@@ -30,6 +30,7 @@ import com.rk.settings.Settings
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.components.SettingsToggle
 import com.rk.terminal.ui.routes.MainActivityRoutes
+import com.rk.terminal.ui.screens.terminal.Rootfs
 import androidx.core.net.toUri
 
 
@@ -120,6 +121,38 @@ fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActi
                 })
         }
 
+
+        PreferenceGroup(heading = "Linux System Environment") {
+            val hasRootfs = remember { Rootfs.isDownloaded }
+            
+            SettingsCard(
+                title = { Text("Linux System Status") },
+                description = { 
+                    Text(if (hasRootfs.value) "Installed & Ready" else "Not Installed or Incomplete")
+                },
+                onClick = {
+                    if (!hasRootfs.value) {
+                        navController.navigate(MainActivityRoutes.MainScreen.route)
+                    }
+                }
+            )
+
+            SettingsCard(
+                title = { Text("Reinstall Linux System") },
+                description = { Text("Download and extract the default Alpine Linux rootfs again") },
+                onClick = {
+                    // Wir löschen die alten Daten, damit beim Wechsel zum MainScreen der Downloader triggert
+                    com.rk.libcommons.postIO {
+                        Rootfs.reTerminal.deleteRecursively()
+                        Rootfs.reTerminal.mkdirs()
+                        com.rk.libcommons.runOnUiThread {
+                            Rootfs.isDownloaded.value = false
+                            navController.navigate(MainActivityRoutes.MainScreen.route)
+                        }
+                    }
+                }
+            )
+        }
 
         PreferenceGroup {
             SettingsToggle(
