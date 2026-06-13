@@ -26,6 +26,9 @@ import androidx.compose.runtime.setValue
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 /**
  * Wrapper class: Solves the issue where mTitle inside TerminalSession is invisible. We maintain the Session object and
  * its title ourselves.
@@ -48,7 +51,7 @@ object SessionManager {
             } else null
 
     /** Create a new session and add it to the list */
-    fun addNewSession(context: Context) {
+    suspend fun addNewSession(context: Context) {
         // Define the callback interface for Session
         val client =
             object : TerminalSessionClient {
@@ -106,16 +109,20 @@ object SessionManager {
             }
 
         // Call AlpineManager to create the core session
-        val session = AlpineManager.createSession(context, client)
+        val session = withContext(Dispatchers.IO) {
+            AlpineManager.createSession(context, client)
+        }
 
-        // Generate title (e.g.: Term 1, Term 2)
-        val title = "Term ${sessions.size + 1}"
+        withContext(Dispatchers.Main) {
+            // Generate title (e.g.: Term 1, Term 2)
+            val title = "Term ${sessions.size + 1}"
 
-        // Wrap and add to the list
-        sessions.add(SessionWrapper(session, title))
+            // Wrap and add to the list
+            sessions.add(SessionWrapper(session, title))
 
-        // Automatically switch to the newly created session
-        currentSessionIndex = sessions.lastIndex
+            // Automatically switch to the newly created session
+            currentSessionIndex = sessions.lastIndex
+        }
     }
 
     /** Remove the specified session */

@@ -207,6 +207,9 @@
     <string name="new_project_exists">项目已存在</string>
     <string name="new_project_unknown_error">未知错误</string>
     <string name="new_project_json_format_error">JSON 格式错误：%1$s</string>
+    <string name="new_project_minsdk">最小 SDK</string>
+    <string name="new_project_targetsdk">目标 SDK</string>
+    <string name="new_project_kotlin_dsl">使用 Kotlin DSL</string>
     <string name="orientation_portrait">竖屏</string>
     <string name="orientation_landscape">横屏</string>
     <string name="orientation_auto">自动</string>

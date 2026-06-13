@@ -67,6 +67,7 @@ var virtualKeysView: WeakReference<VirtualKeysView>? = null
 @Composable
 fun TerminalScreen(navController: NavController) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var isEnvironmentReady by remember { mutableStateOf(false) }
     val isSystemDark = isSystemInDarkTheme()
 
@@ -210,7 +211,7 @@ fun TerminalScreen(navController: NavController) {
                     Box(
                         modifier =
                             Modifier.size(45.dp) // Width and height fill the Row
-                                .clickable { SessionManager.addNewSession(context) },
+                                .clickable { coroutineScope.launch { SessionManager.addNewSession(context) } },
                         contentAlignment = Alignment.Center, // Button icon centered in the grid
                     ) {
                         Icon(

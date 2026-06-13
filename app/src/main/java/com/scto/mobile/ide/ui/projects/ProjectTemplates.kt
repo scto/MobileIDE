@@ -102,17 +102,33 @@ object ProjectTemplates {
             .trimIndent()
     }
 
-    val rootBuildGradleAndroid =
-        """
-        plugins {
-            alias(libs.plugins.android.application) apply false
-            alias(libs.plugins.kotlin.android) apply false
+    fun getRootBuildGradle(useKotlinDsl: Boolean): String {
+        return if (useKotlinDsl) {
+            """
+            plugins {
+                alias(libs.plugins.android.application) apply false
+                alias(libs.plugins.kotlin.android) apply false
+            }
+            """.trimIndent()
+        } else {
+            """
+            plugins {
+                alias libs.plugins.android.application apply false
+                alias libs.plugins.kotlin.android apply false
+            }
+            """.trimIndent()
         }
-        """
-            .trimIndent()
+    }
 
-    fun getAppBuildGradleCompose(packageName: String, addNavigation: Boolean = false): String {
-        return """
+    fun getAppBuildGradleCompose(
+        packageName: String,
+        addNavigation: Boolean = false,
+        minSdk: Int = 24,
+        targetSdk: Int = 34,
+        useKotlinDsl: Boolean = true
+    ): String {
+        return if (useKotlinDsl) {
+            """
             plugins {
                 alias(libs.plugins.android.application)
                 alias(libs.plugins.kotlin.android)
@@ -120,12 +136,12 @@ object ProjectTemplates {
 
             android {
                 namespace = "$packageName"
-                compileSdk = 34
+                compileSdk = $targetSdk
 
                 defaultConfig {
                     applicationId = "$packageName"
-                    minSdk = 24
-                    targetSdk = 34
+                    minSdk = $minSdk
+                    targetSdk = $targetSdk
                     versionCode = 1
                     versionName = "1.0"
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -182,12 +198,87 @@ object ProjectTemplates {
                 debugImplementation(libs.androidx.ui.tooling)
                 debugImplementation(libs.androidx.ui.test.manifest)
             }
-        """
-            .trimIndent()
+            """.trimIndent()
+        } else {
+            """
+            plugins {
+                alias libs.plugins.android.application
+                alias libs.plugins.kotlin.android
+            }
+
+            android {
+                namespace '$packageName'
+                compileSdk $targetSdk
+
+                defaultConfig {
+                    applicationId '$packageName'
+                    minSdk $minSdk
+                    targetSdk $targetSdk
+                    versionCode 1
+                    versionName '1.0'
+                    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+                    vectorDrawables {
+                        useSupportLibrary true
+                    }
+                }
+
+                buildTypes {
+                    release {
+                        minifyEnabled false
+                        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                    }
+                }
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
+                kotlinOptions {
+                    jvmTarget = '1.8'
+                }
+                buildFeatures {
+                    compose true
+                }
+                composeOptions {
+                    kotlinCompilerExtensionVersion '1.5.8'
+                }
+                packaging {
+                    resources {
+                        excludes += '/META-INF/{AL2.0,LGPL2.1}'
+                    }
+                }
+            }
+
+            dependencies {
+                implementation libs.androidx.core.ktx
+                implementation libs.androidx.lifecycle.runtime.ktx
+                implementation libs.androidx.activity.compose
+                implementation platform(libs.androidx.compose.bom)
+                implementation libs.androidx.ui
+                implementation libs.androidx.ui.graphics
+                implementation libs.androidx.ui.tooling.preview
+                implementation libs.androidx.material3
+                ${if (addNavigation) "implementation libs.androidx.navigation.compose" else ""}
+                
+                testImplementation libs.junit
+                androidTestImplementation libs.androidx.junit
+                androidTestImplementation libs.androidx.espresso.core
+                androidTestImplementation platform(libs.androidx.compose.bom)
+                androidTestImplementation libs.androidx.ui.test.junit4
+                debugImplementation libs.androidx.ui.tooling
+                debugImplementation libs.androidx.ui.test.manifest
+            }
+            """.trimIndent()
+        }
     }
 
-    fun getAppBuildGradleCmake(packageName: String): String {
-        return """
+    fun getAppBuildGradleCmake(
+        packageName: String,
+        minSdk: Int = 24,
+        targetSdk: Int = 34,
+        useKotlinDsl: Boolean = true
+    ): String {
+        return if (useKotlinDsl) {
+            """
             plugins {
                 alias(libs.plugins.android.application)
                 alias(libs.plugins.kotlin.android)
@@ -195,12 +286,12 @@ object ProjectTemplates {
 
             android {
                 namespace = "$packageName"
-                compileSdk = 34
+                compileSdk = $targetSdk
 
                 defaultConfig {
                     applicationId = "$packageName"
-                    minSdk = 24
-                    targetSdk = 34
+                    minSdk = $minSdk
+                    targetSdk = $targetSdk
                     versionCode = 1
                     versionName = "1.0"
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -252,8 +343,72 @@ object ProjectTemplates {
                 implementation(libs.androidx.ui.tooling.preview)
                 implementation(libs.androidx.material3)
             }
-        """
-            .trimIndent()
+            """.trimIndent()
+        } else {
+            """
+            plugins {
+                alias libs.plugins.android.application
+                alias libs.plugins.kotlin.android
+            }
+
+            android {
+                namespace '$packageName'
+                compileSdk $targetSdk
+
+                defaultConfig {
+                    applicationId '$packageName'
+                    minSdk $minSdk
+                    targetSdk $targetSdk
+                    versionCode 1
+                    versionName '1.0'
+                    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+                    
+                    externalNativeBuild {
+                        cmake {
+                            cppFlags ''
+                        }
+                    }
+                }
+
+                buildTypes {
+                    release {
+                        minifyEnabled false
+                        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                    }
+                }
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
+                kotlinOptions {
+                    jvmTarget = '1.8'
+                }
+                buildFeatures {
+                    compose true
+                }
+                composeOptions {
+                    kotlinCompilerExtensionVersion '1.5.8'
+                }
+                externalNativeBuild {
+                    cmake {
+                        path file('CMakeLists.txt')
+                        version '3.22.1'
+                    }
+                }
+            }
+
+            dependencies {
+                implementation libs.androidx.core.ktx
+                implementation libs.androidx.lifecycle.runtime.ktx
+                implementation libs.androidx.activity.compose
+                implementation platform(libs.androidx.compose.bom)
+                implementation libs.androidx.ui
+                implementation libs.androidx.ui.graphics
+                implementation libs.androidx.ui.tooling.preview
+                implementation libs.androidx.material3
+            }
+            """.trimIndent()
+        }
     }
 
     fun getAndroidManifest(packageName: String): String {
@@ -929,5 +1084,61 @@ object ProjectTemplates {
             }
         """
             .trimIndent()
+    }
+
+    fun downloadGradle(
+        context: android.content.Context,
+        version: String = "8.5",
+        onProgress: (Float) -> Unit = {},
+        onSuccess: (java.io.File) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val cacheDir = context.cacheDir
+        val gradleZip = java.io.File(cacheDir, "gradle-$version-bin.zip")
+        if (gradleZip.exists() && gradleZip.length() > 10 * 1024 * 1024) {
+            onSuccess(gradleZip)
+            return
+        }
+
+        val distributionUrl = "https://services.gradle.org/distributions/gradle-$version-bin.zip"
+        @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val url = java.net.URL(distributionUrl)
+                val connection = url.openConnection() as java.net.HttpURLConnection
+                connection.connect()
+
+                if (connection.responseCode != java.net.HttpURLConnection.HTTP_OK) {
+                    throw java.io.IOException("Server returned HTTP ${connection.responseCode} ${connection.responseMessage}")
+                }
+
+                val fileLength = connection.contentLength
+                url.openStream().use { input ->
+                    java.io.FileOutputStream(gradleZip).use { output ->
+                        val data = ByteArray(4096)
+                        var total: Long = 0
+                        var count: Int
+                        while (input.read(data).also { count = it } != -1) {
+                            total += count
+                            if (fileLength > 0) {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    onProgress(total.toFloat() / fileLength)
+                                }
+                            }
+                            output.write(data, 0, count)
+                        }
+                    }
+                }
+
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    onSuccess(gradleZip)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    onFailure(e)
+                }
+            }
+        }
     }
 }

@@ -206,7 +206,9 @@
     <string name="new_project_created">Created successfully: %1$s</string>
     <string name="new_project_exists">Project already exists</string>
     <string name="new_project_unknown_error">Unknown error</string>
-    <string name="new_project_json_format_error">JSON format error: %1$s</string>
+    <string name="new_project_minsdk">Min SDK</string>
+    <string name="new_project_targetsdk">Target SDK</string>
+    <string name="new_project_kotlin_dsl">Use Kotlin DSL</string>
     <string name="orientation_portrait">Portrait</string>
     <string name="orientation_landscape">Landscape</string>
     <string name="orientation_auto">Auto</string>

@@ -360,8 +360,10 @@ fun SettingsScreen(
             item(key = "terminal_settings") {
                 TerminalSettingsItem(
                     onReset = {
-                        SetupWorker.resetTerminal(context)
-                        Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            SetupWorker.resetTerminal(context)
+                            Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
+                        }
                     },
                     onReinstall = {
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()

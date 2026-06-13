@@ -149,14 +149,13 @@ object AlpineManager {
         val prefixDir = getPrefixDir(context)
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
-        // 1. Ensure scripts exist
+        // 1. Ensure scripts exist and are up to date
         val initHostScript = File(binDir, "init-host")
-        if (!initHostScript.exists()) {
-            copyAsset(context, "init-host.sh", initHostScript)
-            copyAsset(context, "init.sh", File(binDir, "init"))
-            initHostScript.setExecutable(true)
-            File(binDir, "init").setExecutable(true)
-        }
+        copyAsset(context, "init-host.sh", initHostScript)
+        val initScript = File(binDir, "init")
+        copyAsset(context, "init.sh", initScript)
+        initHostScript.setExecutable(true)
+        initScript.setExecutable(true)
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
