@@ -109,6 +109,36 @@ object SetupWorker {
             // Copy Proot to local/bin
             copyAsset(context, "proot", File(binDir, "proot"))
             File(binDir, "proot").setExecutable(true)
+
+            // 5. Copy helper scripts from assets/terminal/scripts to local/alpine/root/scripts
+            val scriptsDir = File(alpineDir, "root/scripts")
+            scriptsDir.mkdirs()
+            val lspScriptsDir = File(scriptsDir, "lsp")
+            lspScriptsDir.mkdirs()
+
+            fun copyScriptsRecursively(assetPath: String, destDir: File) {
+                try {
+                    val list = context.assets.list(assetPath) ?: emptyArray()
+                    for (file in list) {
+                        val subAsset = "$assetPath/$file"
+                        val subDest = File(destDir, file)
+                        val subList = context.assets.list(subAsset)
+                        val isDir = !subList.isNullOrEmpty()
+                        if (isDir) {
+                            subDest.mkdirs()
+                            copyScriptsRecursively(subAsset, subDest)
+                        } else {
+                            context.assets.open(subAsset).use { input ->
+                                FileOutputStream(subDest).use { output -> input.copyTo(output) }
+                            }
+                            subDest.setExecutable(true)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            copyScriptsRecursively("terminal/scripts", scriptsDir)
         }
     }
 
