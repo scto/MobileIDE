@@ -561,4 +561,17 @@
     <string name="settings_lsp_kotlin">Kotlin Language Server</string>
     <string name="settings_lsp_typescript">TypeScript/JavaScript Language Server</string>
     <string name="settings_lsp_web">HTML/CSS/JSON Language Server</string>
+
+    <!-- Build & Run Strings -->
+    <string name="settings_build_run_title">Build &amp; Run</string>
+    <string name="settings_android_dev_title">Android Development</string>
+    <string name="settings_android_dev_summary">Android-SDKs, Build-Tools, Platforms, CMake und NDK konfigurieren</string>
+    <string name="settings_gradle_group_title">Gradle-Konfiguration</string>
+    <string name="settings_gradle_group_summary">Gradle installieren, Laufzeitoptionen konfigurieren oder Caches löschen</string>
+    <string name="settings_java_group_title">Java JDKs</string>
+    <string name="settings_java_group_summary">OpenJDK 17, 21 und 25 Installationen verwalten</string>
+    <string name="settings_lsp_group_title">LSP-Server</string>
+    <string name="settings_lsp_group_summary">Language Server für erweiterte Code-Unterstützung installieren/deinstallieren</string>
+    <string name="settings_clear_cache_success">Gradle-Cache erfolgreich gelöscht.</string>
+    <string name="settings_clear_cache_failed">Fehler beim Löschen des Gradle-Caches: %1$s</string>
 </resources>

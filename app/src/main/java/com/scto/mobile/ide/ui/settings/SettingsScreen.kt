@@ -171,23 +171,48 @@ fun SettingsScreen(
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
     // States for Build Group
-    var isJdk17Installed by remember(refreshTrigger) { mutableStateOf(false) }
-    var isJdk21Installed by remember(refreshTrigger) { mutableStateOf(false) }
-    var isGradleInstalled by remember(refreshTrigger) { mutableStateOf(false) }
-    var isAndroidSdkInstalled by remember(refreshTrigger) { mutableStateOf(false) }
+    var isAndroidSdk33Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isAndroidSdk34Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isAndroidSdk35Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isAndroidSdk36Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isBuildTools33Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isBuildTools34Installed by remember(refreshTrigger) { mutableStateOf(false) }
     var isBuildTools35Installed by remember(refreshTrigger) { mutableStateOf(false) }
     var isBuildTools36Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isPlatform33Installed by remember(refreshTrigger) { mutableStateOf(false) }
     var isPlatform34Installed by remember(refreshTrigger) { mutableStateOf(false) }
     var isPlatform35Installed by remember(refreshTrigger) { mutableStateOf(false) }
-    var isCmakeInstalled by remember(refreshTrigger) { mutableStateOf(false) }
-    var isNdkInstalled by remember(refreshTrigger) { mutableStateOf(false) }
-    var isBaseUtilsInstalled by remember(refreshTrigger) { mutableStateOf(false) }
+    var isPlatform36Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isCmake318Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isCmake320Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isCmake325Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isCmake431Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isNdk26Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isNdk27Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isNdk28Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isNdk29Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isJdk17Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isJdk21Installed by remember(refreshTrigger) { mutableStateOf(false) }
+    var isJdk25Installed by remember(refreshTrigger) { mutableStateOf(false) }
+
+    var isGradleInstalled by remember(refreshTrigger) { mutableStateOf(false) }
 
     // States for LSP Group
     var isJdtlsInstalled by remember(refreshTrigger) { mutableStateOf(false) }
     var isKotlinLsInstalled by remember(refreshTrigger) { mutableStateOf(false) }
     var isTsLsInstalled by remember(refreshTrigger) { mutableStateOf(false) }
     var isWebLsInstalled by remember(refreshTrigger) { mutableStateOf(false) }
+
+    // Dialog flags
+    var showAndroidDevDialog by remember { mutableStateOf(false) }
+    var showGradleDialog by remember { mutableStateOf(false) }
+    var showJavaDialog by remember { mutableStateOf(false) }
+    var showLspDialog by remember { mutableStateOf(false) }
 
     // Loading / Installation State
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
@@ -202,35 +227,113 @@ fun SettingsScreen(
             val alpineDir = File(prefixDir, "local/alpine")
             fun getAlpineFile(path: String) = File(alpineDir, path)
 
-            isJdk17Installed = getAlpineFile("usr/lib/jvm/java-17-openjdk/bin/java").exists()
-            isJdk21Installed = getAlpineFile("usr/lib/jvm/java-21-openjdk/bin/java").exists()
-            isGradleInstalled = getAlpineFile("usr/bin/gradle").exists()
-
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
             val alpineSdk = getAlpineFile("root/android-sdk")
-            isAndroidSdkInstalled = hostSdk.exists() || alpineSdk.exists()
+            val alpineSdkOpt = getAlpineFile("opt/android-sdk")
 
-            isBuildTools35Installed =
-                File(hostSdk, "build-tools/35.0.0").exists() ||
-                    getAlpineFile("root/android-sdk/build-tools/35.0.0").exists()
-            isBuildTools36Installed =
-                File(hostSdk, "build-tools/36.0.0").exists() ||
-                    getAlpineFile("root/android-sdk/build-tools/36.0.0").exists()
+            fun checkSdkSubPathExists(subPath: String): Boolean {
+                return File(hostSdk, subPath).exists() ||
+                       File(alpineSdk, subPath).exists() ||
+                       File(alpineSdkOpt, subPath).exists()
+            }
 
-            isPlatform34Installed =
-                File(hostSdk, "platforms/android-34").exists() ||
-                    getAlpineFile("root/android-sdk/platforms/android-34").exists()
-            isPlatform35Installed =
-                File(hostSdk, "platforms/android-35").exists() ||
-                    getAlpineFile("root/android-sdk/platforms/android-35").exists()
+            fun checkBuildToolsInstalled(major: Int): Boolean {
+                val searchDirs = listOf(
+                    File(hostSdk, "build-tools"),
+                    File(alpineSdk, "build-tools"),
+                    File(alpineSdkOpt, "build-tools")
+                )
+                for (dir in searchDirs) {
+                    if (dir.exists() && dir.isDirectory) {
+                        val matches = dir.listFiles { f -> f.isDirectory && f.name.startsWith("$major.") }
+                        if (!matches.isNullOrEmpty()) return true
+                    }
+                }
+                return false
+            }
 
-            isCmakeInstalled = getAlpineFile("usr/bin/cmake").exists()
-            isNdkInstalled =
-                File(hostSdk, "ndk").exists() ||
-                    getAlpineFile("root/android-sdk/ndk").exists() ||
-                    File(hostSdk, "ndk-bundle").exists()
+            fun checkCmakeInstalled(versionPrefix: String): Boolean {
+                val searchDirs = listOf(
+                    File(hostSdk, "cmake"),
+                    File(alpineSdk, "cmake"),
+                    File(alpineSdkOpt, "cmake")
+                )
+                for (dir in searchDirs) {
+                    if (dir.exists() && dir.isDirectory) {
+                        val matches = dir.listFiles { f -> f.isDirectory && f.name.startsWith(versionPrefix) }
+                        if (!matches.isNullOrEmpty()) return true
+                    }
+                }
+                return false
+            }
 
-            isBaseUtilsInstalled = getAlpineFile("usr/bin/make").exists()
+            fun checkNdkInstalled(major: Int): Boolean {
+                val searchDirs = listOf(
+                    File(hostSdk, "ndk"),
+                    File(alpineSdk, "ndk"),
+                    File(alpineSdkOpt, "ndk"),
+                    File(hostSdk, "ndk-bundle"),
+                    File(alpineSdk, "ndk-bundle"),
+                    File(alpineSdkOpt, "ndk-bundle")
+                )
+                for (dir in searchDirs) {
+                    if (dir.exists() && dir.isDirectory) {
+                        val matches = dir.listFiles { f -> f.isDirectory && f.name.startsWith("$major.") }
+                        if (!matches.isNullOrEmpty()) return true
+                    }
+                }
+                return false
+            }
+
+            fun getPlatformToolsVersion(): String? {
+                val searchDirs = listOf(
+                    File(hostSdk, "platform-tools"),
+                    File(alpineSdk, "platform-tools"),
+                    File(alpineSdkOpt, "platform-tools")
+                )
+                for (dir in searchDirs) {
+                    val prop = File(dir, "source.properties")
+                    if (prop.exists()) {
+                        try {
+                            val v = prop.readLines().find { it.startsWith("Pkg.Revision=") }?.substringAfter("Pkg.Revision=")
+                            if (v != null) return v
+                        } catch (e: Exception) {}
+                    }
+                }
+                return null
+            }
+
+            isAndroidSdk33Installed = checkSdkSubPathExists("platforms/android-33")
+            isAndroidSdk34Installed = checkSdkSubPathExists("platforms/android-34")
+            isAndroidSdk35Installed = checkSdkSubPathExists("platforms/android-35")
+            isAndroidSdk36Installed = checkSdkSubPathExists("platforms/android-36")
+
+            isBuildTools33Installed = checkBuildToolsInstalled(33)
+            isBuildTools34Installed = checkBuildToolsInstalled(34)
+            isBuildTools35Installed = checkBuildToolsInstalled(35)
+            isBuildTools36Installed = checkBuildToolsInstalled(36)
+
+            val ptVer = getPlatformToolsVersion()
+            isPlatform33Installed = ptVer?.startsWith("33") == true
+            isPlatform34Installed = ptVer?.startsWith("34") == true
+            isPlatform35Installed = ptVer?.startsWith("35") == true
+            isPlatform36Installed = ptVer?.startsWith("36") == true
+
+            isCmake318Installed = checkCmakeInstalled("3.18")
+            isCmake320Installed = checkCmakeInstalled("3.20")
+            isCmake325Installed = checkCmakeInstalled("3.25")
+            isCmake431Installed = checkCmakeInstalled("4.3")
+
+            isNdk26Installed = checkNdkInstalled(26)
+            isNdk27Installed = checkNdkInstalled(27)
+            isNdk28Installed = checkNdkInstalled(28)
+            isNdk29Installed = checkNdkInstalled(29)
+
+            isJdk17Installed = getAlpineFile("usr/lib/jvm/java-17-openjdk/bin/java").exists()
+            isJdk21Installed = getAlpineFile("usr/lib/jvm/java-21-openjdk/bin/java").exists()
+            isJdk25Installed = getAlpineFile("usr/lib/jvm/java-25-openjdk/bin/java").exists()
+
+            isGradleInstalled = getAlpineFile("usr/bin/gradle").exists() || getAlpineFile("usr/local/bin/gradle").exists()
 
             // LSPs
             isJdtlsInstalled = getAlpineFile("usr/bin/jdtls").exists()
@@ -449,30 +552,48 @@ fun SettingsScreen(
                 )
             }
 
-            item(key = "build_settings") {
-                BuildSettingsItem(
-                    isJdk17Installed = isJdk17Installed,
-                    isJdk21Installed = isJdk21Installed,
-                    isGradleInstalled = isGradleInstalled,
-                    isAndroidSdkInstalled = isAndroidSdkInstalled,
-                    isBuildTools35Installed = isBuildTools35Installed,
-                    isBuildTools36Installed = isBuildTools36Installed,
-                    isPlatform34Installed = isPlatform34Installed,
-                    isPlatform35Installed = isPlatform35Installed,
-                    isCmakeInstalled = isCmakeInstalled,
-                    isNdkInstalled = isNdkInstalled,
-                    isBaseUtilsInstalled = isBaseUtilsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) },
+            item {
+                Text(
+                    text = stringResource(R.string.settings_build_run_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 4.dp, top = 8.dp),
                 )
             }
 
-            item(key = "lsp_settings") {
-                LspSettingsItem(
-                    isJdtlsInstalled = isJdtlsInstalled,
-                    isKotlinLsInstalled = isKotlinLsInstalled,
-                    isTsLsInstalled = isTsLsInstalled,
-                    isWebLsInstalled = isWebLsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) },
+            item(key = "android_dev_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Default.Android,
+                    title = stringResource(R.string.settings_android_dev_title),
+                    subtitle = stringResource(R.string.settings_android_dev_summary),
+                    onClick = { showAndroidDevDialog = true }
+                )
+            }
+
+            item(key = "gradle_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Build,
+                    title = stringResource(R.string.settings_gradle_group_title),
+                    subtitle = stringResource(R.string.settings_gradle_group_summary),
+                    onClick = { showGradleDialog = true }
+                )
+            }
+
+            item(key = "java_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Code,
+                    title = stringResource(R.string.settings_java_group_title),
+                    subtitle = stringResource(R.string.settings_java_group_summary),
+                    onClick = { showJavaDialog = true }
+                )
+            }
+
+            item(key = "lsp_settings_group") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Dns,
+                    title = stringResource(R.string.settings_lsp_group_title),
+                    subtitle = stringResource(R.string.settings_lsp_group_summary),
+                    onClick = { showLspDialog = true }
                 )
             }
 
@@ -619,6 +740,74 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = { showLanguageDialog = false }) { Text(stringResource(R.string.action_cancel)) }
             },
+        )
+    }
+
+    if (showAndroidDevDialog) {
+        AndroidDevDialog(
+            onDismiss = { showAndroidDevDialog = false },
+            isSdk33 = isAndroidSdk33Installed,
+            isSdk34 = isAndroidSdk34Installed,
+            isSdk35 = isAndroidSdk35Installed,
+            isSdk36 = isAndroidSdk36Installed,
+            isBt33 = isBuildTools33Installed,
+            isBt34 = isBuildTools34Installed,
+            isBt35 = isBuildTools35Installed,
+            isBt36 = isBuildTools36Installed,
+            isPl33 = isPlatform33Installed,
+            isPl34 = isPlatform34Installed,
+            isPl35 = isPlatform35Installed,
+            isPl36 = isPlatform36Installed,
+            isCm318 = isCmake318Installed,
+            isCm320 = isCmake320Installed,
+            isCm325 = isCmake325Installed,
+            isCm431 = isCmake431Installed,
+            isNdk26 = isNdk26Installed,
+            isNdk27 = isNdk27Installed,
+            isNdk28 = isNdk28Installed,
+            isNdk29 = isNdk29Installed,
+            onInstall = { name, cmd -> runInstall(name, cmd) }
+        )
+    }
+
+    if (showGradleDialog) {
+        GradleDialog(
+            onDismiss = { showGradleDialog = false },
+            isGradleInstalled = isGradleInstalled,
+            prefs = generalPrefs,
+            onInstall = { name, cmd -> runInstall(name, cmd) },
+            onClearCache = {
+                clearGradleCache(context) { success, msg ->
+                    (context as android.app.Activity).runOnUiThread {
+                        if (success) {
+                            Toast.makeText(context, context.getString(R.string.settings_clear_cache_success), Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.settings_clear_cache_failed, msg), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    if (showJavaDialog) {
+        JavaDialog(
+            onDismiss = { showJavaDialog = false },
+            isJdk17 = isJdk17Installed,
+            isJdk21 = isJdk21Installed,
+            isJdk25 = isJdk25Installed,
+            onInstall = { name, cmd -> runInstall(name, cmd) }
+        )
+    }
+
+    if (showLspDialog) {
+        LspDialog(
+            onDismiss = { showLspDialog = false },
+            isJdtls = isJdtlsInstalled,
+            isKotlinLs = isKotlinLsInstalled,
+            isTsLs = isTsLsInstalled,
+            isWebLs = isWebLsInstalled,
+            onInstall = { name, cmd -> runInstall(name, cmd) }
         )
     }
 
@@ -1568,233 +1757,177 @@ fun TerminalSettingsItem(onReset: () -> Unit, onReinstall: () -> Unit) {
 }
 
 @Composable
-fun BuildSettingsItem(
-    isJdk17Installed: Boolean,
-    isJdk21Installed: Boolean,
-    isGradleInstalled: Boolean,
-    isAndroidSdkInstalled: Boolean,
-    isBuildTools35Installed: Boolean,
-    isBuildTools36Installed: Boolean,
-    isPlatform34Installed: Boolean,
-    isPlatform35Installed: Boolean,
-    isCmakeInstalled: Boolean,
-    isNdkInstalled: Boolean,
-    isBaseUtilsInstalled: Boolean,
-    onInstall: (String, String) -> Unit,
+fun AndroidDevDialog(
+    onDismiss: () -> Unit,
+    isSdk33: Boolean, isSdk34: Boolean, isSdk35: Boolean, isSdk36: Boolean,
+    isBt33: Boolean, isBt34: Boolean, isBt35: Boolean, isBt36: Boolean,
+    isPl33: Boolean, isPl34: Boolean, isPl35: Boolean, isPl36: Boolean,
+    isCm318: Boolean, isCm320: Boolean, isCm325: Boolean, isCm431: Boolean,
+    isNdk26: Boolean, isNdk27: Boolean, isNdk28: Boolean, isNdk29: Boolean,
+    onInstall: (String, String) -> Unit
 ) {
-    var expanded by rememberSaveable { mutableStateOf(true) }
-    val expandDuration = 200
-    val snappyEasing = LinearOutSlowInEasing
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabTitles = listOf("Android-SDK", "Build-Tools", "Platform", "CMake", "NDK")
+    val selectedItems = remember { mutableStateMapOf<String, Boolean>() }
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier =
-                Modifier.animateContentSize(
-                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-                )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Build,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_build_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
-                    if (!expanded) {
-                        Text(
-                            text = stringResource(R.string.settings_build_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Android Development") },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth().heightIn(max = 450.dp)) {
+                ScrollableTabRow(
+                    selectedTabIndex = selectedTab,
+                    edgePadding = 0.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(title, style = MaterialTheme.typography.bodySmall) }
                         )
                     }
                 }
-                val rotation by
-                    animateFloatAsState(
-                        targetValue = if (expanded) 180f else 0f,
-                        label = "ArrowRotation",
-                        animationSpec = tween(expandDuration),
-                    )
-                Icon(
-                    imageVector = Icons.Filled.ExpandMore,
-                    contentDescription = null,
-                    modifier = Modifier.rotate(rotation),
-                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when (selectedTab) {
+                        0 -> {
+                            val items = listOf(
+                                "Android-SDK 33" to isSdk33,
+                                "Android-SDK 34" to isSdk34,
+                                "Android-SDK 35" to isSdk35,
+                                "Android-SDK 36" to isSdk36
+                            )
+                            VersionListTab(
+                                items = items,
+                                typeKey = "sdk",
+                                selectedItems = selectedItems,
+                                onInstall = { label, version -> onInstall(label, "bash /root/scripts/android_sdk.sh install $version") },
+                                onUninstall = { label, version -> onInstall(label, "bash /root/scripts/android_sdk.sh uninstall $version") }
+                            )
+                        }
+                        1 -> {
+                            val items = listOf(
+                                "Build-Tools 33" to isBt33,
+                                "Build-Tools 34" to isBt34,
+                                "Build-Tools 35" to isBt35,
+                                "Build-Tools 36" to isBt36
+                            )
+                            VersionListTab(
+                                items = items,
+                                typeKey = "bt",
+                                selectedItems = selectedItems,
+                                onInstall = { label, version -> onInstall(label, "bash /root/scripts/build_tools.sh install $version") },
+                                onUninstall = { label, version -> onInstall(label, "bash /root/scripts/build_tools.sh uninstall $version") }
+                            )
+                        }
+                        2 -> {
+                            val items = listOf(
+                                "Platform 33" to isPl33,
+                                "Platform 34" to isPl34,
+                                "Platform 35" to isPl35,
+                                "Platform 36" to isPl36
+                            )
+                            VersionListTab(
+                                items = items,
+                                typeKey = "pl",
+                                selectedItems = selectedItems,
+                                onInstall = { label, version -> onInstall(label, "bash /root/scripts/platforms.sh install $version") },
+                                onUninstall = { label, version -> onInstall(label, "bash /root/scripts/platforms.sh uninstall $version") }
+                            )
+                        }
+                        3 -> {
+                            val items = listOf(
+                                "CMake 3.18" to isCm318,
+                                "CMake 3.20" to isCm320,
+                                "CMake 3.25" to isCm325,
+                                "CMake 4.3.1" to isCm431
+                            )
+                            VersionListTab(
+                                items = items,
+                                typeKey = "cmake",
+                                selectedItems = selectedItems,
+                                onInstall = { label, version -> onInstall(label, "bash /root/scripts/cmake.sh install $version") },
+                                onUninstall = { label, version -> onInstall(label, "bash /root/scripts/cmake.sh uninstall $version") }
+                            )
+                        }
+                        4 -> {
+                            val items = listOf(
+                                "NDK 26" to isNdk26,
+                                "NDK 27" to isNdk27,
+                                "NDK 28" to isNdk28,
+                                "NDK 29" to isNdk29
+                            )
+                            VersionListTab(
+                                items = items,
+                                typeKey = "ndk",
+                                selectedItems = selectedItems,
+                                onInstall = { label, version -> onInstall(label, "bash /root/scripts/ndk.sh install $version") },
+                                onUninstall = { label, version -> onInstall(label, "bash /root/scripts/ndk.sh uninstall $version") }
+                            )
+                        }
+                    }
+                }
             }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Schließen") }
+        }
+    )
+}
 
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(tween(expandDuration, easing = snappyEasing)),
-                exit = fadeOut(tween(200)) + shrinkVertically(tween(200, easing = snappyEasing)),
+@Composable
+fun VersionListTab(
+    items: List<Pair<String, Boolean>>,
+    typeKey: String,
+    selectedItems: MutableMap<String, Boolean>,
+    onInstall: (String, String) -> Unit,
+    onUninstall: (String, String) -> Unit
+) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(items.size) { i ->
+            val (label, installed) = items[i]
+            val versionStr = label.substringAfterLast(" ")
+            val key = "${typeKey}_${versionStr}"
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_jdk),
-                            isInstalled = isJdk17Installed || isJdk21Installed,
-                            infoText =
-                                if (isJdk21Installed) "OpenJDK 21" else if (isJdk17Installed) "OpenJDK 17" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = { onInstall("OpenJDK 17", "apk add openjdk17") },
-                                        enabled = !isJdk17Installed,
-                                    ) {
-                                        Text("JDK 17")
-                                    }
-                                    OutlinedButton(
-                                        onClick = { onInstall("OpenJDK 21", "apk add openjdk21") },
-                                        enabled = !isJdk21Installed,
-                                    ) {
-                                        Text("JDK 21")
-                                    }
-                                }
-                            },
+                Checkbox(
+                    checked = selectedItems[key] ?: false,
+                    onCheckedChange = { selectedItems[key] = it }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(
+                            imageVector = if (installed) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                            contentDescription = null,
+                            tint = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
+                            modifier = Modifier.size(14.dp),
                         )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_gradle),
-                            isInstalled = isGradleInstalled,
-                            onInstall = { onInstall("Gradle", "apk add gradle") },
+                        Text(
+                            text = if (installed) "Installiert" else "Nicht installiert",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
                         )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_android_sdk),
-                            isInstalled = isAndroidSdkInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Android SDK",
-                                    "mkdir -p /root/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk && rm /tmp/sdk.zip",
-                                )
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_tools),
-                            isInstalled = isBuildTools35Installed || isBuildTools36Installed,
-                            infoText =
-                                if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36"
-                                else if (isBuildTools35Installed) "v35"
-                                else if (isBuildTools36Installed) "v36" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Build-Tools v35",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;35.0.0\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
-                                    ) {
-                                        Text("v35")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Build-Tools v36",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;36.0.0-rc1\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
-                                    ) {
-                                        Text("v36")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_platforms),
-                            isInstalled = isPlatform34Installed || isPlatform35Installed,
-                            infoText =
-                                if (isPlatform34Installed && isPlatform35Installed) "API 34 & 35"
-                                else if (isPlatform34Installed) "API 34"
-                                else if (isPlatform35Installed) "API 35" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Platform API 34",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-34\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isPlatform34Installed,
-                                    ) {
-                                        Text("API 34")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Platform API 35",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-35\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isPlatform35Installed,
-                                    ) {
-                                        Text("API 35")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_cmake_ndk),
-                            isInstalled = isCmakeInstalled && isNdkInstalled,
-                            infoText =
-                                if (isCmakeInstalled && isNdkInstalled) "Both"
-                                else if (isCmakeInstalled) "CMake Only" else if (isNdkInstalled) "NDK Only" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = { onInstall("CMake", "apk add cmake") },
-                                        enabled = !isCmakeInstalled,
-                                    ) {
-                                        Text("CMake")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "NDK",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"ndk-bundle\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isNdkInstalled,
-                                    ) {
-                                        Text("NDK")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_base_utils),
-                            isInstalled = isBaseUtilsInstalled,
-                            onInstall = {
-                                onInstall("Base Build Utils", "apk add build-base bash git wget curl gcompat")
-                            },
-                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconButton(
+                        onClick = { onInstall(label, versionStr) },
+                        enabled = !installed
+                    ) {
+                        Icon(Icons.Default.Download, contentDescription = "Install", tint = if (!installed) MaterialTheme.colorScheme.primary else Color.Gray)
+                    }
+                    IconButton(
+                        onClick = { onUninstall(label, versionStr) },
+                        enabled = installed
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Uninstall", tint = if (installed) MaterialTheme.colorScheme.error else Color.Gray)
                     }
                 }
             }
@@ -1803,117 +1936,305 @@ fun BuildSettingsItem(
 }
 
 @Composable
-fun LspSettingsItem(
-    isJdtlsInstalled: Boolean,
-    isKotlinLsInstalled: Boolean,
-    isTsLsInstalled: Boolean,
-    isWebLsInstalled: Boolean,
+fun GradleDialog(
+    onDismiss: () -> Unit,
+    isGradleInstalled: Boolean,
+    prefs: android.content.SharedPreferences,
     onInstall: (String, String) -> Unit,
+    onClearCache: () -> Unit
 ) {
-    var expanded by rememberSaveable { mutableStateOf(true) }
-    val expandDuration = 200
-    val snappyEasing = LinearOutSlowInEasing
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabTitles = listOf("Gradle", "Optionen", "Cache löschen")
+    val options = listOf("--info", "--debug", "--stacktrace", "--scan", "--build-cache", "--offline")
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier =
-                Modifier.animateContentSize(
-                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-                )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Dns,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_lsp_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
-                    if (!expanded) {
-                        Text(
-                            text = stringResource(R.string.settings_lsp_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Gradle Konfiguration") },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                TabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(title, style = MaterialTheme.typography.bodySmall) }
                         )
                     }
                 }
-                val rotation by
-                    animateFloatAsState(
-                        targetValue = if (expanded) 180f else 0f,
-                        label = "ArrowRotation",
-                        animationSpec = tween(expandDuration),
-                    )
-                Icon(
-                    imageVector = Icons.Filled.ExpandMore,
-                    contentDescription = null,
-                    modifier = Modifier.rotate(rotation),
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(tween(expandDuration, easing = snappyEasing)),
-                exit = fadeOut(tween(200)) + shrinkVertically(tween(200, easing = snappyEasing)),
-            ) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_java),
-                            isInstalled = isJdtlsInstalled,
-                            onInstall = { onInstall("Java LSP (jdtls)", "apk add openjdk17 jdtls") },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_kotlin),
-                            isInstalled = isKotlinLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Kotlin LSP",
-                                    "apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server",
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when (selectedTab) {
+                        0 -> {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                alignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Gradle Build System", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Icon(
+                                        imageVector = if (isGradleInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                        contentDescription = null,
+                                        tint = if (isGradleInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                    Text(
+                                        text = if (isGradleInstalled) "Installiert" else "Nicht installiert",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (isGradleInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                    Button(
+                                        onClick = { onInstall("Gradle", "bash /root/scripts/gradle.sh install") },
+                                        enabled = !isGradleInstalled
+                                    ) {
+                                        Text("Installieren")
+                                    }
+                                    Button(
+                                        onClick = { onInstall("Gradle", "bash /root/scripts/gradle.sh uninstall") },
+                                        enabled = isGradleInstalled,
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                    ) {
+                                        Text("Deinstallieren")
+                                    }
+                                }
+                            }
+                        }
+                        1 -> {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                items(options.size) { idx ->
+                                    val opt = options[idx]
+                                    val key = "gradle_option_${opt.replace("-", "_")}"
+                                    var checked by remember { mutableStateOf(prefs.getBoolean(key, false)) }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clickable {
+                                            checked = !checked
+                                            prefs.edit().putBoolean(key, checked).apply()
+                                        }.padding(vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(
+                                            checked = checked,
+                                            onCheckedChange = {
+                                                checked = it
+                                                prefs.edit().putBoolean(key, it).apply()
+                                            }
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(opt, style = MaterialTheme.typography.bodyLarge)
+                                    }
+                                }
+                            }
+                        }
+                        2 -> {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                alignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Gradle Cache löschen",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_typescript),
-                            isInstalled = isTsLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "TypeScript LSP",
-                                    "apk add nodejs npm && npm install -g typescript typescript-language-server",
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Löscht alle zwischengespeicherten Abhängigkeiten und Build-Dateien von Gradle.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
                                 )
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_web),
-                            isInstalled = isWebLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Web LSPs",
-                                    "apk add nodejs npm && npm install -g vscode-langservers-extracted",
-                                )
-                            },
-                        )
+                                Spacer(modifier = Modifier.height(24.dp))
+                                Button(
+                                    onClick = onClearCache,
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Text("Gradle Cache löschen")
+                                }
+                            }
+                        }
                     }
                 }
             }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Schließen") }
+        }
+    )
+}
+
+@Composable
+fun JavaDialog(
+    onDismiss: () -> Unit,
+    isJdk17: Boolean, isJdk21: Boolean, isJdk25: Boolean,
+    onInstall: (String, String) -> Unit
+) {
+    val items = listOf(
+        "OpenJDK 17" to isJdk17,
+        "OpenJDK 21" to isJdk21,
+        "OpenJDK 25" to isJdk25
+    )
+    val selectedItems = remember { mutableStateMapOf<String, Boolean>() }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Java JDKs verwalten") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                items(items.size) { i ->
+                    val (label, installed) = items[i]
+                    val versionStr = label.substringAfter("OpenJDK ")
+                    val key = "jdk_${versionStr}"
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = selectedItems[key] ?: false,
+                            onCheckedChange = { selectedItems[key] = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Icon(
+                                    imageVector = if (installed) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                    contentDescription = null,
+                                    tint = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                                Text(
+                                    text = if (installed) "Installiert" else "Nicht installiert",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                )
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            IconButton(
+                                onClick = { onInstall(label, "bash /root/scripts/java.sh install $versionStr") },
+                                enabled = !installed
+                            ) {
+                                Icon(Icons.Default.Download, contentDescription = "Install", tint = if (!installed) MaterialTheme.colorScheme.primary else Color.Gray)
+                            }
+                            IconButton(
+                                onClick = { onInstall(label, "bash /root/scripts/java.sh uninstall $versionStr") },
+                                enabled = installed
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Uninstall", tint = if (installed) MaterialTheme.colorScheme.error else Color.Gray)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Schließen") }
+        }
+    )
+}
+
+@Composable
+fun LspDialog(
+    onDismiss: () -> Unit,
+    isJdtls: Boolean, isKotlinLs: Boolean, isTsLs: Boolean, isWebLs: Boolean,
+    onInstall: (String, String) -> Unit
+) {
+    val items = listOf(
+        "Java LSP (jdtls)" to (isJdtls to "jdtls"),
+        "Kotlin LSP" to (isKotlinLs to "kotlin"),
+        "TypeScript LSP" to (isTsLs to "typescript"),
+        "Web LSP" to (isWebLs to "web")
+    )
+    val selectedItems = remember { mutableStateMapOf<String, Boolean>() }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("LSP Server verwalten") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                items(items.size) { i ->
+                    val (label, statePair) = items[i]
+                    val (installed, typeKey) = statePair
+                    val key = "lsp_${typeKey}"
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = selectedItems[key] ?: false,
+                            onCheckedChange = { selectedItems[key] = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Icon(
+                                    imageVector = if (installed) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                    contentDescription = null,
+                                    tint = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    modifier = Modifier.size(14.dp),
+                                )
+                                Text(
+                                    text = if (installed) "Installiert" else "Nicht installiert",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (installed) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                )
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            IconButton(
+                                onClick = { onInstall(label, "bash /root/scripts/lsp/lsp.sh install $typeKey") },
+                                enabled = !installed
+                            ) {
+                                Icon(Icons.Default.Download, contentDescription = "Install", tint = if (!installed) MaterialTheme.colorScheme.primary else Color.Gray)
+                            }
+                            IconButton(
+                                onClick = { onInstall(label, "bash /root/scripts/lsp/lsp.sh uninstall $typeKey") },
+                                enabled = installed
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Uninstall", tint = if (installed) MaterialTheme.colorScheme.error else Color.Gray)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Schließen") }
+        }
+    )
+}
+
+fun clearGradleCache(context: Context, onResult: (Boolean, String) -> Unit) {
+    thread {
+        try {
+            val prefixDir = context.filesDir.parentFile!!
+            val alpineGradleCache = File(prefixDir, "local/alpine/root/.gradle/caches")
+            val hostGradleCache = File("/data/data/com.termux/files/home/.gradle/caches")
+
+            if (alpineGradleCache.exists()) {
+                alpineGradleCache.deleteRecursively()
+            }
+            if (hostGradleCache.exists()) {
+                hostGradleCache.deleteRecursively()
+            }
+
+            val cmd = arrayOf("sh", "-c", "bash /root/scripts/gradle.sh clear-cache")
+            val fullCommand = com.scto.mobile.ide.ui.terminal.AlpineManager.buildProotCommand(context, cmd)
+            val env = com.scto.mobile.ide.ui.terminal.AlpineManager.getProotEnv(context)
+            val process = ProcessBuilder(fullCommand).apply {
+                environment().putAll(env)
+            }.start()
+            process.waitFor()
+
+            onResult(true, "Caches gelöscht.")
+        } catch (e: Exception) {
+            onResult(false, e.localizedMessage ?: "Fehler")
         }
     }
 }
