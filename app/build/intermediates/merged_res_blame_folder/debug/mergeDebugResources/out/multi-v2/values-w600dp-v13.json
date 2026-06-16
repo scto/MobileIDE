@@ -1,0 +1,26 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.mobileide.app-mergeDebugResources-2:/values-w600dp-v13/values-w600dp-v13.xml",
+            "map": [
+                {
+                    "source": "/app/app/src/main/res/values-w600dp/dimens.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "82",
+                        "endColumns": "41",
+                        "endOffsets": "119"
+                    },
+                    "to": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "41",
+                        "endOffsets": "92"
+                    }
+                }
+            ]
+        }
+    ]
+}
