@@ -1,0 +1,42 @@
+set -e
+
+source "$LOCAL/bin/utils"
+
+info 'Preparing...'
+$PKG_UPDATE && $PKG_UPGRADE
+
+install() {
+  if ! command_exists node || ! command_exists npm; then
+    install_nodejs
+  fi
+
+  info 'Installing Bash language server...'
+  npm install -g --prefix /usr bash-language-server
+
+  info 'Installing ShellCheck...'
+  $PKG_INSTALL shellcheck
+
+  info 'Bash language server installed successfully.'
+  exit 0
+}
+
+uninstall() {
+  info 'Uninstalling Bash language server...'
+  npm uninstall -g --prefix /usr bash-language-server
+  info 'Bash language server uninstalled successfully.'
+  uninstall_nodejs
+  exit 0
+}
+
+update() {
+  info 'Updating Bash language server...'
+  npm update -g --prefix /usr bash-language-server
+  info 'Bash language server updated successfully.'
+  exit 0
+}
+
+case "$1" in
+  --uninstall) uninstall;;
+  --update) update;;
+  *) install;;
+esac
