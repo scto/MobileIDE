@@ -459,7 +459,7 @@ fun DiffEditorInstance(
 
                 // 初始语言设置
                 try {
-                    viewModel.applyLanguageToEditor(this, java.io.File(fileName).extension)
+                    viewModel.applyLanguageToEditor(this, fileName)
                 } catch (_: Exception) {}
 
                 EditorColorSchemeManager.applyThemeColors(colorScheme, currentColorScheme)
@@ -514,10 +514,7 @@ fun DiffEditorInstance(
 
             // 确保语言设置正确 (Fix: 防止重组后语言丢失或未更新)
             try {
-                val currentExt = java.io.File(fileName).extension
-                // 这里可以优化：检查当前 editorLanguage 是否匹配，不匹配再设置
-                // 但 EditorViewModel.applyLanguageToEditor 内部有缓存/检查机制，直接调用通常安全
-                viewModel.applyLanguageToEditor(editor, currentExt)
+                viewModel.applyLanguageToEditor(editor, fileName)
             } catch (_: Exception) {}
 
             if (editor.isEditable != !readOnly) {

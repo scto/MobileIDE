@@ -282,6 +282,63 @@
       "name": "yaml",
       "scopeName": "source.yaml",
       "languageConfiguration": "textmate/yaml/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/cpp/syntaxes/cpp.embedded.macro.tmLanguage.json",
+      "name": "cpp-macro",
+      "scopeName": "source.cpp.embedded.macro"
+    },
+    {
+      "grammar": "textmate/cpp/syntaxes/cuda-cpp.tmLanguage.json",
+      "name": "cuda-cpp",
+      "scopeName": "source.cuda-cpp"
+    },
+    {
+      "grammar": "textmate/cpp/syntaxes/platform.tmLanguage.json",
+      "name": "c-platform",
+      "scopeName": "source.c.platform"
+    },
+    {
+      "grammar": "textmate/html/syntaxes/html-derivative.tmLanguage.json",
+      "name": "html-derivative",
+      "scopeName": "text.html.derivative"
+    },
+    {
+      "grammar": "textmate/json/syntaxes/JSONC.tmLanguage.json",
+      "name": "jsonc",
+      "scopeName": "source.json.comments",
+      "languageConfiguration": "textmate/json/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/json/syntaxes/JSONL.tmLanguage.json",
+      "name": "jsonl",
+      "scopeName": "source.json.lines",
+      "languageConfiguration": "textmate/json/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/json/syntaxes/snippets.tmLanguage.json",
+      "name": "json-snippets",
+      "scopeName": "source.json.comments.snippets"
+    },
+    {
+      "grammar": "textmate/python/syntaxes/MagicRegExp.tmLanguage.json",
+      "name": "python-regexp",
+      "scopeName": "source.regexp.python"
+    },
+    {
+      "grammar": "textmate/scss/syntaxes/sassdoc.tmLanguage.json",
+      "name": "sassdoc",
+      "scopeName": "source.sassdoc"
+    },
+    {
+      "grammar": "textmate/typescript/syntaxes/jsdoc.js.injection.tmLanguage.json",
+      "name": "jsdoc-js-injection",
+      "scopeName": "documentation.injection.js.jsx"
+    },
+    {
+      "grammar": "textmate/typescript/syntaxes/jsdoc.ts.injection.tmLanguage.json",
+      "name": "jsdoc-ts-injection",
+      "scopeName": "documentation.injection.ts"
     }
   ]
 }

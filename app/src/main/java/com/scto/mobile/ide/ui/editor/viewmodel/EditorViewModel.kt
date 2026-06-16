@@ -423,7 +423,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 // Remove zoom limits
                 setScaleTextSizes(2f, 300f)
 
-                applyLanguageToEditor(this, state.file.extension)
+                applyLanguageToEditor(this, state.file.name)
 
                 setSelection(0, 0)
                 text.addContentListener(
@@ -467,9 +467,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         return editor
     }
 
-    fun applyLanguageToEditor(editor: CodeEditor, extension: String) {
+    fun applyLanguageToEditor(editor: CodeEditor, filenameOrExtension: String) {
         val context = getApplication<Application>()
-        val ext = extension.lowercase()
+        val ext = if (filenameOrExtension.contains('.')) {
+            filenameOrExtension.substringAfterLast('.').lowercase()
+        } else {
+            filenameOrExtension.lowercase()
+        }
         val tsLanguage = loadTreeSitterLanguage(context, ext)
 
         if (tsLanguage != null) {
@@ -503,7 +507,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     } catch (_: Exception) {}
                     tab.lspEditor = null
 
-                    applyLanguageToEditor(editor, tab.file.extension)
+                    applyLanguageToEditor(editor, tab.file.name)
 
                     val currentLang = editor.editorLanguage
                     if (currentLang is TextMateLanguage) {
@@ -640,7 +644,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "dart" -> "source.dart"
                     "diff",
                     "patch" -> "source.diff"
-                    "dockerfile" -> "source.dockerfile"
+                    "dockerfile",
+                    "docker" -> "source.dockerfile"
                     "fs",
                     "fsi",
                     "fsx",
@@ -655,6 +660,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "java",
                     "jav" -> "source.java"
                     "json" -> "source.json"
+                    "jsonc" -> "source.json.comments"
+                    "jsonl" -> "source.json.lines"
+                    "cu",
+                    "cuh" -> "source.cuda-cpp"
                     "jl" -> "source.julia"
                     "less" -> "source.css.less"
                     "lua" -> "source.lua"
