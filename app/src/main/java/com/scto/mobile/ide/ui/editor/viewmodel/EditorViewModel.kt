@@ -469,11 +469,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun applyLanguageToEditor(editor: CodeEditor, filenameOrExtension: String) {
         val context = getApplication<Application>()
-        val ext = if (filenameOrExtension.contains('.')) {
-            filenameOrExtension.substringAfterLast('.').lowercase()
-        } else {
-            filenameOrExtension.lowercase()
-        }
+        val ext =
+            if (filenameOrExtension.contains('.')) {
+                filenameOrExtension.substringAfterLast('.').lowercase()
+            } else {
+                filenameOrExtension.lowercase()
+            }
         val tsLanguage = loadTreeSitterLanguage(context, ext)
 
         if (tsLanguage != null) {
