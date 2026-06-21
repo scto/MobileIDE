@@ -17,10 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object SetupWorker {
-    
     private fun getDistroName(context: Context): String {
         return context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
-            .getString("selected_distro", "alpine") ?: "alpine"
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
     }
 
     suspend fun reinstallTerminal(context: Context) {
@@ -49,7 +48,7 @@ object SetupWorker {
         list.forEach {
             SessionManager.removeSession(it)
         }
-        AlpineManager.currentProject = null
+        DistroManager.currentProject = null
         SessionManager.addNewSession(context)
     }
 
