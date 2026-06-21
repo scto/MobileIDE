@@ -146,130 +146,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     var hasShownInitialLoader by mutableStateOf(false)
         private set
 
-    private val _openFiles = mutableStateOf<List<IEditorTab>>(emptyList())
-    var openFiles: List<IEditorTab>
-        get() = _openFiles.value
-        private set(value) {
-            _openFiles.value = value
-            saveOpenFiles(currentProjectPath ?: "")
-        }
+    var openFiles by mutableStateOf<List<IEditorTab>>(emptyList())
+        private set
 
     // History of closed files (Max 20)
     var closedFilesHistory by mutableStateOf<List<IEditorTab>>(emptyList())
         private set
 
-    private val _activeFileIndex = mutableIntStateOf(-1)
-    var activeFileIndex: Int
-        get() = _activeFileIndex.intValue
-        private set(value) {
-            _activeFileIndex.intValue = value
-            saveOpenFiles(currentProjectPath ?: "")
-        }
+    var activeFileIndex by mutableIntStateOf(-1)
+        private set
 
     var currentProjectPath by mutableStateOf<String?>(null)
         private set
-
-    fun saveOpenFiles(projectPath: String) {
-        if (projectPath.isBlank()) return
-        val mideDir = File(projectPath, ".mide/editor")
-        if (!mideDir.exists()) {
-            mideDir.mkdirs()
-        }
-
-        try {
-            val json =
-                org.json.JSONObject().apply {
-                    put("activeFileIndex", activeFileIndex)
-                    val filesArray = org.json.JSONArray()
-                    openFiles.forEach { tab -> filesArray.put(tab.file.absolutePath) }
-                    put("files", filesArray)
-                }
-            val jsonStr = json.toString(4)
-
-            val openFilesFile = File(mideDir, "openen_files.json")
-            val openFilesBakFile = File(mideDir, "open_files_bak.json")
-
-            if (openFilesFile.exists()) {
-                openFilesFile.copyTo(openFilesBakFile, overwrite = true)
-            }
-            openFilesFile.writeText(jsonStr)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    suspend fun loadOpenFiles(projectPath: String): Boolean {
-        val mideDir = File(projectPath, ".mide/editor")
-        val openFilesFile = File(mideDir, "openen_files.json")
-        val openFilesBakFile = File(mideDir, "open_files_bak.json")
-
-        val fileToLoad =
-            when {
-                openFilesFile.exists() -> openFilesFile
-                openFilesBakFile.exists() -> openFilesBakFile
-                else -> return false
-            }
-
-        return withContext(Dispatchers.IO) {
-            try {
-                val jsonStr = fileToLoad.readText()
-                val json = org.json.JSONObject(jsonStr)
-                val filesArray = json.getJSONArray("files")
-                val targetActiveIndex = json.optInt("activeFileIndex", 0)
-
-                val newTabs = mutableListOf<IEditorTab>()
-                for (i in 0 until filesArray.length()) {
-                    val filePath = filesArray.getString(i)
-                    val file = File(filePath)
-                    if (file.exists() && !file.isDirectory) {
-                        val extension = file.extension.lowercase()
-                        val mediaType =
-                            when (extension) {
-                                "png",
-                                "jpg",
-                                "jpeg",
-                                "gif",
-                                "webp",
-                                "bmp",
-                                "ico" -> MediaType.IMAGE
-                                "svg" -> MediaType.SVG
-                                "mp4",
-                                "mkv",
-                                "webm",
-                                "avi",
-                                "3gp" -> MediaType.VIDEO
-                                else -> null
-                            }
-                        if (mediaType != null) {
-                            newTabs.add(MediaEditorState(file = file, mediaType = mediaType))
-                        } else {
-                            val content =
-                                try {
-                                    file.readText(Charsets.UTF_8)
-                                } catch (e: Exception) {
-                                    ""
-                                }
-                            val state = CodeEditorState(file = file)
-                            state.onContentLoaded(content)
-                            newTabs.add(state)
-                        }
-                    }
-                }
-
-                withContext(Dispatchers.Main) {
-                    closeAllFiles()
-                    _openFiles.value = newTabs
-                    if (openFiles.isNotEmpty()) {
-                        _activeFileIndex.intValue = targetActiveIndex.coerceIn(0, openFiles.lastIndex)
-                    }
-                }
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-    }
 
     var editorConfig by mutableStateOf(EditorConfig())
         private set
@@ -929,13 +817,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             closeAllFiles()
             clearClosedHistory() // Clear history when switching projects
             currentProjectPath = projectPath
-            viewModelScope.launch {
-                val loaded = loadOpenFiles(projectPath)
-                if (!loaded) {
-                    val indexFile = File(projectPath, "index.html")
-                    if (indexFile.exists()) openFile(indexFile)
-                }
-            }
+            val indexFile = File(projectPath, "index.html")
+            if (indexFile.exists()) openFile(indexFile)
         }
     }
 

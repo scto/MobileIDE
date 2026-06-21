@@ -68,12 +68,10 @@
     <string name="welcome_tagline">Baue die Zukunft auf Android</string>
     <string name="welcome_permissions_title">Erforderliche Berechtigungen</string>
     <string name="welcome_permissions_description">MobileIDE benötigt die folgenden Berechtigungen, um deine Apps zu lesen, zu schreiben und auszuführen.</string>
-    <string name="welcome_permission_storage_title">Vollständiger Speicherzugriff (Manage External Storage)</string>
-    <string name="welcome_permission_storage_description">Erforderlich, um Projekte im externen Speicher zu verwalten, zu klonen und zu erstellen (Vollzugriff auf alle Dateien)</string>
+    <string name="welcome_permission_storage_title">Speicher</string>
+    <string name="welcome_permission_storage_description">Wird verwendet, um auf Projektdateien zuzugreifen und diese zu speichern</string>
     <string name="welcome_permission_install_title">App-Installation</string>
     <string name="welcome_permission_install_description">Installiere erstellte APK-Dateien</string>
-    <string name="welcome_permission_notification_title">Benachrichtigungen</string>
-    <string name="welcome_permission_notification_description">Fordere Benachrichtigungsberechtigungen an, um den App-Status, Wakelock-Status und Terminal-Sitzungen anzuzeigen</string>
     <string name="welcome_appearance_title">Erscheinungsbild</string>
     <string name="welcome_dynamic_color">Dynamische Farbe (Monet)</string>
     <string name="welcome_custom_theme">Benutzerdefiniert</string>
@@ -208,9 +206,6 @@
     <string name="new_project_exists">Projekt existiert bereits</string>
     <string name="new_project_unknown_error">Unbekannter Fehler</string>
     <string name="new_project_json_format_error">JSON-Formatfehler: %1$s</string>
-    <string name="new_project_minsdk">Min. SDK</string>
-    <string name="new_project_targetsdk">Ziel-SDK</string>
-    <string name="new_project_kotlin_dsl">Kotlin DSL verwenden</string>
     <string name="orientation_portrait">Hochformat</string>
     <string name="orientation_landscape">Querformat</string>
     <string name="orientation_auto">Auto</string>
@@ -561,17 +556,4 @@
     <string name="settings_lsp_kotlin">Kotlin Language Server</string>
     <string name="settings_lsp_typescript">TypeScript/JavaScript Language Server</string>
     <string name="settings_lsp_web">HTML/CSS/JSON Language Server</string>
-
-    <!-- Build & Run Strings -->
-    <string name="settings_build_run_title">Build &amp; Run</string>
-    <string name="settings_android_dev_title">Android Development</string>
-    <string name="settings_android_dev_summary">Android-SDKs, Build-Tools, Platforms, CMake und NDK konfigurieren</string>
-    <string name="settings_gradle_group_title">Gradle-Konfiguration</string>
-    <string name="settings_gradle_group_summary">Gradle installieren, Laufzeitoptionen konfigurieren oder Caches löschen</string>
-    <string name="settings_java_group_title">Java JDKs</string>
-    <string name="settings_java_group_summary">OpenJDK 17, 21 und 25 Installationen verwalten</string>
-    <string name="settings_lsp_group_title">LSP-Server</string>
-    <string name="settings_lsp_group_summary">Language Server für erweiterte Code-Unterstützung installieren/deinstallieren</string>
-    <string name="settings_clear_cache_success">Gradle-Cache erfolgreich gelöscht.</string>
-    <string name="settings_clear_cache_failed">Fehler beim Löschen des Gradle-Caches: %1$s</string>
 </resources>
