@@ -74,6 +74,11 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    androidResources {
+        noCompress.add("tar.gz")
+        noCompress.add("tar.xz")
+    }
+
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false

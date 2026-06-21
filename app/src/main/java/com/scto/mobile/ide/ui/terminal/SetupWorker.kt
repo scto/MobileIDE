@@ -68,17 +68,42 @@ object SetupWorker {
             val binDir = File(prefixDir, "local/bin")
             val libDir = File(prefixDir, "local/lib")
 
-            // 1. Download proot (from GitHub Releases, arch-aware).
-            //    Falls back to the bundled asset if the download fails.
+            // 1. Setup proot binary (prefer local jniLib libproot.so, fallback to bundled asset, then download)
             val prootDest = File(filesDir, "proot")
             if (!prootDest.exists() || prootDest.length() == 0L) {
-                try {
-                    Downloader.downloadProot(context, onProgress = onProgress)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Fallback: copy bundled proot asset
-                    copyAsset(context, "proot", prootDest)
-                    prootDest.setExecutable(true)
+                var success = false
+
+                // Try copying the native libproot.so (which is compiled as PIE, e_type: 3)
+                val nativeLibDir = context.applicationInfo.nativeLibraryDir
+                val libProot = File(nativeLibDir, "libproot.so")
+                if (libProot.exists()) {
+                    try {
+                        libProot.copyTo(prootDest, overwrite = true)
+                        prootDest.setExecutable(true)
+                        success = true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                // Fallback to bundled proot asset
+                if (!success) {
+                    try {
+                        copyAsset(context, "proot", prootDest)
+                        prootDest.setExecutable(true)
+                        success = true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                // If both fail, try downloading as a last resort
+                if (!success) {
+                    try {
+                        Downloader.downloadProot(context, onProgress = onProgress)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
 
