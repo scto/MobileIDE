@@ -19,7 +19,7 @@ package com.scto.mobile.ide.lsp
 
 import android.content.Context
 import android.util.Log
-import com.scto.mobile.ide.ui.terminal.AlpineManager
+import com.scto.mobile.ide.ui.terminal.DistroManager
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider
 import java.io.FilterInputStream
 import java.io.FilterOutputStream
@@ -34,8 +34,8 @@ class ProotStreamConnectionProvider(private val context: Context, private val co
     private var process: Process? = null
 
     override fun start() {
-        val fullCommand = AlpineManager.buildProotCommand(context, command.toTypedArray())
-        val hostEnv = AlpineManager.getProotEnv(context)
+        val fullCommand = DistroManager.buildProotCommand(context, command.toTypedArray())
+        val hostEnv = DistroManager.getProotEnv(context)
 
         val pb = ProcessBuilder(fullCommand)
         pb.environment().putAll(hostEnv)

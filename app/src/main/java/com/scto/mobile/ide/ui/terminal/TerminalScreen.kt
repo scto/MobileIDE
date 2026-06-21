@@ -44,8 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doOnTextChanged
-import androidx.navigation.NavControlle
-r
+import androidx.navigation.NavController
 import com.rk.libcommons.application
 import com.rk.terminal.ui.screens.terminal.TerminalBackEnd
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
