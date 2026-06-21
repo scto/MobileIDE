@@ -44,9 +44,9 @@ object TerminalConfig {
 
     fun getBackgroundColor(isDark: Boolean): Int {
         return if (isDark) {
-            0xFF000000.toInt() 
+            0xFF000000.toInt()
         } else {
-            0xFFFFFFFF.toInt() 
+            0xFFFFFFFF.toInt()
         }
     }
 }

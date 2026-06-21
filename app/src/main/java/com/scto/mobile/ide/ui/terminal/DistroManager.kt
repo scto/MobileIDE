@@ -13,9 +13,7 @@ package com.scto.mobile.ide.ui.terminal
 import android.content.Context
 import com.rk.terminal.ui.screens.terminal.stat
 import com.rk.terminal.ui.screens.terminal.vmstat
-
 import com.scto.mobile.ide.core.utils.WorkspaceManager
-
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -26,7 +24,8 @@ object DistroManager {
     var currentProject: String? = null
 
     private fun getDistroName(context: Context): String {
-        return context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+        return context
+            .getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
     }
 
@@ -72,7 +71,7 @@ object DistroManager {
         if (!rootHome.exists()) {
             rootHome.mkdirs()
         }
-        
+
         args.add("-b")
         args.add("${rootHome.absolutePath}:/root")
 
@@ -141,28 +140,29 @@ object DistroManager {
             e.printStackTrace()
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
-        
-        val env = mutableListOf(
-            "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
-            "HOME=/root",
-            "TERM=xterm-256color",
-            "LANG=C.UTF-8",
-            "PREFIX=${prefixDir.absolutePath}",
-            "LD_LIBRARY_PATH=${libDir.absolutePath}",
-            "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
-            "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
-            "TMPDIR=${context.cacheDir.absolutePath}",
-            "MOBILEIDE_VERSION_NAME=$versionName",
-            "MOBILEIDE_VERSION_CODE=$versionCode",
-            "MOBILEIDE_WORKSPACE=$workspacePath",
-            "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
-            "MOBILEIDE_DISTRO=${getDistroName(context)}",
-        )
+
+        val env =
+            mutableListOf(
+                "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
+                "HOME=/root",
+                "TERM=xterm-256color",
+                "LANG=C.UTF-8",
+                "PREFIX=${prefixDir.absolutePath}",
+                "LD_LIBRARY_PATH=${libDir.absolutePath}",
+                "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+                "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
+                "TMPDIR=${context.cacheDir.absolutePath}",
+                "MOBILEIDE_VERSION_NAME=$versionName",
+                "MOBILEIDE_VERSION_CODE=$versionCode",
+                "MOBILEIDE_WORKSPACE=$workspacePath",
+                "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
+                "MOBILEIDE_DISTRO=${getDistroName(context)}",
+            )
 
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
             env.add("PROOT_LOADER=$nativeLibDir/libproot-loader.so")
         }
-        
+
         if (File(nativeLibDir, "libproot-loader32.so").exists()) {
             env.add("PROOT_LOADER32=$nativeLibDir/libproot-loader32.so")
         }
