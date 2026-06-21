@@ -536,7 +536,7 @@
     <string name="settings_terminal_reset">Reset Terminal</string>
     <string name="settings_terminal_reset_desc">Clears all active terminal sessions and starts a clean one.</string>
     <string name="settings_terminal_reinstall">Reinstall Terminal</string>
-    <string name="settings_terminal_reinstall_desc">Deletes the Alpine environment and recreates it. (Takes a minute)</string>
+    <string name="settings_terminal_reinstall_desc">Deletes the Terminal environment and recreates it. (Takes a minute)</string>
     <string name="toast_terminal_reset_success">Terminal has been reset</string>
     <string name="toast_terminal_reinstall_start">Reinstalling Terminal, please wait...</string>
     <string name="toast_terminal_reinstall_success">Terminal has been reinstalled successfully</string>

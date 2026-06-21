@@ -38,16 +38,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doOnTextChanged
-import androidx.navigation.NavController
+import androidx.navigation.NavControlle
+r
 import com.rk.libcommons.application
 import com.rk.terminal.ui.screens.terminal.TerminalBackEnd
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.rk.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
+
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
+
 import com.termux.view.TerminalView
+
 import java.lang.ref.WeakReference
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
+
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
@@ -60,7 +61,8 @@ import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.welcome.themeColors
 import com.scto.mobile.ide.ui.terminal.SetupWorker
 import com.scto.mobile.ide.ui.terminal.SessionManager
-import com.scto.mobile.ide.ui.terminal.AlpineManager
+import com.scto.mobile.ide.ui.terminal.DistroManager
+
 import kotlin.concurrent.thread
 import java.io.File
 import kotlinx.coroutines.launch
@@ -109,7 +111,7 @@ fun SettingsScreen(
     var customSymbols by remember { mutableStateOf(prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: "") }
     var autoSaveInterval by remember { mutableLongStateOf(generalPrefs.getLong("auto_save_interval", 0L)) }
     
-    var selectedDistro by remember { mutableStateOf(generalPrefs.getString("selected_distro", "alpine") ?: "alpine") }
+    var selectedDistro by remember { mutableStateOf(generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu") }
     
     var showAutoSaveDialog by remember { mutableStateOf(false) }
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
@@ -207,8 +209,8 @@ fun SettingsScreen(
         activeInstallJobName = jobName
         Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
         
-        val fullCommand = AlpineManager.buildProotCommand(context, arrayOf("sh", "-c", command))
-        val env = AlpineManager.getProotEnv(context)
+        val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
+        val env = DistroManager.getProotEnv(context)
         
         thread {
             try {
