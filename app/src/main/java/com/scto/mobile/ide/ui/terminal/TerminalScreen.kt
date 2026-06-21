@@ -25,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,10 +71,120 @@ fun TerminalScreen(navController: NavController) {
     val context = LocalContext.current
     var isEnvironmentReady by remember { mutableStateOf(false) }
     val isSystemDark = isSystemInDarkTheme()
+    // Download progress state
+    var downloadLabel    by remember { mutableStateOf("") }
+    var downloadedBytes  by remember { mutableLongStateOf(0L) }
+    var totalBytes       by remember { mutableLongStateOf(-1L) }
+
+    val prefs = remember { context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE) }
+    val isFirstRun = remember { !prefs.getBoolean("first_run_distro_selected", false) }
+    var showDistroDialog by rememberSaveable { mutableStateOf(isFirstRun) }
+    var selectedDistroDialog by rememberSaveable {
+        mutableStateOf(prefs.getString("selected_distro", "ubuntu") ?: "ubuntu")
+    }
+
+    if (showDistroDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Nicht schließbar ohne Auswahl beim ersten Start */ },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.Terminal,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Linux Distribution wählen",
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Wähle die Linux-Distribution für dein Terminal aus:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    val distroOptions = listOf(
+                        Triple("ubuntu", "Ubuntu", "Einsteigerfreundlich, große Community"),
+                        Triple("debian", "Debian", "Stabil & leichtgewichtig"),
+                    )
+                    distroOptions.forEach { (id, name, desc) ->
+                        val isSelected = selectedDistroDialog == id
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { selectedDistroDialog = id },
+                            shape = MaterialTheme.shapes.medium,
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = { selectedDistroDialog = id },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = name,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                                else MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = desc,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        prefs.edit().putString("selected_distro", selectedDistroDialog)
+                              .putBoolean("first_run_distro_selected", true).apply()
+                        showDistroDialog = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("${selectedDistroDialog.replaceFirstChar { it.uppercase() }} verwenden")
+                }
+            },
+        )
+    }
+
 
     LaunchedEffect(Unit) {
         if (application == null) application = context.applicationContext as Application
-        withContext(Dispatchers.IO) { SetupWorker.prepareEnvironment(context) }
+        withContext(Dispatchers.IO) {
+            SetupWorker.prepareEnvironment(context) { downloaded, total ->
+                downloadedBytes = downloaded
+                totalBytes      = total
+            }
+        }
         isEnvironmentReady = true
         if (SessionManager.sessions.isEmpty()) {
             SessionManager.addNewSession(context)
@@ -76,9 +192,15 @@ fun TerminalScreen(navController: NavController) {
     }
 
     if (!isEnvironmentReady) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        DownloadProgressScreen(
+            label         = downloadLabel.ifBlank { "Vorbereitung…" },
+            downloaded    = downloadedBytes,
+            total         = totalBytes,
+            archDesc      = remember { Downloader.archDescription() },
+        )
         return
     }
+
 
     val currentSession = SessionManager.currentSession
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
@@ -225,6 +347,108 @@ fun TerminalScreen(navController: NavController) {
                         }
                     },
                 )
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Download progress composable
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun DownloadProgressScreen(
+    label: String,
+    downloaded: Long,
+    total: Long,
+    archDesc: String,
+) {
+    val progressFraction = when {
+        total > 0L -> (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+        else       -> -1f   // indeterminate
+    }
+
+    fun Long.toMb() = "%.1f MB".format(this / 1_048_576.0)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            // Terminal icon
+            Icon(
+                imageVector = Icons.Outlined.Terminal,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(56.dp),
+            )
+
+            Text(
+                text = "MobileIDE",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+
+            // Progress bar
+            if (progressFraction >= 0f) {
+                LinearProgressIndicator(
+                    progress = { progressFraction },
+                    modifier = Modifier.fillMaxWidth().height(6.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+                Text(
+                    text = "${downloaded.toMb()} / ${total.toMb()}  (${(progressFraction * 100).toInt()} %)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().height(6.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+            }
+
+            // Architecture chip
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Memory,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "Arch: $archDesc",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

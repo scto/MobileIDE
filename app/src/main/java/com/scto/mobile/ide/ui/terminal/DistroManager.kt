@@ -125,12 +125,11 @@ object DistroManager {
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
         val initHostScript = File(binDir, "init-host")
-        if (!initHostScript.exists()) {
-            copyAsset(context, "init-host.sh", initHostScript)
-            copyAsset(context, "init.sh", File(binDir, "init"))
-            initHostScript.setExecutable(true)
-            File(binDir, "init").setExecutable(true)
-        }
+        // Always copy the latest version of init-host.sh so distro changes take effect
+        copyAsset(context, "init-host.sh", initHostScript)
+        copyAsset(context, "init.sh", File(binDir, "init"))
+        initHostScript.setExecutable(true)
+        File(binDir, "init").setExecutable(true)
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
@@ -157,6 +156,7 @@ object DistroManager {
             "MOBILEIDE_VERSION_CODE=$versionCode",
             "MOBILEIDE_WORKSPACE=$workspacePath",
             "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
+            "MOBILEIDE_DISTRO=${getDistroName(context)}",
         )
 
         if (File(nativeLibDir, "libproot-loader.so").exists()) {

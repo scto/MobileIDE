@@ -1,10 +1,11 @@
-#ALPINE_DIR=$PREFIX/local/alpine
-UBUNTU_DIR=$PREFIX/local/ubuntu
+# Read selected distribution from environment (default: ubuntu)
+DISTRO="${MOBILEIDE_DISTRO:-ubuntu}"
+DISTRO_DIR="$PREFIX/local/$DISTRO"
 
-mkdir -p $UBUNTU_DIR
+mkdir -p "$DISTRO_DIR"
 
-if [ -z "$(ls -A "$UBUNTU_DIR" | grep -vE '^(root|tmp)$')" ]; then
-    tar -xf "$PREFIX/files/ubuntu.tar.gz" -C "$UBUNTU_DIR"
+if [ -z "$(ls -A "$DISTRO_DIR" | grep -vE '^(root|tmp)$')" ]; then
+    tar -xf "$PREFIX/files/$DISTRO.tar.gz" -C "$DISTRO_DIR"
 fi
 
 [ ! -e "$PREFIX/local/bin/proot" ] && cp "$PREFIX/files/proot" "$PREFIX/local/bin"
@@ -58,13 +59,13 @@ fi
 ARGS="$ARGS -b $PREFIX"
 ARGS="$ARGS -b /sys"
 
-if [ ! -d "$PREFIX/local/ubuntu/tmp" ]; then
- mkdir -p "$PREFIX/local/ubuntu/tmp"
- chmod 1777 "$PREFIX/local/ubuntu/tmp"
+if [ ! -d "$DISTRO_DIR/tmp" ]; then
+ mkdir -p "$DISTRO_DIR/tmp"
+ chmod 1777 "$DISTRO_DIR/tmp"
 fi
 
-ARGS="$ARGS -b $PREFIX/local/ubuntu/tmp:/dev/shm"
-ARGS="$ARGS -r $PREFIX/local/ubuntu"
+ARGS="$ARGS -b $DISTRO_DIR/tmp:/dev/shm"
+ARGS="$ARGS -r $DISTRO_DIR"
 ARGS="$ARGS -0"
 ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
