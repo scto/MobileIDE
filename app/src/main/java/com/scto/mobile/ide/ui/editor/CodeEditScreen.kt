@@ -82,7 +82,7 @@ import com.scto.mobile.ide.ui.editor.git.GitPanel
 import com.scto.mobile.ide.ui.editor.git.GitViewModel
 import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
-import com.scto.mobile.ide.ui.terminal.AlpineManager
+import com.scto.mobile.ide.ui.terminal.DistroManager
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -137,8 +137,8 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     }
     LaunchedEffect(projectPath) {
         viewModel.loadInitialFile(projectPath)
-        // 这样即使之后跳转终端不传参，AlpineManager 也能知道当前是在哪个项目
-        AlpineManager.currentProject = projectPath
+        // 这样即使之后跳转终端不传参，DistroManager 也能知道当前是在哪个项目
+        DistroManager.currentProject = projectPath
     }
     LaunchedEffect(autoSaveInterval, context, projectPath) {
         if (autoSaveInterval > 0) {
