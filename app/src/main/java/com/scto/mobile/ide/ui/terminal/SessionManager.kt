@@ -55,7 +55,7 @@ object SessionManager {
             override fun logStackTrace(tag: String, e: Exception) { e.printStackTrace() }
         }
 
-        val session = AlpineManager.createSession(context, client)
+        val session = DistroManager.createSession(context, client)
         val title = "Term ${sessions.size + 1}"
         sessions.add(SessionWrapper(session, title))
         currentSessionIndex = sessions.lastIndex

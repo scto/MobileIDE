@@ -167,6 +167,11 @@ fun SettingsScreen(
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
+    // Download progress for reinstall
+    var reinstallDownloadedBytes  by remember { mutableLongStateOf(0L) }
+    var reinstallTotalBytes       by remember { mutableLongStateOf(-1L) }
+    var isReinstalling            by remember { mutableStateOf(false) }
+
     LaunchedEffect(refreshTrigger, selectedDistro) {
         withContext(Dispatchers.IO) {
             val prefixDir = context.filesDir.parentFile!!
@@ -306,10 +311,20 @@ fun SettingsScreen(
                         SetupWorker.resetTerminal(context)
                         Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
                     },
+                    isReinstalling         = isReinstalling,
+                    reinstallDownloaded    = reinstallDownloadedBytes,
+                    reinstallTotal         = reinstallTotalBytes,
                     onReinstall = {
+                        isReinstalling = true
+                        reinstallDownloadedBytes = 0L
+                        reinstallTotalBytes      = -1L
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
-                            SetupWorker.reinstallTerminal(context)
+                            SetupWorker.reinstallTerminal(context) { downloaded, total ->
+                                reinstallDownloadedBytes = downloaded
+                                reinstallTotalBytes      = total
+                            }
+                            isReinstalling = false
                             Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
                             refreshTrigger++
                         }
@@ -1005,6 +1020,9 @@ fun TerminalSettingsItem(
     onDistroSelected: (String) -> Unit,
     onReset: () -> Unit,
     onReinstall: () -> Unit,
+    isReinstalling: Boolean = false,
+    reinstallDownloaded: Long = 0L,
+    reinstallTotal: Long = -1L,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -1061,7 +1079,7 @@ fun TerminalSettingsItem(
                     Text("Linux Distribution", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    val distros = listOf("alpine", "ubuntu", "debian")
+                    val distros = listOf("ubuntu", "debian")
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1084,16 +1102,77 @@ fun TerminalSettingsItem(
                                 Text(stringResource(R.string.settings_terminal_reset), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                                 Text(stringResource(R.string.settings_terminal_reset_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Button(onClick = onReset) { Text(stringResource(R.string.settings_terminal_reset)) }
+                            Button(onClick = onReset, enabled = !isReinstalling) { Text(stringResource(R.string.settings_terminal_reset)) }
                         }
 
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.settings_terminal_reinstall), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.settings_terminal_reinstall_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        // Reinstall row – shows download progress while active
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(stringResource(R.string.settings_terminal_reinstall), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.settings_terminal_reinstall_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Button(
+                                    onClick = onReinstall,
+                                    enabled = !isReinstalling,
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                ) {
+                                    if (isReinstalling) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            color = MaterialTheme.colorScheme.onError,
+                                            strokeWidth = 2.dp,
+                                        )
+                                    } else {
+                                        Text(stringResource(R.string.settings_terminal_reinstall))
+                                    }
+                                }
                             }
-                            Button(onClick = onReinstall, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                                Text(stringResource(R.string.settings_terminal_reinstall))
+
+                            // Download progress bar
+                            if (isReinstalling) {
+                                fun Long.toMb() = "%.1f MB".format(this / 1_048_576.0)
+                                val fraction = if (reinstallTotal > 0L)
+                                    (reinstallDownloaded.toFloat() / reinstallTotal.toFloat()).coerceIn(0f, 1f)
+                                else -1f
+
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        Text(
+                                            text = if (reinstallTotal > 0L)
+                                                "Download: ${reinstallDownloaded.toMb()} / ${reinstallTotal.toMb()}  (${(fraction * 100).toInt()} %)"
+                                            else
+                                                "Download läuft\u2026",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                        if (fraction >= 0f) {
+                                            LinearProgressIndicator(
+                                                progress = { fraction },
+                                                modifier = Modifier.fillMaxWidth().height(4.dp),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                            )
+                                        } else {
+                                            LinearProgressIndicator(
+                                                modifier = Modifier.fillMaxWidth().height(4.dp),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1102,6 +1181,7 @@ fun TerminalSettingsItem(
         }
     }
 }
+
 
 @Composable
 fun BuildSettingsItem(
