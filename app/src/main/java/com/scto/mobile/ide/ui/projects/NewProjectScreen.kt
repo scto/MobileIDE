@@ -74,9 +74,6 @@ fun NewProjectScreen(navController: NavController) {
     var projectName by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(ProjectType.BASIC_COMPOSE_ACTIVITY) }
     var packageName by remember { mutableStateOf("com.example.myapp") }
-    var minSdk by remember { mutableStateOf("24") }
-    var targetSdk by remember { mutableStateOf("34") }
-    var useKotlinDsl by remember { mutableStateOf(true) }
 
     var isScreenVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { isScreenVisible = true }
@@ -98,17 +95,11 @@ fun NewProjectScreen(navController: NavController) {
         isLoading = true
         focusManager.clearFocus()
 
-        val parsedMinSdk = minSdk.toIntOrNull() ?: 24
-        val parsedTargetSdk = targetSdk.toIntOrNull() ?: 34
-
         createNewProject(
             context,
             projectName,
             packageName,
             selectedType,
-            parsedMinSdk,
-            parsedTargetSdk,
-            useKotlinDsl,
             onSuccess = { dir ->
                 isLoading = false
                 scope.launch {
@@ -269,42 +260,6 @@ fun NewProjectScreen(navController: NavController) {
                     keyboardType = KeyboardType.Ascii,
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        CleanTextField(
-                            value = minSdk,
-                            onValueChange = { minSdk = it.filter { c -> c.isDigit() } },
-                            placeholder = stringResource(R.string.new_project_minsdk),
-                            icon = Icons.Outlined.Layers,
-                            keyboardType = KeyboardType.Number,
-                        )
-                    }
-                    Box(modifier = Modifier.weight(1f)) {
-                        CleanTextField(
-                            value = targetSdk,
-                            onValueChange = { targetSdk = it.filter { c -> c.isDigit() } },
-                            placeholder = stringResource(R.string.new_project_targetsdk),
-                            icon = Icons.Outlined.CheckCircle,
-                            keyboardType = KeyboardType.Number,
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = stringResource(R.string.new_project_kotlin_dsl),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                    Switch(checked = useKotlinDsl, onCheckedChange = { useKotlinDsl = it })
-                }
-
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
@@ -426,9 +381,6 @@ private fun createNewProject(
     name: String,
     packageName: String,
     type: ProjectType,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
     onSuccess: (File) -> Unit,
     onError: (String) -> Unit,
 ) {
@@ -450,17 +402,12 @@ private fun createNewProject(
             setupTomlVersions(projectDir)
 
             when (type) {
-                ProjectType.BASIC_COMPOSE_ACTIVITY ->
-                    createBasicComposeStructure(projectDir, name, packageName, minSdk, targetSdk, useKotlinDsl)
-                ProjectType.EMPTY_COMPOSE_ACTIVITY ->
-                    createEmptyComposeStructure(projectDir, name, packageName, minSdk, targetSdk, useKotlinDsl)
-                ProjectType.BOTTOM_NAVIGATION ->
-                    createBottomNavigationStructure(projectDir, name, packageName, minSdk, targetSdk, useKotlinDsl)
-                ProjectType.NAVIGATION_DRAWER_ACTIVITY ->
-                    createNavigationDrawerStructure(projectDir, name, packageName, minSdk, targetSdk, useKotlinDsl)
+                ProjectType.BASIC_COMPOSE_ACTIVITY -> createBasicComposeStructure(projectDir, name, packageName)
+                ProjectType.EMPTY_COMPOSE_ACTIVITY -> createEmptyComposeStructure(projectDir, name, packageName)
+                ProjectType.BOTTOM_NAVIGATION -> createBottomNavigationStructure(projectDir, name, packageName)
+                ProjectType.NAVIGATION_DRAWER_ACTIVITY -> createNavigationDrawerStructure(projectDir, name, packageName)
                 ProjectType.FLUTTER_APP -> createFlutterStructure(projectDir, name, packageName)
-                ProjectType.CMAKE_APP ->
-                    createCmakeStructure(projectDir, name, packageName, minSdk, targetSdk, useKotlinDsl)
+                ProjectType.CMAKE_APP -> createCmakeStructure(projectDir, name, packageName)
             }
 
             withContext(Dispatchers.Main) { onSuccess(projectDir) }
@@ -477,36 +424,33 @@ private fun setupGradleWrapper(dir: File, context: Context) {
     val gradleDir = File(dir, "gradle/wrapper")
     gradleDir.mkdirs()
 
+    val sourceJar = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.jar")
+    val sourceProps = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.properties")
+    val sourceGradlew = File("/data/data/com.termux/files/home/MobileIDE/gradlew")
+    val sourceGradlewBat = File("/data/data/com.termux/files/home/MobileIDE/gradlew.bat")
+
     val targetJar = File(gradleDir, "gradle-wrapper.jar")
     val targetProps = File(gradleDir, "gradle-wrapper.properties")
     val targetGradlew = File(dir, "gradlew")
     val targetGradlewBat = File(dir, "gradlew.bat")
 
-    var copiedFromAssets = false
+    var copiedLocal = false
     try {
-        context.assets.open("templates/gradle-wrapper.jar").use { input ->
-            FileOutputStream(targetJar).use { output -> input.copyTo(output) }
-        }
-        context.assets.open("templates/gradle-wrapper.properties").use { input ->
-            FileOutputStream(targetProps).use { output -> input.copyTo(output) }
-        }
-        context.assets.open("templates/gradlew").use { input ->
-            FileOutputStream(targetGradlew).use { output -> input.copyTo(output) }
-        }
-        try {
-            context.assets.open("templates/gradlew.bat").use { input ->
-                FileOutputStream(targetGradlewBat).use { output -> input.copyTo(output) }
+        if (sourceJar.exists() && sourceProps.exists() && sourceGradlew.exists()) {
+            sourceJar.copyTo(targetJar, overwrite = true)
+            sourceProps.copyTo(targetProps, overwrite = true)
+            sourceGradlew.copyTo(targetGradlew, overwrite = true)
+            if (sourceGradlewBat.exists()) {
+                sourceGradlewBat.copyTo(targetGradlewBat, overwrite = true)
             }
-        } catch (e: Exception) {
-            // Ignore missing gradlew.bat
+            targetGradlew.setExecutable(true)
+            copiedLocal = true
         }
-        targetGradlew.setExecutable(true)
-        copiedFromAssets = true
     } catch (e: Exception) {
         e.printStackTrace()
     }
 
-    if (!copiedFromAssets) {
+    if (!copiedLocal) {
         safeWrite(
             targetProps,
             """
@@ -563,27 +507,13 @@ private fun createComposeThemeStructure(dirs: AndroidDirs, packageName: String) 
     safeWrite(File(themeDir, "Theme.kt"), ProjectTemplates.getThemeKt(packageName))
 }
 
-private fun createEmptyComposeStructure(
-    dir: File,
-    name: String,
-    packageName: String,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
-) {
+private fun createEmptyComposeStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
-    val buildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-    val settingsGradleFileName = if (useKotlinDsl) "settings.gradle.kts" else "settings.gradle"
-    val appBuildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-
-    safeWrite(File(dir, settingsGradleFileName), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, buildGradleFileName), ProjectTemplates.getRootBuildGradle(useKotlinDsl))
+    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
+    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
     safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
 
-    safeWrite(
-        File(dirs.appDir, appBuildGradleFileName),
-        ProjectTemplates.getAppBuildGradleCompose(packageName, false, minSdk, targetSdk, useKotlinDsl),
-    )
+    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
     safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
@@ -591,27 +521,13 @@ private fun createEmptyComposeStructure(
     createComposeThemeStructure(dirs, packageName)
 }
 
-private fun createBasicComposeStructure(
-    dir: File,
-    name: String,
-    packageName: String,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
-) {
+private fun createBasicComposeStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
-    val buildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-    val settingsGradleFileName = if (useKotlinDsl) "settings.gradle.kts" else "settings.gradle"
-    val appBuildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-
-    safeWrite(File(dir, settingsGradleFileName), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, buildGradleFileName), ProjectTemplates.getRootBuildGradle(useKotlinDsl))
+    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
+    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
     safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
 
-    safeWrite(
-        File(dirs.appDir, appBuildGradleFileName),
-        ProjectTemplates.getAppBuildGradleCompose(packageName, false, minSdk, targetSdk, useKotlinDsl),
-    )
+    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
     safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
@@ -619,27 +535,13 @@ private fun createBasicComposeStructure(
     createComposeThemeStructure(dirs, packageName)
 }
 
-private fun createBottomNavigationStructure(
-    dir: File,
-    name: String,
-    packageName: String,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
-) {
+private fun createBottomNavigationStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
-    val buildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-    val settingsGradleFileName = if (useKotlinDsl) "settings.gradle.kts" else "settings.gradle"
-    val appBuildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-
-    safeWrite(File(dir, settingsGradleFileName), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, buildGradleFileName), ProjectTemplates.getRootBuildGradle(useKotlinDsl))
+    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
+    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
     safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
 
-    safeWrite(
-        File(dirs.appDir, appBuildGradleFileName),
-        ProjectTemplates.getAppBuildGradleCompose(packageName, true, minSdk, targetSdk, useKotlinDsl),
-    )
+    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, true))
     safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
@@ -647,27 +549,13 @@ private fun createBottomNavigationStructure(
     createComposeThemeStructure(dirs, packageName)
 }
 
-private fun createNavigationDrawerStructure(
-    dir: File,
-    name: String,
-    packageName: String,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
-) {
+private fun createNavigationDrawerStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
-    val buildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-    val settingsGradleFileName = if (useKotlinDsl) "settings.gradle.kts" else "settings.gradle"
-    val appBuildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-
-    safeWrite(File(dir, settingsGradleFileName), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, buildGradleFileName), ProjectTemplates.getRootBuildGradle(useKotlinDsl))
+    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
+    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
     safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
 
-    safeWrite(
-        File(dirs.appDir, appBuildGradleFileName),
-        ProjectTemplates.getAppBuildGradleCompose(packageName, false, minSdk, targetSdk, useKotlinDsl),
-    )
+    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
     safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
     safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
     safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
@@ -700,30 +588,16 @@ private fun createFlutterStructure(dir: File, name: String, packageName: String)
     safeWrite(File(androidResValuesDir, "themes.xml"), ProjectTemplates.themesXml)
 }
 
-private fun createCmakeStructure(
-    dir: File,
-    name: String,
-    packageName: String,
-    minSdk: Int,
-    targetSdk: Int,
-    useKotlinDsl: Boolean,
-) {
+private fun createCmakeStructure(dir: File, name: String, packageName: String) {
     val dirs = setupCommonAndroidDirs(dir, packageName)
     val cppDir = File(dirs.appDir, "src/main/cpp")
     cppDir.mkdirs()
 
-    val buildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-    val settingsGradleFileName = if (useKotlinDsl) "settings.gradle.kts" else "settings.gradle"
-    val appBuildGradleFileName = if (useKotlinDsl) "build.gradle.kts" else "build.gradle"
-
-    safeWrite(File(dir, settingsGradleFileName), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, buildGradleFileName), ProjectTemplates.getRootBuildGradle(useKotlinDsl))
+    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
+    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
     safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
 
-    safeWrite(
-        File(dirs.appDir, appBuildGradleFileName),
-        ProjectTemplates.getAppBuildGradleCmake(packageName, minSdk, targetSdk, useKotlinDsl),
-    )
+    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCmake(packageName))
     safeWrite(File(dirs.appDir, "CMakeLists.txt"), ProjectTemplates.cmakeLists)
     safeWrite(File(cppDir, "native-lib.cpp"), ProjectTemplates.getNativeLibCpp(packageName))
 

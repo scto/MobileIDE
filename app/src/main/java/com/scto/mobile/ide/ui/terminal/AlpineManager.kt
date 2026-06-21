@@ -1,19 +1,11 @@
 /*
  * MobileIDE - A powerful IDE for Android app development.
- * Copyright (C) 2025  scto  <tschmid35@gmail.com>
+ * Copyright (C) 2025  Thomas Schmid  <tschmid35@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.scto.mobile.ide.ui.terminal
@@ -31,6 +23,11 @@ import java.io.FileOutputStream
 object AlpineManager {
     var currentProject: String? = null
 
+    private fun getDistroName(context: Context): String {
+        return context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "alpine") ?: "alpine"
+    }
+
     private fun getPrefixDir(context: Context): File = context.filesDir.parentFile!!
 
     private fun getLocalDir(context: Context): File = File(getPrefixDir(context), "local").apply { mkdirs() }
@@ -39,21 +36,14 @@ object AlpineManager {
 
     private fun getLibDir(context: Context): File = File(getLocalDir(context), "lib").apply { mkdirs() }
 
-    /**
-     * Build the Proot command list Used to start the LSP background process (ProotStreamConnectionProvider)
-     *
-     * @param context Android Context
-     * @param command The array of commands to execute inside Alpine, e.g., ["vscode-html-language-server", "--stdio"]
-     */
     fun buildProotCommand(context: Context, command: Array<String>): List<String> {
+        val distroName = getDistroName(context)
         val prefixDir = getPrefixDir(context)
-        val alpineDir = File(prefixDir, "local/alpine")
+        val distroDir = File(prefixDir, "local/$distroName")
 
-        // [🔥 Fix 1] Get the path of proot with execution permissions
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
         val libProot = File(nativeLibDir, "libproot.so")
 
-        // If the file is not moved correctly, it will not be found here, so the first step must be done
         val prootExec = if (libProot.exists()) libProot.absolutePath else File(getBinDir(context), "proot").absolutePath
 
         val args = mutableListOf<String>()
@@ -64,7 +54,6 @@ object AlpineManager {
         args.add("-L")
         args.add("-0")
 
-        // [🔥 Fix 2] Mount points
         val mounts = listOf("/proc", "/sys", "/dev", "/data", "/storage", "/system")
         mounts.forEach {
             if (File(it).exists()) {
@@ -73,25 +62,22 @@ object AlpineManager {
             }
         }
 
-        // Bind shared memory (Required by Node.js)
-        val tmpDir = File(alpineDir, "tmp").apply { mkdirs() }
+        val tmpDir = File(distroDir, "tmp").apply { mkdirs() }
         args.add("-b")
         args.add("${tmpDir.absolutePath}:/dev/shm")
 
-        // [🔥 Fix 3] filesDir must be mounted to an absolute path so LSP can find files easily
-
-        val rootHome = File(alpineDir, "root")
+        val rootHome = File(distroDir, "root")
         if (!rootHome.exists()) {
             rootHome.mkdirs()
         }
-        // Explicitly bind the host directory to the container's /root
+        
         args.add("-b")
         args.add("${rootHome.absolutePath}:/root")
 
         args.add("-b")
         args.add(context.filesDir.absolutePath)
         args.add("-r")
-        args.add(alpineDir.absolutePath)
+        args.add(distroDir.absolutePath)
 
         args.add("-w")
         args.add("/root")
@@ -99,11 +85,7 @@ object AlpineManager {
         args.add("/usr/bin/env")
         args.add("-i")
         args.add("HOME=/root")
-        // Ensure PATH contains npm's bin directory
         args.add("NODE_PATH=/root/lsp/node_modules")
-
-        // 🔥🔥🔥 Modification 2: Add /root/lsp/node_modules/.bin to PATH (Although we plan to use absolute paths, this
-        // prevents internal invocation errors)
         args.add("PATH=/root/lsp/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
         args.add("LANG=C.UTF-8")
@@ -115,10 +97,6 @@ object AlpineManager {
         return args
     }
 
-    /**
-     * Get host environment variables required to run Proot. Mainly for injecting libproot-loader.so to bypass Android's
-     * Seccomp restrictions.
-     */
     fun getProotEnv(context: Context): Map<String, String> {
         val env = mutableMapOf<String, String>()
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
@@ -126,10 +104,6 @@ object AlpineManager {
         env["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
         env["TMPDIR"] = context.cacheDir.absolutePath
 
-        // [🔥 Core Fix 🔥]
-        // Tell the Linker where to find libtalloc.so.2.
-        // SetupWorker will copy libtalloc.so.2 to filesDir and filesDir/local/lib.
-        // We add both paths to LD_LIBRARY_PATH.
         val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
         env["LD_LIBRARY_PATH"] = libPath
 
@@ -142,20 +116,19 @@ object AlpineManager {
         return env
     }
 
-    // --- Create Terminal Session (for UI terminal) ---
     fun createSession(context: Context, client: TerminalSessionClient, projectPath: String? = null): TerminalSession {
         val binDir = getBinDir(context)
         val libDir = getLibDir(context)
         val prefixDir = getPrefixDir(context)
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
-        // 1. Ensure scripts exist and are up to date
         val initHostScript = File(binDir, "init-host")
-        copyAsset(context, "init-host.sh", initHostScript)
-        val initScript = File(binDir, "init")
-        copyAsset(context, "init.sh", initScript)
-        initHostScript.setExecutable(true)
-        initScript.setExecutable(true)
+        if (!initHostScript.exists()) {
+            copyAsset(context, "init-host.sh", initHostScript)
+            copyAsset(context, "init.sh", File(binDir, "init"))
+            initHostScript.setExecutable(true)
+            File(binDir, "init").setExecutable(true)
+        }
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
@@ -167,28 +140,23 @@ object AlpineManager {
             e.printStackTrace()
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
-        // 2. Environment variables (Host environment)
-        val env =
-            mutableListOf(
-                "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
-                "HOME=/root",
-                "TERM=xterm-256color",
-                "LANG=C.UTF-8",
-                "PREFIX=${prefixDir.absolutePath}",
-                "LD_LIBRARY_PATH=${libDir.absolutePath}",
-                // Try to adapt to linkers of different architectures
-                "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
-                "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
-                "TMPDIR=${context.cacheDir.absolutePath}",
+        
+        val env = mutableListOf(
+            "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
+            "HOME=/root",
+            "TERM=xterm-256color",
+            "LANG=C.UTF-8",
+            "PREFIX=${prefixDir.absolutePath}",
+            "LD_LIBRARY_PATH=${libDir.absolutePath}",
+            "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+            "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
+            "TMPDIR=${context.cacheDir.absolutePath}",
+            "WEBIDE_VERSION_NAME=$versionName",
+            "WEBIDE_VERSION_CODE=$versionCode",
+            "WEBIDE_WORKSPACE=$workspacePath",
+            "WEBIDE_PROJECT_DIR=$targetProjectPath",
+        )
 
-                // Custom environment variables
-                "MOBILEIDE_VERSION_NAME=$versionName",
-                "MOBILEIDE_VERSION_CODE=$versionCode",
-                "MOBILEIDE_WORKSPACE=$workspacePath",
-                "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
-            )
-
-        // Inject Loader
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
             env.add("PROOT_LOADER=$nativeLibDir/libproot-loader.so")
         }
@@ -196,30 +164,22 @@ object AlpineManager {
             env.add("PROOT_LOADER32=$nativeLibDir/libproot-loader32.so")
         }
 
-        // 3. Forge system files
         val statFile = File(getLocalDir(context), "stat")
         if (!statFile.exists()) statFile.writeText(stat)
         val vmstatFile = File(getLocalDir(context), "vmstat")
         if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
 
-        // 4. Start Shell
-        // Note: We still use init-host.sh here. If your init-host.sh hardcodes calling ./proot,
-        // it might cause issues on Android 10+. But in a Terminal environment, it's usually more tolerant.
-        // If Terminal still throws Permission denied, you need to modify init-host.sh or call libproot.so directly
-        // here.
         val shell = "/system/bin/sh"
         val args = arrayOf("-c", initHostScript.absolutePath)
 
-        return kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.Main) {
-            TerminalSession(
-                shell,
-                context.filesDir.absolutePath,
-                args,
-                env.toTypedArray(),
-                TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
-                client,
-            )
-        }
+        return TerminalSession(
+            shell,
+            context.filesDir.absolutePath,
+            args,
+            env.toTypedArray(),
+            TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
+            client,
+        )
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {

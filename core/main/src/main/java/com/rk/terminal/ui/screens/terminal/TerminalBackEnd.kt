@@ -5,7 +5,7 @@ import android.content.Context // 导入 Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.media.MediaPlayer
-import timber.log.Timber
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.lifecycle.LifecycleOwner
@@ -100,31 +100,32 @@ class TerminalBackEnd(val terminal: TerminalView, val context: Context) : Termin
     }
 
     override fun logError(tag: String?, message: String?) {
-        Timber.tag(tag ?: "Terminal").e(message.toString())
+        Log.e(tag.toString(), message.toString())
     }
 
     override fun logWarn(tag: String?, message: String?) {
-        Timber.tag(tag ?: "Terminal").w(message.toString())
+        Log.w(tag.toString(), message.toString())
     }
 
     override fun logInfo(tag: String?, message: String?) {
-        Timber.tag(tag ?: "Terminal").i(message.toString())
+        Log.i(tag.toString(), message.toString())
     }
 
     override fun logDebug(tag: String?, message: String?) {
-        Timber.tag(tag ?: "Terminal").d(message.toString())
+        Log.d(tag.toString(), message.toString())
     }
 
     override fun logVerbose(tag: String?, message: String?) {
-        Timber.tag(tag ?: "Terminal").v(message.toString())
+        Log.v(tag.toString(), message.toString())
     }
 
     override fun logStackTraceWithMessage(tag: String?, message: String?, e: Exception?) {
-        Timber.tag(tag ?: "Terminal").e(e, message.toString())
+        Log.e(tag.toString(), message.toString())
+        e?.printStackTrace()
     }
 
     override fun logStackTrace(tag: String?, e: Exception?) {
-        Timber.tag(tag ?: "Terminal").e(e)
+        e?.printStackTrace()
     }
 
     override fun onScale(scale: Float): Float {

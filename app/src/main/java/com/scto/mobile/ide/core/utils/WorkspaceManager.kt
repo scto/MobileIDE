@@ -31,24 +31,9 @@ object WorkspaceManager {
     private const val KEY_WORKSPACE_PATH = "workspace_path"
     private const val KEY_IS_CONFIGURED = "is_workspace_configured"
 
-    fun cleanPath(context: Context, path: String): String {
-        if (path.contains("/Android/data/")) {
-            val parts = path.split("/Android/data/")
-            if (parts.size == 2) {
-                val subPath = parts[1]
-                val remaining = subPath.substringAfter("/", "")
-                return "${parts[0]}/Android/data/${context.packageName}${if (remaining.isNotEmpty()) "/$remaining" else ""}"
-            }
-        }
-        return path.replace(".debug", "").replace(".release", "")
-    }
-
     fun getDefaultPath(context: Context): String {
-        val internalDir = File(context.filesDir, "MobileIDEProjects")
-        if (!internalDir.exists()) {
-            internalDir.mkdirs()
-        }
-        return internalDir.absolutePath
+        val dir = context.getExternalFilesDir(null)
+        return dir?.absolutePath ?: context.filesDir.absolutePath
     }
 
     /** Get workspace directory (with automatic error correction) */
@@ -58,38 +43,35 @@ object WorkspaceManager {
 
         // 1. If not saved before, return default
         if (savedPath.isNullOrBlank()) {
-            return cleanPath(context, getDefaultPath(context))
+            return getDefaultPath(context)
         }
 
-        val cleanedPath = cleanPath(context, savedPath)
-
-        // Migrate legacy shared storage path which is incompatible with Gradle/PRoot executions
-        if (cleanedPath.startsWith("/storage/emulated/0/MobileIDEProjects")) {
-            val validPath = cleanPath(context, getDefaultPath(context))
-            saveWorkspacePath(context, validPath)
-            return validPath
-        }
-
-        // Check if path is in private Android/data directory
-        if (cleanedPath.contains("/Android/data/")) {
-            // Strip .debug or other build suffixes to see if it belongs to MobileIDE
-            val basePackage = context.packageName.substringBefore(".debug").substringBefore(".release")
-            if (!cleanedPath.contains(basePackage)) {
+        // 🔥🔥🔥 Fix 2: More robust path checking logic 🔥🔥🔥
+        // The previous logic relied on absolute path string matching, which easily caused misjudgments due to the
+        // difference between /sdcard and /storage/emulated/0
+        // Current logic: As long as the path contains "Android/data", check if it contains "the current App's package
+        // name"
+        if (savedPath.contains("/Android/data/")) {
+            val packageName = context.packageName
+            // If the path does not even contain the package name, it means this path definitely belongs to other Apps
+            // (or old package names). We have no permission and must reset it.
+            if (!savedPath.contains(packageName)) {
                 android.util.Log.e(
                     "WorkspaceManager",
-                    "Invalid path detected (package name mismatch): $cleanedPath, resetting to default",
+                    "Invalid path detected (package name mismatch): $savedPath, resetting to default",
                 )
-                val validPath = cleanPath(context, getDefaultPath(context))
-                saveWorkspacePath(context, validPath)
+                val validPath = getDefaultPath(context)
+                saveWorkspacePath(context, validPath) // Automatically save the corrected path
                 return validPath
             }
         }
 
-        return cleanedPath
+        return savedPath
     }
 
     fun isWorkspaceConfigured(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        // As long as this value is true, it means the user has clicked "Confirm and continue"
         return prefs.getBoolean(KEY_IS_CONFIGURED, false)
     }
 
@@ -107,24 +89,26 @@ object WorkspaceManager {
     }
 
     fun saveWorkspacePath(context: Context, path: String) {
-        val cleanedPath = cleanPath(context, path)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit {
-            putString(KEY_WORKSPACE_PATH, cleanedPath)
+            putString(KEY_WORKSPACE_PATH, path)
+            // ✅ Key: Set to true, indicating that the user has completed the initialization wizard
             putBoolean(KEY_IS_CONFIGURED, true)
         }
-        ensurePathExists(context, cleanedPath)
+        ensurePathExists(context, path)
     }
 
     fun ensurePathExists(context: Context, path: String): Boolean {
         val file = File(path)
         if (file.exists() && file.isDirectory) return true
 
-        return try {
-            file.mkdirs() || file.exists()
+        try {
+            if (path.contains(context.packageName)) {
+                return file.mkdirs() || file.exists()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
-            file.exists()
         }
+        return file.mkdirs() || file.exists()
     }
 }

@@ -18,8 +18,6 @@
 
 package com.scto.mobile.ide
 
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,7 +37,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.scto.mobile.ide.core.utils.*
@@ -69,21 +66,6 @@ class MainActivity : ComponentActivity() {
         window.isNavigationBarContrastEnforced = false
 
         init()
-
-        if (WelcomePreferences.isWelcomeCompleted(this)) {
-            val hasNotificationPermission =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    androidx.core.content.ContextCompat.checkSelfPermission(
-                        this,
-                        android.Manifest.permission.POST_NOTIFICATIONS,
-                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                } else {
-                    true
-                }
-            if (hasNotificationPermission) {
-                StatusService.start(this)
-            }
-        }
     }
 
     private fun init() {
@@ -153,19 +135,6 @@ class MainActivity : ComponentActivity() {
                                             WelcomePreferences.setWelcomeCompleted(context)
                                             LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
                                             showWelcomeScreen = false
-
-                                            val hasNotificationPermission =
-                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                                    ContextCompat.checkSelfPermission(
-                                                        context,
-                                                        android.Manifest.permission.POST_NOTIFICATIONS,
-                                                    ) == PackageManager.PERMISSION_GRANTED
-                                                } else {
-                                                    true
-                                                }
-                                            if (hasNotificationPermission) {
-                                                StatusService.start(context)
-                                            }
                                         },
                                     )
                                 } else {
