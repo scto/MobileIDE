@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
-
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
@@ -58,15 +57,13 @@ import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
-import com.scto.mobile.ide.ui.welcome.themeColors
-import com.scto.mobile.ide.ui.terminal.SetupWorker
-import com.scto.mobile.ide.ui.terminal.SessionManager
 import com.scto.mobile.ide.ui.terminal.DistroManager
-
-import kotlin.concurrent.thread
+import com.scto.mobile.ide.ui.terminal.SetupWorker
+import com.scto.mobile.ide.ui.welcome.themeColors
 import java.io.File
-import kotlinx.coroutines.launch
+import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
@@ -97,7 +94,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
     val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE) }
-    
+
     var fontSize by remember { mutableFloatStateOf(prefs.getFloat("editor_font_size", 14f)) }
     var tabWidth by remember { mutableIntStateOf(prefs.getInt("editor_tab_width", 4)) }
     var wordWrap by remember { mutableStateOf(prefs.getBoolean("editor_word_wrap", false)) }
@@ -108,17 +105,30 @@ fun SettingsScreen(
     var lspEnabled by remember { mutableStateOf(prefs.getBoolean("editor_lsp_enabled", false)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var fontPath by remember { mutableStateOf(prefs.getString("editor_font_path", "") ?: "") }
-    var customSymbols by remember { mutableStateOf(prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: "") }
+    var customSymbols by remember {
+        mutableStateOf(
+            prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
+        )
+    }
     var autoSaveInterval by remember { mutableLongStateOf(generalPrefs.getLong("auto_save_interval", 0L)) }
-    
+
     var selectedDistro by remember { mutableStateOf(generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu") }
-    
+
     var showAutoSaveDialog by remember { mutableStateOf(false) }
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
 
     LaunchedEffect(
-        fontSize, tabWidth, wordWrap, showInvisibles, codeFolding,
-        showToolbar, showHistory, lspEnabled, aiEnabled, fontPath, customSymbols,
+        fontSize,
+        tabWidth,
+        wordWrap,
+        showInvisibles,
+        codeFolding,
+        showToolbar,
+        showHistory,
+        lspEnabled,
+        aiEnabled,
+        fontPath,
+        customSymbols,
     ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)
@@ -147,7 +157,7 @@ fun SettingsScreen(
     val currentLanguageOption by AppLanguageManager.currentOption.collectAsState()
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
-    
+
     var isJdk17Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isJdk21Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isGradleInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -168,42 +178,57 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     // Download progress for reinstall
-    var reinstallDownloadedBytes  by remember { mutableLongStateOf(0L) }
-    var reinstallTotalBytes       by remember { mutableLongStateOf(-1L) }
-    var isReinstalling            by remember { mutableStateOf(false) }
+    var reinstallDownloadedBytes by remember { mutableLongStateOf(0L) }
+    var reinstallTotalBytes by remember { mutableLongStateOf(-1L) }
+    var isReinstalling by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshTrigger, selectedDistro) {
         withContext(Dispatchers.IO) {
             val prefixDir = context.filesDir.parentFile!!
             val distroDir = File(prefixDir, "local/$selectedDistro")
             fun getDistroFile(path: String) = File(distroDir, path)
-            
-            isJdk17Installed = getDistroFile("usr/lib/jvm/java-17-openjdk/bin/java").exists() || getDistroFile("usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
-            isJdk21Installed = getDistroFile("usr/lib/jvm/java-21-openjdk/bin/java").exists() || getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
+
+            isJdk17Installed =
+                getDistroFile("usr/lib/jvm/java-17-openjdk/bin/java").exists() ||
+                    getDistroFile("usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
+            isJdk21Installed =
+                getDistroFile("usr/lib/jvm/java-21-openjdk/bin/java").exists() ||
+                    getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
             isGradleInstalled = getDistroFile("usr/bin/gradle").exists()
-            
+
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
             val distroSdk = getDistroFile("root/android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
-            
-            isBuildTools35Installed = File(hostSdk, "build-tools/35.0.0").exists() || getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
-            isBuildTools36Installed = File(hostSdk, "build-tools/36.0.0").exists() || getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
-            
-            isPlatform34Installed = File(hostSdk, "platforms/android-34").exists() || getDistroFile("root/android-sdk/platforms/android-34").exists()
-            isPlatform35Installed = File(hostSdk, "platforms/android-35").exists() || getDistroFile("root/android-sdk/platforms/android-35").exists()
-            
+
+            isBuildTools35Installed =
+                File(hostSdk, "build-tools/35.0.0").exists() ||
+                    getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
+            isBuildTools36Installed =
+                File(hostSdk, "build-tools/36.0.0").exists() ||
+                    getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
+
+            isPlatform34Installed =
+                File(hostSdk, "platforms/android-34").exists() ||
+                    getDistroFile("root/android-sdk/platforms/android-34").exists()
+            isPlatform35Installed =
+                File(hostSdk, "platforms/android-35").exists() ||
+                    getDistroFile("root/android-sdk/platforms/android-35").exists()
+
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
-            isNdkInstalled = File(hostSdk, "ndk").exists() || getDistroFile("root/android-sdk/ndk").exists() || File(hostSdk, "ndk-bundle").exists()
-            
+            isNdkInstalled =
+                File(hostSdk, "ndk").exists() ||
+                    getDistroFile("root/android-sdk/ndk").exists() ||
+                    File(hostSdk, "ndk-bundle").exists()
+
             isBaseUtilsInstalled = getDistroFile("usr/bin/make").exists()
-            
+
             isJdtlsInstalled = getDistroFile("usr/bin/jdtls").exists()
             isKotlinLsInstalled = getDistroFile("usr/bin/kotlin-language-server").exists()
-            
+
             val tsFile1 = getDistroFile("usr/bin/typescript-language-server")
             val tsFile2 = getDistroFile("usr/local/bin/typescript-language-server")
             isTsLsInstalled = tsFile1.exists() || tsFile2.exists()
-            
+
             val htmlFile1 = getDistroFile("usr/bin/vscode-html-language-server")
             val htmlFile2 = getDistroFile("usr/local/bin/vscode-html-language-server")
             isWebLsInstalled = htmlFile1.exists() || htmlFile2.exists()
@@ -213,32 +238,58 @@ fun SettingsScreen(
     fun runInstall(jobName: String, command: String) {
         activeInstallJobName = jobName
         Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
-        
+
         val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
         val env = DistroManager.getProotEnv(context)
-        
+
         thread {
             try {
-                val process = ProcessBuilder(fullCommand).apply {
-                    environment().putAll(env)
-                    redirectErrorStream(true)
-                }.start()
+                val process =
+                    ProcessBuilder(fullCommand)
+                        .apply {
+                            environment().putAll(env)
+                            redirectErrorStream(true)
+                        }
+                        .start()
                 process.waitFor()
                 val success = process.exitValue() == 0
-                
+
                 (context as android.app.Activity).runOnUiThread {
                     activeInstallJobName = null
                     if (success) {
-                        Toast.makeText(context, context.getString(R.string.toast_install_success, jobName), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_install_success, jobName),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     } else {
-                        Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, "Exit code " + process.exitValue()), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(
+                                    R.string.toast_install_failed,
+                                    jobName,
+                                    "Exit code " + process.exitValue(),
+                                ),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     }
                     refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
                     activeInstallJobName = null
-                    Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, e.localizedMessage ?: "Unknown Error"), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.toast_install_failed,
+                                jobName,
+                                e.localizedMessage ?: "Unknown Error",
+                            ),
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
                     refreshTrigger++
                 }
             }
@@ -304,31 +355,37 @@ fun SettingsScreen(
                     onDistroSelected = { distro ->
                         selectedDistro = distro
                         generalPrefs.edit { putString("selected_distro", distro) }
-                        Toast.makeText(context, "Distribution auf $distro geändert. Bitte Terminal neu installieren.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                "Distribution auf $distro geändert. Bitte Terminal neu installieren.",
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                         refreshTrigger++
                     },
                     onReset = {
                         SetupWorker.resetTerminal(context)
                         Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
                     },
-                    isReinstalling         = isReinstalling,
-                    reinstallDownloaded    = reinstallDownloadedBytes,
-                    reinstallTotal         = reinstallTotalBytes,
+                    isReinstalling = isReinstalling,
+                    reinstallDownloaded = reinstallDownloadedBytes,
+                    reinstallTotal = reinstallTotalBytes,
                     onReinstall = {
                         isReinstalling = true
                         reinstallDownloadedBytes = 0L
-                        reinstallTotalBytes      = -1L
+                        reinstallTotalBytes = -1L
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
                             SetupWorker.reinstallTerminal(context) { downloaded, total ->
                                 reinstallDownloadedBytes = downloaded
-                                reinstallTotalBytes      = total
+                                reinstallTotalBytes = total
                             }
                             isReinstalling = false
-                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
+                                .show()
                             refreshTrigger++
                         }
-                    }
+                    },
                 )
             }
 
@@ -345,7 +402,7 @@ fun SettingsScreen(
                     isCmakeInstalled = isCmakeInstalled,
                     isNdkInstalled = isNdkInstalled,
                     isBaseUtilsInstalled = isBaseUtilsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) }
+                    onInstall = { name, cmd -> runInstall(name, cmd) },
                 )
             }
 
@@ -355,7 +412,7 @@ fun SettingsScreen(
                     isKotlinLsInstalled = isKotlinLsInstalled,
                     isTsLsInstalled = isTsLsInstalled,
                     isWebLsInstalled = isWebLsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) }
+                    onInstall = { name, cmd -> runInstall(name, cmd) },
                 )
             }
 
@@ -376,12 +433,15 @@ fun SettingsScreen(
                 )
             }
             item {
-                val currentOption = AutoSaveOption.entries.find { it.interval == autoSaveInterval } ?: AutoSaveOption.OFF
+                val currentOption =
+                    AutoSaveOption.entries.find { it.interval == autoSaveInterval } ?: AutoSaveOption.OFF
                 val currentOptionLabel = stringResource(currentOption.labelRes)
                 SimpleSettingsCard(
                     icon = Icons.Outlined.SaveAs,
                     title = stringResource(R.string.settings_auto_save_backup_title),
-                    subtitle = if (currentOption == AutoSaveOption.OFF) stringResource(R.string.status_disabled) else stringResource(R.string.settings_auto_save_frequency, currentOptionLabel),
+                    subtitle =
+                        if (currentOption == AutoSaveOption.OFF) stringResource(R.string.status_disabled)
+                        else stringResource(R.string.settings_auto_save_frequency, currentOptionLabel),
                     onClick = { showAutoSaveDialog = true },
                 )
             }
@@ -444,7 +504,7 @@ fun SettingsScreen(
             onDismissRequest = { showLogPathSelector = false },
         )
     }
-    
+
     if (showAutoSaveDialog) {
         AutoSaveDialog(
             selectedInterval = autoSaveInterval,
@@ -473,10 +533,13 @@ fun SettingsScreen(
                     AppLanguageOption.entries.forEach { option ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                showLanguageDialog = false
-                                AppLanguageManager.updateLanguage(context, option)
-                            }.padding(vertical = 12.dp),
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .clickable {
+                                        showLanguageDialog = false
+                                        AppLanguageManager.updateLanguage(context, option)
+                                    }
+                                    .padding(vertical = 12.dp),
                         ) {
                             RadioButton(selected = option == currentLanguageOption, onClick = null)
                             Spacer(Modifier.width(8.dp))
@@ -509,20 +572,26 @@ private fun AutoSaveDialog(
     onDismiss: () -> Unit,
     onOptionSelected: (AutoSaveOption, String) -> Unit,
 ) {
-    val optionLabels = mapOf(
-        AutoSaveOption.OFF to stringResource(R.string.auto_save_off),
-        AutoSaveOption.SEC_30 to stringResource(R.string.auto_save_30_seconds),
-        AutoSaveOption.MIN_1 to stringResource(R.string.auto_save_1_minute),
-        AutoSaveOption.MIN_5 to stringResource(R.string.auto_save_5_minutes),
-        AutoSaveOption.MIN_10 to stringResource(R.string.auto_save_10_minutes),
-    )
-    val optionToastMessages = mapOf(
-        AutoSaveOption.OFF to stringResource(R.string.toast_auto_save_disabled),
-        AutoSaveOption.SEC_30 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.SEC_30)),
-        AutoSaveOption.MIN_1 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_1)),
-        AutoSaveOption.MIN_5 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_5)),
-        AutoSaveOption.MIN_10 to stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_10)),
-    )
+    val optionLabels =
+        mapOf(
+            AutoSaveOption.OFF to stringResource(R.string.auto_save_off),
+            AutoSaveOption.SEC_30 to stringResource(R.string.auto_save_30_seconds),
+            AutoSaveOption.MIN_1 to stringResource(R.string.auto_save_1_minute),
+            AutoSaveOption.MIN_5 to stringResource(R.string.auto_save_5_minutes),
+            AutoSaveOption.MIN_10 to stringResource(R.string.auto_save_10_minutes),
+        )
+    val optionToastMessages =
+        mapOf(
+            AutoSaveOption.OFF to stringResource(R.string.toast_auto_save_disabled),
+            AutoSaveOption.SEC_30 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.SEC_30)),
+            AutoSaveOption.MIN_1 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_1)),
+            AutoSaveOption.MIN_5 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_5)),
+            AutoSaveOption.MIN_10 to
+                stringResource(R.string.toast_auto_save_set, optionLabels.getValue(AutoSaveOption.MIN_10)),
+        )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -538,7 +607,10 @@ private fun AutoSaveDialog(
                 AutoSaveOption.entries.forEach { option ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().clickable { onOptionSelected(option, optionToastMessages.getValue(option)) }.padding(vertical = 12.dp),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable { onOptionSelected(option, optionToastMessages.getValue(option)) }
+                                .padding(vertical = 12.dp),
                     ) {
                         RadioButton(selected = option.interval == selectedInterval, onClick = null)
                         Spacer(Modifier.width(8.dp))
@@ -554,17 +626,28 @@ private fun AutoSaveDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorSettingsItem(
-    fontSize: Float, onFontSizeChange: (Float) -> Unit,
-    tabWidth: Int, onTabWidthChange: (Int) -> Unit,
-    wordWrap: Boolean, onWordWrapChange: (Boolean) -> Unit,
-    showInvisibles: Boolean, onShowInvisiblesChange: (Boolean) -> Unit,
-    codeFolding: Boolean, onCodeFoldingChange: (Boolean) -> Unit,
-    showToolbar: Boolean, onShowToolbarChange: (Boolean) -> Unit,
-    showHistory: Boolean, onShowHistoryChange: (Boolean) -> Unit,
-    lspEnabled: Boolean, onLspEnabledChange: (Boolean) -> Unit,
-    isAiEnabled: Boolean, onIsAiEnabledChange: (Boolean) -> Unit,
-    fontPath: String, onFontPathChange: (String) -> Unit,
-    customSymbols: String, onCustomSymbolsChange: (String) -> Unit,
+    fontSize: Float,
+    onFontSizeChange: (Float) -> Unit,
+    tabWidth: Int,
+    onTabWidthChange: (Int) -> Unit,
+    wordWrap: Boolean,
+    onWordWrapChange: (Boolean) -> Unit,
+    showInvisibles: Boolean,
+    onShowInvisiblesChange: (Boolean) -> Unit,
+    codeFolding: Boolean,
+    onCodeFoldingChange: (Boolean) -> Unit,
+    showToolbar: Boolean,
+    onShowToolbarChange: (Boolean) -> Unit,
+    showHistory: Boolean,
+    onShowHistoryChange: (Boolean) -> Unit,
+    lspEnabled: Boolean,
+    onLspEnabledChange: (Boolean) -> Unit,
+    isAiEnabled: Boolean,
+    onIsAiEnabledChange: (Boolean) -> Unit,
+    fontPath: String,
+    onFontPathChange: (String) -> Unit,
+    customSymbols: String,
+    onCustomSymbolsChange: (String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -572,20 +655,24 @@ fun EditorSettingsItem(
     val snappyEasing = LinearOutSlowInEasing
 
     var isFontDropdownExpanded by remember { mutableStateOf(false) }
-    val fontPresetOptions = listOf(
-        FontPresetOption(stringResource(R.string.font_default), ""),
-        FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
-        FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf"),
-    )
+    val fontPresetOptions =
+        listOf(
+            FontPresetOption(stringResource(R.string.font_default), ""),
+            FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf"),
+        )
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing))
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
@@ -600,10 +687,16 @@ fun EditorSettingsItem(
                     )
                     AnimatedVisibility(
                         visible = !expanded,
-                        enter = fadeIn(tween(textFadeDuration)) + expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
+                        enter =
+                            fadeIn(tween(textFadeDuration)) +
+                                expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
+                        exit =
+                            fadeOut(tween(textFadeDuration)) +
+                                shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
                     ) {
-                        val displayFont = if (fontPath.isBlank()) stringResource(R.string.font_system_default) else fontPath.substringAfterLast("/")
+                        val displayFont =
+                            if (fontPath.isBlank()) stringResource(R.string.font_system_default)
+                            else fontPath.substringAfterLast("/")
                         Text(
                             text = stringResource(R.string.settings_editor_summary, tabWidth, displayFont),
                             style = MaterialTheme.typography.bodySmall,
@@ -614,37 +707,70 @@ fun EditorSettingsItem(
                         )
                     }
                 }
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration),
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
             }
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(animationSpec = tween(expandDuration, easing = snappyEasing), expandFrom = Alignment.Top),
-                exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(animationSpec = tween(textFadeDuration, easing = snappyEasing), shrinkTowards = Alignment.Top),
+                enter =
+                    fadeIn(tween(expandDuration)) +
+                        expandVertically(
+                            animationSpec = tween(expandDuration, easing = snappyEasing),
+                            expandFrom = Alignment.Top,
+                        ),
+                exit =
+                    fadeOut(tween(textFadeDuration)) +
+                        shrinkVertically(
+                            animationSpec = tween(textFadeDuration, easing = snappyEasing),
+                            shrinkTowards = Alignment.Top,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(stringResource(R.string.settings_assistance), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_assistance),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_ai_assistant), isAiEnabled, onIsAiEnabledChange)
                     CompactSwitchRow(stringResource(R.string.settings_lsp_completion), lspEnabled, onLspEnabledChange)
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(stringResource(R.string.settings_indent_width), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_indent_width),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         val options = listOf(2, 4, 8)
                         options.forEach { option ->
                             val isSelected = tabWidth == option
-                            val containerColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh, animationSpec = tween(200), label = "ButtonContainer")
-                            val contentColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, animationSpec = tween(200), label = "ButtonContent")
+                            val containerColor by
+                                animateColorAsState(
+                                    targetValue =
+                                        if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    animationSpec = tween(200),
+                                    label = "ButtonContainer",
+                                )
+                            val contentColor by
+                                animateColorAsState(
+                                    targetValue =
+                                        if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                        else MaterialTheme.colorScheme.onSurface,
+                                    animationSpec = tween(200),
+                                    label = "ButtonContent",
+                                )
 
                             Surface(
                                 onClick = { onTabWidthChange(option) },
@@ -666,7 +792,11 @@ fun EditorSettingsItem(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(stringResource(R.string.settings_editor_font), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_editor_font),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -695,7 +825,11 @@ fun EditorSettingsItem(
                                         Column {
                                             Text(preset.label, style = MaterialTheme.typography.bodyLarge)
                                             if (preset.file.isNotEmpty()) {
-                                                Text(preset.file, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                                Text(
+                                                    preset.file,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.outline,
+                                                )
                                             }
                                         }
                                     },
@@ -712,31 +846,54 @@ fun EditorSettingsItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(stringResource(R.string.settings_editor_font_size), style = MaterialTheme.typography.bodyMedium)
-                        Text(stringResource(R.string.settings_editor_font_size_val, fontSize), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.settings_editor_font_size),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            stringResource(R.string.settings_editor_font_size_val, fontSize),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
                     Slider(
                         value = fontSize,
                         onValueChange = onFontSizeChange,
                         valueRange = 8f..32f,
                         steps = 24,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text(stringResource(R.string.settings_behavior), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_behavior),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_show_toolbar), showToolbar, onShowToolbarChange)
-                    CompactSwitchRow(stringResource(R.string.settings_show_history_tabs), showHistory, onShowHistoryChange)
+                    CompactSwitchRow(
+                        stringResource(R.string.settings_show_history_tabs),
+                        showHistory,
+                        onShowHistoryChange,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_word_wrap), wordWrap, onWordWrapChange)
-                    CompactSwitchRow(stringResource(R.string.settings_show_whitespace), showInvisibles, onShowInvisiblesChange)
+                    CompactSwitchRow(
+                        stringResource(R.string.settings_show_whitespace),
+                        showInvisibles,
+                        onShowInvisiblesChange,
+                    )
                     CompactSwitchRow(stringResource(R.string.settings_code_folding), codeFolding, onCodeFoldingChange)
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
-                    Text(stringResource(R.string.settings_custom_symbols), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_custom_symbols),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = customSymbols,
@@ -782,7 +939,10 @@ fun ThemeSettingsItem(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing))
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
@@ -797,29 +957,46 @@ fun ThemeSettingsItem(
                     )
                     AnimatedVisibility(
                         visible = !expanded,
-                        enter = fadeIn(tween(textFadeDuration)) + expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
-                        exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
+                        enter =
+                            fadeIn(tween(textFadeDuration)) +
+                                expandVertically(tween(textFadeDuration), expandFrom = Alignment.Top),
+                        exit =
+                            fadeOut(tween(textFadeDuration)) +
+                                shrinkVertically(tween(textFadeDuration), shrinkTowards = Alignment.Top),
                     ) {
                         Text(
-                            text = if (currentThemeState.isMonetEnabled) stringResource(R.string.settings_dynamic_color) else stringResource(R.string.settings_custom_appearance),
+                            text =
+                                if (currentThemeState.isMonetEnabled) stringResource(R.string.settings_dynamic_color)
+                                else stringResource(R.string.settings_custom_appearance),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 2.dp),
                         )
                     }
                 }
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration),
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
             }
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(animationSpec = tween(expandDuration, easing = snappyEasing), expandFrom = Alignment.Top),
-                exit = fadeOut(tween(textFadeDuration)) + shrinkVertically(animationSpec = tween(textFadeDuration, easing = snappyEasing), shrinkTowards = Alignment.Top),
+                enter =
+                    fadeIn(tween(expandDuration)) +
+                        expandVertically(
+                            animationSpec = tween(expandDuration, easing = snappyEasing),
+                            expandFrom = Alignment.Top,
+                        ),
+                exit =
+                    fadeOut(tween(textFadeDuration)) +
+                        shrinkVertically(
+                            animationSpec = tween(textFadeDuration, easing = snappyEasing),
+                            shrinkTowards = Alignment.Top,
+                        ),
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -832,13 +1009,22 @@ fun ThemeSettingsItem(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.settings_dynamic_color), style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    stringResource(R.string.settings_dynamic_color),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
                             }
                             Switch(
                                 checked = currentThemeState.isMonetEnabled,
                                 onCheckedChange = {
                                     val newIsCustom = if (it) false else currentThemeState.isCustomTheme
-                                    onThemeChange(currentThemeState.selectedModeIndex, currentThemeState.selectedThemeIndex, currentThemeState.customColor, it, newIsCustom)
+                                    onThemeChange(
+                                        currentThemeState.selectedModeIndex,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        it,
+                                        newIsCustom,
+                                    )
                                 },
                             )
                         }
@@ -846,18 +1032,32 @@ fun ThemeSettingsItem(
 
                     AnimatedVisibility(visible = !currentThemeState.isMonetEnabled) {
                         Column {
-                            Text(stringResource(R.string.settings_theme_color), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                stringResource(R.string.settings_theme_color),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                             ) {
                                 itemsIndexed(themeColors) { index, theme ->
-                                    val isSelected = !currentThemeState.isCustomTheme && currentThemeState.selectedThemeIndex == index
+                                    val isSelected =
+                                        !currentThemeState.isCustomTheme &&
+                                            currentThemeState.selectedThemeIndex == index
                                     ColorSelectionItem(
                                         color = theme.primaryColor,
                                         name = theme.name,
                                         isSelected = isSelected,
-                                        onClick = { onThemeChange(currentThemeState.selectedModeIndex, index, currentThemeState.customColor, false, false) },
+                                        onClick = {
+                                            onThemeChange(
+                                                currentThemeState.selectedModeIndex,
+                                                index,
+                                                currentThemeState.customColor,
+                                                false,
+                                                false,
+                                            )
+                                        },
                                     )
                                 }
                                 item {
@@ -871,17 +1071,34 @@ fun ThemeSettingsItem(
                         }
                     }
 
-                    Text(stringResource(R.string.settings_display_mode), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        stringResource(R.string.settings_display_mode),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        val modes = listOf(stringResource(R.string.action_follow_system), stringResource(R.string.action_light), stringResource(R.string.action_dark))
+                        val modes =
+                            listOf(
+                                stringResource(R.string.action_follow_system),
+                                stringResource(R.string.action_light),
+                                stringResource(R.string.action_dark),
+                            )
                         modes.forEachIndexed { index, label ->
                             SmoothFilterChip(
                                 selected = currentThemeState.selectedModeIndex == index,
                                 label = label,
-                                onClick = { onThemeChange(index, currentThemeState.selectedThemeIndex, currentThemeState.customColor, currentThemeState.isMonetEnabled, currentThemeState.isCustomTheme) },
+                                onClick = {
+                                    onThemeChange(
+                                        index,
+                                        currentThemeState.selectedThemeIndex,
+                                        currentThemeState.customColor,
+                                        currentThemeState.isMonetEnabled,
+                                        currentThemeState.isCustomTheme,
+                                    )
+                                },
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -909,7 +1126,13 @@ fun SimpleSettingsCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -933,13 +1156,25 @@ fun LogSettingsItem(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_enable_log), style = MaterialTheme.typography.titleMedium)
                 }
-                Switch(checked = logConfigState.isLogEnabled, onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) })
+                Switch(
+                    checked = logConfigState.isLogEnabled,
+                    onCheckedChange = { onLogConfigChange(it, logConfigState.logFilePath) },
+                )
             }
             AnimatedVisibility(visible = logConfigState.isLogEnabled) {
                 Column {
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedButton(onClick = onPathClick, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
-                        Text(logConfigState.logFilePath, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    OutlinedButton(
+                        onClick = onPathClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text(
+                            logConfigState.logFilePath,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
                         Icon(Icons.Outlined.Edit, null, modifier = Modifier.size(16.dp))
                     }
                 }
@@ -953,17 +1188,36 @@ fun SmoothFilterChip(selected: Boolean, label: String, onClick: () -> Unit, modi
     val duration = 200
     val fastEasing = LinearEasing
     val colorAnimSpec = tween<Color>(durationMillis = duration, easing = fastEasing)
-    val containerColor by animateColorAsState(if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface, colorAnimSpec, "Container")
-    val borderColor by animateColorAsState(if (selected) Color.Transparent else MaterialTheme.colorScheme.outline, colorAnimSpec, "Border")
-    val contentColor by animateColorAsState(if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface, colorAnimSpec, "Content")
+    val containerColor by
+        animateColorAsState(
+            if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+            colorAnimSpec,
+            "Container",
+        )
+    val borderColor by
+        animateColorAsState(
+            if (selected) Color.Transparent else MaterialTheme.colorScheme.outline,
+            colorAnimSpec,
+            "Border",
+        )
+    val contentColor by
+        animateColorAsState(
+            if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+            colorAnimSpec,
+            "Content",
+        )
 
     Surface(
-        onClick = onClick, modifier = modifier.height(36.dp), shape = CircleShape,
-        color = containerColor, border = if (!selected) BorderStroke(1.dp, borderColor) else null,
+        onClick = onClick,
+        modifier = modifier.height(36.dp),
+        shape = CircleShape,
+        color = containerColor,
+        border = if (!selected) BorderStroke(1.dp, borderColor) else null,
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
         ) {
             AnimatedVisibility(visible = selected) {
                 Row {
@@ -978,38 +1232,81 @@ fun SmoothFilterChip(selected: Boolean, label: String, onClick: () -> Unit, modi
 
 @Composable
 fun ColorSelectionItem(color: Color, name: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(48.dp)
-                .border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape)
-                .padding(4.dp).clip(CircleShape).background(color),
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(color),
         ) {
-            if (isSelected) Icon(Icons.Default.Check, null, tint = if (color.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(24.dp))
+            if (isSelected)
+                Icon(
+                    Icons.Default.Check,
+                    null,
+                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(name, style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            name,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 @Composable
 fun CustomColorButton(isSelected: Boolean, customColor: Color, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(4.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick).padding(4.dp),
+    ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(48.dp)
-                .border(if (isSelected) 3.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape)
-                .padding(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier =
+                Modifier.size(48.dp)
+                    .border(
+                        if (isSelected) 3.dp else 0.dp,
+                        if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        CircleShape,
+                    )
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             if (isSelected) {
                 Box(Modifier.fillMaxSize().background(customColor))
-                Icon(Icons.Default.Edit, null, tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Edit,
+                    null,
+                    tint = if (customColor.luminance() > 0.5f) Color.Black else Color.White,
+                    modifier = Modifier.size(20.dp),
+                )
             } else {
-                Icon(Icons.Default.Add, stringResource(R.string.settings_custom), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    Icons.Default.Add,
+                    stringResource(R.string.settings_custom),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(stringResource(R.string.settings_custom), style = MaterialTheme.typography.labelSmall, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            stringResource(R.string.settings_custom),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -1033,9 +1330,10 @@ fun TerminalSettingsItem(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier.animateContentSize(
-                animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-            )
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
@@ -1059,11 +1357,12 @@ fun TerminalSettingsItem(
                         )
                     }
                 }
-                val rotation by animateFloatAsState(
-                    targetValue = if (expanded) 180f else 0f,
-                    label = "ArrowRotation",
-                    animationSpec = tween(expandDuration),
-                )
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
             }
 
@@ -1076,20 +1375,22 @@ fun TerminalSettingsItem(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Linux Distribution", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        "Linux Distribution",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     val distros = listOf("ubuntu", "debian")
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         distros.forEach { distro ->
                             FilterChip(
                                 selected = selectedDistro == distro,
                                 onClick = { onDistroSelected(distro) },
                                 label = { Text(distro.replaceFirstChar { it.uppercase() }) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
@@ -1097,32 +1398,52 @@ fun TerminalSettingsItem(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.settings_terminal_reset), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                Text(stringResource(R.string.settings_terminal_reset_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    stringResource(R.string.settings_terminal_reset),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    stringResource(R.string.settings_terminal_reset_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
-                            Button(onClick = onReset, enabled = !isReinstalling) { Text(stringResource(R.string.settings_terminal_reset)) }
+                            Button(onClick = onReset, enabled = !isReinstalling) {
+                                Text(stringResource(R.string.settings_terminal_reset))
+                            }
                         }
 
                         // Reinstall row – shows download progress while active
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
+                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(stringResource(R.string.settings_terminal_reinstall), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                    Text(stringResource(R.string.settings_terminal_reinstall_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(
+                                        stringResource(R.string.settings_terminal_reinstall),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    Text(
+                                        stringResource(R.string.settings_terminal_reinstall_desc),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                                 Button(
                                     onClick = onReinstall,
                                     enabled = !isReinstalling,
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    colors =
+                                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                                 ) {
                                     if (isReinstalling) {
                                         CircularProgressIndicator(
@@ -1139,21 +1460,25 @@ fun TerminalSettingsItem(
                             // Download progress bar
                             if (isReinstalling) {
                                 fun Long.toMb() = "%.1f MB".format(this / 1_048_576.0)
-                                val fraction = if (reinstallTotal > 0L)
-                                    (reinstallDownloaded.toFloat() / reinstallTotal.toFloat()).coerceIn(0f, 1f)
-                                else -1f
+                                val fraction =
+                                    if (reinstallTotal > 0L)
+                                        (reinstallDownloaded.toFloat() / reinstallTotal.toFloat()).coerceIn(0f, 1f)
+                                    else -1f
 
                                 Surface(
                                     shape = MaterialTheme.shapes.small,
                                     color = MaterialTheme.colorScheme.surfaceVariant,
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
-                                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    ) {
                                         Text(
-                                            text = if (reinstallTotal > 0L)
-                                                "Download: ${reinstallDownloaded.toMb()} / ${reinstallTotal.toMb()}  (${(fraction * 100).toInt()} %)"
-                                            else
-                                                "Download läuft\u2026",
+                                            text =
+                                                if (reinstallTotal > 0L)
+                                                    "Download: ${reinstallDownloaded.toMb()} / ${reinstallTotal.toMb()}  (${(fraction * 100).toInt()} %)"
+                                                else "Download läuft\u2026",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                         )
@@ -1182,28 +1507,62 @@ fun TerminalSettingsItem(
     }
 }
 
-
 @Composable
 fun BuildSettingsItem(
-    isJdk17Installed: Boolean, isJdk21Installed: Boolean, isGradleInstalled: Boolean, isAndroidSdkInstalled: Boolean,
-    isBuildTools35Installed: Boolean, isBuildTools36Installed: Boolean, isPlatform34Installed: Boolean, isPlatform35Installed: Boolean,
-    isCmakeInstalled: Boolean, isNdkInstalled: Boolean, isBaseUtilsInstalled: Boolean,
+    isJdk17Installed: Boolean,
+    isJdk21Installed: Boolean,
+    isGradleInstalled: Boolean,
+    isAndroidSdkInstalled: Boolean,
+    isBuildTools35Installed: Boolean,
+    isBuildTools36Installed: Boolean,
+    isPlatform34Installed: Boolean,
+    isPlatform35Installed: Boolean,
+    isCmakeInstalled: Boolean,
+    isNdkInstalled: Boolean,
+    isBaseUtilsInstalled: Boolean,
     onInstall: (String, String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
     val snappyEasing = LinearOutSlowInEasing
 
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing))) {
-            Row(modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Icon(Icons.Outlined.Build, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = stringResource(R.string.settings_build_title), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                    if (!expanded) Text(text = stringResource(R.string.settings_build_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        text = stringResource(R.string.settings_build_title),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    )
+                    if (!expanded)
+                        Text(
+                            text = stringResource(R.string.settings_build_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                 }
-                val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f, label = "ArrowRotation", animationSpec = tween(expandDuration))
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
             }
 
@@ -1220,62 +1579,166 @@ fun BuildSettingsItem(
                         BuildToolRow(
                             name = stringResource(R.string.settings_build_jdk),
                             isInstalled = isJdk17Installed || isJdk21Installed,
-                            infoText = if (isJdk21Installed) "OpenJDK 21" else if (isJdk17Installed) "OpenJDK 17" else null,
+                            infoText =
+                                if (isJdk21Installed) "OpenJDK 21" else if (isJdk17Installed) "OpenJDK 17" else null,
                             onInstall = {},
                             customInstallButton = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = { onInstall("OpenJDK 17", "apk add openjdk17 || apt install -y openjdk-17-jdk") }, enabled = !isJdk17Installed) { Text("JDK 17") }
-                                    OutlinedButton(onClick = { onInstall("OpenJDK 21", "apk add openjdk21 || apt install -y openjdk-21-jdk") }, enabled = !isJdk21Installed) { Text("JDK 21") }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "OpenJDK 17",
+                                                "apk add openjdk17 || apt install -y openjdk-17-jdk",
+                                            )
+                                        },
+                                        enabled = !isJdk17Installed,
+                                    ) {
+                                        Text("JDK 17")
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "OpenJDK 21",
+                                                "apk add openjdk21 || apt install -y openjdk-21-jdk",
+                                            )
+                                        },
+                                        enabled = !isJdk21Installed,
+                                    ) {
+                                        Text("JDK 21")
+                                    }
                                 }
-                            }
+                            },
                         )
 
-                        BuildToolRow(name = stringResource(R.string.settings_build_gradle), isInstalled = isGradleInstalled, onInstall = { onInstall("Gradle", "apk add gradle || apt install -y gradle") })
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_build_gradle),
+                            isInstalled = isGradleInstalled,
+                            onInstall = { onInstall("Gradle", "apk add gradle || apt install -y gradle") },
+                        )
 
-                        BuildToolRow(name = stringResource(R.string.settings_build_android_sdk), isInstalled = isAndroidSdkInstalled, onInstall = {
-                                onInstall("Android SDK", "mkdir -p /root/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk && rm /tmp/sdk.zip")
-                        })
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_build_android_sdk),
+                            isInstalled = isAndroidSdkInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "Android SDK",
+                                    "mkdir -p /root/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk && rm /tmp/sdk.zip",
+                                )
+                            },
+                        )
 
                         BuildToolRow(
                             name = stringResource(R.string.settings_build_tools),
                             isInstalled = isBuildTools35Installed || isBuildTools36Installed,
-                            infoText = if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36" else if (isBuildTools35Installed) "v35" else if (isBuildTools36Installed) "v36" else null,
+                            infoText =
+                                if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36"
+                                else if (isBuildTools35Installed) "v35"
+                                else if (isBuildTools36Installed) "v36" else null,
                             onInstall = {},
                             customInstallButton = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = { onInstall("Build-Tools v35", "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;35.0.0\"") }, enabled = isAndroidSdkInstalled && !isBuildTools35Installed) { Text("v35") }
-                                    OutlinedButton(onClick = { onInstall("Build-Tools v36", "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;36.0.0-rc1\"") }, enabled = isAndroidSdkInstalled && !isBuildTools36Installed) { Text("v36") }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "Build-Tools v35",
+                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;35.0.0\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
+                                    ) {
+                                        Text("v35")
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "Build-Tools v36",
+                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;36.0.0-rc1\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
+                                    ) {
+                                        Text("v36")
+                                    }
                                 }
-                            }
+                            },
                         )
 
                         BuildToolRow(
                             name = stringResource(R.string.settings_build_platforms),
                             isInstalled = isPlatform34Installed || isPlatform35Installed,
-                            infoText = if (isPlatform34Installed && isPlatform35Installed) "API 34 & 35" else if (isPlatform34Installed) "API 34" else if (isPlatform35Installed) "API 35" else null,
+                            infoText =
+                                if (isPlatform34Installed && isPlatform35Installed) "API 34 & 35"
+                                else if (isPlatform34Installed) "API 34"
+                                else if (isPlatform35Installed) "API 35" else null,
                             onInstall = {},
                             customInstallButton = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = { onInstall("Platform API 34", "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-34\"") }, enabled = isAndroidSdkInstalled && !isPlatform34Installed) { Text("API 34") }
-                                    OutlinedButton(onClick = { onInstall("Platform API 35", "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-35\"") }, enabled = isAndroidSdkInstalled && !isPlatform35Installed) { Text("API 35") }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "Platform API 34",
+                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-34\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isPlatform34Installed,
+                                    ) {
+                                        Text("API 34")
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "Platform API 35",
+                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-35\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isPlatform35Installed,
+                                    ) {
+                                        Text("API 35")
+                                    }
                                 }
-                            }
+                            },
                         )
 
                         BuildToolRow(
                             name = stringResource(R.string.settings_build_cmake_ndk),
                             isInstalled = isCmakeInstalled && isNdkInstalled,
-                            infoText = if (isCmakeInstalled && isNdkInstalled) "Both" else if (isCmakeInstalled) "CMake Only" else if (isNdkInstalled) "NDK Only" else null,
+                            infoText =
+                                if (isCmakeInstalled && isNdkInstalled) "Both"
+                                else if (isCmakeInstalled) "CMake Only" else if (isNdkInstalled) "NDK Only" else null,
                             onInstall = {},
                             customInstallButton = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(onClick = { onInstall("CMake", "apk add cmake || apt install -y cmake") }, enabled = !isCmakeInstalled) { Text("CMake") }
-                                    OutlinedButton(onClick = { onInstall("NDK", "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"ndk-bundle\"") }, enabled = isAndroidSdkInstalled && !isNdkInstalled) { Text("NDK") }
+                                    OutlinedButton(
+                                        onClick = { onInstall("CMake", "apk add cmake || apt install -y cmake") },
+                                        enabled = !isCmakeInstalled,
+                                    ) {
+                                        Text("CMake")
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstall(
+                                                "NDK",
+                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"ndk-bundle\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isNdkInstalled,
+                                    ) {
+                                        Text("NDK")
+                                    }
                                 }
-                            }
+                            },
                         )
 
-                        BuildToolRow(name = stringResource(R.string.settings_build_base_utils), isInstalled = isBaseUtilsInstalled, onInstall = { onInstall("Base Build Utils", "apk add build-base bash git wget curl gcompat || apt install -y build-essential bash git wget curl") })
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_build_base_utils),
+                            isInstalled = isBaseUtilsInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "Base Build Utils",
+                                    "apk add build-base bash git wget curl gcompat || apt install -y build-essential bash git wget curl",
+                                )
+                            },
+                        )
                     }
                 }
             }
@@ -1285,23 +1748,53 @@ fun BuildSettingsItem(
 
 @Composable
 fun LspSettingsItem(
-    isJdtlsInstalled: Boolean, isKotlinLsInstalled: Boolean, isTsLsInstalled: Boolean, isWebLsInstalled: Boolean,
+    isJdtlsInstalled: Boolean,
+    isKotlinLsInstalled: Boolean,
+    isTsLsInstalled: Boolean,
+    isWebLsInstalled: Boolean,
     onInstall: (String, String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
     val snappyEasing = LinearOutSlowInEasing
 
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.animateContentSize(animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing))) {
-            Row(modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier =
+                Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+                )
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Icon(Icons.Outlined.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = stringResource(R.string.settings_lsp_title), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                    if (!expanded) Text(text = stringResource(R.string.settings_lsp_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        text = stringResource(R.string.settings_lsp_title),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    )
+                    if (!expanded)
+                        Text(
+                            text = stringResource(R.string.settings_lsp_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                 }
-                val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f, label = "ArrowRotation", animationSpec = tween(expandDuration))
+                val rotation by
+                    animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "ArrowRotation",
+                        animationSpec = tween(expandDuration),
+                    )
                 Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
             }
 
@@ -1315,10 +1808,46 @@ fun LspSettingsItem(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        BuildToolRow(name = stringResource(R.string.settings_lsp_java), isInstalled = isJdtlsInstalled, onInstall = { onInstall("Java LSP (jdtls)", "apk add openjdk17 jdtls || apt install -y openjdk-17-jdk jdtls") })
-                        BuildToolRow(name = stringResource(R.string.settings_lsp_kotlin), isInstalled = isKotlinLsInstalled, onInstall = { onInstall("Kotlin LSP", "apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server || apt install -y kotlin-language-server") })
-                        BuildToolRow(name = stringResource(R.string.settings_lsp_typescript), isInstalled = isTsLsInstalled, onInstall = { onInstall("TypeScript LSP", "apk add nodejs npm || apt install -y nodejs npm && npm install -g typescript typescript-language-server") })
-                        BuildToolRow(name = stringResource(R.string.settings_lsp_web), isInstalled = isWebLsInstalled, onInstall = { onInstall("Web LSPs", "apk add nodejs npm || apt install -y nodejs npm && npm install -g vscode-langservers-extracted") })
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_lsp_java),
+                            isInstalled = isJdtlsInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "Java LSP (jdtls)",
+                                    "apk add openjdk17 jdtls || apt install -y openjdk-17-jdk jdtls",
+                                )
+                            },
+                        )
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_lsp_kotlin),
+                            isInstalled = isKotlinLsInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "Kotlin LSP",
+                                    "apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server || apt install -y kotlin-language-server",
+                                )
+                            },
+                        )
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_lsp_typescript),
+                            isInstalled = isTsLsInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "TypeScript LSP",
+                                    "apk add nodejs npm || apt install -y nodejs npm && npm install -g typescript typescript-language-server",
+                                )
+                            },
+                        )
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_lsp_web),
+                            isInstalled = isWebLsInstalled,
+                            onInstall = {
+                                onInstall(
+                                    "Web LSPs",
+                                    "apk add nodejs npm || apt install -y nodejs npm && npm install -g vscode-langservers-extracted",
+                                )
+                            },
+                        )
                     }
                 }
             }
@@ -1328,10 +1857,17 @@ fun LspSettingsItem(
 
 @Composable
 fun BuildToolRow(
-    name: String, isInstalled: Boolean, infoText: String? = null,
-    onInstall: () -> Unit, customInstallButton: @Composable (() -> Unit)? = null,
+    name: String,
+    isInstalled: Boolean,
+    infoText: String? = null,
+    onInstall: () -> Unit,
+    customInstallButton: @Composable (() -> Unit)? = null,
 ) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1339,19 +1875,29 @@ fun BuildToolRow(
                     imageVector = if (isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
                     contentDescription = null,
                     tint = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
                 Text(
-                    text = if (isInstalled) infoText ?: stringResource(R.string.status_installed) else stringResource(R.string.status_not_installed),
+                    text =
+                        if (isInstalled) infoText ?: stringResource(R.string.status_installed)
+                        else stringResource(R.string.status_not_installed),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
                 )
             }
         }
         if (customInstallButton != null) {
             customInstallButton()
         } else {
-            Button(onClick = onInstall, enabled = !isInstalled, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Button(
+                onClick = onInstall,
+                enabled = !isInstalled,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+            ) {
                 Text(stringResource(R.string.action_install))
             }
         }

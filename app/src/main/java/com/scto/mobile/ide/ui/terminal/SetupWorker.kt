@@ -18,29 +18,25 @@ import kotlinx.coroutines.withContext
 
 object SetupWorker {
     private fun getDistroName(context: Context): String {
-        return context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+        return context
+            .getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
     }
 
-    suspend fun reinstallTerminal(
-        context: Context,
-        onProgress: Downloader.ProgressCallback? = null,
-    ) {
+    suspend fun reinstallTerminal(context: Context, onProgress: Downloader.ProgressCallback? = null) {
         withContext(Dispatchers.IO) {
             val list = ArrayList(SessionManager.sessions)
-            list.forEach {
-                SessionManager.removeSession(it)
-            }
-            
+            list.forEach { SessionManager.removeSession(it) }
+
             val distroName = getDistroName(context)
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
             val distroDir = File(prefixDir, "local/$distroName")
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
-            
+
             distroDir.deleteRecursively()
             rootfsTar.delete()
-            
+
             prepareEnvironment(context, onProgress = onProgress)
             SessionManager.addNewSession(context)
         }
@@ -48,9 +44,7 @@ object SetupWorker {
 
     fun resetTerminal(context: Context) {
         val list = ArrayList(SessionManager.sessions)
-        list.forEach {
-            SessionManager.removeSession(it)
-        }
+        list.forEach { SessionManager.removeSession(it) }
         DistroManager.currentProject = null
         SessionManager.addNewSession(context)
     }
@@ -64,18 +58,15 @@ object SetupWorker {
      *
      * @param onProgress optional progress callback forwarded to [Downloader].
      */
-    suspend fun prepareEnvironment(
-        context: Context,
-        onProgress: Downloader.ProgressCallback? = null,
-    ) {
+    suspend fun prepareEnvironment(context: Context, onProgress: Downloader.ProgressCallback? = null) {
         withContext(Dispatchers.IO) {
             val distroName = getDistroName(context)
-            val filesDir   = context.filesDir
-            val prefixDir  = filesDir.parentFile!!
+            val filesDir = context.filesDir
+            val prefixDir = filesDir.parentFile!!
 
             val distroDir = File(prefixDir, "local/$distroName")
-            val binDir    = File(prefixDir, "local/bin")
-            val libDir    = File(prefixDir, "local/lib")
+            val binDir = File(prefixDir, "local/bin")
+            val libDir = File(prefixDir, "local/lib")
 
             // 1. Download proot (from GitHub Releases, arch-aware).
             //    Falls back to the bundled asset if the download fails.
@@ -99,11 +90,7 @@ object SetupWorker {
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
                 try {
-                    Downloader.downloadRootFs(
-                        context,
-                        distro = distroName,
-                        onProgress = onProgress,
-                    )
+                    Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     // Fallback: copy bundled asset (only ubuntu.tar.gz is bundled)

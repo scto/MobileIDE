@@ -20,8 +20,8 @@ import java.net.URL
 import java.security.MessageDigest
 
 /**
- * Downloader for proot binary and Linux RootFS archives (Ubuntu, Debian).
- * Detects CPU architecture automatically and fetches the correct variant.
+ * Downloader for proot binary and Linux RootFS archives (Ubuntu, Debian). Detects CPU architecture automatically and
+ * fetches the correct variant.
  */
 object Downloader {
 
@@ -37,20 +37,20 @@ object Downloader {
         /** Architecture string used by Ubuntu/Debian CDN */
         val debianArch: String,
     ) {
-        ARM64("arm64-v8a",   "aarch64", "arm64"),
-        ARM32("armeabi-v7a", "arm",     "armhf"),
-        X86_64("x86_64",    "x86_64",  "amd64"),
-        X86("x86",           "i686",   "i386"),
+        ARM64("arm64-v8a", "aarch64", "arm64"),
+        ARM32("armeabi-v7a", "arm", "armhf"),
+        X86_64("x86_64", "x86_64", "amd64"),
+        X86("x86", "i686", "i386"),
     }
 
     /** Returns the best matching [Arch] for the running device. */
     fun detectArch(): Arch {
         val supported = Build.SUPPORTED_ABIS.toList()
         return when {
-            supported.any { it == "arm64-v8a"   } -> Arch.ARM64
-            supported.any { it == "x86_64"      } -> Arch.X86_64
+            supported.any { it == "arm64-v8a" } -> Arch.ARM64
+            supported.any { it == "x86_64" } -> Arch.X86_64
             supported.any { it == "armeabi-v7a" } -> Arch.ARM32
-            else                                   -> Arch.X86
+            else -> Arch.X86
         }
     }
 
@@ -58,25 +58,20 @@ object Downloader {
     // RootFS URL table (termux/proot-distro releases)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private const val PROOT_DISTRO_BASE =
-        "https://github.com/termux/proot-distro/releases/download"
+    private const val PROOT_DISTRO_BASE = "https://github.com/termux/proot-distro/releases/download"
 
-    private val DISTRO_VERSIONS = mapOf(
-        "ubuntu" to "24.04",
-        "debian" to "12.0",
-    )
+    private val DISTRO_VERSIONS = mapOf("ubuntu" to "24.04", "debian" to "12.0")
 
     /**
      * Returns the download URL for the given [distro] and [arch].
      *
-     * Example:
-     *   ubuntu → https://.../v24.04/ubuntu-arm64-pd-v24.04.tar.xz
-     *   debian → https://.../v12.0/debian-amd64-pd-v12.0.tar.xz
+     * Example: ubuntu → https://.../v24.04/ubuntu-arm64-pd-v24.04.tar.xz debian →
+     * https://.../v12.0/debian-amd64-pd-v12.0.tar.xz
      */
     fun getRootFsUrl(distro: String, arch: Arch): String {
-        val version = DISTRO_VERSIONS[distro.lowercase()]
-            ?: throw IllegalArgumentException("Unsupported distro: $distro")
-        val tag  = "v$version"
+        val version =
+            DISTRO_VERSIONS[distro.lowercase()] ?: throw IllegalArgumentException("Unsupported distro: $distro")
+        val tag = "v$version"
         val file = "${distro.lowercase()}-${arch.debianArch}-pd-v${version}.tar.xz"
         return "$PROOT_DISTRO_BASE/$tag/$file"
     }
@@ -85,10 +80,9 @@ object Downloader {
     // proot binary URLs (static builds from termux-packages)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private const val PROOT_RELEASE_BASE =
-        "https://github.com/termux-play-store/termux-packages/releases/download"
+    private const val PROOT_RELEASE_BASE = "https://github.com/termux-play-store/termux-packages/releases/download"
 
-    private const val PROOT_TAG     = "proot-2025.01.15-r2"
+    private const val PROOT_TAG = "proot-2025.01.15-r2"
     private const val PROOT_VERSION = "5.1.107-66"
 
     /** Returns the URL for the proot static binary for [arch]. */
@@ -99,11 +93,11 @@ object Downloader {
     // Progress callback
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** Called periodically during a download.  All values in bytes. */
+    /** Called periodically during a download. All values in bytes. */
     fun interface ProgressCallback {
         /**
          * @param downloaded bytes written so far
-         * @param total      total content length (-1 if unknown)
+         * @param total total content length (-1 if unknown)
          */
         fun onProgress(downloaded: Long, total: Long)
     }
@@ -113,35 +107,29 @@ object Downloader {
     // ─────────────────────────────────────────────────────────────────────────
 
     private const val CONNECT_TIMEOUT_MS = 30_000
-    private const val READ_TIMEOUT_MS    = 60_000
-    private const val BUFFER_SIZE        = 64 * 1024  // 64 KB
+    private const val READ_TIMEOUT_MS = 60_000
+    private const val BUFFER_SIZE = 64 * 1024 // 64 KB
 
     /**
      * Downloads [url] into [destFile], reporting progress via [onProgress].
-     *
      * - Follows HTTP redirects automatically (up to 5 hops).
      * - Resumes partial downloads when the server supports `Range` requests.
      * - Verifies SHA-256 checksum when [expectedSha256] is non-null.
      *
-     * @throws IOException      on network or I/O errors.
+     * @throws IOException on network or I/O errors.
      * @throws SecurityException when the checksum does not match.
      */
     @Throws(IOException::class, SecurityException::class)
-    fun download(
-        url: String,
-        destFile: File,
-        expectedSha256: String? = null,
-        onProgress: ProgressCallback? = null,
-    ) {
+    fun download(url: String, destFile: File, expectedSha256: String? = null, onProgress: ProgressCallback? = null) {
         destFile.parentFile?.mkdirs()
 
         val existingBytes = if (destFile.exists()) destFile.length() else 0L
-        var downloaded    = existingBytes
+        var downloaded = existingBytes
 
         val digest = if (expectedSha256 != null) MessageDigest.getInstance("SHA-256") else null
 
         var resolvedUrl = url
-        var connection  = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
+        var connection = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
 
         // Follow redirects manually so we can keep the Range header.
         repeat(5) {
@@ -149,14 +137,13 @@ object Downloader {
             if (code in 300..399) {
                 val location = connection.getHeaderField("Location") ?: return@repeat
                 connection.disconnect()
-                resolvedUrl = if (location.startsWith("http")) location
-                              else "https://${URL(resolvedUrl).host}$location"
-                connection  = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
+                resolvedUrl = if (location.startsWith("http")) location else "https://${URL(resolvedUrl).host}$location"
+                connection = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
             }
         }
 
         val responseCode = connection.responseCode
-        val resuming     = responseCode == HttpURLConnection.HTTP_PARTIAL
+        val resuming = responseCode == HttpURLConnection.HTTP_PARTIAL
 
         // Server did not honour Range → restart from scratch.
         if (!resuming && existingBytes > 0) {
@@ -166,10 +153,11 @@ object Downloader {
             connection = openConnection(resolvedUrl, -1L)
         }
 
-        val totalBytes = when {
-            resuming -> existingBytes + (connection.contentLengthLong.takeIf { it > 0 } ?: -1L)
-            else     -> connection.contentLengthLong.takeIf { it > 0 } ?: -1L
-        }
+        val totalBytes =
+            when {
+                resuming -> existingBytes + (connection.contentLengthLong.takeIf { it > 0 } ?: -1L)
+                else -> connection.contentLengthLong.takeIf { it > 0 } ?: -1L
+            }
 
         try {
             connection.inputStream.use { input ->
@@ -194,9 +182,7 @@ object Downloader {
             val actual = digest.digest().joinToString("") { "%02x".format(it) }
             if (!actual.equals(expectedSha256, ignoreCase = true)) {
                 destFile.delete()
-                throw SecurityException(
-                    "SHA-256 mismatch for $url\n  Expected: $expectedSha256\n  Actual:   $actual"
-                )
+                throw SecurityException("SHA-256 mismatch for $url\n  Expected: $expectedSha256\n  Actual:   $actual")
             }
         }
     }
@@ -204,7 +190,7 @@ object Downloader {
     private fun openConnection(url: String, rangeStart: Long): HttpURLConnection {
         val conn = URL(url).openConnection() as HttpURLConnection
         conn.connectTimeout = CONNECT_TIMEOUT_MS
-        conn.readTimeout    = READ_TIMEOUT_MS
+        conn.readTimeout = READ_TIMEOUT_MS
         conn.instanceFollowRedirects = true
         conn.setRequestProperty("User-Agent", "MobileIDE/1.0 (Android)")
         if (rangeStart > 0) {
@@ -219,18 +205,13 @@ object Downloader {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Downloads the proot binary for the current device architecture into
-     * [context]'s files directory and marks it as executable.
+     * Downloads the proot binary for the current device architecture into [context]'s files directory and marks it as
+     * executable.
      *
-     * The binary is cached: if it already exists and [force] is false the
-     * download is skipped.
+     * The binary is cached: if it already exists and [force] is false the download is skipped.
      */
-    fun downloadProot(
-        context: Context,
-        force: Boolean = false,
-        onProgress: ProgressCallback? = null,
-    ) {
-        val arch     = detectArch()
+    fun downloadProot(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
+        val arch = detectArch()
         val destFile = File(context.filesDir, "proot")
 
         if (!force && destFile.exists() && destFile.length() > 0L) return
@@ -248,8 +229,7 @@ object Downloader {
     /**
      * Downloads the rootfs archive for [distro] into [context]'s files directory.
      *
-     * The archive is cached: if it already exists and [force] is false the
-     * download is skipped.
+     * The archive is cached: if it already exists and [force] is false the download is skipped.
      *
      * @return the downloaded (or cached) archive [File].
      */
@@ -259,8 +239,8 @@ object Downloader {
         force: Boolean = false,
         onProgress: ProgressCallback? = null,
     ): File {
-        val arch     = detectArch()
-        val url      = getRootFsUrl(distro, arch)
+        val arch = detectArch()
+        val url = getRootFsUrl(distro, arch)
         // Store as <distro>.tar.gz so SetupWorker / init-host.sh can find it.
         val destFile = File(context.filesDir, "${distro.lowercase()}.tar.gz")
 
@@ -277,10 +257,7 @@ object Downloader {
         return destFile
     }
 
-    /**
-     * Returns a human-readable description of the current device architecture,
-     * e.g. "arm64-v8a (aarch64)".
-     */
+    /** Returns a human-readable description of the current device architecture, e.g. "arm64-v8a (aarch64)". */
     fun archDescription(): String {
         val arch = detectArch()
         return "${arch.abiName} (${arch.prootArch})"
