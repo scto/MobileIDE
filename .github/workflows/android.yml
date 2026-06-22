@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-release:
-    name: Build Release
+  build-debug:
+    name: Build Debug 
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,27 +21,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
-          java-version: "21"
+          java-version: "17"
           distribution: "temurin"
           cache: gradle
+          
       - name: Cache Gradle Build Files
         uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Decode and create secrets
-        run: |
-          echo "${{ secrets.KEYSTORE }}" | base64 -d > /tmp/xed.keystore
-          echo "${{ secrets.PROP }}" | base64 -d > /tmp/signing.properties
-
+          
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -53,45 +46,11 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Build with Gradle
-        run: ./gradlew assembleRelease --no-daemon && mv app/build/outputs/apk/release/*.apk app/xed-editor-${{ env.COMMIT_HASH }}.apk
-        env:
-          KEYSTORE_FILE: /tmp/xed.keystore
-          SIGNING_PROPERTIES_FILE: /tmp/signing.properties
+        run: ./gradlew assembleDebug --no-daemon && mv app/build/outputs/apk/debug/*.apk app/MobileIDE-${{ env.COMMIT_HASH }}.apk
         continue-on-error: false
 
       - name: Archive APK
         uses: actions/upload-artifact@v7
         with:
-          name: Xed-Editor-Release
-          path: app/xed-editor-${{ env.COMMIT_HASH }}.apk
-
-      - name: Delete secrets
-        run: rm /tmp/xed.keystore /tmp/signing.properties
-
-      - name: Send APK to Telegram
-        if: ${{ success() && github.event.head_commit.message != '' }}
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: |
-          CAPTION=$(printf "%s" "$COMMIT_MSG" | jq -Rs .)
-          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
-            -F chat_id="-1002408175863" \
-            -F message_thread_id="582" \
-            -F caption="$CAPTION" \
-            -F document=@"app/xed-editor-${{ env.COMMIT_HASH }}.apk"
-
-      - name: Generate Plugin Sdk
-        run: |
-          bash plugin-sdk/build-auto.sh
-
-      - name: Update Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "plugin-sdk/output/sdk.jar"
-          tag: "sdk-latest"
-          allowUpdates: true
-          replacesArtifacts: true
-          makeLatest: false
-          name: "Latest Plugin SDK Build"
-          body: "This release is automatically updated with the latest sdk.jar."
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: MobileIDE-Debug
+          path: app/MobileIDE-${{ env.COMMIT_HASH }}.apk
