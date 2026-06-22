@@ -23,7 +23,7 @@ coilCompose = "2.7.0"
 coilSvg = "2.7.0"
 datastoreCore = "1.2.0"
 desugar_jdk_libs = "2.1.5"
-editorVersion = "0.24.4"
+editorVersion = "0.24.6"
 jsoup = "1.22.1"
 
 coreKtx = "1.17.0"
