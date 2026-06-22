@@ -59,7 +59,10 @@ class TerminalService : Service() {
                 showNotification()
             }
             ACTION_STOP -> {
-                LogCatcher.i("TerminalService", "ACTION_STOP action received. Releasing wake lock and clearing sessions.")
+                LogCatcher.i(
+                    "TerminalService",
+                    "ACTION_STOP action received. Releasing wake lock and clearing sessions.",
+                )
                 releaseWakeLock()
                 val list = ArrayList(SessionManager.sessions)
                 list.forEach { SessionManager.removeSession(it) }

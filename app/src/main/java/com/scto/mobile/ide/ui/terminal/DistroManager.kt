@@ -13,13 +13,13 @@ package com.scto.mobile.ide.ui.terminal
 import android.content.Context
 import com.rk.terminal.ui.screens.terminal.stat
 import com.rk.terminal.ui.screens.terminal.vmstat
+import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import java.io.File
 import java.io.FileOutputStream
-import com.scto.mobile.ide.core.utils.LogCatcher
 
 object DistroManager {
     var currentProject: String? = null
@@ -178,7 +178,10 @@ object DistroManager {
 
         val shell = "/system/bin/sh"
         val args = arrayOf("-c", initHostScript.absolutePath)
-        LogCatcher.i("DistroManager", "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}")
+        LogCatcher.i(
+            "DistroManager",
+            "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
+        )
 
         return TerminalSession(
             shell,

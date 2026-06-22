@@ -12,13 +12,13 @@ package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
 import android.os.Build
+import com.scto.mobile.ide.core.utils.LogCatcher
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
-import com.scto.mobile.ide.core.utils.LogCatcher
 
 /**
  * Downloader for proot binary and Linux RootFS archives (Ubuntu, Debian). Detects CPU architecture automatically and
@@ -122,7 +122,10 @@ object Downloader {
      */
     @Throws(IOException::class, SecurityException::class)
     fun download(url: String, destFile: File, expectedSha256: String? = null, onProgress: ProgressCallback? = null) {
-        LogCatcher.i("Downloader", "Starting download: URL=$url, Dest=${destFile.absolutePath}, expectedSha256=$expectedSha256")
+        LogCatcher.i(
+            "Downloader",
+            "Starting download: URL=$url, Dest=${destFile.absolutePath}, expectedSha256=$expectedSha256",
+        )
         destFile.parentFile?.mkdirs()
 
         val existingBytes = if (destFile.exists()) destFile.length() else 0L
@@ -183,12 +186,18 @@ object Downloader {
         if (expectedSha256 != null && digest != null) {
             val actual = digest.digest().joinToString("") { "%02x".format(it) }
             if (!actual.equals(expectedSha256, ignoreCase = true)) {
-                LogCatcher.e("Downloader", "SHA-256 verification failed for $url. Expected: $expectedSha256, Actual: $actual")
+                LogCatcher.e(
+                    "Downloader",
+                    "SHA-256 verification failed for $url. Expected: $expectedSha256, Actual: $actual",
+                )
                 destFile.delete()
                 throw SecurityException("SHA-256 mismatch for $url\n  Expected: $expectedSha256\n  Actual:   $actual")
             }
         }
-        LogCatcher.i("Downloader", "Download completed successfully: ${destFile.absolutePath} (${destFile.length()} bytes)")
+        LogCatcher.i(
+            "Downloader",
+            "Download completed successfully: ${destFile.absolutePath} (${destFile.length()} bytes)",
+        )
     }
 
     private fun openConnection(url: String, rangeStart: Long): HttpURLConnection {
@@ -251,7 +260,10 @@ object Downloader {
         val url = getRootFsUrl(distro, arch)
         // Store as <distro>.tar.gz so SetupWorker / init-host.sh can find it.
         val destFile = File(context.filesDir, "${distro.lowercase()}.tar.gz")
-        LogCatcher.i("Downloader", "downloadRootFs: distro=$distro, arch=$arch, URL=$url, dest=${destFile.absolutePath}, force=$force")
+        LogCatcher.i(
+            "Downloader",
+            "downloadRootFs: distro=$distro, arch=$arch, URL=$url, dest=${destFile.absolutePath}, force=$force",
+        )
 
         if (!force && destFile.exists() && destFile.length() > 0L) {
             LogCatcher.i("Downloader", "downloadRootFs: rootfs archive already exists. Skipping.")
