@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MobileIDE – Adaptive Icon Background Layer
+  ─────────────────────────────────────────────────────────────────────────────
+  Provides the dark navy radial gradient background for the adaptive icon.
+  This layer fills the full 108dp × 108dp adaptive icon canvas.
+
+  Color palette (Catppuccin Mocha / MobileIDE default theme):
+    Centre  #1A1A2E  — deep navy
+    Mid     #0F1020  — darker navy
+    Edge    #080C16  — near-black
+
+  Referenced by:
+    mipmap-anydpi-v26/ic_launcher.xml
+    mipmap-anydpi-v26/ic_launcher_round.xml
+    drawable/ic_launcher_adaptive.xml
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+  <gradient
+      android:type="radial"
+      android:gradientRadius="75%p"
+      android:startColor="#1A1A2E"
+      android:centerColor="#0F1020"
+      android:endColor="#080C16" />
+
+</shape>
