@@ -32,11 +32,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,9 +69,13 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
 
     var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
     var installGranted by remember { mutableStateOf(PermissionManager.hasInstallPermission(context)) }
-    var postNotificationsGranted by remember { mutableStateOf(PermissionManager.hasPostNotificationsPermission(context)) }
+    var postNotificationsGranted by remember {
+        mutableStateOf(PermissionManager.hasPostNotificationsPermission(context))
+    }
     var notificationAccessGranted by remember { mutableStateOf(PermissionManager.hasNotificationAccess(context)) }
-    var batteryOptimizationIgnored by remember { mutableStateOf(PermissionManager.isIgnoringBatteryOptimizations(context)) }
+    var batteryOptimizationIgnored by remember {
+        mutableStateOf(PermissionManager.isIgnoringBatteryOptimizations(context))
+    }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }

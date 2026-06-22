@@ -1,6 +1,5 @@
 package com.scto.mobile.ide.ui.terminal
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,9 +28,7 @@ class TerminalService : Service() {
             private set
 
         fun startService(context: Context) {
-            val intent = Intent(context, TerminalService::class.java).apply {
-                action = ACTION_START
-            }
+            val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_START }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
@@ -40,9 +37,7 @@ class TerminalService : Service() {
         }
 
         fun stopService(context: Context) {
-            val intent = Intent(context, TerminalService::class.java).apply {
-                action = ACTION_STOP
-            }
+            val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_STOP }
             context.startService(intent)
         }
     }
@@ -80,10 +75,7 @@ class TerminalService : Service() {
     private fun acquireWakeLock() {
         if (wakeLock == null) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "MobileIDE::TerminalWakeLock"
-            )
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::TerminalWakeLock")
         }
         if (wakeLock?.isHeld == false) {
             wakeLock?.acquire()
@@ -100,66 +92,62 @@ class TerminalService : Service() {
 
     private fun showNotification() {
         val mainIntent = Intent(this, MainActivity::class.java)
-        val mainPendingIntent = PendingIntent.getActivity(
-            this, 0, mainIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val mainPendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                mainIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
         // Exit intent
-        val exitIntent = Intent(this, TerminalService::class.java).apply {
-            action = ACTION_STOP
-        }
-        val exitPendingIntent = PendingIntent.getService(
-            this, 1, exitIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val exitIntent = Intent(this, TerminalService::class.java).apply { action = ACTION_STOP }
+        val exitPendingIntent =
+            PendingIntent.getService(
+                this,
+                1,
+                exitIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
 
         // WakeLock toggle intent
-        val wakeLockIntent = Intent(this, TerminalService::class.java).apply {
-            action = ACTION_TOGGLE_WAKE_LOCK
-        }
-        val wakeLockPendingIntent = PendingIntent.getService(
-            this, 2, wakeLockIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val wakeLockActionText = if (isWakeLockAcquired) {
-            "Release Wake Lock"
-        } else {
-            "Acquire Wake Lock"
-        }
-
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("MobileIDE Terminal")
-            .setContentText("Terminal läuft im Hintergrund")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(mainPendingIntent)
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            // Left button: Exit
-            .addAction(
-                android.R.drawable.ic_menu_close_clear_cancel,
-                "Exit",
-                exitPendingIntent
+        val wakeLockIntent = Intent(this, TerminalService::class.java).apply { action = ACTION_TOGGLE_WAKE_LOCK }
+        val wakeLockPendingIntent =
+            PendingIntent.getService(
+                this,
+                2,
+                wakeLockIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
-            // Right button: Acquire Wake Lock
-            .addAction(
-                android.R.drawable.ic_lock_lock,
-                wakeLockActionText,
-                wakeLockPendingIntent
-            )
-            .build()
+
+        val wakeLockActionText =
+            if (isWakeLockAcquired) {
+                "Release Wake Lock"
+            } else {
+                "Acquire Wake Lock"
+            }
+
+        val notification =
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("MobileIDE Terminal")
+                .setContentText("Terminal läuft im Hintergrund")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(mainPendingIntent)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                // Left button: Exit
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Exit", exitPendingIntent)
+                // Right button: Acquire Wake Lock
+                .addAction(android.R.drawable.ic_lock_lock, wakeLockActionText, wakeLockPendingIntent)
+                .build()
 
         startForeground(NOTIFICATION_ID, notification)
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Terminal Foreground Service",
-                NotificationManager.IMPORTANCE_LOW
-            )
+            val channel =
+                NotificationChannel(CHANNEL_ID, "Terminal Foreground Service", NotificationManager.IMPORTANCE_LOW)
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
