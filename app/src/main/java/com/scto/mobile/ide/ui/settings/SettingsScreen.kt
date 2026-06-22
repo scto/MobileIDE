@@ -380,13 +380,11 @@ fun SettingsScreen(
                         coroutineScope.launch {
                             SetupWorker.reinstallTerminal(
                                 context = context,
-                                onStatusChanged = { status ->
-                                    reinstallStatus = status
-                                },
+                                onStatusChanged = { status -> reinstallStatus = status },
                                 onProgress = { downloaded, total ->
                                     reinstallDownloadedBytes = downloaded
                                     reinstallTotalBytes = total
-                                }
+                                },
                             )
                             isReinstalling = false
                             Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
@@ -1483,11 +1481,15 @@ fun TerminalSettingsItem(
                                         verticalArrangement = Arrangement.spacedBy(6.dp),
                                     ) {
                                         Text(
-                                            text = if (reinstallStatus == "Linux RootFS wird heruntergeladen..." && reinstallTotal > 0L) {
-                                                "Download: ${reinstallDownloaded.toMb()} / ${reinstallTotal.toMb()}  (${(fraction * 100).toInt()} %)"
-                                            } else {
-                                                reinstallStatus.ifBlank { "Download läuft\u2026" }
-                                            },
+                                            text =
+                                                if (
+                                                    reinstallStatus == "Linux RootFS wird heruntergeladen..." &&
+                                                        reinstallTotal > 0L
+                                                ) {
+                                                    "Download: ${reinstallDownloaded.toMb()} / ${reinstallTotal.toMb()}  (${(fraction * 100).toInt()} %)"
+                                                } else {
+                                                    reinstallStatus.ifBlank { "Download läuft\u2026" }
+                                                },
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                         )
