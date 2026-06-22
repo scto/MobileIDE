@@ -81,7 +81,7 @@ object SetupWorker {
             val binDir = File(prefixDir, "local/bin")
             val libDir = File(prefixDir, "local/lib")
 
-            // 1. Setup proot binary (prefer local jniLib libproot.so, fallback to bundled asset, then download)
+            // 1. Setup proot binary (prefer local jniLib libproot.so, fallback to download)
             val prootDest = File(filesDir, "proot")
             if (!prootDest.exists() || prootDest.length() == 0L) {
                 onStatusChanged?.invoke("PRoot wird eingerichtet...")
@@ -101,48 +101,28 @@ object SetupWorker {
                     }
                 }
 
-                // Fallback to bundled proot asset
+                // If copy fails, try downloading
                 if (!success) {
                     try {
-                        LogCatcher.i("SetupWorker", "Copying bundled proot asset.")
-                        copyAsset(context, "proot", prootDest)
-                        prootDest.setExecutable(true)
-                        success = true
-                    } catch (e: Exception) {
-                        LogCatcher.e("SetupWorker", "Failed to copy bundled proot asset", e)
-                    }
-                }
-
-                // If both fail, try downloading as a last resort
-                if (!success) {
-                    try {
-                        LogCatcher.i("SetupWorker", "Downloading proot as fallback.")
+                        LogCatcher.i("SetupWorker", "Downloading proot.")
                         Downloader.downloadProot(context, onProgress = onProgress)
                     } catch (e: Exception) {
-                        LogCatcher.e("SetupWorker", "Failed to download proot fallback", e)
+                        LogCatcher.e("SetupWorker", "Failed to download proot", e)
                     }
                 }
             }
 
-            // 2. Setup libtalloc (prefer downloading from custom repo, fallback to bundled asset).
+            // 2. Setup libtalloc (downloading from custom repo).
             onStatusChanged?.invoke("Bibliotheken werden kopiert...")
             val tallocDest = File(filesDir, "libtalloc.so.2")
-            var tallocSuccess = false
             try {
                 LogCatcher.i("SetupWorker", "Downloading libtalloc via Downloader.")
                 Downloader.downloadTalloc(context, onProgress = onProgress)
-                tallocSuccess = tallocDest.exists() && tallocDest.length() > 0L
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Failed to download libtalloc, falling back to assets", e)
-            }
-
-            if (!tallocSuccess) {
-                LogCatcher.i("SetupWorker", "Copying fallback libtalloc from assets.")
-                copyAsset(context, "libtalloc.so.2", tallocDest)
+                LogCatcher.e("SetupWorker", "Failed to download libtalloc", e)
             }
 
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
-            //    Falls back to the bundled asset if the download fails.
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
                 onStatusChanged?.invoke("Linux RootFS wird heruntergeladen...")
@@ -150,13 +130,7 @@ object SetupWorker {
                     LogCatcher.i("SetupWorker", "Downloading rootfs archive.")
                     Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
                 } catch (e: Exception) {
-                    LogCatcher.e("SetupWorker", "Rootfs download failed, copying fallback backup asset.", e)
-                    onStatusChanged?.invoke("Lokales Backup wird geladen...")
-                    try {
-                        copyAsset(context, "$distroName.tar.gz", rootfsTar)
-                    } catch (assetEx: Exception) {
-                        LogCatcher.e("SetupWorker", "Failed to copy local fallback backup asset", assetEx)
-                    }
+                    LogCatcher.e("SetupWorker", "Rootfs download failed.", e)
                 }
             }
 
@@ -202,10 +176,7 @@ object SetupWorker {
                     tallocFile.copyTo(File(libDir, "libtalloc.so.2"), overwrite = true)
                 } catch (e: Exception) {
                     LogCatcher.e("SetupWorker", "Failed to copy downloaded libtalloc to libDir", e)
-                    copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
                 }
-            } else {
-                copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
             }
 
             val prootSrc = File(filesDir, "proot")

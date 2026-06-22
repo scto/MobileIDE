@@ -71,7 +71,7 @@ class TerminalBackEnd(val terminal: TerminalView, val context: Context) : Termin
                     if (bellFile.exists().not()) {
                         bellFile.createNewFile()
                         withContext(Dispatchers.IO) {
-                            context.assets.open("bell.oga").use { assetIS ->
+                            context.assets.open("terminal/bell.oga").use { assetIS ->
                                 FileOutputStream(bellFile).use { bellFileOutS ->
                                     assetIS.copyTo(bellFileOutS)
                                 }

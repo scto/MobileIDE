@@ -128,8 +128,8 @@ object DistroManager {
 
         val initHostScript = File(binDir, "init-host")
         // Always copy the latest version of init-host.sh so distro changes take effect
-        copyAsset(context, "init-host.sh", initHostScript)
-        copyAsset(context, "init.sh", File(binDir, "init"))
+        copyAsset(context, "terminal/init-host.sh", initHostScript)
+        copyAsset(context, "terminal/init.sh", File(binDir, "init"))
         initHostScript.setExecutable(true)
         File(binDir, "init").setExecutable(true)
         val workspacePath = WorkspaceManager.getWorkspacePath(context)

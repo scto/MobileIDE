@@ -15,7 +15,7 @@ class UpdateManager {
 
         if (initFile.exists().not()){
             initFile.createFileIfNot()
-            initFile.writeText(application!!.assets.open("init-host.sh").bufferedReader().use { it.readText() })
+            initFile.writeText(application!!.assets.open("terminal/init-host.sh").bufferedReader().use { it.readText() })
         }
 
         val initFilex: File = localBinDir().child("init")
@@ -25,7 +25,7 @@ class UpdateManager {
 
         if (initFilex.exists().not()){
             initFilex.createFileIfNot()
-            initFilex.writeText(application!!.assets.open("init.sh").bufferedReader().use { it.readText() })
+            initFilex.writeText(application!!.assets.open("terminal/init.sh").bufferedReader().use { it.readText() })
         }
     }
 }
