@@ -65,7 +65,7 @@ tsBinding = "4.3.2"
 # Required for lsp
 # ReTerminal dependency versions //🔥🔥🔥 Auto-complete configuration naming, specific camelCase rules for ReTerminal
 constraintlayout = "2.2.1"
-navigation = "2.9.7"
+navigation = "2.9.8"
 utilcode = "1.31.1"
 anrwatchdog = "1.4.0"
 palette = "1.0.0"
