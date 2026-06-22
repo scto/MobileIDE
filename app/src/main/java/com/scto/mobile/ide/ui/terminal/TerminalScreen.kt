@@ -173,19 +173,25 @@ fun TerminalScreen(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
+        com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "LaunchedEffect: initializing terminal environment...")
         if (application == null) application = context.applicationContext as Application
         withContext(Dispatchers.IO) {
             SetupWorker.prepareEnvironment(
                 context = context,
-                onStatusChanged = { status -> downloadLabel = status },
+                onStatusChanged = { status ->
+                    downloadLabel = status
+                    com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "prepareEnvironment status: $status")
+                },
                 onProgress = { downloaded, total ->
                     downloadedBytes = downloaded
                     totalBytes = total
                 },
             )
         }
+        com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "prepareEnvironment complete. environment is ready.")
         isEnvironmentReady = true
         if (SessionManager.sessions.isEmpty()) {
+            com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "No active terminal sessions. Adding new session.")
             SessionManager.addNewSession(context)
         }
     }

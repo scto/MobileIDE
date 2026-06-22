@@ -15,6 +15,7 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.scto.mobile.ide.core.utils.LogCatcher
 
 object SetupWorker {
     private fun getDistroName(context: Context): String {
@@ -29,6 +30,7 @@ object SetupWorker {
         onProgress: Downloader.ProgressCallback? = null,
     ) {
         withContext(Dispatchers.IO) {
+            LogCatcher.i("SetupWorker", "reinstallTerminal starting...")
             onStatusChanged?.invoke("Alte Installation wird gelöscht...")
             val list = ArrayList(SessionManager.sessions)
             list.forEach { SessionManager.removeSession(it) }
@@ -69,6 +71,7 @@ object SetupWorker {
         onProgress: Downloader.ProgressCallback? = null,
     ) {
         withContext(Dispatchers.IO) {
+            LogCatcher.i("SetupWorker", "prepareEnvironment starting...")
             onStatusChanged?.invoke("Umgebung wird vorbereitet...")
             val distroName = getDistroName(context)
             val filesDir = context.filesDir
@@ -89,31 +92,34 @@ object SetupWorker {
                 val libProot = File(nativeLibDir, "libproot.so")
                 if (libProot.exists()) {
                     try {
+                        LogCatcher.i("SetupWorker", "Copying native libproot.so to proot destination.")
                         libProot.copyTo(prootDest, overwrite = true)
                         prootDest.setExecutable(true)
                         success = true
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        LogCatcher.e("SetupWorker", "Failed to copy native libproot.so", e)
                     }
                 }
 
                 // Fallback to bundled proot asset
                 if (!success) {
                     try {
+                        LogCatcher.i("SetupWorker", "Copying bundled proot asset.")
                         copyAsset(context, "proot", prootDest)
                         prootDest.setExecutable(true)
                         success = true
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        LogCatcher.e("SetupWorker", "Failed to copy bundled proot asset", e)
                     }
                 }
 
                 // If both fail, try downloading as a last resort
                 if (!success) {
                     try {
+                        LogCatcher.i("SetupWorker", "Downloading proot as fallback.")
                         Downloader.downloadProot(context, onProgress = onProgress)
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        LogCatcher.e("SetupWorker", "Failed to download proot fallback", e)
                     }
                 }
             }
@@ -128,15 +134,15 @@ object SetupWorker {
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
                 onStatusChanged?.invoke("Linux RootFS wird heruntergeladen...")
                 try {
+                    LogCatcher.i("SetupWorker", "Downloading rootfs archive.")
                     Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
                 } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Fallback: copy bundled asset (only ubuntu.tar.gz is bundled)
+                    LogCatcher.e("SetupWorker", "Rootfs download failed, copying fallback backup asset.", e)
                     onStatusChanged?.invoke("Lokales Backup wird geladen...")
                     try {
                         copyAsset(context, "$distroName.tar.gz", rootfsTar)
                     } catch (assetEx: Exception) {
-                        assetEx.printStackTrace()
+                        LogCatcher.e("SetupWorker", "Failed to copy local fallback backup asset", assetEx)
                     }
                 }
             }
@@ -149,19 +155,22 @@ object SetupWorker {
                 )
                 distroDir.mkdirs()
                 try {
+                    LogCatcher.i("SetupWorker", "Extracting tar rootfs: ${rootfsTar.absolutePath} to ${distroDir.absolutePath}")
                     val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
                     val process = Runtime.getRuntime().exec(cmd)
                     val exitVal = process.waitFor()
                     if (exitVal != 0) {
                         val errorMsg = process.errorStream.bufferedReader().use { it.readText() }
-                        android.util.Log.e("SetupWorker", "Tar extraction failed with exit code $exitVal: $errorMsg")
+                        LogCatcher.e("SetupWorker", "Tar extraction failed with exit code $exitVal: $errorMsg")
                         distroDir.deleteRecursively()
                     } else if (!etcDir.exists()) {
-                        android.util.Log.e("SetupWorker", "Tar extraction finished but 'etc' directory does not exist.")
+                        LogCatcher.e("SetupWorker", "Tar extraction finished but 'etc' directory does not exist.")
                         distroDir.deleteRecursively()
+                    } else {
+                        LogCatcher.i("SetupWorker", "Tar extraction finished successfully.")
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    LogCatcher.e("SetupWorker", "Exception during tar extraction", e)
                     distroDir.deleteRecursively()
                 }
             }

@@ -19,6 +19,7 @@ import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import java.io.File
 import java.io.FileOutputStream
+import com.scto.mobile.ide.core.utils.LogCatcher
 
 object DistroManager {
     var currentProject: String? = null
@@ -39,6 +40,7 @@ object DistroManager {
 
     fun buildProotCommand(context: Context, command: Array<String>): List<String> {
         val distroName = getDistroName(context)
+        LogCatcher.i("DistroManager", "buildProotCommand: distro=$distroName, command=${command.joinToString(" ")}")
         val prefixDir = getPrefixDir(context)
         val distroDir = File(prefixDir, "local/$distroName")
 
@@ -118,6 +120,7 @@ object DistroManager {
     }
 
     fun createSession(context: Context, client: TerminalSessionClient, projectPath: String? = null): TerminalSession {
+        LogCatcher.i("DistroManager", "createSession starting (projectPath=$projectPath)")
         val binDir = getBinDir(context)
         val libDir = getLibDir(context)
         val prefixDir = getPrefixDir(context)
@@ -137,7 +140,7 @@ object DistroManager {
             versionName = pInfo.versionName ?: "Unknown"
             versionCode = pInfo.longVersionCode
         } catch (e: Exception) {
-            e.printStackTrace()
+            LogCatcher.e("DistroManager", "Failed to retrieve package manager package info", e)
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
 
@@ -175,6 +178,7 @@ object DistroManager {
 
         val shell = "/system/bin/sh"
         val args = arrayOf("-c", initHostScript.absolutePath)
+        LogCatcher.i("DistroManager", "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}")
 
         return TerminalSession(
             shell,
@@ -192,7 +196,7 @@ object DistroManager {
                 FileOutputStream(destFile).use { output -> input.copyTo(output) }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            LogCatcher.e("DistroManager", "Failed to copy asset $assetName", e)
         }
     }
 }

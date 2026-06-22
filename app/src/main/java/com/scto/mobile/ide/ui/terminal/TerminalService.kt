@@ -12,6 +12,7 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.R
+import com.scto.mobile.ide.core.utils.LogCatcher
 
 class TerminalService : Service() {
 
@@ -28,6 +29,7 @@ class TerminalService : Service() {
             private set
 
         fun startService(context: Context) {
+            LogCatcher.i("TerminalService", "startService requested")
             val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_START }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -37,23 +39,27 @@ class TerminalService : Service() {
         }
 
         fun stopService(context: Context) {
+            LogCatcher.i("TerminalService", "stopService requested")
             val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_STOP }
             context.startService(intent)
         }
     }
 
     override fun onCreate() {
+        LogCatcher.i("TerminalService", "onCreate called")
         super.onCreate()
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
+        LogCatcher.i("TerminalService", "onStartCommand action=$action")
         when (action) {
             ACTION_START -> {
                 showNotification()
             }
             ACTION_STOP -> {
+                LogCatcher.i("TerminalService", "ACTION_STOP action received. Releasing wake lock and clearing sessions.")
                 releaseWakeLock()
                 val list = ArrayList(SessionManager.sessions)
                 list.forEach { SessionManager.removeSession(it) }
@@ -61,6 +67,7 @@ class TerminalService : Service() {
                 stopSelf()
             }
             ACTION_TOGGLE_WAKE_LOCK -> {
+                LogCatcher.i("TerminalService", "ACTION_TOGGLE_WAKE_LOCK action received.")
                 if (isWakeLockAcquired) {
                     releaseWakeLock()
                 } else {
@@ -73,6 +80,7 @@ class TerminalService : Service() {
     }
 
     private fun acquireWakeLock() {
+        LogCatcher.i("TerminalService", "acquireWakeLock: acquiring CPU wake lock...")
         if (wakeLock == null) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::TerminalWakeLock")
@@ -80,14 +88,17 @@ class TerminalService : Service() {
         if (wakeLock?.isHeld == false) {
             wakeLock?.acquire()
             isWakeLockAcquired = true
+            LogCatcher.i("TerminalService", "acquireWakeLock: CPU wake lock successfully acquired.")
         }
     }
 
     private fun releaseWakeLock() {
+        LogCatcher.i("TerminalService", "releaseWakeLock: releasing CPU wake lock...")
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
         isWakeLockAcquired = false
+        LogCatcher.i("TerminalService", "releaseWakeLock: CPU wake lock released.")
     }
 
     private fun showNotification() {
@@ -154,6 +165,7 @@ class TerminalService : Service() {
     }
 
     override fun onDestroy() {
+        LogCatcher.i("TerminalService", "onDestroy called")
         releaseWakeLock()
         super.onDestroy()
     }
