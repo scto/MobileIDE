@@ -32,8 +32,7 @@ object WorkspaceManager {
     private const val KEY_IS_CONFIGURED = "is_workspace_configured"
 
     fun getDefaultPath(context: Context): String {
-        val dir = context.getExternalFilesDir(null)
-        return dir?.absolutePath ?: context.filesDir.absolutePath
+        return "/storage/emulated/0/MobileIDEProjects"
     }
 
     /** Get workspace directory (with automatic error correction) */
