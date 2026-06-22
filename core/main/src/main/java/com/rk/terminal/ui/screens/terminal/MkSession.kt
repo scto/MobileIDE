@@ -49,14 +49,14 @@ object MkSession {
             if (initFile.exists().not()) {
                 initFile.createFileIfNot()
                 // 修复 assets 读取和类型推断问题
-                val scriptContent = assets.open("init-host.sh").bufferedReader().use { it.readText() }
+                val scriptContent = assets.open("terminal/init-host.sh").bufferedReader().use { it.readText() }
                 initFile.writeText(scriptContent)
             }
 
             localBinDir().child("init").apply {
                 if (exists().not()) {
                     createFileIfNot()
-                    val scriptContent = assets.open("init.sh").bufferedReader().use { it.readText() }
+                    val scriptContent = assets.open("terminal/init.sh").bufferedReader().use { it.readText() }
                     writeText(scriptContent)
                 }
             }
