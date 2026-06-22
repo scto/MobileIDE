@@ -177,13 +177,11 @@ fun TerminalScreen(navController: NavController) {
         withContext(Dispatchers.IO) {
             SetupWorker.prepareEnvironment(
                 context = context,
-                onStatusChanged = { status ->
-                    downloadLabel = status
-                },
+                onStatusChanged = { status -> downloadLabel = status },
                 onProgress = { downloaded, total ->
                     downloadedBytes = downloaded
                     totalBytes = total
-                }
+                },
             )
         }
         isEnvironmentReady = true

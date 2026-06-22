@@ -144,7 +144,9 @@ object SetupWorker {
             // 4. Extract rootfs if not already done.
             val etcDir = File(distroDir, "etc")
             if (!etcDir.exists() && rootfsTar.exists() && rootfsTar.length() > 0L) {
-                onStatusChanged?.invoke("Linux RootFS wird entpackt (Bitte warten, dies kann bis zu einer Minute dauern)...")
+                onStatusChanged?.invoke(
+                    "Linux RootFS wird entpackt (Bitte warten, dies kann bis zu einer Minute dauern)..."
+                )
                 distroDir.mkdirs()
                 try {
                     val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
