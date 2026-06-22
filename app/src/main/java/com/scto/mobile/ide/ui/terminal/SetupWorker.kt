@@ -23,8 +23,13 @@ object SetupWorker {
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
     }
 
-    suspend fun reinstallTerminal(context: Context, onProgress: Downloader.ProgressCallback? = null) {
+    suspend fun reinstallTerminal(
+        context: Context,
+        onStatusChanged: ((String) -> Unit)? = null,
+        onProgress: Downloader.ProgressCallback? = null,
+    ) {
         withContext(Dispatchers.IO) {
+            onStatusChanged?.invoke("Alte Installation wird gelöscht...")
             val list = ArrayList(SessionManager.sessions)
             list.forEach { SessionManager.removeSession(it) }
 
@@ -37,7 +42,7 @@ object SetupWorker {
             distroDir.deleteRecursively()
             rootfsTar.delete()
 
-            prepareEnvironment(context, onProgress = onProgress)
+            prepareEnvironment(context, onStatusChanged = onStatusChanged, onProgress = onProgress)
             SessionManager.addNewSession(context)
         }
     }
@@ -58,8 +63,13 @@ object SetupWorker {
      *
      * @param onProgress optional progress callback forwarded to [Downloader].
      */
-    suspend fun prepareEnvironment(context: Context, onProgress: Downloader.ProgressCallback? = null) {
+    suspend fun prepareEnvironment(
+        context: Context,
+        onStatusChanged: ((String) -> Unit)? = null,
+        onProgress: Downloader.ProgressCallback? = null,
+    ) {
         withContext(Dispatchers.IO) {
+            onStatusChanged?.invoke("Umgebung wird vorbereitet...")
             val distroName = getDistroName(context)
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
@@ -71,6 +81,7 @@ object SetupWorker {
             // 1. Setup proot binary (prefer local jniLib libproot.so, fallback to bundled asset, then download)
             val prootDest = File(filesDir, "proot")
             if (!prootDest.exists() || prootDest.length() == 0L) {
+                onStatusChanged?.invoke("PRoot wird eingerichtet...")
                 var success = false
 
                 // Try copying the native libproot.so (which is compiled as PIE, e_type: 3)
@@ -108,17 +119,20 @@ object SetupWorker {
             }
 
             // 2. Always copy libtalloc (bundled, arch-specific via jniLibs).
+            onStatusChanged?.invoke("Bibliotheken werden kopiert...")
             copyAsset(context, "libtalloc.so.2", File(filesDir, "libtalloc.so.2"))
 
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
             //    Falls back to the bundled asset if the download fails.
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
+                onStatusChanged?.invoke("Linux RootFS wird heruntergeladen...")
                 try {
                     Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     // Fallback: copy bundled asset (only ubuntu.tar.gz is bundled)
+                    onStatusChanged?.invoke("Lokales Backup wird geladen...")
                     try {
                         copyAsset(context, "$distroName.tar.gz", rootfsTar)
                     } catch (assetEx: Exception) {
@@ -130,6 +144,7 @@ object SetupWorker {
             // 4. Extract rootfs if not already done.
             val etcDir = File(distroDir, "etc")
             if (!etcDir.exists() && rootfsTar.exists() && rootfsTar.length() > 0L) {
+                onStatusChanged?.invoke("Linux RootFS wird entpackt (Bitte warten, dies kann bis zu einer Minute dauern)...")
                 distroDir.mkdirs()
                 try {
                     val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
@@ -150,6 +165,7 @@ object SetupWorker {
             }
 
             // 5. Place proot + libs in local/bin and local/lib.
+            onStatusChanged?.invoke("Installation wird abgeschlossen...")
             binDir.mkdirs()
             libDir.mkdirs()
 
