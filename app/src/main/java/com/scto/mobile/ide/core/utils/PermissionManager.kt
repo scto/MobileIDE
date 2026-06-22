@@ -288,13 +288,18 @@ object PermissionManager {
 
         return {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                    data = android.net.Uri.parse("package:${context.packageName}")
-                }
+                val intent =
+                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = android.net.Uri.parse("package:${context.packageName}")
+                    }
                 try {
                     launcher.launch(intent)
                 } catch (e: Exception) {
-                    android.util.Log.e("PermissionManager", "Failed to launch ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e)
+                    android.util.Log.e(
+                        "PermissionManager",
+                        "Failed to launch ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+                        e,
+                    )
                 }
             } else {
                 onPermissionResult(true)
