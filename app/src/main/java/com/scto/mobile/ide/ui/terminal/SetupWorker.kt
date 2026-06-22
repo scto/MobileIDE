@@ -124,9 +124,22 @@ object SetupWorker {
                 }
             }
 
-            // 2. Always copy libtalloc (bundled, arch-specific via jniLibs).
+            // 2. Setup libtalloc (prefer downloading from custom repo, fallback to bundled asset).
             onStatusChanged?.invoke("Bibliotheken werden kopiert...")
-            copyAsset(context, "libtalloc.so.2", File(filesDir, "libtalloc.so.2"))
+            val tallocDest = File(filesDir, "libtalloc.so.2")
+            var tallocSuccess = false
+            try {
+                LogCatcher.i("SetupWorker", "Downloading libtalloc via Downloader.")
+                Downloader.downloadTalloc(context, onProgress = onProgress)
+                tallocSuccess = tallocDest.exists() && tallocDest.length() > 0L
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Failed to download libtalloc, falling back to assets", e)
+            }
+
+            if (!tallocSuccess) {
+                LogCatcher.i("SetupWorker", "Copying fallback libtalloc from assets.")
+                copyAsset(context, "libtalloc.so.2", tallocDest)
+            }
 
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
             //    Falls back to the bundled asset if the download fails.
@@ -183,7 +196,17 @@ object SetupWorker {
             binDir.mkdirs()
             libDir.mkdirs()
 
-            copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
+            val tallocFile = File(filesDir, "libtalloc.so.2")
+            if (tallocFile.exists()) {
+                try {
+                    tallocFile.copyTo(File(libDir, "libtalloc.so.2"), overwrite = true)
+                } catch (e: Exception) {
+                    LogCatcher.e("SetupWorker", "Failed to copy downloaded libtalloc to libDir", e)
+                    copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
+                }
+            } else {
+                copyAsset(context, "libtalloc.so.2", File(libDir, "libtalloc.so.2"))
+            }
 
             val prootSrc = File(filesDir, "proot")
             if (prootSrc.exists()) {

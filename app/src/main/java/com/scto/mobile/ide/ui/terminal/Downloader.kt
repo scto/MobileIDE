@@ -12,6 +12,7 @@ package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
 import android.os.Build
+import com.scto.mobile.ide.Constants
 import com.scto.mobile.ide.core.utils.LogCatcher
 import java.io.File
 import java.io.FileOutputStream
@@ -55,42 +56,52 @@ object Downloader {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // RootFS URL table (termux/proot-distro releases)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    private const val PROOT_DISTRO_BASE = "https://github.com/termux/proot-distro/releases/download"
-
-    private data class DistroConfig(val version: String, val filenamePrefix: String)
-
-    private val DISTRO_CONFIGS =
-        mapOf("ubuntu" to DistroConfig("4.18.0", "ubuntu-noble"), "debian" to DistroConfig("4.17.3", "debian-bookworm"))
-
     /**
      * Returns the download URL for the given [distro] and [arch].
-     *
-     * Example: ubuntu → https://.../v4.18.0/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz debian →
-     * https://.../v4.17.3/debian-bookworm-aarch64-pd-v4.17.3.tar.xz
      */
     fun getRootFsUrl(distro: String, arch: Arch): String {
-        val config = DISTRO_CONFIGS[distro.lowercase()] ?: throw IllegalArgumentException("Unsupported distro: $distro")
-        val tag = "v${config.version}"
-        val file = "${config.filenamePrefix}-${arch.prootArch}-pd-v${config.version}.tar.xz"
-        return "$PROOT_DISTRO_BASE/$tag/$file"
+        return when (distro.lowercase()) {
+            "ubuntu" -> {
+                when (arch) {
+                    Arch.ARM64 -> Constants.UBUNTU_ARM64
+                    Arch.ARM32 -> Constants.UBUNTU_ARM
+                    Arch.X86_64 -> Constants.UBUNTU_X64
+                    Arch.X86 -> Constants.UBUNTU_ARM
+                }
+            }
+            "debian" -> {
+                when (arch) {
+                    Arch.ARM64 -> Constants.DEBIAN_ARM64
+                    Arch.ARM32 -> Constants.DEBIAN_ARM
+                    Arch.X86_64 -> Constants.DEBIAN_X64
+                    Arch.X86 -> Constants.DEBIAN_ARM
+                }
+            }
+            else -> throw IllegalArgumentException("Unsupported distro: $distro")
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // proot binary URLs (static builds from termux-packages)
+    // proot binary and talloc URLs
     // ─────────────────────────────────────────────────────────────────────────
-
-    private const val PROOT_RELEASE_BASE = "https://github.com/termux-play-store/termux-packages/releases/download"
-
-    private const val PROOT_TAG = "proot-2025.01.15-r2"
-    private const val PROOT_VERSION = "5.1.107-66"
 
     /** Returns the URL for the proot static binary for [arch]. */
     fun getProotUrl(arch: Arch): String =
-        "$PROOT_RELEASE_BASE/$PROOT_TAG/libproot-loader-${arch.prootArch}-$PROOT_VERSION.so"
+        when (arch) {
+            Arch.ARM64 -> Constants.PROOT_ARM64
+            Arch.ARM32 -> Constants.PROOT_ARM
+            Arch.X86_64 -> Constants.PROOT_X64
+            Arch.X86 -> Constants.PROOT_ARM
+        }
+
+    /** Returns the URL for the libtalloc library for [arch]. */
+    fun getTallocUrl(arch: Arch): String =
+        when (arch) {
+            Arch.ARM64 -> Constants.TALLOC_ARM64
+            Arch.ARM32 -> Constants.TALLOC_ARM
+            Arch.X86_64 -> Constants.TALLOC_X64
+            Arch.X86 -> Constants.TALLOC_ARM
+        }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Progress callback
@@ -218,6 +229,25 @@ object Downloader {
     // ─────────────────────────────────────────────────────────────────────────
     // High-level helpers used by SetupWorker
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Downloads the libtalloc library for the current device architecture into [context]'s files directory.
+     *
+     * The library is cached: if it already exists and [force] is false the download is skipped.
+     */
+    fun downloadTalloc(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
+        val arch = detectArch()
+        val destFile = File(context.filesDir, "libtalloc.so.2")
+        LogCatcher.i("Downloader", "downloadTalloc: arch=$arch, dest=${destFile.absolutePath}, force=$force")
+
+        if (!force && destFile.exists() && destFile.length() > 0L) {
+            LogCatcher.i("Downloader", "downloadTalloc: libtalloc already exists. Skipping.")
+            return
+        }
+
+        val url = getTallocUrl(arch)
+        download(url, destFile, onProgress = onProgress)
+    }
 
     /**
      * Downloads the proot binary for the current device architecture into [context]'s files directory and marks it as
