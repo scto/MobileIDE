@@ -175,10 +175,16 @@ fun TerminalScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         if (application == null) application = context.applicationContext as Application
         withContext(Dispatchers.IO) {
-            SetupWorker.prepareEnvironment(context) { downloaded, total ->
-                downloadedBytes = downloaded
-                totalBytes = total
-            }
+            SetupWorker.prepareEnvironment(
+                context = context,
+                onStatusChanged = { status ->
+                    downloadLabel = status
+                },
+                onProgress = { downloaded, total ->
+                    downloadedBytes = downloaded
+                    totalBytes = total
+                }
+            )
         }
         isEnvironmentReady = true
         if (SessionManager.sessions.isEmpty()) {
