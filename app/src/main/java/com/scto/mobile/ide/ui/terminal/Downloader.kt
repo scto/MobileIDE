@@ -60,19 +60,19 @@ object Downloader {
 
     private const val PROOT_DISTRO_BASE = "https://github.com/termux/proot-distro/releases/download"
 
-    private val DISTRO_VERSIONS = mapOf("ubuntu" to "24.04", "debian" to "12.0")
+    private val DISTRO_VERSIONS = mapOf("ubuntu" to "4.30.1", "debian" to "4.30.1")
 
     /**
      * Returns the download URL for the given [distro] and [arch].
      *
-     * Example: ubuntu → https://.../v24.04/ubuntu-arm64-pd-v24.04.tar.xz debian →
-     * https://.../v12.0/debian-amd64-pd-v12.0.tar.xz
+     * Example: ubuntu → https://.../v4.30.1/ubuntu-aarch64-pd-v4.30.1.tar.xz debian →
+     * https://.../v4.30.1/debian-aarch64-pd-v4.30.1.tar.xz
      */
     fun getRootFsUrl(distro: String, arch: Arch): String {
         val version =
             DISTRO_VERSIONS[distro.lowercase()] ?: throw IllegalArgumentException("Unsupported distro: $distro")
         val tag = "v$version"
-        val file = "${distro.lowercase()}-${arch.debianArch}-pd-v${version}.tar.xz"
+        val file = "${distro.lowercase()}-${arch.prootArch}-pd-v${version}.tar.xz"
         return "$PROOT_DISTRO_BASE/$tag/$file"
     }
 
@@ -253,7 +253,14 @@ object Downloader {
         download(url, tmpFile, onProgress = onProgress)
 
         destFile.delete()
-        tmpFile.renameTo(destFile)
+        if (!tmpFile.renameTo(destFile)) {
+            try {
+                tmpFile.copyTo(destFile, overwrite = true)
+                tmpFile.delete()
+            } catch (copyEx: Exception) {
+                copyEx.printStackTrace()
+            }
+        }
         return destFile
     }
 

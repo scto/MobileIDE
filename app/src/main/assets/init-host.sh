@@ -1,3 +1,5 @@
+set -e
+
 # Read selected distribution from environment (default: ubuntu)
 DISTRO="${MOBILEIDE_DISTRO:-ubuntu}"
 DISTRO_DIR="$PREFIX/local/$DISTRO"
@@ -8,11 +10,15 @@ if [ -z "$(ls -A "$DISTRO_DIR" | grep -vE '^(root|tmp)$')" ]; then
     tar -xf "$PREFIX/files/$DISTRO.tar.gz" -C "$DISTRO_DIR"
 fi
 
-[ ! -e "$PREFIX/local/bin/proot" ] && cp "$PREFIX/files/proot" "$PREFIX/local/bin"
+if [ ! -e "$PREFIX/local/bin/proot" ]; then
+    cp "$PREFIX/files/proot" "$PREFIX/local/bin"
+fi
 
 for sofile in "$PREFIX/files/"*.so.2; do
     dest="$PREFIX/local/lib/$(basename "$sofile")"
-    [ ! -e "$dest" ] && cp "$sofile" "$dest"
+    if [ ! -e "$dest" ]; then
+        cp "$sofile" "$dest"
+    fi
 done
 
 ARGS="--kill-on-exit"
