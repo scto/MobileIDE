@@ -63,20 +63,17 @@ object Downloader {
 
     private data class DistroConfig(val version: String, val filenamePrefix: String)
 
-    private val DISTRO_CONFIGS = mapOf(
-        "ubuntu" to DistroConfig("4.18.0", "ubuntu-noble"),
-        "debian" to DistroConfig("4.17.3", "debian-bookworm")
-    )
+    private val DISTRO_CONFIGS =
+        mapOf("ubuntu" to DistroConfig("4.18.0", "ubuntu-noble"), "debian" to DistroConfig("4.17.3", "debian-bookworm"))
 
     /**
      * Returns the download URL for the given [distro] and [arch].
      *
-     * Example: ubuntu → https://.../v4.18.0/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz
-     * debian → https://.../v4.17.3/debian-bookworm-aarch64-pd-v4.17.3.tar.xz
+     * Example: ubuntu → https://.../v4.18.0/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz debian →
+     * https://.../v4.17.3/debian-bookworm-aarch64-pd-v4.17.3.tar.xz
      */
     fun getRootFsUrl(distro: String, arch: Arch): String {
-        val config = DISTRO_CONFIGS[distro.lowercase()]
-            ?: throw IllegalArgumentException("Unsupported distro: $distro")
+        val config = DISTRO_CONFIGS[distro.lowercase()] ?: throw IllegalArgumentException("Unsupported distro: $distro")
         val tag = "v${config.version}"
         val file = "${config.filenamePrefix}-${arch.prootArch}-pd-v${config.version}.tar.xz"
         return "$PROOT_DISTRO_BASE/$tag/$file"
