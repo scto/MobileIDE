@@ -73,6 +73,12 @@
     <string name="welcome_permission_storage_description">Used to access and save project files</string>
     <string name="welcome_permission_install_title">App Installation</string>
     <string name="welcome_permission_install_description">Install built APK files</string>
+    <string name="welcome_permission_push_notifications_title">Push Notifications</string>
+    <string name="welcome_permission_push_notifications_description">Required to show terminal status and control notification in the background</string>
+    <string name="welcome_permission_read_notifications_title">Read Notifications</string>
+    <string name="welcome_permission_read_notifications_description">Required to read and integrate system notification actions</string>
+    <string name="welcome_permission_battery_optimization_title">Battery Optimization</string>
+    <string name="welcome_permission_battery_optimization_description">Ignore battery optimizations to keep terminal running reliably in the background</string>
     <string name="welcome_appearance_title">Appearance</string>
     <string name="welcome_dynamic_color">Dynamic Color (Monet)</string>
     <string name="welcome_custom_theme">Custom</string>

@@ -34,6 +34,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,6 +69,9 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
 
     var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
     var installGranted by remember { mutableStateOf(PermissionManager.hasInstallPermission(context)) }
+    var postNotificationsGranted by remember { mutableStateOf(PermissionManager.hasPostNotificationsPermission(context)) }
+    var notificationAccessGranted by remember { mutableStateOf(PermissionManager.hasNotificationAccess(context)) }
+    var batteryOptimizationIgnored by remember { mutableStateOf(PermissionManager.isIgnoringBatteryOptimizations(context)) }
 
     var showColorPicker by remember { mutableStateOf(false) }
     var customColor by remember { mutableStateOf(themeState.customColor) }
@@ -153,11 +159,21 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
         )
     val requestInstallPermission =
         PermissionManager.rememberInstallPermissionRequest { granted -> installGranted = granted }
+    val requestPostNotificationsPermission =
+        PermissionManager.rememberPostNotificationsPermissionRequest { granted -> postNotificationsGranted = granted }
+    val requestNotificationAccess =
+        PermissionManager.rememberNotificationAccessRequest { granted -> notificationAccessGranted = granted }
+    val requestBatteryOptimizationIgnore =
+        PermissionManager.rememberIgnoreBatteryOptimizationsRequest { granted -> batteryOptimizationIgnored = granted }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 storageGranted = permissionState.hasPermissions()
                 installGranted = PermissionManager.hasInstallPermission(context)
+                postNotificationsGranted = PermissionManager.hasPostNotificationsPermission(context)
+                notificationAccessGranted = PermissionManager.hasNotificationAccess(context)
+                batteryOptimizationIgnored = PermissionManager.isIgnoringBatteryOptimizations(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -220,8 +236,14 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                             PermissionsContent(
                                 storageGranted = storageGranted,
                                 installGranted = installGranted,
+                                postNotificationsGranted = postNotificationsGranted,
+                                notificationAccessGranted = notificationAccessGranted,
+                                batteryOptimizationIgnored = batteryOptimizationIgnored,
                                 onRequestStoragePermission = { permissionState.requestPermissions() },
                                 onRequestInstallPermission = requestInstallPermission,
+                                onRequestPostNotificationsPermission = requestPostNotificationsPermission,
+                                onRequestNotificationAccess = requestNotificationAccess,
+                                onRequestBatteryOptimizationIgnore = requestBatteryOptimizationIgnore,
                             )
 
                         2 ->
@@ -284,8 +306,14 @@ private fun IntroContent() {
 private fun PermissionsContent(
     storageGranted: Boolean,
     installGranted: Boolean,
+    postNotificationsGranted: Boolean,
+    notificationAccessGranted: Boolean,
+    batteryOptimizationIgnored: Boolean,
     onRequestStoragePermission: () -> Unit,
     onRequestInstallPermission: () -> Unit,
+    onRequestPostNotificationsPermission: () -> Unit,
+    onRequestNotificationAccess: () -> Unit,
+    onRequestBatteryOptimizationIgnore: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
@@ -302,7 +330,7 @@ private fun PermissionsContent(
             color = LocalContentColor.current.copy(alpha = 0.8f),
         )
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
 
         PermissionCard(
             Icons.Default.Folder,
@@ -311,13 +339,37 @@ private fun PermissionsContent(
             storageGranted,
             onRequestStoragePermission,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         PermissionCard(
             Icons.Default.Download,
             stringResource(R.string.welcome_permission_install_title),
             stringResource(R.string.welcome_permission_install_description),
             installGranted,
             onRequestInstallPermission,
+        )
+        Spacer(Modifier.height(8.dp))
+        PermissionCard(
+            Icons.Default.Notifications,
+            stringResource(R.string.welcome_permission_push_notifications_title),
+            stringResource(R.string.welcome_permission_push_notifications_description),
+            postNotificationsGranted,
+            onRequestPostNotificationsPermission,
+        )
+        Spacer(Modifier.height(8.dp))
+        PermissionCard(
+            Icons.Default.Visibility,
+            stringResource(R.string.welcome_permission_read_notifications_title),
+            stringResource(R.string.welcome_permission_read_notifications_description),
+            notificationAccessGranted,
+            onRequestNotificationAccess,
+        )
+        Spacer(Modifier.height(8.dp))
+        PermissionCard(
+            Icons.Default.BatteryAlert,
+            stringResource(R.string.welcome_permission_battery_optimization_title),
+            stringResource(R.string.welcome_permission_battery_optimization_description),
+            batteryOptimizationIgnored,
+            onRequestBatteryOptimizationIgnore,
         )
     }
 }

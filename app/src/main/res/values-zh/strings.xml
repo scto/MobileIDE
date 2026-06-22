@@ -73,6 +73,12 @@
     <string name="welcome_permission_storage_description">用于访问和保存项目文件</string>
     <string name="welcome_permission_install_title">应用安装</string>
     <string name="welcome_permission_install_description">安装已编译的 APK 文件</string>
+    <string name="welcome_permission_push_notifications_title">推送通知</string>
+    <string name="welcome_permission_push_notifications_description">用于在后台显示终端运行状态和通知控制栏</string>
+    <string name="welcome_permission_read_notifications_title">读取通知</string>
+    <string name="welcome_permission_read_notifications_description">允许终端读取系统通知内容</string>
+    <string name="welcome_permission_battery_optimization_title">电池优化 (忽略)</string>
+    <string name="welcome_permission_battery_optimization_description">忽略电池优化以确保终端在后台稳定运行</string>
     <string name="welcome_appearance_title">外观</string>
     <string name="welcome_dynamic_color">动态取色 (Monet)</string>
     <string name="welcome_custom_theme">自定义</string>

@@ -371,6 +371,7 @@ fun SettingsScreen(
                     isReinstalling = isReinstalling,
                     reinstallDownloaded = reinstallDownloadedBytes,
                     reinstallTotal = reinstallTotalBytes,
+                    reinstallStatus = reinstallStatus,
                     onReinstall = {
                         isReinstalling = true
                         reinstallDownloadedBytes = 0L
@@ -1326,6 +1327,7 @@ fun TerminalSettingsItem(
     isReinstalling: Boolean = false,
     reinstallDownloaded: Long = 0L,
     reinstallTotal: Long = -1L,
+    reinstallStatus: String = "",
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
