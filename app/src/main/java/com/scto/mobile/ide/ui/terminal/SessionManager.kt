@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
+import com.scto.mobile.ide.core.utils.LogCatcher
 
 data class SessionWrapper(val session: TerminalSession, val title: String)
 
@@ -77,20 +78,24 @@ object SessionManager {
                 }
             }
 
+        LogCatcher.i("SessionManager", "addNewSession: creating new DistroManager session.")
         val session = DistroManager.createSession(context, client)
         val title = "Term ${sessions.size + 1}"
         sessions.add(SessionWrapper(session, title))
         currentSessionIndex = sessions.lastIndex
+        LogCatcher.i("SessionManager", "addNewSession completed. Title=$title, index=$currentSessionIndex")
         TerminalService.startService(context)
     }
 
     fun removeSession(wrapper: SessionWrapper) {
+        LogCatcher.i("SessionManager", "removeSession wrapper.title=${wrapper.title}")
         wrapper.session.finishIfRunning()
         sessions.remove(wrapper)
         if (currentSessionIndex >= sessions.size) {
             currentSessionIndex = (sessions.size - 1).coerceAtLeast(0)
         }
         if (sessions.isEmpty()) {
+            LogCatcher.i("SessionManager", "All sessions removed. Stopping TerminalService.")
             val ctx = com.scto.mobile.ide.utils.application
             if (ctx != null) {
                 TerminalService.stopService(ctx)
@@ -99,6 +104,7 @@ object SessionManager {
     }
 
     fun switchTo(index: Int) {
+        LogCatcher.i("SessionManager", "switchTo index=$index (currentSessionIndex was $currentSessionIndex)")
         if (index in sessions.indices) {
             currentSessionIndex = index
         }

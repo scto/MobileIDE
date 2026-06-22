@@ -29,32 +29,46 @@ export PS1="\[\e[38;5;46m\]\u\[\033[39m\]@localhost \[\033[39m\]\w \[\033[0m\]\\
 
 # 5. Check and initialize environment (Node.js & LSP)
 if ! command -v node > /dev/null 2>&1 || ! command -v jdtls > /dev/null 2>&1 || ! command -v kotlin-language-server > /dev/null 2>&1; then
-    echo -e "\e[34;1m[*] \e[0mInitializing Environment (Alpine 3.21.0)...\e[0m"
+    if command -v apk > /dev/null 2>&1; then
+        echo -e "\e[34;1m[*] \e[0mInitializing Alpine Environment...\e[0m"
+        apk update
 
-    # Update the repository index
-    apk update
+        if ! command -v node > /dev/null 2>&1; then
+            apk add bash gcompat glib nano nodejs npm
+            echo -e "\e[34;1m[*] \e[0mInstalling JS/TS/HTML/CSS Language Servers...\e[0m"
+            rm -rf /usr/local/lib/node_modules
+            npm install -g typescript typescript-language-server vscode-langservers-extracted
+        fi
 
-    if ! command -v node > /dev/null 2>&1; then
-        # Install basic dependencies
-        apk add bash gcompat glib nano nodejs npm
+        if ! command -v jdtls > /dev/null 2>&1; then
+            echo -e "\e[34;1m[*] \e[0mInstalling Java Language Server (jdtls)..."
+            apk add openjdk17 jdtls
+        fi
 
-        # Install LSP services (WebIDE core function)
-        echo -e "\e[34;1m[*] \e[0mInstalling JS/TS/HTML/CSS Language Servers...\e[0m"
-        rm -rf /usr/local/lib/node_modules
-        npm install -g typescript typescript-language-server vscode-langservers-extracted
+        if ! command -v kotlin-language-server > /dev/null 2>&1; then
+            echo -e "\e[34;1m[*] \e[0mInstalling Kotlin Language Server..."
+            apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server
+        fi
+        echo -e "\e[32;1m[+] \e[0mEnvironment Ready! Please restart the app if LSP doesn't work immediately.\e[0m"
+    elif command -v apt-get > /dev/null 2>&1; then
+        echo -e "\e[34;1m[*] \e[0mInitializing Ubuntu/Debian Environment...\e[0m"
+        apt-get update
+
+        if ! command -v node > /dev/null 2>&1; then
+            apt-get install -y bash nano nodejs npm
+            echo -e "\e[34;1m[*] \e[0mInstalling JS/TS/HTML/CSS Language Servers...\e[0m"
+            rm -rf /usr/local/lib/node_modules
+            npm install -g typescript typescript-language-server vscode-langservers-extracted
+        fi
+
+        if ! command -v jdtls > /dev/null 2>&1; then
+            echo -e "\e[34;1m[*] \e[0mInstalling Java Language Server..."
+            apt-get install -y openjdk-17-jdk || true
+        fi
+        echo -e "\e[32;1m[+] \e[0mEnvironment Ready!\e[0m"
+    else
+        echo -e "\e[33;1m[!] \e[0mNo supported package manager found (apk/apt-get). Skipping environment initialization.\e[0m"
     fi
-
-    if ! command -v jdtls > /dev/null 2>&1; then
-        echo -e "\e[34;1m[*] \e[0mInstalling Java Language Server (jdtls)..."
-        apk add openjdk17 jdtls
-    fi
-
-    if ! command -v kotlin-language-server > /dev/null 2>&1; then
-        echo -e "\e[34;1m[*] \e[0mInstalling Kotlin Language Server..."
-        apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server
-    fi
-
-    echo -e "\e[32;1m[+] \e[0mEnvironment Ready! Please restart the app if LSP doesn't work immediately.\e[0m"
 fi
 
 # 6. Start an interactive Shell
