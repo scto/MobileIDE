@@ -209,4 +209,96 @@ object PermissionManager {
             }
         }
     }
+
+    /** Checks if the app can post notifications (Android 13+). */
+    fun hasPostNotificationsPermission(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    /** Composable helper to remember and trigger push notifications permission request. */
+    @Composable
+    fun rememberPostNotificationsPermissionRequest(onPermissionResult: (Boolean) -> Unit): () -> Unit {
+        val context = LocalContext.current
+        val launcher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
+                onPermissionResult(granted)
+            }
+
+        return {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                onPermissionResult(true)
+            }
+        }
+    }
+
+    /** Checks if notification access listener is enabled. */
+    fun hasNotificationAccess(context: Context): Boolean {
+        return try {
+            val packageNames = androidx.core.app.NotificationManagerCompat.getEnabledListenerPackages(context)
+            packageNames.contains(context.packageName)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /** Composable helper to remember and trigger notification access settings page request. */
+    @Composable
+    fun rememberNotificationAccessRequest(onPermissionResult: (Boolean) -> Unit): () -> Unit {
+        val context = LocalContext.current
+        val launcher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+                onPermissionResult(hasNotificationAccess(context))
+            }
+
+        return {
+            val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+            try {
+                launcher.launch(intent)
+            } catch (e: Exception) {
+                android.util.Log.e("PermissionManager", "Failed to launch ACTION_NOTIFICATION_LISTENER_SETTINGS", e)
+            }
+        }
+    }
+
+    /** Checks if the app is ignoring battery optimizations. */
+    fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        } else {
+            true
+        }
+    }
+
+    /** Composable helper to remember and trigger ignore battery optimizations request. */
+    @Composable
+    fun rememberIgnoreBatteryOptimizationsRequest(onPermissionResult: (Boolean) -> Unit): () -> Unit {
+        val context = LocalContext.current
+        val launcher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+                onPermissionResult(isIgnoringBatteryOptimizations(context))
+            }
+
+        return {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = android.net.Uri.parse("package:${context.packageName}")
+                }
+                try {
+                    launcher.launch(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("PermissionManager", "Failed to launch ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS", e)
+                }
+            } else {
+                onPermissionResult(true)
+            }
+        }
+    }
 }

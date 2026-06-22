@@ -81,6 +81,7 @@ object SessionManager {
         val title = "Term ${sessions.size + 1}"
         sessions.add(SessionWrapper(session, title))
         currentSessionIndex = sessions.lastIndex
+        TerminalService.startService(context)
     }
 
     fun removeSession(wrapper: SessionWrapper) {
@@ -88,6 +89,12 @@ object SessionManager {
         sessions.remove(wrapper)
         if (currentSessionIndex >= sessions.size) {
             currentSessionIndex = (sessions.size - 1).coerceAtLeast(0)
+        }
+        if (sessions.isEmpty()) {
+            val ctx = com.scto.mobile.ide.utils.application
+            if (ctx != null) {
+                TerminalService.stopService(ctx)
+            }
         }
     }
 

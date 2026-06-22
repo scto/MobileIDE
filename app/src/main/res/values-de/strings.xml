@@ -72,6 +72,12 @@
     <string name="welcome_permission_storage_description">Wird verwendet, um auf Projektdateien zuzugreifen und diese zu speichern</string>
     <string name="welcome_permission_install_title">App-Installation</string>
     <string name="welcome_permission_install_description">Installiere erstellte APK-Dateien</string>
+    <string name="welcome_permission_push_notifications_title">Push-Benachrichtigungen</string>
+    <string name="welcome_permission_push_notifications_description">Erforderlich, um den Status des Terminals im Hintergrund anzuzeigen</string>
+    <string name="welcome_permission_read_notifications_title">Benachrichtigungszugriff</string>
+    <string name="welcome_permission_read_notifications_description">Ermöglicht dem Terminal, Benachrichtigungen zu lesen</string>
+    <string name="welcome_permission_battery_optimization_title">Akkunutzung optimieren (Ignorieren)</string>
+    <string name="welcome_permission_battery_optimization_description">Akkuseparatoren deaktivieren, damit das Terminal stabil im Hintergrund läuft</string>
     <string name="welcome_appearance_title">Erscheinungsbild</string>
     <string name="welcome_dynamic_color">Dynamische Farbe (Monet)</string>
     <string name="welcome_custom_theme">Benutzerdefiniert</string>
