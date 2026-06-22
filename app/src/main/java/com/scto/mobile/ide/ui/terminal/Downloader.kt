@@ -56,9 +56,7 @@ object Downloader {
         }
     }
 
-    /**
-     * Returns the download URL for the given [distro] and [arch].
-     */
+    /** Returns the download URL for the given [distro] and [arch]. */
     fun getRootFsUrl(distro: String, arch: Arch): String {
         return when (distro.lowercase()) {
             "ubuntu" -> {
