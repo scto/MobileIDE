@@ -11,11 +11,11 @@
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
+import com.scto.mobile.ide.core.utils.LogCatcher
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.scto.mobile.ide.core.utils.LogCatcher
 
 object SetupWorker {
     private fun getDistroName(context: Context): String {
@@ -155,7 +155,10 @@ object SetupWorker {
                 )
                 distroDir.mkdirs()
                 try {
-                    LogCatcher.i("SetupWorker", "Extracting tar rootfs: ${rootfsTar.absolutePath} to ${distroDir.absolutePath}")
+                    LogCatcher.i(
+                        "SetupWorker",
+                        "Extracting tar rootfs: ${rootfsTar.absolutePath} to ${distroDir.absolutePath}",
+                    )
                     val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
                     val process = Runtime.getRuntime().exec(cmd)
                     val exitVal = process.waitFor()
