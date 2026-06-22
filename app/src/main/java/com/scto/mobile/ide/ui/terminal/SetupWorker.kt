@@ -134,9 +134,18 @@ object SetupWorker {
                 try {
                     val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
                     val process = Runtime.getRuntime().exec(cmd)
-                    process.waitFor()
+                    val exitVal = process.waitFor()
+                    if (exitVal != 0) {
+                        val errorMsg = process.errorStream.bufferedReader().use { it.readText() }
+                        android.util.Log.e("SetupWorker", "Tar extraction failed with exit code $exitVal: $errorMsg")
+                        distroDir.deleteRecursively()
+                    } else if (!etcDir.exists()) {
+                        android.util.Log.e("SetupWorker", "Tar extraction finished but 'etc' directory does not exist.")
+                        distroDir.deleteRecursively()
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    distroDir.deleteRecursively()
                 }
             }
 
@@ -155,7 +164,7 @@ object SetupWorker {
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {
-        if (!destFile.exists() || assetName.contains("so") || assetName == "proot") {
+        if (!destFile.exists() || destFile.length() == 0L || assetName.contains("so") || assetName == "proot") {
             try {
                 context.assets.open(assetName).use { input ->
                     FileOutputStream(destFile).use { output -> input.copyTo(output) }
