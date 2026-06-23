@@ -201,12 +201,11 @@ object DistroManager {
         if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
 
         val shell = "/system/bin/sh"
-        val args =
-            if (initCommand != null) {
-                arrayOf("-c", "${initHostScript.absolutePath} \"$initCommand\"")
-            } else {
-                arrayOf("-c", initHostScript.absolutePath)
-            }
+        val args = if (initCommand != null) {
+            arrayOf(initHostScript.absolutePath, initCommand)
+        } else {
+            arrayOf(initHostScript.absolutePath)
+        }
         LogCatcher.i(
             "DistroManager",
             "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
