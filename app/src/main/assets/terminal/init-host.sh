@@ -90,4 +90,8 @@ if [ ! -s "$DISTRO_DIR/etc/resolv.conf" ]; then
 fi
 
 export LOCAL="$PREFIX/local"
-exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash --rcfile $PREFIX/local/bin/init -i
+if [ $# -gt 0 ]; then
+    exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash -c "source $PREFIX/local/bin/init && $@"
+else
+    exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash --rcfile $PREFIX/local/bin/init -i
+fi

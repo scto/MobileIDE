@@ -119,8 +119,13 @@ object DistroManager {
         return env
     }
 
-    fun createSession(context: Context, client: TerminalSessionClient, projectPath: String? = null): TerminalSession {
-        LogCatcher.i("DistroManager", "createSession starting (projectPath=$projectPath)")
+    fun createSession(
+        context: Context,
+        client: TerminalSessionClient,
+        projectPath: String? = null,
+        initCommand: String? = null
+    ): TerminalSession {
+        LogCatcher.i("DistroManager", "createSession starting (projectPath=$projectPath, initCommand=$initCommand)")
         val binDir = getBinDir(context)
         val libDir = getLibDir(context)
         val prefixDir = getPrefixDir(context)
@@ -196,7 +201,11 @@ object DistroManager {
         if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
 
         val shell = "/system/bin/sh"
-        val args = arrayOf("-c", initHostScript.absolutePath)
+        val args = if (initCommand != null) {
+            arrayOf("-c", "${initHostScript.absolutePath} \"$initCommand\"")
+        } else {
+            arrayOf("-c", initHostScript.absolutePath)
+        }
         LogCatcher.i(
             "DistroManager",
             "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
