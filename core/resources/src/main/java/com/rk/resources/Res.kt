@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 
 typealias drawables = R.drawable
 typealias strings = R.string
+typealias plurals = R.plurals
 
 object Res{
     @JvmField
@@ -19,4 +20,19 @@ inline fun Int.getString():String{
 
 inline fun Int.getDrawable():Drawable?{
     return ContextCompat.getDrawable(Res.application!!,this)
+}
+
+// Schema von getString() übernommen: Kein Context-Parameter, direkter Zugriff auf Res.application
+inline fun Int.getFilledString(vararg args: Any?): String {
+    // Greift nun auf das obige getString() ohne Parameter zu
+    return this.getString().fillPlaceholders(*args)
+}
+
+inline fun String.fillPlaceholders(vararg args: Any?): String {
+    return String.format(this, *args)
+}
+
+// Schema von getString() übernommen: Kein Context-Parameter, direkter Zugriff auf Res.application
+inline fun Int.getQuantityString(quantity: Int, vararg formatArgs: Any?): String {
+    return Res.application!!.resources.getQuantityString(this, quantity, *formatArgs)
 }

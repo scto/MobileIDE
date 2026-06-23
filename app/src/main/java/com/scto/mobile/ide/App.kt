@@ -6,16 +6,21 @@ package com.scto.mobile.ide
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
+
 import com.rk.crashhandler.CrashHandler
 import com.rk.resources.Res
+
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
+
 import java.io.File
 import java.util.concurrent.Executors
+
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+
 import timber.log.Timber
 
 class App : Application() {
