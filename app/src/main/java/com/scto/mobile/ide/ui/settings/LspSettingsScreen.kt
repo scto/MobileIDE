@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,12 +25,7 @@ import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-data class LspItem(
-    val id: String,
-    val name: String,
-    val scriptName: String,
-    var isInstalled: Boolean = false
-)
+data class LspItem(val id: String, val name: String, val scriptName: String, var isInstalled: Boolean = false)
 
 fun getLspBinaryPaths(id: String): List<String> {
     return when (id) {
@@ -66,28 +61,29 @@ fun LspSettingsScreen(navController: NavController) {
             val distroDir = File(prefixDir, "local/$selectedDistro")
 
             val assetsList = context.assets.list("terminal/lsp") ?: emptyArray()
-            val items = assetsList.filter { it.endsWith(".sh") }.map { fileName ->
-                val id = fileName.removeSuffix(".sh")
-                val displayName = when (id) {
-                    "css" -> "CSS"
-                    "html" -> "HTML"
-                    "json" -> "JSON"
-                    "xml" -> "XML"
-                    "eslint" -> "ESLint"
-                    else -> id.replaceFirstChar { it.uppercase() }
-                } + " Language Server"
+            val items =
+                assetsList
+                    .filter { it.endsWith(".sh") }
+                    .map { fileName ->
+                        val id = fileName.removeSuffix(".sh")
+                        val displayName =
+                            when (id) {
+                                "css" -> "CSS"
+                                "html" -> "HTML"
+                                "json" -> "JSON"
+                                "xml" -> "XML"
+                                "eslint" -> "ESLint"
+                                else -> id.replaceFirstChar { it.uppercase() }
+                            } + " Language Server"
 
-                val testPaths = getLspBinaryPaths(id)
-                val isInstalled = testPaths.any { path ->
-                    File(distroDir, path).exists()
-                }
+                        val testPaths = getLspBinaryPaths(id)
+                        val isInstalled = testPaths.any { path -> File(distroDir, path).exists() }
 
-                LspItem(id = id, name = displayName, scriptName = fileName, isInstalled = isInstalled)
-            }.sortedBy { it.name }
+                        LspItem(id = id, name = displayName, scriptName = fileName, isInstalled = isInstalled)
+                    }
+                    .sortedBy { it.name }
 
-            withContext(Dispatchers.Main) {
-                lspItems = items
-            }
+            withContext(Dispatchers.Main) { lspItems = items }
         }
     }
 
@@ -108,27 +104,25 @@ fun LspSettingsScreen(navController: NavController) {
                 val success = process.exitValue() == 0
                 (context as android.app.Activity).runOnUiThread {
                     if (success) {
-                        Toast.makeText(
-                            context,
-                            "$jobName: $actionName erfolgreich!",
-                            Toast.LENGTH_LONG,
-                        ).show()
+                        Toast.makeText(context, "$jobName: $actionName erfolgreich!", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(
-                            context,
-                            "$jobName: $actionName fehlgeschlagen (Exit code ${process.exitValue()})",
-                            Toast.LENGTH_LONG,
-                        ).show()
+                                context,
+                                "$jobName: $actionName fehlgeschlagen (Exit code ${process.exitValue()})",
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     }
                     refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
                     Toast.makeText(
-                        context,
-                        "$jobName: $actionName fehlgeschlagen (${e.localizedMessage ?: "Unbekannter Fehler"})",
-                        Toast.LENGTH_LONG,
-                    ).show()
+                            context,
+                            "$jobName: $actionName fehlgeschlagen (${e.localizedMessage ?: "Unbekannter Fehler"})",
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
                     refreshTrigger++
                 }
             }
@@ -148,57 +142,49 @@ fun LspSettingsScreen(navController: NavController) {
         }
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(innerPadding).fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(lspItems) { item ->
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = item.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 Icon(
-                                    imageVector = if (item.isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                    imageVector =
+                                        if (item.isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
                                     contentDescription = null,
                                     tint = if (item.isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 )
                                 Text(
                                     text = if (item.isInstalled) "Installiert" else "Nicht installiert",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
-                        
+
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (!item.isInstalled) {
                                 Button(
                                     onClick = {
-                                        runLspJob(
-                                            item.name,
-                                            "Installation",
-                                            "bash \$LOCAL/bin/lsp/${item.scriptName}"
-                                        )
+                                        runLspJob(item.name, "Installation", "bash \$LOCAL/bin/lsp/${item.scriptName}")
                                     }
                                 ) {
                                     Text("Installieren")
@@ -209,10 +195,13 @@ fun LspSettingsScreen(navController: NavController) {
                                         runLspJob(
                                             item.name,
                                             "Update",
-                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --update"
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --update",
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                    colors =
+                                        ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.secondary
+                                        ),
                                 ) {
                                     Text("Update")
                                 }
@@ -221,10 +210,11 @@ fun LspSettingsScreen(navController: NavController) {
                                         runLspJob(
                                             item.name,
                                             "Deinstallation",
-                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall"
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall",
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                    colors =
+                                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                                 ) {
                                     Text("Löschen")
                                 }
