@@ -1,12 +1,6 @@
 name: Android Release CI
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths-ignore:
-      - "**/*.md"
   workflow_dispatch:
 
 jobs:
@@ -27,13 +21,6 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           cache: gradle
-          
-      - name: Cache Gradle Build Files
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
           
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
