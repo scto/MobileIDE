@@ -41,11 +41,11 @@ import com.scto.mobile.ide.ui.projects.NewProjectScreen
 import com.scto.mobile.ide.ui.projects.ProjectListScreen
 import com.scto.mobile.ide.ui.projects.WorkspaceSelectionScreen
 import com.scto.mobile.ide.ui.settings.AboutScreen
-import com.scto.mobile.ide.ui.settings.SettingsScreen
-import com.scto.mobile.ide.ui.settings.EditorScreen
-import com.scto.mobile.ide.ui.settings.TerminalSettingsScreen
 import com.scto.mobile.ide.ui.settings.BuildSettingsScreen
+import com.scto.mobile.ide.ui.settings.EditorScreen
 import com.scto.mobile.ide.ui.settings.LspSettingsScreen
+import com.scto.mobile.ide.ui.settings.SettingsScreen
+import com.scto.mobile.ide.ui.settings.TerminalSettingsScreen
 import com.scto.mobile.ide.ui.settings.ThemeSettingsScreen
 import com.scto.mobile.ide.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
@@ -153,16 +153,15 @@ fun MainScreen(
         composable("settings/terminal") { TerminalSettingsScreen(navController = navController) }
         composable("settings/build") { BuildSettingsScreen(navController = navController) }
         composable("settings/lsp") { LspSettingsScreen(navController = navController) }
-        composable("settings/theme") { 
+        composable("settings/theme") {
             ThemeSettingsScreen(
                 navController = navController,
                 currentThemeState = themeState,
                 onThemeChange = { modeIndex, themeIndex, customColor, isMonet, isCustom ->
                     themeViewModel.saveThemeConfig(modeIndex, themeIndex, customColor, isMonet, isCustom)
-                }
+                },
             )
         }
-
 
         composable("welcome") {
             WelcomeScreen(themeViewModel = themeViewModel, onWelcomeFinished = { navController.popBackStack() })

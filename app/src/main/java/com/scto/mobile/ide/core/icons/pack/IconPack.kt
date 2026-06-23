@@ -21,7 +21,6 @@ package com.scto.mobile.ide.core.icons.pack
 import com.scto.mobile.ide.files.FileObject
 import com.scto.mobile.ide.files.FileType
 import com.scto.mobile.ide.files.FileTypeManager
-
 import java.io.File
 
 typealias IconPackId = String

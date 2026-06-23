@@ -18,11 +18,11 @@
 
 package com.scto.mobile.ide.files
 
-import com.scto.mobile.ide.core.icons.Icon
-import com.scto.mobile.ide.core.icons.pack.currentIconPack
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
+import com.scto.mobile.ide.core.icons.Icon
+import com.scto.mobile.ide.core.icons.pack.currentIconPack
 
 private val java = drawables.baseline_android_24
 private val html = drawables.baseline_android_24
@@ -71,7 +71,6 @@ private val cmake = drawables.baseline_android_24
 private val powershell = drawables.baseline_android_24
 private val r = drawables.baseline_android_24
 private val nix = drawables.baseline_android_24
-
 
 // TODO: Add icon for FileType.EXECUTABLE
 // TODO: Add icon for FileType.PASCAL
@@ -397,12 +396,7 @@ enum class BuiltinFileType(
         title = "R",
         markdownNames = listOf("r"),
     ),
-    NIX(
-        extensions = listOf("nix"),
-        textmateScope = "source.nix",
-        icon = Icon.ResourceIcon(nix),
-        title = "Nix"
-    ),
+    NIX(extensions = listOf("nix"), textmateScope = "source.nix", icon = Icon.ResourceIcon(nix), title = "Nix"),
 
     // Data Files
     SQL(

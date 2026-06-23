@@ -39,55 +39,37 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.core.net.toUri
-
 import com.blankj.utilcode.util.ThreadUtils
-
 import com.caverock.androidsvg.SVG
-
-import com.scto.mobile.ide.files.BuiltinFileType
-import com.scto.mobile.ide.files.FileObject
 import com.rk.resources.getQuantityString
 import com.rk.resources.getString
 import com.rk.resources.plurals
 import com.rk.resources.strings
 import com.rk.settings.Settings
+import com.scto.mobile.ide.files.BuiltinFileType
+import com.scto.mobile.ide.files.FileObject
 import com.scto.mobile.ide.utils.application
-
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
-
 import java.io.File
 import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.text.NumberFormat
 import java.util.Locale
-
 import kotlin.math.roundToInt
-
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -301,7 +283,6 @@ fun Spanned.toAnnotatedString(): AnnotatedString {
     }
     return builder.toAnnotatedString()
 }
-
 
 suspend fun findGitRoot(path: String): String? =
     withContext(Dispatchers.IO) {

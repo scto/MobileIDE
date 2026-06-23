@@ -17,13 +17,10 @@ import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(
-    navController: NavController,
-    editorViewModel: EditorViewModel? = null
-) {
+fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel? = null) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
-    
+
     var fontSize by remember { mutableFloatStateOf(prefs.getFloat("editor_font_size", 14f)) }
     var tabWidth by remember { mutableIntStateOf(prefs.getInt("editor_tab_width", 4)) }
     var wordWrap by remember { mutableStateOf(prefs.getBoolean("editor_word_wrap", false)) }
@@ -34,11 +31,27 @@ fun EditorScreen(
     var lspEnabled by remember { mutableStateOf(prefs.getBoolean("editor_lsp_enabled", false)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var fontPath by remember { mutableStateOf(prefs.getString("editor_font_path", "") ?: "") }
-    var customSymbols by remember { mutableStateOf(prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: "") }
+    var customSymbols by remember {
+        mutableStateOf(
+            prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
+        )
+    }
 
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
 
-    LaunchedEffect(fontSize, tabWidth, wordWrap, showInvisibles, codeFolding, showToolbar, showHistory, lspEnabled, aiEnabled, fontPath, customSymbols) {
+    LaunchedEffect(
+        fontSize,
+        tabWidth,
+        wordWrap,
+        showInvisibles,
+        codeFolding,
+        showToolbar,
+        showHistory,
+        lspEnabled,
+        aiEnabled,
+        fontPath,
+        customSymbols,
+    ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)
             putInt("editor_tab_width", tabWidth)
@@ -66,7 +79,7 @@ fun EditorScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -93,7 +106,7 @@ fun EditorScreen(
                 fontPath = fontPath,
                 onFontPathChange = { fontPath = it },
                 customSymbols = customSymbols,
-                onCustomSymbolsChange = { customSymbols = it }
+                onCustomSymbolsChange = { customSymbols = it },
             )
         }
     }

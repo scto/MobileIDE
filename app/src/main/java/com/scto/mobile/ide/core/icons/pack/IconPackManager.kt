@@ -22,21 +22,17 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.pm.PackageInfoCompat
-
-import com.scto.mobile.ide.MainActivity
-import com.scto.mobile.ide.files.child
-import com.scto.mobile.ide.files.createDirIfNot
-import com.scto.mobile.ide.files.localDir
-import com.rk.resources.getFilledString
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.core.utils.dialogRes
-
+import com.scto.mobile.ide.files.child
+import com.scto.mobile.ide.files.createDirIfNot
+import com.scto.mobile.ide.files.localDir
+import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.zip.ZipFile
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -54,44 +50,50 @@ fun JSONObject.toMap(): Map<String, String> {
 fun parseIconPackManifest(jsonStr: String): IconPackManifest {
     val obj = JSONObject(jsonStr)
     val iconsObj = obj.getJSONObject("icons")
-    
-    val folderNames = if (iconsObj.has("folderNames")) {
-        iconsObj.getJSONObject("folderNames").toMap()
-    } else emptyMap()
-    
-    val folderNamesExpanded = if (iconsObj.has("folderNamesExpanded")) {
-        iconsObj.getJSONObject("folderNamesExpanded").toMap()
-    } else emptyMap()
-    
-    val fileNames = if (iconsObj.has("fileNames")) {
-        iconsObj.getJSONObject("fileNames").toMap()
-    } else emptyMap()
-    
-    val fileExtensions = if (iconsObj.has("fileExtensions")) {
-        iconsObj.getJSONObject("fileExtensions").toMap()
-    } else emptyMap()
-    
-    val languageNames = if (iconsObj.has("languageNames")) {
-        iconsObj.getJSONObject("languageNames").toMap()
-    } else emptyMap()
 
-    val iconsList = IconPackList(
-        defaultFile = iconsObj.getString("defaultFile"),
-        defaultFolder = iconsObj.getString("defaultFolder"),
-        defaultFolderExpanded = iconsObj.getString("defaultFolderExpanded"),
-        folderNames = folderNames,
-        folderNamesExpanded = folderNamesExpanded,
-        fileNames = fileNames,
-        fileExtensions = fileExtensions,
-        languageNames = languageNames
-    )
-    
+    val folderNames =
+        if (iconsObj.has("folderNames")) {
+            iconsObj.getJSONObject("folderNames").toMap()
+        } else emptyMap()
+
+    val folderNamesExpanded =
+        if (iconsObj.has("folderNamesExpanded")) {
+            iconsObj.getJSONObject("folderNamesExpanded").toMap()
+        } else emptyMap()
+
+    val fileNames =
+        if (iconsObj.has("fileNames")) {
+            iconsObj.getJSONObject("fileNames").toMap()
+        } else emptyMap()
+
+    val fileExtensions =
+        if (iconsObj.has("fileExtensions")) {
+            iconsObj.getJSONObject("fileExtensions").toMap()
+        } else emptyMap()
+
+    val languageNames =
+        if (iconsObj.has("languageNames")) {
+            iconsObj.getJSONObject("languageNames").toMap()
+        } else emptyMap()
+
+    val iconsList =
+        IconPackList(
+            defaultFile = iconsObj.getString("defaultFile"),
+            defaultFolder = iconsObj.getString("defaultFolder"),
+            defaultFolderExpanded = iconsObj.getString("defaultFolderExpanded"),
+            folderNames = folderNames,
+            folderNamesExpanded = folderNamesExpanded,
+            fileNames = fileNames,
+            fileExtensions = fileExtensions,
+            languageNames = languageNames,
+        )
+
     return IconPackManifest(
         id = obj.getString("id"),
         name = obj.getString("name"),
         minAppVersion = if (obj.has("minAppVersion")) obj.getInt("minAppVersion") else null,
         applyTint = if (obj.has("applyTint")) obj.getBoolean("applyTint") else false,
-        icons = iconsList
+        icons = iconsList,
     )
 }
 

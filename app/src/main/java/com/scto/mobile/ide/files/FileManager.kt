@@ -29,15 +29,13 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.CoroutineScope
-
 import com.rk.resources.getString
-import com.scto.mobile.ide.utils.application
 import com.scto.mobile.ide.core.utils.toast
+import com.scto.mobile.ide.utils.application
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 var to_save_file: FileObject? = null
 
@@ -256,9 +254,7 @@ class FileManager(private val activity: ComponentActivity) {
 
     private fun copyUriData(contentResolver: ContentResolver, sourceUri: Uri, destinationUri: Uri) {
         contentResolver.openInputStream(sourceUri)?.use { inputStream ->
-            contentResolver.openOutputStream(destinationUri)?.use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
+            contentResolver.openOutputStream(destinationUri)?.use { outputStream -> inputStream.copyTo(outputStream) }
         } ?: throw RuntimeException("Failed to copy data from $sourceUri to $destinationUri")
     }
 }

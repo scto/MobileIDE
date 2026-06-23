@@ -22,8 +22,8 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.content.res.ResourcesCompat
-import com.scto.mobile.ide.utils.application
 import com.scto.mobile.ide.core.utils.loadSvg
+import com.scto.mobile.ide.utils.application
 import java.io.File
 
 sealed class Icon {
