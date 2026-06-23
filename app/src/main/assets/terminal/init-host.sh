@@ -91,7 +91,7 @@ fi
 
 export LOCAL="$PREFIX/local"
 if [ $# -gt 0 ]; then
-    exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash -c "source $PREFIX/local/bin/init && $1"
+    exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash -c "source $PREFIX/local/bin/init && eval \$1" -- "$1"
 else
     exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash --rcfile $PREFIX/local/bin/init -i
 fi
