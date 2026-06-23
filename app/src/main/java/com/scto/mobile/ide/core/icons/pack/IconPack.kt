@@ -23,13 +23,11 @@ import com.scto.mobile.ide.files.FileType
 import com.scto.mobile.ide.files.FileTypeManager
 
 import java.io.File
-import kotlinx.serialization.Serializable
 
 typealias IconPackId = String
 
 typealias IconPackPath = String
 
-@Serializable
 data class IconPackManifest(
     val id: IconPackId,
     val name: String,
@@ -38,7 +36,6 @@ data class IconPackManifest(
     val icons: IconPackList,
 )
 
-@Serializable
 data class IconPackList(
     val defaultFile: IconPackPath,
     val defaultFolder: IconPackPath,

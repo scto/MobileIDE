@@ -1,4 +1,4 @@
-pac/*
+/*
  * MobileIDE - A powerful IDE for Android app development.
  * Copyright (C) 2025  scto  <tschmid35@gmail.com>
  *
@@ -18,60 +18,60 @@ pac/*
 
 package com.scto.mobile.ide.files
 
-import com.rk.extension.XedExtensionPoint
-import com.rk.icons.Icon
-import com.rk.icons.pack.currentIconPack
+import com.scto.mobile.ide.core.icons.Icon
+import com.scto.mobile.ide.core.icons.pack.currentIconPack
 import com.rk.resources.drawables
 import com.rk.resources.getString
 import com.rk.resources.strings
 
-private val java = drawables.java
-private val html = drawables.html
-private val kotlin = drawables.kotlin
-private val python = drawables.python
-private val xml = drawables.xml
-private val js = drawables.javascript
-private val ts = drawables.typescript
-private val lua = drawables.lua
-private val extension = drawables.extension
-private val prop = drawables.settings
-private val c = drawables.c
-private val cpp = drawables.cpp
-private val json = drawables.json
-private val css = drawables.css
-private val csharp = drawables.csharp
-private val shell = drawables.bash
-private val apk = drawables.apk_document
-private val archive = drawables.archive
-private val text = drawables.text
-private val video = drawables.video
-private val audio = drawables.music
-private val image = drawables.image
-private val react = drawables.react
-private val rust = drawables.rust
-private val markdown = drawables.markdown
-private val php = drawables.php
-private val go = drawables.golang
-private val lisp = drawables.lisp
-private val sql = drawables.sql
-private val groovy = drawables.apachegroovy
-private val dart = drawables.dart
-private val gradle = drawables.gradle
-private val latex = drawables.latex
-private val less = drawables.less
-private val nim = drawables.nim
-private val ruby = drawables.ruby
-private val sass = drawables.sass
-private val swift = drawables.swift
-private val toml = drawables.toml
-private val yaml = drawables.yaml
-private val zig = drawables.zig
-private val git = drawables.git
-private val diff = drawables.diff
-private val cmake = drawables.cmake
-private val powershell = drawables.powershell
-private val r = drawables.r
-private val nix = drawables.nix
+private val java = drawables.baseline_android_24
+private val html = drawables.baseline_android_24
+private val kotlin = drawables.baseline_android_24
+private val python = drawables.baseline_android_24
+private val xml = drawables.baseline_android_24
+private val js = drawables.baseline_android_24
+private val ts = drawables.baseline_android_24
+private val lua = drawables.baseline_android_24
+private val extension = drawables.baseline_android_24
+private val prop = drawables.baseline_android_24
+private val c = drawables.baseline_android_24
+private val cpp = drawables.baseline_android_24
+private val json = drawables.baseline_android_24
+private val css = drawables.baseline_android_24
+private val csharp = drawables.baseline_android_24
+private val shell = drawables.terminal
+private val apk = drawables.baseline_android_24
+private val archive = drawables.baseline_android_24
+private val text = drawables.baseline_android_24
+private val video = drawables.baseline_android_24
+private val audio = drawables.baseline_android_24
+private val image = drawables.baseline_android_24
+private val react = drawables.baseline_android_24
+private val rust = drawables.baseline_android_24
+private val markdown = drawables.baseline_android_24
+private val php = drawables.baseline_android_24
+private val go = drawables.baseline_android_24
+private val lisp = drawables.baseline_android_24
+private val sql = drawables.baseline_android_24
+private val groovy = drawables.baseline_android_24
+private val dart = drawables.baseline_android_24
+private val gradle = drawables.baseline_android_24
+private val latex = drawables.baseline_android_24
+private val less = drawables.baseline_android_24
+private val nim = drawables.baseline_android_24
+private val ruby = drawables.baseline_android_24
+private val sass = drawables.baseline_android_24
+private val swift = drawables.baseline_android_24
+private val toml = drawables.baseline_android_24
+private val yaml = drawables.baseline_android_24
+private val zig = drawables.baseline_android_24
+private val git = drawables.baseline_android_24
+private val diff = drawables.baseline_android_24
+private val cmake = drawables.baseline_android_24
+private val powershell = drawables.baseline_android_24
+private val r = drawables.baseline_android_24
+private val nix = drawables.baseline_android_24
+
 
 // TODO: Add icon for FileType.EXECUTABLE
 // TODO: Add icon for FileType.PASCAL
@@ -126,7 +126,7 @@ interface FileType {
      */
     fun getResolvedIcon(): Icon {
         val iconPackFile = currentIconPack.value?.getIconFileForFileType(this)
-        return iconPackFile?.let { Icon.SvgIcon(it) } ?: icon ?: Icon.ResourceIcon(drawables.file)
+        return iconPackFile?.let { Icon.SvgIcon(it) } ?: icon ?: Icon.ResourceIcon(drawables.baseline_android_24)
     }
 }
 
@@ -141,7 +141,6 @@ object FileTypeManager {
     private val dynamicRegistry = mutableListOf<FileType>()
 
     /** Register a new file type dynamically. */
-    @XedExtensionPoint
     fun register(fileType: FileType) {
         if (!dynamicRegistry.contains(fileType)) {
             dynamicRegistry.add(fileType)
@@ -149,7 +148,6 @@ object FileTypeManager {
     }
 
     /** Unregister a file type. */
-    @XedExtensionPoint
     fun unregister(fileType: FileType) {
         dynamicRegistry.remove(fileType)
     }

@@ -61,22 +61,14 @@ import com.blankj.utilcode.util.ThreadUtils
 
 import com.caverock.androidsvg.SVG
 
-import com.rk.activities.main.gitViewModel
-import com.rk.file.BuiltinFileType
-import com.rk.file.FileObject
-import com.rk.filetree.FileTreeViewModel
-import com.rk.git.ChangeType
+import com.scto.mobile.ide.files.BuiltinFileType
+import com.scto.mobile.ide.files.FileObject
 import com.rk.resources.getQuantityString
 import com.rk.resources.getString
 import com.rk.resources.plurals
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.settings.app.InbuiltFeatures
-import com.rk.theme.currentTheme
-import com.rk.theme.gitAdded
-import com.rk.theme.gitConflicted
-import com.rk.theme.gitDeleted
-import com.rk.theme.gitModified
+import com.scto.mobile.ide.utils.application
 
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 
@@ -131,7 +123,7 @@ fun toast(message: String?) {
 
 /** Returns true if the currently selected user theme is dark. If it's set to system, the system theme is used. */
 fun isDarkTheme(ctx: Context): Boolean {
-    return when (Settings.theme_mode) {
+    return when (Settings.default_night_mode) {
         AppCompatDelegate.MODE_NIGHT_YES -> true
         AppCompatDelegate.MODE_NIGHT_NO -> false
         else -> isSystemInDarkTheme(ctx)
@@ -310,106 +302,6 @@ fun Spanned.toAnnotatedString(): AnnotatedString {
     return builder.toAnnotatedString()
 }
 
-// Helper function copied from
-// https://github.com/MohamedRejeb/compose-dnd/blob/65d48ed0f0bd83a0b01263b7e046864bdd4a9048/sample/common/src/commonMain/kotlin/utils/ScrollUtils.kt
-suspend fun handleLazyListScroll(lazyListState: LazyListState, dropIndex: Int): Unit = coroutineScope {
-    val firstVisibleItemIndex = lazyListState.firstVisibleItemIndex
-    val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffset
-
-    // Workaround to fix scroll issue when dragging the first item
-    if (dropIndex == 0 || dropIndex == 1) {
-        launch { lazyListState.scrollToItem(firstVisibleItemIndex, firstVisibleItemScrollOffset) }
-    }
-
-    // Animate scroll when entering the first or last item
-    val lastVisibleItemIndex = lazyListState.firstVisibleItemIndex + lazyListState.layoutInfo.visibleItemsInfo.lastIndex
-
-    val firstVisibleItem = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull() ?: return@coroutineScope
-    val scrollAmount = firstVisibleItem.size * 2f
-
-    if (dropIndex <= firstVisibleItemIndex + 1) {
-        launch { lazyListState.animateScrollBy(-scrollAmount) }
-    } else if (dropIndex == lastVisibleItemIndex) {
-        launch { lazyListState.animateScrollBy(scrollAmount) }
-    }
-}
-
-@Composable
-fun getUnderlineColor(context: Context, fileTreeViewModel: FileTreeViewModel, file: FileObject?): Color? {
-    val diagnosticSeverity = file?.let { fileTreeViewModel.getNodeSeverity(it) } ?: -1
-    val editorColors =
-        if (isDarkTheme(context)) {
-            currentTheme.value?.darkEditorColors
-        } else {
-            currentTheme.value?.lightEditorColors
-        }
-    val underlineColor =
-        when (diagnosticSeverity) {
-            1 -> {
-                editorColors?.find { it.key == EditorColorScheme.PROBLEM_TYPO }?.color?.let { Color(it) }
-                    ?: Color(0x6600ff11) // Color was taken from EditorColorScheme.java
-            }
-            2 -> {
-                editorColors?.find { it.key == EditorColorScheme.PROBLEM_WARNING }?.color?.let { Color(it) }
-                    ?: Color(0xaafff100) // Color was taken from EditorColorScheme.java
-            }
-            3 -> {
-                editorColors?.find { it.key == EditorColorScheme.PROBLEM_ERROR }?.color?.let { Color(it) }
-                    ?: MaterialTheme.colorScheme.error
-            }
-            else -> null
-        }
-
-    return underlineColor
-}
-
-fun Modifier.drawErrorUnderline(errorColor: Color): Modifier = drawBehind {
-    val strokeWidth = 3f
-    val waveOffset = 5f
-    val waveHeight = 6f
-    val waveLength = 20f
-
-    val path = Path()
-    var x = 0f
-    val y = size.height + waveOffset - strokeWidth
-    var up = true
-
-    path.moveTo(0f, y)
-
-    while (x < size.width) {
-        val remaining = size.width - x
-        val segment = minOf(waveLength / 2, remaining)
-
-        val controlX = x + segment / 2
-        val endX = x + segment
-
-        val controlY = if (up) y - waveHeight else y + waveHeight
-
-        path.quadraticTo(controlX, controlY, endX, y)
-
-        up = !up
-        x = endX
-    }
-
-    drawPath(path = path, color = errorColor, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
-}
-
-@Composable
-fun getGitColor(file: FileObject?): Color? {
-    if (!InbuiltFeatures.git.state.value || !Settings.git_colorize_names) return null
-    val gitChangeType = file?.let { gitViewModel.get()?.getChangeType(file.getAbsolutePath()) } ?: return null
-    return getGitColor(gitChangeType)
-}
-
-@Composable
-fun getGitColor(changeType: ChangeType): Color =
-    when (changeType) {
-        ChangeType.ADDED,
-        ChangeType.UNTRACKED -> MaterialTheme.colorScheme.gitAdded
-        ChangeType.DELETED -> MaterialTheme.colorScheme.gitDeleted
-        ChangeType.CONFLICTING -> MaterialTheme.colorScheme.gitConflicted
-        ChangeType.MODIFIED -> MaterialTheme.colorScheme.gitModified
-    }
 
 suspend fun findGitRoot(path: String): String? =
     withContext(Dispatchers.IO) {

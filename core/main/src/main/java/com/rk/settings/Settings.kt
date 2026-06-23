@@ -89,8 +89,25 @@ object Settings {
         get() = Preference.getBoolean(key = "force_soft_keyboard", default = true)
         set(value) = Preference.setBoolean(key = "force_soft_keyboard",value)
 
+    var verbose_error
+        get() = Preference.getBoolean(key = "verbose_error", default = false)
+        set(value) = Preference.setBoolean(key = "verbose_error", value)
 
+    var sandbox
+        get() = Preference.getBoolean(key = "sandbox", default = true)
+        set(value) = Preference.setBoolean(key = "sandbox", value)
 
+    var git_colorize_names
+        get() = Preference.getBoolean(key = "git_colorize_names", default = true)
+        set(value) = Preference.setBoolean(key = "git_colorize_names", value)
+
+    var icon_pack
+        get() = Preference.getString(key = "icon_pack", default = "default")
+        set(value) = Preference.setString(key = "icon_pack", value)
+
+    var terminal_virus_notice
+        get() = Preference.getBoolean(key = "terminal_virus_notice", default = false)
+        set(value) = Preference.setBoolean(key = "terminal_virus_notice", value)
 }
 
 object Preference {

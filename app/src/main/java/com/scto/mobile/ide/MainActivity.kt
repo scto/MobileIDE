@@ -47,8 +47,20 @@ import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
+    val fileManager = com.scto.mobile.ide.files.FileManager(this)
+
+    companion object {
+        private var activityRef = java.lang.ref.WeakReference<MainActivity?>(null)
+        var instance: MainActivity?
+            get() = activityRef.get()
+            private set(value) {
+                activityRef = java.lang.ref.WeakReference(value)
+            }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        instance = this
         getExternalFilesDir("logs")
 
         enableEdgeToEdge(

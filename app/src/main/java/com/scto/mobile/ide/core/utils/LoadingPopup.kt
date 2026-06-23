@@ -40,7 +40,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.rk.theme.XedTheme
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -73,7 +72,7 @@ class LoadingPopup(private val activity: AppCompatActivity?, hideAfterMillis: Lo
         }
         return ComposeView(activity).apply {
             setContent {
-                XedTheme {
+                MaterialTheme {
                     Surface {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(modifier = Modifier.size(48.dp).padding(8.dp))

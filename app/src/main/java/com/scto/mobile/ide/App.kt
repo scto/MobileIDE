@@ -23,9 +23,13 @@ import kotlinx.coroutines.launch
 
 import timber.log.Timber
 
+import com.scto.mobile.ide.core.icons.pack.IconPackManager
+
 class App : Application() {
     @OptIn(DelicateCoroutinesApi::class)
     companion object {
+        lateinit var iconPackManager: IconPackManager
+
         fun getTempDir(): File {
             val tmp = File(application!!.filesDir.parentFile, "tmp")
             if (!tmp.exists()) {
@@ -40,6 +44,7 @@ class App : Application() {
         super.onCreate()
         application = this
         Res.application = this
+        iconPackManager = IconPackManager(this)
 
         Timber.plant(
             object : Timber.DebugTree() {

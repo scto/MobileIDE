@@ -318,6 +318,8 @@ dependencies {
 
     // Add terminal dependencies
     implementation(project(":core:main"))
+    implementation(libs.semver)
+    implementation(libs.androidsvg)
 
     // LSP support
     implementation(project(":editor-lsp"))
