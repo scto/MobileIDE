@@ -40,14 +40,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
-import com.scto.mobile.ide.MainActivity
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.scto.mobile.ide.R.string as appStrings
 import com.rk.settings.Settings
+import com.scto.mobile.ide.MainActivity
 
 fun errorDialog(activity: Activity? = MainActivity.instance, title: String = strings.error.getString(), msg: String) {
     Log.e("ERROR_DIALOG", msg)

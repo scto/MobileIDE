@@ -20,7 +20,6 @@ package com.scto.mobile.ide.files
 
 import android.content.Context
 import android.content.Intent
-import com.scto.mobile.ide.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

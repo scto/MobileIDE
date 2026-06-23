@@ -33,9 +33,9 @@ import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
 import com.scto.mobile.ide.core.utils.dialogRes
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
 
 object FilePermission {
     private const val REQUEST_CODE_STORAGE_PERMISSIONS = 1259

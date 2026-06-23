@@ -20,7 +20,7 @@ import com.scto.mobile.ide.ui.welcome.themeColors
 fun ThemeSettingsScreen(
     navController: NavController,
     currentThemeState: ThemeState,
-    onThemeChange: (modeIndex: Int, themeIndex: Int, customColor: Color, isMonet: Boolean, isCustom: Boolean) -> Unit
+    onThemeChange: (modeIndex: Int, themeIndex: Int, customColor: Color, isMonet: Boolean, isCustom: Boolean) -> Unit,
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
 
@@ -32,7 +32,7 @@ fun ThemeSettingsScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -40,7 +40,7 @@ fun ThemeSettingsScreen(
             ThemeSettingsItem(
                 currentThemeState = currentThemeState,
                 onThemeChange = onThemeChange,
-                onCustomColorClick = { showColorPicker = true }
+                onCustomColorClick = { showColorPicker = true },
             )
         }
     }
@@ -52,7 +52,7 @@ fun ThemeSettingsScreen(
             onColorSelected = { color ->
                 onThemeChange(currentThemeState.selectedModeIndex, themeColors.size, color, false, true)
                 showColorPicker = false
-            }
+            },
         )
     }
 }

@@ -23,7 +23,9 @@ import kotlinx.coroutines.withContext
 fun BuildSettingsScreen(navController: NavController) {
     val context = LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
-    val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE) }
+    val generalPrefs = remember {
+        context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE)
+    }
     val selectedDistro = generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu"
 
     var isJdk17Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -44,18 +46,33 @@ fun BuildSettingsScreen(navController: NavController) {
             val distroDir = File(prefixDir, "local/$selectedDistro")
             fun getDistroFile(path: String) = File(distroDir, path)
 
-            isJdk17Installed = getDistroFile("usr/lib/jvm/java-17-openjdk/bin/java").exists() || getDistroFile("usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
-            isJdk21Installed = getDistroFile("usr/lib/jvm/java-21-openjdk/bin/java").exists() || getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
+            isJdk17Installed =
+                getDistroFile("usr/lib/jvm/java-17-openjdk/bin/java").exists() ||
+                    getDistroFile("usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
+            isJdk21Installed =
+                getDistroFile("usr/lib/jvm/java-21-openjdk/bin/java").exists() ||
+                    getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
             isGradleInstalled = getDistroFile("usr/bin/gradle").exists()
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
             val distroSdk = getDistroFile("root/android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
-            isBuildTools35Installed = File(hostSdk, "build-tools/35.0.0").exists() || getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
-            isBuildTools36Installed = File(hostSdk, "build-tools/36.0.0").exists() || getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
-            isPlatform34Installed = File(hostSdk, "platforms/android-34").exists() || getDistroFile("root/android-sdk/platforms/android-34").exists()
-            isPlatform35Installed = File(hostSdk, "platforms/android-35").exists() || getDistroFile("root/android-sdk/platforms/android-35").exists()
+            isBuildTools35Installed =
+                File(hostSdk, "build-tools/35.0.0").exists() ||
+                    getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
+            isBuildTools36Installed =
+                File(hostSdk, "build-tools/36.0.0").exists() ||
+                    getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
+            isPlatform34Installed =
+                File(hostSdk, "platforms/android-34").exists() ||
+                    getDistroFile("root/android-sdk/platforms/android-34").exists()
+            isPlatform35Installed =
+                File(hostSdk, "platforms/android-35").exists() ||
+                    getDistroFile("root/android-sdk/platforms/android-35").exists()
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
-            isNdkInstalled = File(hostSdk, "ndk").exists() || getDistroFile("root/android-sdk/ndk").exists() || File(hostSdk, "ndk-bundle").exists()
+            isNdkInstalled =
+                File(hostSdk, "ndk").exists() ||
+                    getDistroFile("root/android-sdk/ndk").exists() ||
+                    File(hostSdk, "ndk-bundle").exists()
             isBaseUtilsInstalled = getDistroFile("usr/bin/make").exists()
         }
     }
@@ -66,23 +83,49 @@ fun BuildSettingsScreen(navController: NavController) {
         val env = DistroManager.getProotEnv(context)
         thread {
             try {
-                val process = ProcessBuilder(fullCommand).apply {
-                    environment().putAll(env)
-                    redirectErrorStream(true)
-                }.start()
+                val process =
+                    ProcessBuilder(fullCommand)
+                        .apply {
+                            environment().putAll(env)
+                            redirectErrorStream(true)
+                        }
+                        .start()
                 process.waitFor()
                 val success = process.exitValue() == 0
                 (context as android.app.Activity).runOnUiThread {
                     if (success) {
-                        Toast.makeText(context, context.getString(R.string.toast_install_success, jobName), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_install_success, jobName),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     } else {
-                        Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, "Exit code " + process.exitValue()), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(
+                                    R.string.toast_install_failed,
+                                    jobName,
+                                    "Exit code " + process.exitValue(),
+                                ),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     }
                     refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
-                    Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, e.localizedMessage ?: "Unknown Error"), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.toast_install_failed,
+                                jobName,
+                                e.localizedMessage ?: "Unknown Error",
+                            ),
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
                     refreshTrigger++
                 }
             }
@@ -97,7 +140,7 @@ fun BuildSettingsScreen(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -114,7 +157,7 @@ fun BuildSettingsScreen(navController: NavController) {
                 isCmakeInstalled = isCmakeInstalled,
                 isNdkInstalled = isNdkInstalled,
                 isBaseUtilsInstalled = isBaseUtilsInstalled,
-                onInstall = { name, cmd -> runInstall(name, cmd) }
+                onInstall = { name, cmd -> runInstall(name, cmd) },
             )
         }
     }

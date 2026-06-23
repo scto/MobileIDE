@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 fun TerminalSettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE) }
-    
+
     var selectedDistro by remember { mutableStateOf(generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu") }
     var isReinstalling by remember { mutableStateOf(false) }
     var reinstallDownloadedBytes by remember { mutableLongStateOf(0L) }
@@ -38,7 +38,7 @@ fun TerminalSettingsScreen(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -48,7 +48,12 @@ fun TerminalSettingsScreen(navController: NavController) {
                 onDistroSelected = { distro ->
                     selectedDistro = distro
                     generalPrefs.edit { putString("selected_distro", distro) }
-                    Toast.makeText(context, "Distribution auf $distro geändert. Bitte Terminal neu installieren.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                            context,
+                            "Distribution auf $distro geändert. Bitte Terminal neu installieren.",
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
                 },
                 onReset = {
                     SetupWorker.resetTerminal(context)
@@ -71,12 +76,12 @@ fun TerminalSettingsScreen(navController: NavController) {
                             onProgress = { downloaded, total ->
                                 reinstallDownloadedBytes = downloaded
                                 reinstallTotalBytes = total
-                            }
+                            },
                         )
                         isReinstalling = false
                         Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
                     }
-                }
+                },
             )
         }
     }

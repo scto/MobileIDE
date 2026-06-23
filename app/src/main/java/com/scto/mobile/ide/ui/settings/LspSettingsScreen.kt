@@ -23,7 +23,9 @@ import kotlinx.coroutines.withContext
 fun LspSettingsScreen(navController: NavController) {
     val context = LocalContext.current
     var refreshTrigger by remember { mutableIntStateOf(0) }
-    val generalPrefs = remember { context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE) }
+    val generalPrefs = remember {
+        context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE)
+    }
     val selectedDistro = generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu"
 
     var isJdtlsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -54,23 +56,49 @@ fun LspSettingsScreen(navController: NavController) {
         val env = DistroManager.getProotEnv(context)
         thread {
             try {
-                val process = ProcessBuilder(fullCommand).apply {
-                    environment().putAll(env)
-                    redirectErrorStream(true)
-                }.start()
+                val process =
+                    ProcessBuilder(fullCommand)
+                        .apply {
+                            environment().putAll(env)
+                            redirectErrorStream(true)
+                        }
+                        .start()
                 process.waitFor()
                 val success = process.exitValue() == 0
                 (context as android.app.Activity).runOnUiThread {
                     if (success) {
-                        Toast.makeText(context, context.getString(R.string.toast_install_success, jobName), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_install_success, jobName),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     } else {
-                        Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, "Exit code " + process.exitValue()), Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                                context,
+                                context.getString(
+                                    R.string.toast_install_failed,
+                                    jobName,
+                                    "Exit code " + process.exitValue(),
+                                ),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     }
                     refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
-                    Toast.makeText(context, context.getString(R.string.toast_install_failed, jobName, e.localizedMessage ?: "Unknown Error"), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.toast_install_failed,
+                                jobName,
+                                e.localizedMessage ?: "Unknown Error",
+                            ),
+                            Toast.LENGTH_LONG,
+                        )
+                        .show()
                     refreshTrigger++
                 }
             }
@@ -85,7 +113,7 @@ fun LspSettingsScreen(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back))
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -95,7 +123,7 @@ fun LspSettingsScreen(navController: NavController) {
                 isKotlinLsInstalled = isKotlinLsInstalled,
                 isTsLsInstalled = isTsLsInstalled,
                 isWebLsInstalled = isWebLsInstalled,
-                onInstall = { name, cmd -> runInstall(name, cmd) }
+                onInstall = { name, cmd -> runInstall(name, cmd) },
             )
         }
     }

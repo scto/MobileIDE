@@ -35,12 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
 import com.rk.resources.getString
 import com.rk.resources.strings
-
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

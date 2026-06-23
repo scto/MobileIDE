@@ -66,12 +66,10 @@ import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.terminal.DistroManager
-import com.scto.mobile.ide.ui.terminal.SetupWorker
 import com.scto.mobile.ide.ui.welcome.themeColors
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
@@ -323,49 +321,54 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            
             item(key = "theme_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Palette,
                     title = stringResource(R.string.settings_theme_title),
                     subtitle = stringResource(R.string.settings_theme_summary),
-                    onClick = { navController.navigate("settings/theme") }
+                    onClick = { navController.navigate("settings/theme") },
                 )
             }
-            
+
             item(key = "editor_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Code,
                     title = stringResource(R.string.settings_editor_title),
-                    subtitle = stringResource(R.string.settings_editor_summary, tabWidth, if (fontPath.isBlank()) stringResource(R.string.font_system_default) else fontPath.substringAfterLast("/")),
-                    onClick = { navController.navigate("settings/editor") }
+                    subtitle =
+                        stringResource(
+                            R.string.settings_editor_summary,
+                            tabWidth,
+                            if (fontPath.isBlank()) stringResource(R.string.font_system_default)
+                            else fontPath.substringAfterLast("/"),
+                        ),
+                    onClick = { navController.navigate("settings/editor") },
                 )
             }
-            
+
             item(key = "terminal_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Terminal,
                     title = stringResource(R.string.settings_terminal_title),
                     subtitle = stringResource(R.string.settings_terminal_summary, selectedDistro),
-                    onClick = { navController.navigate("settings/terminal") }
+                    onClick = { navController.navigate("settings/terminal") },
                 )
             }
-            
+
             item(key = "build_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Build,
                     title = stringResource(R.string.settings_build_title),
                     subtitle = stringResource(R.string.settings_build_summary),
-                    onClick = { navController.navigate("settings/build") }
+                    onClick = { navController.navigate("settings/build") },
                 )
             }
-            
+
             item(key = "lsp_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Memory,
                     title = stringResource(R.string.settings_lsp_servers_title),
                     subtitle = stringResource(R.string.settings_lsp_summary),
-                    onClick = { navController.navigate("settings/lsp") }
+                    onClick = { navController.navigate("settings/lsp") },
                 )
             }
             item {
