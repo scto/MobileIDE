@@ -82,5 +82,12 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
+# Set up DNS inside container rootfs if etc/resolv.conf doesn't exist or is empty
+mkdir -p "$DISTRO_DIR/etc"
+if [ ! -s "$DISTRO_DIR/etc/resolv.conf" ]; then
+    echo "nameserver 8.8.8.8" > "$DISTRO_DIR/etc/resolv.conf"
+    echo "nameserver 1.1.1.1" >> "$DISTRO_DIR/etc/resolv.conf"
+fi
+
 export LOCAL="$PREFIX/local"
 exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash --rcfile $PREFIX/local/bin/init -i
