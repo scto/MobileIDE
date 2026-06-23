@@ -27,7 +27,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.rk.resources.getString
 import com.rk.resources.strings
-import com.rk.utils.toast
+import com.scto.mobile.ide.core.utils.toast
 import java.io.File
 
 fun File.child(fileName: String): File {

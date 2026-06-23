@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ktfmt)
 }
@@ -29,10 +30,10 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
     implementation(libs.material)
-    implementation(libs.androidx.appcompat)
+    implementation(libs.appcompat)
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.material.icons.core)
     // implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }

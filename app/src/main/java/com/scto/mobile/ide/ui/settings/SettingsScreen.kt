@@ -323,114 +323,51 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            
             item(key = "theme_settings") {
-                ThemeSettingsItem(
-                    currentThemeState = currentThemeState,
-                    onThemeChange = onThemeChange,
-                    onCustomColorClick = { showColorPicker = true },
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Palette,
+                    title = stringResource(R.string.settings_theme_title),
+                    subtitle = stringResource(R.string.settings_theme_summary),
+                    onClick = { navController.navigate("settings/theme") }
                 )
             }
-
+            
             item(key = "editor_settings") {
-                EditorSettingsItem(
-                    fontSize = fontSize,
-                    onFontSizeChange = { fontSize = it },
-                    tabWidth = tabWidth,
-                    onTabWidthChange = { tabWidth = it },
-                    wordWrap = wordWrap,
-                    onWordWrapChange = { wordWrap = it },
-                    showInvisibles = showInvisibles,
-                    onShowInvisiblesChange = { showInvisibles = it },
-                    codeFolding = codeFolding,
-                    onCodeFoldingChange = { codeFolding = it },
-                    showToolbar = showToolbar,
-                    onShowToolbarChange = { showToolbar = it },
-                    showHistory = showHistory,
-                    onShowHistoryChange = { showHistory = it },
-                    lspEnabled = lspEnabled,
-                    onLspEnabledChange = { lspEnabled = it },
-                    isAiEnabled = aiEnabled,
-                    onIsAiEnabledChange = { aiEnabled = it },
-                    fontPath = fontPath,
-                    onFontPathChange = { fontPath = it },
-                    customSymbols = customSymbols,
-                    onCustomSymbolsChange = { customSymbols = it },
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Code,
+                    title = stringResource(R.string.settings_editor_title),
+                    subtitle = stringResource(R.string.settings_editor_summary, tabWidth, if (fontPath.isBlank()) stringResource(R.string.font_system_default) else fontPath.substringAfterLast("/")),
+                    onClick = { navController.navigate("settings/editor") }
                 )
             }
-
+            
             item(key = "terminal_settings") {
-                TerminalSettingsItem(
-                    selectedDistro = selectedDistro,
-                    onDistroSelected = { distro ->
-                        selectedDistro = distro
-                        generalPrefs.edit { putString("selected_distro", distro) }
-                        Toast.makeText(
-                                context,
-                                "Distribution auf $distro geändert. Bitte Terminal neu installieren.",
-                                Toast.LENGTH_LONG,
-                            )
-                            .show()
-                        refreshTrigger++
-                    },
-                    onReset = {
-                        SetupWorker.resetTerminal(context)
-                        Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
-                    },
-                    isReinstalling = isReinstalling,
-                    reinstallDownloaded = reinstallDownloadedBytes,
-                    reinstallTotal = reinstallTotalBytes,
-                    reinstallStatus = reinstallStatus,
-                    onReinstall = {
-                        isReinstalling = true
-                        reinstallDownloadedBytes = 0L
-                        reinstallTotalBytes = -1L
-                        reinstallStatus = "Reinstallation wird gestartet..."
-                        Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
-                        coroutineScope.launch {
-                            SetupWorker.reinstallTerminal(
-                                context = context,
-                                onStatusChanged = { status -> reinstallStatus = status },
-                                onProgress = { downloaded, total ->
-                                    reinstallDownloadedBytes = downloaded
-                                    reinstallTotalBytes = total
-                                },
-                            )
-                            isReinstalling = false
-                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
-                                .show()
-                            refreshTrigger++
-                        }
-                    },
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Terminal,
+                    title = stringResource(R.string.settings_terminal_title),
+                    subtitle = stringResource(R.string.settings_terminal_summary, selectedDistro),
+                    onClick = { navController.navigate("settings/terminal") }
                 )
             }
-
+            
             item(key = "build_settings") {
-                BuildSettingsItem(
-                    isJdk17Installed = isJdk17Installed,
-                    isJdk21Installed = isJdk21Installed,
-                    isGradleInstalled = isGradleInstalled,
-                    isAndroidSdkInstalled = isAndroidSdkInstalled,
-                    isBuildTools35Installed = isBuildTools35Installed,
-                    isBuildTools36Installed = isBuildTools36Installed,
-                    isPlatform34Installed = isPlatform34Installed,
-                    isPlatform35Installed = isPlatform35Installed,
-                    isCmakeInstalled = isCmakeInstalled,
-                    isNdkInstalled = isNdkInstalled,
-                    isBaseUtilsInstalled = isBaseUtilsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) },
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Build,
+                    title = stringResource(R.string.settings_build_title),
+                    subtitle = stringResource(R.string.settings_build_summary),
+                    onClick = { navController.navigate("settings/build") }
                 )
             }
-
+            
             item(key = "lsp_settings") {
-                LspSettingsItem(
-                    isJdtlsInstalled = isJdtlsInstalled,
-                    isKotlinLsInstalled = isKotlinLsInstalled,
-                    isTsLsInstalled = isTsLsInstalled,
-                    isWebLsInstalled = isWebLsInstalled,
-                    onInstall = { name, cmd -> runInstall(name, cmd) },
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Memory,
+                    title = stringResource(R.string.settings_lsp_servers_title),
+                    subtitle = stringResource(R.string.settings_lsp_summary),
+                    onClick = { navController.navigate("settings/lsp") }
                 )
             }
-
             item {
                 Text(
                     text = stringResource(R.string.settings_general),

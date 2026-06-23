@@ -113,7 +113,7 @@ suspend fun ubuntuProcess(
 
         val args =
             mutableListOf<String>().apply {
-                add("${application!!.applicationInfo.nativeLibraryDir}/libproot.so")
+                add("${application!!.applicationInfo.nativeLibraryDir}/libproot-loader.so")
                 add("--kill-on-exit")
 
                 if (workingDir != null) {
@@ -165,8 +165,8 @@ suspend fun ubuntuProcess(
                     "/system/bin/linker"
                 }
             env["NATIVE_LIB_DIR"] = application!!.applicationInfo.nativeLibraryDir
-            env["PROOT"] = "${application!!.applicationInfo.nativeLibraryDir}/libproot.so"
-            env["PROOT_LOADER"] = "${application!!.applicationInfo.nativeLibraryDir}/libloader.so"
+            env["PROOT"] = "${application!!.applicationInfo.nativeLibraryDir}/libproot-loader.so"
+            env["PROOT_LOADER"] = "${application!!.applicationInfo.nativeLibraryDir}/libproot-loader.so"
             env["SANDBOX"] = Settings.sandbox.toString()
             env["TMP_DIR"] = getTempDir().absolutePath
             env["TMPDIR"] = getTempDir().absolutePath
@@ -191,7 +191,7 @@ suspend fun ubuntuProcess(
             env["PATH"] =
                 "/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:${localBinDir()}:${System.getenv("PATH")}"
 
-            val loader32 = "${application!!.applicationInfo.nativeLibraryDir}/libloader32.so"
+            val loader32 = "${application!!.applicationInfo.nativeLibraryDir}/libproot-loader32.so"
             if (File(loader32).exists()) {
                 env["PROOT_LOADER_32"] = loader32
             }

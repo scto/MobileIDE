@@ -29,15 +29,15 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
-import com.rk.DefaultScope
-import com.rk.activities.main.fileTreeViewModel
+import kotlinx.coroutines.CoroutineScope
+
 import com.rk.resources.getString
-import com.rk.utils.application
-import com.rk.utils.toast
+import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.core.utils.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.commons.net.io.Util.copyStream
+
 
 var to_save_file: FileObject? = null
 
@@ -142,7 +142,7 @@ class FileManager(private val activity: ComponentActivity) {
                         return@launchActivityForResult
                     }
 
-            DefaultScope.launch(Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
                 try {
                     val fileName = getFileName(activity.contentResolver, sourceUri)
                     val destinationFile = parentFile?.createChild(true, fileName)
@@ -150,7 +150,7 @@ class FileManager(private val activity: ComponentActivity) {
                     destinationFile?.let { file ->
                         copyUriData(activity.contentResolver, sourceUri, file.toUri())
                         withContext(Dispatchers.Main) {
-                            fileTreeViewModel.get()?.updateCache(parentFile!!)
+                            // fileTreeViewModel.get()?.updateCache(parentFile!!)
                             callback(file)
                         }
                     } ?: run { withContext(Dispatchers.Main) { callback(null) } }
@@ -199,7 +199,7 @@ class FileManager(private val activity: ComponentActivity) {
                 if (result.resultCode == Activity.RESULT_OK) {
                     val uri = result.data?.data
                     if (uri != null) {
-                        DefaultScope.launch(Dispatchers.IO) {
+                        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
                             try {
                                 activity.contentResolver.openInputStream(file.toUri()).use { inputStream ->
                                     activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
@@ -226,7 +226,7 @@ class FileManager(private val activity: ComponentActivity) {
                     return@launchDirectoryPicker
                 }
 
-                DefaultScope.launch(Dispatchers.IO) {
+                CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
                     try {
                         activity.contentResolver.openInputStream(file.toUri()).use { inputStream ->
                             activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
@@ -257,7 +257,7 @@ class FileManager(private val activity: ComponentActivity) {
     private fun copyUriData(contentResolver: ContentResolver, sourceUri: Uri, destinationUri: Uri) {
         contentResolver.openInputStream(sourceUri)?.use { inputStream ->
             contentResolver.openOutputStream(destinationUri)?.use { outputStream ->
-                copyStream(inputStream, outputStream)
+                inputStream.copyTo(outputStream)
             }
         } ?: throw RuntimeException("Failed to copy data from $sourceUri to $destinationUri")
     }

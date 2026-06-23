@@ -3,4 +3,12 @@
     <string name="settings">Settings</string>
     <string name="use_shizuku">Auto Login to shizuku</string>
     <string name="use_shizuku_desc">Automatically execute rish command</string>
+    <!-- File Operations -->
+    <string name="manage_storage">Manage Storage</string>
+    <string name="manage_storage_reason">We need permission to access all files to manage your project workspace.</string>
+    <string name="ignore">Ignore</string>
+    <string name="ok">OK</string>
+    <string name="cant_handle">Cannot handle this file type</string>
+    <string name="file_open_denied">Permission denied to open file</string>
+    <string name="permission_denied">Permission denied</string>
 </resources>
