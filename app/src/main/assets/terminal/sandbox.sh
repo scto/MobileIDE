@@ -1,3 +1,4 @@
+# shellcheck disable=SC2034
 force_color_prompt=yes
 
 ARGS="--kill-on-exit"
@@ -13,7 +14,6 @@ for system_mnt in /apex /odm /product /system /system_ext /vendor \
   ARGS="$ARGS -b ${system_mnt}"
  fi
 done
-
 unset system_mnt
 
 ARGS="$ARGS -b /sdcard"
@@ -62,22 +62,8 @@ ARGS="$ARGS -L"
 
 chmod -R +x $LOCAL/bin
 
-if [ -n "$PROOT_EXEC" ] && [ -f "$PROOT_EXEC" ]; then
-    PROOT_BIN="$PROOT_EXEC"
+if [ $# -gt 0 ]; then
+    $PROOT $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
 else
-    PROOT_BIN="$LOCAL/bin/proot"
-fi
-
-if [ "$FDROID" = false ]; then
-    if [ $# -gt 0 ]; then
-        $LINKER "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
-    else
-        $LINKER "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
-    fi
-else
-    if [ $# -gt 0 ]; then
-        "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
-    else
-        "$PROOT_BIN" $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
-    fi
+    $PROOT $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
 fi

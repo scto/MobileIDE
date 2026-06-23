@@ -8,23 +8,6 @@ BLUE_BG='\033[1;44m'
 YELLOW_BG='\033[1;43m'
 RED_BG='\033[1;41m'
 
-# ==========================================
-# OS Detection & Package Manager Setup
-# ==========================================
-if [ -f "/etc/alpine-release" ]; then
-  export OS_TYPE="alpine"
-  export PKG_UPDATE="apk update"
-  export PKG_UPGRADE="apk upgrade"
-  export PKG_INSTALL="apk add --no-cache"
-  export PKG_REMOVE="apk del"
-else
-  export OS_TYPE="ubuntu"
-  export PKG_UPDATE="apt update -y"
-  export PKG_UPGRADE="apt upgrade -y"
-  export PKG_INSTALL="apt install -y"
-  export PKG_REMOVE="apt remove -y"
-fi
-
 info() {
   printf "\n${BLUE_BG}  INFO  ${RESET} ${BOLD_BLUE}%s${RESET}\n" "$1"
 }
@@ -60,24 +43,16 @@ ask() {
 
 install_nodejs() {
   info "Installing Node.js LTS..."
-  if [ "$OS_TYPE" = "alpine" ]; then
-    $PKG_INSTALL nodejs npm curl ca-certificates
-  else
-    $PKG_INSTALL curl ca-certificates
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-    $PKG_INSTALL nodejs
-  fi
+  apt install -y curl ca-certificates
+  curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+  apt install -y nodejs
 }
 
 uninstall_nodejs() {
   if ask "Do you want to uninstall Node.js LTS? It was installed as a dependency of this language server. This will also remove all globally installed npm packages."; then
     info "Uninstalling Node.js LTS..."
-    if [ "$OS_TYPE" = "alpine" ]; then
-      $PKG_REMOVE nodejs npm
-    else
-      $PKG_REMOVE nodejs
-      apt autoremove -y
-    fi
+    apt remove -y nodejs
+    apt autoremove -y
     info "Node.js LTS uninstalled successfully."
   fi
 }

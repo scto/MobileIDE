@@ -3,7 +3,7 @@ set -e
 source "$LOCAL/bin/utils"
 
 info 'Preparing...'
-$PKG_UPDATE && $PKG_UPGRADE
+apt update && apt upgrade -y
 
 # Legacy migration cleanup (python-lsp-server + pipx)
 legacy_cleanup() {
@@ -18,8 +18,8 @@ legacy_cleanup() {
   if command_exists pipx; then
     if ask "pipx is installed. It was previously used for Python LSP. Do you want to remove pipx as well?"; then
       info "Uninstalling pipx..."
-      $PKG_REMOVE pipx
-      [ "$OS_TYPE" = "ubuntu" ] && apt autoremove -y || true
+      apt remove -y pipx
+      apt autoremove -y
       info "pipx uninstalled successfully."
     fi
   fi
