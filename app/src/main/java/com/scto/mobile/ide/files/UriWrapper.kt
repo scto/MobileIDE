@@ -22,8 +22,8 @@ import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.documentfile.provider.DocumentFile
-import com.rk.utils.application
-import com.rk.utils.errorDialog
+import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.core.utils.errorDialog
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileNotFoundException

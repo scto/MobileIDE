@@ -32,7 +32,7 @@ import androidx.core.net.toUri
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.rk.utils.dialogRes
+import com.scto.mobile.ide.core.utils.dialogRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference

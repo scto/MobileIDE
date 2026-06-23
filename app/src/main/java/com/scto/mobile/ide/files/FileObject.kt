@@ -22,8 +22,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import com.rk.utils.PathUtils.toPath
-import com.rk.utils.getTempDir
+import com.scto.mobile.ide.core.utils.PathUtils.toPath
+import com.scto.mobile.ide.core.utils.getTempDir
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream

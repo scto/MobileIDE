@@ -20,11 +20,11 @@ package com.scto.mobile.ide.files
 
 import android.content.Context
 import android.content.Intent
-import com.rk.activities.main.MainActivity
-import com.rk.components.ContentProgress
+import com.scto.mobile.ide.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.apache.commons.net.io.Util
+
+data class ContentProgress(val totalSize: Long, val totalItems: Int)
 
 object FileOperations {
     var clipboard: List<FileObject> = emptyList()
@@ -46,14 +46,14 @@ object FileOperations {
 
     fun saveAs(file: FileObject) {
         to_save_file = file
-        MainActivity.instance?.fileManager?.requestOpenDirectoryToSaveFile(file)
+        // MainActivity.instance?.fileManager?.requestOpenDirectoryToSaveFile(file)
     }
 
     fun addFile(parentFile: FileObject) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
-        MainActivity.instance?.fileManager?.requestAddFile(parentFile)
+        // MainActivity.instance?.fileManager?.requestAddFile(parentFile)
     }
 
     /**
@@ -64,7 +64,7 @@ object FileOperations {
      */
     suspend fun calculateContent(folder: FileObject, onProgress: (ContentProgress) -> Unit) {
         var totalSize = 0L
-        var totalItems = 0L
+        var totalItems = 0
 
         val stack = ArrayDeque<FileObject>()
         stack.add(folder)
@@ -181,7 +181,7 @@ object FileOperations {
 
             context.contentResolver.openInputStream(sourceFile.toUri())?.use { inputStream ->
                 context.contentResolver.openOutputStream(targetFile.toUri())?.use { outputStream ->
-                    Util.copyStream(inputStream, outputStream)
+                    inputStream.copyTo(outputStream)
                 } ?: throw IllegalStateException("Failed to open output stream for: ${sourceFile.getName()}")
             } ?: throw IllegalStateException("Failed to open input stream for: ${sourceFile.getName()}")
         }
