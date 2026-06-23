@@ -136,6 +136,13 @@ object DistroManager {
         copyAsset(context, "terminal/universal_runner.sh", File(binDir, "universal_runner"))
         copyAsset(context, "terminal/termux-x11.sh", File(binDir, "termux-x11"))
 
+        val lspDir = File(binDir, "lsp").apply { mkdirs() }
+        val lspAssets = context.assets.list("terminal/lsp") ?: emptyArray()
+        for (asset in lspAssets) {
+            copyAsset(context, "terminal/lsp/$asset", File(lspDir, asset))
+            File(lspDir, asset).setExecutable(true)
+        }
+
         initHostScript.setExecutable(true)
         File(binDir, "init").setExecutable(true)
         File(binDir, "utils").setExecutable(true)

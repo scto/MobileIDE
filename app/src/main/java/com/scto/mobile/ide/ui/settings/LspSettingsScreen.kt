@@ -2,14 +2,21 @@ package com.scto.mobile.ide.ui.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.DistroManager
@@ -17,6 +24,29 @@ import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+data class LspItem(
+    val id: String,
+    val name: String,
+    val scriptName: String,
+    var isInstalled: Boolean = false
+)
+
+fun getLspBinaryPaths(id: String): List<String> {
+    return when (id) {
+        "bash" -> listOf("usr/bin/bash-language-server")
+        "css" -> listOf("usr/bin/css-languageserver")
+        "emmet" -> listOf("usr/bin/emmet-language-server")
+        "eslint" -> listOf("usr/bin/vscode-eslint-language-server")
+        "html" -> listOf("usr/bin/html-languageserver")
+        "json" -> listOf("usr/bin/json-languageserver")
+        "markdown" -> listOf("usr/bin/markdown-languageserver")
+        "python" -> listOf("usr/bin/pyright")
+        "typescript" -> listOf("usr/bin/typescript-language-server", "usr/local/bin/typescript-language-server")
+        "xml" -> listOf("root/.lsp/lemminx/server.jar")
+        else -> emptyList()
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,31 +58,42 @@ fun LspSettingsScreen(navController: NavController) {
     }
     val selectedDistro = generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu"
 
-    var isJdtlsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isKotlinLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isTsLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isWebLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
+    var lspItems by remember { mutableStateOf<List<LspItem>>(emptyList()) }
 
     LaunchedEffect(refreshTrigger, selectedDistro) {
         withContext(Dispatchers.IO) {
             val prefixDir = context.filesDir.parentFile!!
             val distroDir = File(prefixDir, "local/$selectedDistro")
-            fun getDistroFile(path: String) = File(distroDir, path)
 
-            isJdtlsInstalled = getDistroFile("usr/bin/jdtls").exists()
-            isKotlinLsInstalled = getDistroFile("usr/bin/kotlin-language-server").exists()
-            val tsFile1 = getDistroFile("usr/bin/typescript-language-server")
-            val tsFile2 = getDistroFile("usr/local/bin/typescript-language-server")
-            isTsLsInstalled = tsFile1.exists() || tsFile2.exists()
-            val htmlFile1 = getDistroFile("usr/bin/vscode-html-language-server")
-            val htmlFile2 = getDistroFile("usr/local/bin/vscode-html-language-server")
-            isWebLsInstalled = htmlFile1.exists() || htmlFile2.exists()
+            val assetsList = context.assets.list("terminal/lsp") ?: emptyArray()
+            val items = assetsList.filter { it.endsWith(".sh") }.map { fileName ->
+                val id = fileName.removeSuffix(".sh")
+                val displayName = when (id) {
+                    "css" -> "CSS"
+                    "html" -> "HTML"
+                    "json" -> "JSON"
+                    "xml" -> "XML"
+                    "eslint" -> "ESLint"
+                    else -> id.replaceFirstChar { it.uppercase() }
+                } + " Language Server"
+
+                val testPaths = getLspBinaryPaths(id)
+                val isInstalled = testPaths.any { path ->
+                    File(distroDir, path).exists()
+                }
+
+                LspItem(id = id, name = displayName, scriptName = fileName, isInstalled = isInstalled)
+            }.sortedBy { it.name }
+
+            withContext(Dispatchers.Main) {
+                lspItems = items
+            }
         }
     }
 
-    fun runInstall(jobName: String, command: String) {
+    fun runLspJob(jobName: String, actionName: String, command: String) {
         Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
-        val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
+        val fullCommand = DistroManager.buildProotCommand(context, arrayOf("bash", "-c", command))
         val env = DistroManager.getProotEnv(context)
         thread {
             try {
@@ -68,37 +109,26 @@ fun LspSettingsScreen(navController: NavController) {
                 (context as android.app.Activity).runOnUiThread {
                     if (success) {
                         Toast.makeText(
-                                context,
-                                context.getString(R.string.toast_install_success, jobName),
-                                Toast.LENGTH_LONG,
-                            )
-                            .show()
+                            context,
+                            "$jobName: $actionName erfolgreich!",
+                            Toast.LENGTH_LONG,
+                        ).show()
                     } else {
                         Toast.makeText(
-                                context,
-                                context.getString(
-                                    R.string.toast_install_failed,
-                                    jobName,
-                                    "Exit code " + process.exitValue(),
-                                ),
-                                Toast.LENGTH_LONG,
-                            )
-                            .show()
+                            context,
+                            "$jobName: $actionName fehlgeschlagen (Exit code ${process.exitValue()})",
+                            Toast.LENGTH_LONG,
+                        ).show()
                     }
                     refreshTrigger++
                 }
             } catch (e: Exception) {
                 (context as android.app.Activity).runOnUiThread {
                     Toast.makeText(
-                            context,
-                            context.getString(
-                                R.string.toast_install_failed,
-                                jobName,
-                                e.localizedMessage ?: "Unknown Error",
-                            ),
-                            Toast.LENGTH_LONG,
-                        )
-                        .show()
+                        context,
+                        "$jobName: $actionName fehlgeschlagen (${e.localizedMessage ?: "Unbekannter Fehler"})",
+                        Toast.LENGTH_LONG,
+                    ).show()
                     refreshTrigger++
                 }
             }
@@ -117,14 +147,92 @@ fun LspSettingsScreen(navController: NavController) {
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            LspSettingsItem(
-                isJdtlsInstalled = isJdtlsInstalled,
-                isKotlinLsInstalled = isKotlinLsInstalled,
-                isTsLsInstalled = isTsLsInstalled,
-                isWebLsInstalled = isWebLsInstalled,
-                onInstall = { name, cmd -> runInstall(name, cmd) },
-            )
+        LazyColumn(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(lspItems) { item ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = item.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (item.isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                    contentDescription = null,
+                                    tint = if (item.isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = if (item.isInstalled) "Installiert" else "Nicht installiert",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (!item.isInstalled) {
+                                Button(
+                                    onClick = {
+                                        runLspJob(
+                                            item.name,
+                                            "Installation",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName}"
+                                        )
+                                    }
+                                ) {
+                                    Text("Installieren")
+                                }
+                            } else {
+                                Button(
+                                    onClick = {
+                                        runLspJob(
+                                            item.name,
+                                            "Update",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --update"
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                ) {
+                                    Text("Update")
+                                }
+                                Button(
+                                    onClick = {
+                                        runLspJob(
+                                            item.name,
+                                            "Deinstallation",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall"
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Text("Löschen")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
