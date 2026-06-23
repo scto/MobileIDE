@@ -1,13 +1,12 @@
 package com.scto.mobile.ide.ui.settings
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,9 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.ui.terminal.DistroManager
+import com.scto.mobile.ide.ui.terminal.SessionManager
 import java.io.File
-import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -87,46 +85,9 @@ fun LspSettingsScreen(navController: NavController) {
         }
     }
 
-    fun runLspJob(jobName: String, actionName: String, command: String) {
-        Toast.makeText(context, context.getString(R.string.toast_terminal_reinstall_start), Toast.LENGTH_SHORT).show()
-        val fullCommand = DistroManager.buildProotCommand(context, arrayOf("bash", "-c", command))
-        val env = DistroManager.getProotEnv(context)
-        thread {
-            try {
-                val process =
-                    ProcessBuilder(fullCommand)
-                        .apply {
-                            environment().putAll(env)
-                            redirectErrorStream(true)
-                        }
-                        .start()
-                process.waitFor()
-                val success = process.exitValue() == 0
-                (context as android.app.Activity).runOnUiThread {
-                    if (success) {
-                        Toast.makeText(context, "$jobName: $actionName erfolgreich!", Toast.LENGTH_LONG).show()
-                    } else {
-                        Toast.makeText(
-                                context,
-                                "$jobName: $actionName fehlgeschlagen (Exit code ${process.exitValue()})",
-                                Toast.LENGTH_LONG,
-                            )
-                            .show()
-                    }
-                    refreshTrigger++
-                }
-            } catch (e: Exception) {
-                (context as android.app.Activity).runOnUiThread {
-                    Toast.makeText(
-                            context,
-                            "$jobName: $actionName fehlgeschlagen (${e.localizedMessage ?: "Unbekannter Fehler"})",
-                            Toast.LENGTH_LONG,
-                        )
-                        .show()
-                    refreshTrigger++
-                }
-            }
-        }
+    fun launchLspTerminalJob(tabTitle: String, command: String) {
+        SessionManager.addNewSession(context, initCommand = command, tabTitle = tabTitle)
+        navController.navigate("terminal")
     }
 
     Scaffold(
@@ -184,7 +145,10 @@ fun LspSettingsScreen(navController: NavController) {
                             if (!item.isInstalled) {
                                 Button(
                                     onClick = {
-                                        runLspJob(item.name, "Installation", "bash \$LOCAL/bin/lsp/${item.scriptName}")
+                                        launchLspTerminalJob(
+                                            "Install ${item.id.uppercase()}",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName}"
+                                        )
                                     }
                                 ) {
                                     Text("Installieren")
@@ -192,10 +156,9 @@ fun LspSettingsScreen(navController: NavController) {
                             } else {
                                 Button(
                                     onClick = {
-                                        runLspJob(
-                                            item.name,
-                                            "Update",
-                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --update",
+                                        launchLspTerminalJob(
+                                            "Update ${item.id.uppercase()}",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --update"
                                         )
                                     },
                                     colors =
@@ -207,10 +170,9 @@ fun LspSettingsScreen(navController: NavController) {
                                 }
                                 Button(
                                     onClick = {
-                                        runLspJob(
-                                            item.name,
-                                            "Deinstallation",
-                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall",
+                                        launchLspTerminalJob(
+                                            "Remove ${item.id.uppercase()}",
+                                            "bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall"
                                         )
                                     },
                                     colors =

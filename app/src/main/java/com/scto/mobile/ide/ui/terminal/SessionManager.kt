@@ -31,7 +31,7 @@ object SessionManager {
                 sessions[currentSessionIndex].session
             } else null
 
-    fun addNewSession(context: Context) {
+    fun addNewSession(context: Context, initCommand: String? = null, tabTitle: String? = null) {
         val client =
             object : TerminalSessionClient {
                 override fun onTextChanged(changedSession: TerminalSession) {}
@@ -78,9 +78,9 @@ object SessionManager {
                 }
             }
 
-        LogCatcher.i("SessionManager", "addNewSession: creating new DistroManager session.")
-        val session = DistroManager.createSession(context, client)
-        val title = "Term ${sessions.size + 1}"
+        LogCatcher.i("SessionManager", "addNewSession: creating new DistroManager session with command $initCommand.")
+        val session = DistroManager.createSession(context, client, initCommand = initCommand)
+        val title = tabTitle ?: "Term ${sessions.size + 1}"
         sessions.add(SessionWrapper(session, title))
         currentSessionIndex = sessions.lastIndex
         LogCatcher.i("SessionManager", "addNewSession completed. Title=$title, index=$currentSessionIndex")
