@@ -5,8 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -147,7 +147,7 @@ fun LspSettingsScreen(navController: NavController) {
                                     onClick = {
                                         launchLspTerminalJob(
                                             "Install ${item.id.uppercase()}",
-                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} 2>&1 | tee \$logDir/lsp_install_${item.id}.log"
+                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} 2>&1 | tee \$logDir/lsp_install_${item.id}.log",
                                         )
                                     }
                                 ) {
@@ -158,7 +158,7 @@ fun LspSettingsScreen(navController: NavController) {
                                     onClick = {
                                         launchLspTerminalJob(
                                             "Update ${item.id.uppercase()}",
-                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} --update 2>&1 | tee \$logDir/lsp_install_${item.id}.log"
+                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} --update 2>&1 | tee \$logDir/lsp_install_${item.id}.log",
                                         )
                                     },
                                     colors =
@@ -172,7 +172,7 @@ fun LspSettingsScreen(navController: NavController) {
                                     onClick = {
                                         launchLspTerminalJob(
                                             "Remove ${item.id.uppercase()}",
-                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall 2>&1 | tee \$logDir/lsp_install_${item.id}.log"
+                                            "logDir=\${MOBILEIDE_WORKSPACE:-\$HOME}/logs && mkdir -p \$logDir && bash \$LOCAL/bin/lsp/${item.scriptName} --uninstall 2>&1 | tee \$logDir/lsp_install_${item.id}.log",
                                         )
                                     },
                                     colors =
