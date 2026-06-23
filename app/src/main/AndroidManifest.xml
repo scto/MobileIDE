@@ -69,18 +69,8 @@
             </intent-filter>
         </activity>
         
-        <activity
-            android:name=".activities.settings.SettingsActivity"
-            android:exported="false">
-        </activity>
-        
-        <activity
-            android:name=".activities.terminal.Terminal"
-            android:exported="true"
-            android:label="Terminal"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize|stateVisible">
-        </activity>
+
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -43,12 +43,11 @@ import androidx.compose.ui.unit.dp
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-import com.rk.activities.main.MainActivity
-import com.rk.extension.XedExtensionPoint
+import com.scto.mobile.ide.MainActivity
 import com.rk.resources.getString
 import com.rk.resources.strings
+import com.scto.mobile.ide.R.string as appStrings
 import com.rk.settings.Settings
-import com.rk.theme.XedTheme
 
 fun errorDialog(activity: Activity? = MainActivity.instance, title: String = strings.error.getString(), msg: String) {
     Log.e("ERROR_DIALOG", msg)
@@ -134,7 +133,6 @@ fun dialogRes(
     )
 }
 
-@XedExtensionPoint
 fun dialog(
     activity: Activity? = MainActivity.instance,
     title: String? = null,
@@ -157,7 +155,7 @@ fun dialog(
             setView(
                 ComposeView(activity).apply {
                     setContent {
-                        XedTheme {
+                        MaterialTheme {
                             Surface(shape = MaterialTheme.shapes.large, tonalElevation = 1.dp) {
                                 alertDialog?.setCancelable(cancelable)
                                 DialogContent(
@@ -244,7 +242,6 @@ private fun DialogContent(
     }
 }
 
-@XedExtensionPoint
 fun composableDialog(
     activity: Activity? = MainActivity.instance,
     cancelable: Boolean = true,
@@ -262,7 +259,7 @@ fun composableDialog(
             setView(
                 ComposeView(activity).apply {
                     setContent {
-                        XedTheme {
+                        MaterialTheme {
                             Surface(shape = MaterialTheme.shapes.large, tonalElevation = 1.dp) {
                                 alertDialog?.setCancelable(cancelable)
                                 composable(alertDialog)

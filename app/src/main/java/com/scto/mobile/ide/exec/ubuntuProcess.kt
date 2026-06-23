@@ -22,17 +22,18 @@ package com.scto.mobile.ide.exec
 import android.annotation.SuppressLint
 import android.util.Log
 
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.file.localDir
-import com.scto.mobile.ide.file.localLibDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.file.sandboxHomeDir
+import com.scto.mobile.ide.files.child
+import com.scto.mobile.ide.files.localBinDir
+import com.scto.mobile.ide.files.localDir
+import com.scto.mobile.ide.files.localLibDir
+import com.scto.mobile.ide.files.sandboxDir
+import com.scto.mobile.ide.files.sandboxHomeDir
 import com.scto.mobile.ide.ui.settings.SettingsScreen
-import com.scto.mobile.ide.core.utils.application
+import com.scto.mobile.ide.utils.application
 import com.scto.mobile.ide.core.utils.getSourceDirOfPackage
 import com.scto.mobile.ide.core.utils.getTempDir
 import com.scto.mobile.ide.BuildConfig
+import com.rk.settings.Settings
 
 import java.io.File
 import java.io.IOException

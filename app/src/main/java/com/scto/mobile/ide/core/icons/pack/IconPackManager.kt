@@ -23,7 +23,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.pm.PackageInfoCompat
 
-import com.rk.activities.settings.SettingsActivity
+import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.files.child
 import com.scto.mobile.ide.files.createDirIfNot
 import com.scto.mobile.ide.files.localDir
@@ -31,7 +31,7 @@ import com.rk.resources.getFilledString
 import com.rk.resources.getString
 import com.rk.resources.strings
 import com.rk.settings.Settings
-import com.scto.mobile.ide.core.utils.application
+import com.scto.mobile.ide.utils.application
 import com.scto.mobile.ide.core.utils.dialogRes
 
 import java.io.File
@@ -39,16 +39,67 @@ import java.util.zip.ZipFile
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.MissingFieldException
-import kotlinx.serialization.json.Json
+import org.json.JSONObject
+
+fun JSONObject.toMap(): Map<String, String> {
+    val map = mutableMapOf<String, String>()
+    val keys = this.keys()
+    while (keys.hasNext()) {
+        val key = keys.next()
+        map[key] = this.getString(key)
+    }
+    return map
+}
+
+fun parseIconPackManifest(jsonStr: String): IconPackManifest {
+    val obj = JSONObject(jsonStr)
+    val iconsObj = obj.getJSONObject("icons")
+    
+    val folderNames = if (iconsObj.has("folderNames")) {
+        iconsObj.getJSONObject("folderNames").toMap()
+    } else emptyMap()
+    
+    val folderNamesExpanded = if (iconsObj.has("folderNamesExpanded")) {
+        iconsObj.getJSONObject("folderNamesExpanded").toMap()
+    } else emptyMap()
+    
+    val fileNames = if (iconsObj.has("fileNames")) {
+        iconsObj.getJSONObject("fileNames").toMap()
+    } else emptyMap()
+    
+    val fileExtensions = if (iconsObj.has("fileExtensions")) {
+        iconsObj.getJSONObject("fileExtensions").toMap()
+    } else emptyMap()
+    
+    val languageNames = if (iconsObj.has("languageNames")) {
+        iconsObj.getJSONObject("languageNames").toMap()
+    } else emptyMap()
+
+    val iconsList = IconPackList(
+        defaultFile = iconsObj.getString("defaultFile"),
+        defaultFolder = iconsObj.getString("defaultFolder"),
+        defaultFolderExpanded = iconsObj.getString("defaultFolderExpanded"),
+        folderNames = folderNames,
+        folderNamesExpanded = folderNamesExpanded,
+        fileNames = fileNames,
+        fileExtensions = fileExtensions,
+        languageNames = languageNames
+    )
+    
+    return IconPackManifest(
+        id = obj.getString("id"),
+        name = obj.getString("name"),
+        minAppVersion = if (obj.has("minAppVersion")) obj.getInt("minAppVersion") else null,
+        applyTint = if (obj.has("applyTint")) obj.getBoolean("applyTint") else false,
+        icons = iconsList
+    )
+}
 
 val currentIconPack = mutableStateOf<IconPack?>(null)
 val iconPackDir = localDir().child("icon_pack").also { it.createDirIfNot() }
 
 class IconPackManager(private val context: Application) {
     val iconPacks = mutableStateMapOf<IconPackId, IconPack>()
-    val json = Json { ignoreUnknownKeys = true }
 
     suspend fun installIconPack(zipFile: File) =
         withContext(Dispatchers.IO) {
@@ -83,7 +134,7 @@ class IconPackManager(private val context: Application) {
         val currentVersionCode = PackageInfoCompat.getLongVersionCode(packageManager.getPackageInfo(packageName, 0))
         if (iconPackManifest.minAppVersion != null && iconPackManifest.minAppVersion.toLong() > currentVersionCode) {
             dialogRes(
-                activity = SettingsActivity.instance,
+                activity = MainActivity.instance,
                 title = strings.warning.getString(),
                 msg = strings.incompatible_theme_warning.getString(),
                 cancelRes = strings.cancel,
@@ -108,12 +159,11 @@ class IconPackManager(private val context: Application) {
         iconPacks[iconPackManifest.id] = iconPack
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     internal fun validateIconPack(dir: File): IconPackManifest? {
         val iconPackJson = dir.resolve("manifest.json")
         if (!iconPackJson.exists()) {
             dialogRes(
-                SettingsActivity.instance,
+                MainActivity.instance,
                 strings.icon_pack_install_failed.getString(),
                 strings.manifest_missing.getString(),
                 cancelable = false,
@@ -122,20 +172,10 @@ class IconPackManager(private val context: Application) {
             return null
         }
         val iconPackManifest =
-            runCatching { json.decodeFromString<IconPackManifest>(iconPackJson.readText()) }
+            runCatching { parseIconPackManifest(iconPackJson.readText()) }
                 .getOrElse { e ->
-                    if (e is MissingFieldException) {
-                        val fields = e.missingFields.joinToString("\n") { "• $it" }
-                        dialogRes(
-                            SettingsActivity.instance,
-                            strings.icon_pack_install_failed.getString(),
-                            strings.manifest_missing_fields.getFilledString(fields),
-                            cancelable = false,
-                        )
-                        return null
-                    }
                     dialogRes(
-                        SettingsActivity.instance,
+                        MainActivity.instance,
                         strings.icon_pack_install_failed.getString(),
                         e.localizedMessage ?: strings.unknown_err.getString(),
                         cancelable = false,
@@ -160,7 +200,7 @@ class IconPackManager(private val context: Application) {
                     val manifestJson = dir.resolve("manifest.json")
                     if (manifestJson.exists()) {
                         runCatching {
-                            val iconPackManifest = json.decodeFromString<IconPackManifest>(manifestJson.readText())
+                            val iconPackManifest = parseIconPackManifest(manifestJson.readText())
                             val installDir = iconPackDir.child(iconPackManifest.id)
                             val iconPack = IconPack(iconPackManifest, installDir)
                             iconPacks[iconPackManifest.id] = iconPack

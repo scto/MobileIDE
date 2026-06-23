@@ -80,6 +80,9 @@ monarchJson = "1.0.2"
 regexOnig = "1.0.3"
 regexRe2j = "1.0.2"
 
+semver = "3.1.0"
+androidsvg = "1.4"
+
 accompanist = "0.36.0"
 materialIcons = "1.7.8"
 foundationLayout = "1.10.4"
@@ -231,6 +234,9 @@ monarch-language-pack = { module = "io.github.dingyi222666.monarch:monarch-langu
 monarch-json = { module = "io.github.dingyi222666.monarch:monarch-json-loader", version.ref = "monarchJson" }
 regex-onig = { module = "io.github.dingyi222666.regex-lib:regex-lib-oniguruma", version.ref = "regexOnig" }
 regex-re2j = { module = "io.github.dingyi222666.regex-lib:regex-lib-re2j", version.ref = "regexRe2j" }
+
+semver = { module = "io.github.z4kn4fein:semver", version.ref = "semver" }
+androidsvg = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvg" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

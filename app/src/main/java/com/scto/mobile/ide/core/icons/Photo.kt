@@ -1,4 +1,4 @@
-package com.rk.icons
+package com.scto.mobile.ide.core.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val XedIcons.Photo: ImageVector
+val MobileIDEIcons.Photo: ImageVector
     get() {
         if (_Photo != null) return _Photo!!
 
