@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
+
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.AppLanguageManager
 import com.scto.mobile.ide.core.utils.AppLanguageOption
@@ -60,6 +61,7 @@ import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.terminal.DistroManager
 import com.scto.mobile.ide.ui.terminal.SetupWorker
 import com.scto.mobile.ide.ui.welcome.themeColors
+
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers

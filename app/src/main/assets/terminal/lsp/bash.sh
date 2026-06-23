@@ -3,7 +3,7 @@ set -e
 source "$LOCAL/bin/utils"
 
 info 'Preparing...'
-$PKG_UPDATE && $PKG_UPGRADE
+apt update && apt upgrade -y
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -14,7 +14,7 @@ install() {
   npm install -g --prefix /usr bash-language-server
 
   info 'Installing ShellCheck...'
-  $PKG_INSTALL shellcheck
+  apt install -y shellcheck
 
   info 'Bash language server installed successfully.'
   exit 0
@@ -40,3 +40,4 @@ case "$1" in
   --update) update;;
   *) install;;
 esac
+

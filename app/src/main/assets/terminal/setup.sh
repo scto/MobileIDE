@@ -2,7 +2,7 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-info "Extracting the Container…"
+info "Extracting the Ubuntu container…"
 
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
@@ -54,21 +54,32 @@ ARGS="$ARGS -L"
 
 COMMAND="(cd $LOCAL/sandbox && tar -xf $TMP_DIR/sandbox.tar.gz)"
 
-if [ -n "$PROOT_EXEC" ] && [ -f "$PROOT_EXEC" ]; then
-    PROOT_BIN="$PROOT_EXEC"
-else
-    PROOT_BIN="$LOCAL/bin/proot"
-fi
+set +e
+$PROOT $ARGS /system/bin/sh -c "$COMMAND"
+ret=$?
+set -e
 
-if [ "$FDROID" = false ]; then
-    $LINKER "$PROOT_BIN" $ARGS /system/bin/sh -c "$COMMAND"
-else
-    "$PROOT_BIN" $ARGS /system/bin/sh -c "$COMMAND"
+DEGRADED_MARKER="$LOCAL/.sandbox_degraded"
+
+if [ "$ret" -ne 0 ]; then
+    warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
+
+    set +e
+    /bin/sh -c "$COMMAND"
+    ret=$?
+    set -e
+
+    if [ "$ret" -ne 0 ]; then
+        warn "Extraction failed (exit code $ret), continuing in degraded mode"
+        warn "Sandbox may be incomplete and some features may not work"
+
+        touch "$DEGRADED_MARKER"
+    fi
 fi
 
 SANDBOX_DIR="$LOCAL/sandbox"
 
-info "Setting up the Container Network & Groups…"
+info "Setting up the Ubuntu container…"
 
 # values you want written
 nameserver="nameserver 8.8.8.8
@@ -110,7 +121,6 @@ android_storage:x:$((40000 + aid))
 android_media:x:$((50000 + aid))
 android_external_storage:x:1077
 "
-
 # create the file if it doesn't exist
 [ -f "$groupFile" ] || : > "$groupFile"
 
@@ -130,27 +140,25 @@ rm "$TMP_DIR"/sandbox.tar.gz
 # DO NOT REMOVE THIS FILE JUST DON'T, TRUST ME
 touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 
-# ==========================================
-# Ubuntu Only: Node.js APT hook
-# ==========================================
-if [ "$OS_TYPE" = "ubuntu" ]; then
-    info "Installing Node.js APT hook for Jemalloc..."
+info "Installing Node.js APT hook…"
 
-    mkdir -p "$SANDBOX_DIR/etc/apt/apt.conf.d"
-    mkdir -p "$SANDBOX_DIR/usr/local/bin"
+mkdir -p "$SANDBOX_DIR/etc/apt/apt.conf.d"
+mkdir -p "$SANDBOX_DIR/usr/local/bin"
 
-    cat > "$SANDBOX_DIR/etc/apt/apt.conf.d/99node-hook" << 'EOF'
+cat > "$SANDBOX_DIR/etc/apt/apt.conf.d/99node-hook" << 'EOF'
 DPkg::Post-Invoke {
     "if [ -x /usr/bin/node ]; then /usr/local/bin/node-postinstall.sh; fi";
 };
 EOF
 
-    cat > "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh" << 'EOF'
+cat > "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh" << 'EOF'
 #!/bin/sh
 set -e
 
 echo "[node-hook] Running Node.js post-install hook..."
+
 JEMALLOC=""
+
 echo "[node-hook] Searching for jemalloc..."
 
 for path in \
@@ -185,6 +193,7 @@ echo "[node-hook] Verifying node binary..."
 
 if file /usr/bin/node | grep -q ELF; then
     echo "[node-hook] Wrapping Node.js with jemalloc..."
+
     mv /usr/bin/node /usr/bin/node.distrib
 
     cat > /usr/bin/node << WRAP
@@ -193,18 +202,16 @@ LD_PRELOAD=$JEMALLOC exec /usr/bin/node.distrib "\$@"
 WRAP
 
     chmod +x /usr/bin/node
+
     echo "[node-hook] Node wrapper installed successfully"
 else
     echo "[node-hook] /usr/bin/node is not an ELF binary, skipping"
 fi
 EOF
 
-    chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
-    info "Node.js APT hook installed"
-else
-    info "Skipping APT Jemalloc hook (Not needed on Alpine)"
-fi
+chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
 
+info "Node.js APT hook installed"
 
 if [ $# -gt 0 ]; then
     sh $@
