@@ -82,4 +82,5 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-exec $LINKER $PREFIX/local/bin/proot $ARGS sh $PREFIX/local/bin/init "$@"
+export LOCAL="$PREFIX/local"
+exec $LINKER $PREFIX/local/bin/proot $ARGS /bin/bash --rcfile $PREFIX/local/bin/init -i
