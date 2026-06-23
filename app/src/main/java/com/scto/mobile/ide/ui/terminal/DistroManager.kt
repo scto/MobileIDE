@@ -127,11 +127,22 @@ object DistroManager {
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
         val initHostScript = File(binDir, "init-host")
-        // Always copy the latest version of init-host.sh so distro changes take effect
+        // Always copy the latest version of terminal scripts so distro/utility changes take effect
         copyAsset(context, "terminal/init-host.sh", initHostScript)
         copyAsset(context, "terminal/init.sh", File(binDir, "init"))
+        copyAsset(context, "terminal/utils.sh", File(binDir, "utils"))
+        copyAsset(context, "terminal/setup.sh", File(binDir, "setup"))
+        copyAsset(context, "terminal/sandbox.sh", File(binDir, "sandbox"))
+        copyAsset(context, "terminal/universal_runner.sh", File(binDir, "universal_runner"))
+        copyAsset(context, "terminal/termux-x11.sh", File(binDir, "termux-x11"))
+
         initHostScript.setExecutable(true)
         File(binDir, "init").setExecutable(true)
+        File(binDir, "utils").setExecutable(true)
+        File(binDir, "setup").setExecutable(true)
+        File(binDir, "sandbox").setExecutable(true)
+        File(binDir, "universal_runner").setExecutable(true)
+        File(binDir, "termux-x11").setExecutable(true)
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
@@ -151,6 +162,7 @@ object DistroManager {
                 "TERM=xterm-256color",
                 "LANG=C.UTF-8",
                 "PREFIX=${prefixDir.absolutePath}",
+                "LOCAL=${prefixDir.absolutePath}/local",
                 "LD_LIBRARY_PATH=${libDir.absolutePath}",
                 "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
                 "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
