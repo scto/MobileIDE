@@ -146,18 +146,41 @@ object SetupWorker {
                         "SetupWorker",
                         "Extracting tar rootfs: ${rootfsTar.absolutePath} to ${distroDir.absolutePath}",
                     )
-                    val cmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
-                    val process = Runtime.getRuntime().exec(cmd)
-                    val exitVal = process.waitFor()
+                    
+                    val linker = if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
+                    val prootCmd = arrayOf(
+                        linker,
+                        prootDest.absolutePath,
+                        "--kill-on-exit",
+                        "--link2symlink",
+                        "-0",
+                        "-r", distroDir.absolutePath,
+                        "-b", "/system",
+                        "-b", "/data",
+                        "-b", "/proc",
+                        "/system/bin/tar", "-xf", rootfsTar.absolutePath, "-C", "/"
+                    )
+                    LogCatcher.i("SetupWorker", "Executing proot extraction: ${prootCmd.joinToString(" ")}")
+                    var process = Runtime.getRuntime().exec(prootCmd)
+                    var exitVal = process.waitFor()
+                    
                     if (exitVal != 0) {
+                        LogCatcher.w("SetupWorker", "Proot extraction failed with exit code $exitVal. Falling back to host tar...")
+                        val hostCmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
+                        process = Runtime.getRuntime().exec(hostCmd)
+                        exitVal = process.waitFor()
+                    }
+                    
+                    if (exitVal != 0 && !etcDir.exists()) {
                         val errorMsg = process.errorStream.bufferedReader().use { it.readText() }
                         LogCatcher.e("SetupWorker", "Tar extraction failed with exit code $exitVal: $errorMsg")
                         distroDir.deleteRecursively()
-                    } else if (!etcDir.exists()) {
-                        LogCatcher.e("SetupWorker", "Tar extraction finished but 'etc' directory does not exist.")
-                        distroDir.deleteRecursively()
                     } else {
-                        LogCatcher.i("SetupWorker", "Tar extraction finished successfully.")
+                        if (exitVal != 0) {
+                            LogCatcher.w("SetupWorker", "Host tar returned non-zero exit code $exitVal, but etc directory exists. Proceeding...")
+                        } else {
+                            LogCatcher.i("SetupWorker", "Tar extraction finished successfully.")
+                        }
                     }
                 } catch (e: Exception) {
                     LogCatcher.e("SetupWorker", "Exception during tar extraction", e)
