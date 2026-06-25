@@ -1,6 +1,6 @@
 set -e
 
-source "$LOCAL/bin/utils"
+. "$LOCAL/bin/utils"
 
 info "Extracting the Ubuntu container…"
 
@@ -52,7 +52,7 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-COMMAND="(cd $LOCAL/sandbox && tar -xf $TMP_DIR/sandbox.tar.gz)"
+COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf -)))"
 
 set +e
 $PROOT $ARGS /system/bin/sh -c "$COMMAND"
@@ -65,15 +65,13 @@ if [ "$ret" -ne 0 ]; then
     warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
 
     set +e
-    /bin/sh -c "$COMMAND"
+    sh -c "$COMMAND"
     ret=$?
     set -e
 
     if [ "$ret" -ne 0 ]; then
-        warn "Extraction failed (exit code $ret), continuing in degraded mode"
-        warn "Sandbox may be incomplete and some features may not work"
-
-        touch "$DEGRADED_MARKER"
+        error "Extraction failed completely (exit code $ret)! Cannot continue setup."
+        exit 1
     fi
 fi
 
