@@ -43,6 +43,7 @@ object SetupWorker {
 
             distroDir.deleteRecursively()
             rootfsTar.delete()
+            File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
 
             prepareEnvironment(context, onStatusChanged = onStatusChanged, onProgress = onProgress)
             SessionManager.addNewSession(context)
