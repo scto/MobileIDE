@@ -37,7 +37,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         application = this
-        com.rk.libcommons.application = this
+        //com.rk.libcommons.application = this
         Res.application = this
         iconPackManager = IconPackManager(this)
 
