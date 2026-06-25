@@ -134,75 +134,8 @@ object SetupWorker {
                 }
             }
 
-            // 4. Extract rootfs if not already done.
-            val etcDir = File(distroDir, "etc")
-            if (!etcDir.exists() && rootfsTar.exists() && rootfsTar.length() > 0L) {
-                onStatusChanged?.invoke(
-                    "Linux RootFS wird entpackt (Bitte warten, dies kann bis zu einer Minute dauern)..."
-                )
-                distroDir.mkdirs()
-                try {
-                    LogCatcher.i(
-                        "SetupWorker",
-                        "Extracting tar rootfs: ${rootfsTar.absolutePath} to ${distroDir.absolutePath}",
-                    )
-
-                    val linker =
-                        if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
-                    val prootCmd =
-                        arrayOf(
-                            linker,
-                            prootDest.absolutePath,
-                            "--kill-on-exit",
-                            "--link2symlink",
-                            "-0",
-                            "-r",
-                            distroDir.absolutePath,
-                            "-b",
-                            "/system",
-                            "-b",
-                            "/data",
-                            "-b",
-                            "/proc",
-                            "/system/bin/tar",
-                            "-xf",
-                            rootfsTar.absolutePath,
-                            "-C",
-                            "/",
-                        )
-                    LogCatcher.i("SetupWorker", "Executing proot extraction: ${prootCmd.joinToString(" ")}")
-                    var process = Runtime.getRuntime().exec(prootCmd)
-                    var exitVal = process.waitFor()
-
-                    if (exitVal != 0) {
-                        LogCatcher.w(
-                            "SetupWorker",
-                            "Proot extraction failed with exit code $exitVal. Falling back to host tar...",
-                        )
-                        val hostCmd = arrayOf("tar", "-xf", rootfsTar.absolutePath, "-C", distroDir.absolutePath)
-                        process = Runtime.getRuntime().exec(hostCmd)
-                        exitVal = process.waitFor()
-                    }
-
-                    if (exitVal != 0 && !etcDir.exists()) {
-                        val errorMsg = process.errorStream.bufferedReader().use { it.readText() }
-                        LogCatcher.e("SetupWorker", "Tar extraction failed with exit code $exitVal: $errorMsg")
-                        distroDir.deleteRecursively()
-                    } else {
-                        if (exitVal != 0) {
-                            LogCatcher.w(
-                                "SetupWorker",
-                                "Host tar returned non-zero exit code $exitVal, but etc directory exists. Proceeding...",
-                            )
-                        } else {
-                            LogCatcher.i("SetupWorker", "Tar extraction finished successfully.")
-                        }
-                    }
-                } catch (e: Exception) {
-                    LogCatcher.e("SetupWorker", "Exception during tar extraction", e)
-                    distroDir.deleteRecursively()
-                }
-            }
+            // 4. Extract rootfs is deferred to setup.sh inside the terminal session
+            LogCatcher.i("SetupWorker", "Deferring rootfs extraction to setup.sh inside the terminal session.")
 
             // 5. Place proot + libs in local/bin and local/lib.
             onStatusChanged?.invoke("Installation wird abgeschlossen...")
