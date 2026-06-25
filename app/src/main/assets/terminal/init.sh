@@ -105,3 +105,11 @@ fi
 
 # shellcheck disable=SC2164
 cd "$WKDIR" || cd $HOME
+
+echo -e "\e[32;1mWillkommen bei MobileIDE Terminal.\e[0m"
+echo -e "\e[34mNutze den Paketmanager \e[32mapt\e[0m für diese Ubuntu/Debian-Distribution."
+echo ""
+echo ""
+echo ""
+echo -e "  \e[33mapt update && apt upgrade && apt install <paket>\e[0m"
+echo ""
