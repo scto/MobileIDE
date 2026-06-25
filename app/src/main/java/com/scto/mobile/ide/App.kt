@@ -2,12 +2,12 @@ package com.scto.mobile.ide
 
 // import com.github.anrwatchdog.ANRWatchDog
 // import com.rk.libcommons.application
-import com.rk.update.UpdateManager
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
 import com.rk.crashhandler.CrashHandler
 import com.rk.resources.Res
+import com.rk.update.UpdateManager
 import com.scto.mobile.ide.core.icons.pack.IconPackManager
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
