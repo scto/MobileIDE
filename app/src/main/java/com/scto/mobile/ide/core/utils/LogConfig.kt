@@ -131,9 +131,14 @@ object LogCatcher {
         val oldConfig = logConfig
         logConfig = config
         isInitialized = true
-        
+
         if (config.isLogEnabled && config.logFilePath.isNotEmpty()) {
-            if (oldConfig == null || !oldConfig.isLogEnabled || oldConfig.logFilePath != config.logFilePath || logFile == null) {
+            if (
+                oldConfig == null ||
+                    !oldConfig.isLogEnabled ||
+                    oldConfig.logFilePath != config.logFilePath ||
+                    logFile == null
+            ) {
                 val logDir = File(config.logFilePath)
                 if (!logDir.exists()) {
                     logDir.mkdirs()
@@ -151,8 +156,11 @@ object LogCatcher {
         } else {
             logFile = null
         }
-        
-        i("LogCatcher", "Log system configured - Enabled: ${config.isLogEnabled}, Path: ${config.logFilePath}, File: ${logFile?.name}")
+
+        i(
+            "LogCatcher",
+            "Log system configured - Enabled: ${config.isLogEnabled}, Path: ${config.logFilePath}, File: ${logFile?.name}",
+        )
     }
 
     @JvmStatic
