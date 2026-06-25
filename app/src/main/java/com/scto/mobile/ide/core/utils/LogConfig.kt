@@ -106,6 +106,7 @@ object LogCatcher {
     private var logConfig: LogConfigState? = null
 
     @Volatile private var isInitialized = false
+    @Volatile private var logFile: File? = null
 
     private val _logFlow = MutableSharedFlow<LogEntry>(extraBufferCapacity = 1000)
     val logFlow = _logFlow.asSharedFlow()
@@ -127,9 +128,31 @@ object LogCatcher {
 
     @JvmStatic
     fun updateConfig(config: LogConfigState) {
+        val oldConfig = logConfig
         logConfig = config
         isInitialized = true
-        i("LogCatcher", "Log system configured - Enabled: ${config.isLogEnabled}, Path: ${config.logFilePath}")
+        
+        if (config.isLogEnabled && config.logFilePath.isNotEmpty()) {
+            if (oldConfig == null || !oldConfig.isLogEnabled || oldConfig.logFilePath != config.logFilePath || logFile == null) {
+                val logDir = File(config.logFilePath)
+                if (!logDir.exists()) {
+                    logDir.mkdirs()
+                }
+                val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                val formattedDate = sdf.format(Date())
+                var file = File(logDir, "mobileide_$formattedDate.log")
+                var counter = 1
+                while (file.exists()) {
+                    file = File(logDir, "mobileide_${formattedDate}_$counter.log")
+                    counter++
+                }
+                logFile = file
+            }
+        } else {
+            logFile = null
+        }
+        
+        i("LogCatcher", "Log system configured - Enabled: ${config.isLogEnabled}, Path: ${config.logFilePath}, File: ${logFile?.name}")
     }
 
     @JvmStatic
@@ -177,17 +200,13 @@ object LogCatcher {
     private fun writeToFile(level: String, tag: String, message: String) {
         val config = logConfig ?: return
         if (!config.isLogEnabled) return
+        val targetFile = logFile ?: return
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val logDir = File(config.logFilePath)
-                if (!logDir.exists()) {
-                    logDir.mkdirs()
-                }
-                val logFile = File(logDir, "mobileide.log")
                 val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date())
                 val logEntry = "[$timestamp] [$level] [$tag] $message\n"
-                logFile.appendText(logEntry)
+                targetFile.appendText(logEntry)
             } catch (e: Exception) {
                 android.util.Log.e("LogCatcher", "Failed to write to log file: ${e.message}")
             }

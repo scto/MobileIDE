@@ -2,7 +2,7 @@ package com.scto.mobile.ide
 
 // import com.github.anrwatchdog.ANRWatchDog
 // import com.rk.libcommons.application
-// import com.rk.update.UpdateManager
+import com.rk.update.UpdateManager
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
@@ -37,6 +37,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         application = this
+        com.rk.libcommons.application = this
         Res.application = this
         iconPackManager = IconPackManager(this)
 
@@ -66,7 +67,7 @@ class App : Application() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler)
         // ANRWatchDog().start()
 
-        // UpdateManager().onUpdate()
+        UpdateManager().onUpdate()
 
         if (BuildConfig.DEBUG) {
             StrictMode.setVmPolicy(
