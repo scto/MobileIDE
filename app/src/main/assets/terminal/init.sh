@@ -31,7 +31,7 @@ fi
 
 ensure_packages_once() {
     local marker_file="/.cache/.packages_ensured"
-    local PACKAGES=("command-not-found" "sudo" "xkb-data" "libjemalloc-dev")
+    local PACKAGES=("command-not-found" "sudo" "xkb-data" "libjemalloc-dev" "bash-completion")
 
     # Exit early if already done
     [[ -f "$marker_file" ]] && return 0
@@ -106,11 +106,25 @@ fi
 # shellcheck disable=SC2164
 cd "$WKDIR" || cd $HOME
 
+# Enable arrow up/down history prefix search
+if [ -t 0 ]; then
+    bind '"\e[A": history-search-backward'
+    bind '"\e[B": history-search-forward'
+fi
+
+# Load bash completion
+if [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
+elif [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
 clear
-echo -e "\e[32;1mWelcome to MobileIDE Terminal.\e[0m"
-echo ""
-echo ""
-echo -e "  \e[33mapt update  : Update packages\e[0m"
-echo -e "  \e[33mapt upgrade : Upgrade packages\e[0m"
-echo -e "  \e[33mapt install : Install <package>\e[0m"
+echo -e "\e[1;36mWelcome to \e[1;32mMobileIDE Terminal\e[0m"
+echo -e "\e[1;30m----------------------------------------\e[0m"
+echo -e "\e[1;34mPackage Manager (apt):\e[0m"
+echo -e "  \e[1;33mapt update\e[0m   : Update packages"
+echo -e "  \e[1;33mapt upgrade\e[0m  : Upgrade packages"
+echo -e "  \e[1;33mapt install\e[0m  : Install <package>"
+echo -e "\e[1;30m----------------------------------------\e[0m"
 echo ""

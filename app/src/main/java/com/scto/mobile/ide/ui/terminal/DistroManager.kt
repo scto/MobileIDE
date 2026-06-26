@@ -221,7 +221,7 @@ object DistroManager {
             context.filesDir.absolutePath,
             args,
             env.toTypedArray(),
-            TerminalEmulator.DEFAULT_TERMINAL_TRANSCRIPT_ROWS,
+            10000,
             client,
         )
     }
