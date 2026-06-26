@@ -67,9 +67,7 @@ class App : Application() {
         Thread.setDefaultUncaughtExceptionHandler(CrashHandler)
         // ANRWatchDog().start()
 
-        GlobalScope.launch(Dispatchers.IO) {
-            UpdateManager().onUpdate()
-        }
+        GlobalScope.launch(Dispatchers.IO) { UpdateManager().onUpdate() }
 
         if (BuildConfig.DEBUG) {
             StrictMode.setVmPolicy(
