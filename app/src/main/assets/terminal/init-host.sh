@@ -33,7 +33,7 @@ ln -snf "$DISTRO_DIR" "$LOCAL/sandbox"
 export LOCAL
 export TMP_DIR="${TMPDIR:-$PREFIX/cache}"
 export PRIVATE_DIR="$PREFIX/files"
-export PROOT="$LOCAL/bin/proot"
+export PROOT="${PROOT_EXEC:-$LOCAL/bin/proot}"
 export EXT_HOME="$DISTRO_DIR/root"
 
 # Check if setup was already performed successfully AND the container directory exists

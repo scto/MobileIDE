@@ -195,6 +195,10 @@ object DistroManager {
             env.add("PROOT_LOADER32=$nativeLibDir/libproot-loader32.so")
         }
 
+        val libProot = File(nativeLibDir, "libproot.so")
+        val prootExec = if (libProot.exists()) libProot.absolutePath else "${prefixDir.absolutePath}/local/bin/proot"
+        env.add("PROOT_EXEC=$prootExec")
+
         val statFile = File(getLocalDir(context), "stat")
         if (!statFile.exists()) statFile.writeText(stat)
         val vmstatFile = File(getLocalDir(context), "vmstat")
