@@ -36,6 +36,12 @@ export PRIVATE_DIR="$PREFIX/files"
 export PROOT="${PROOT_EXEC:-$LOCAL/bin/proot}"
 export EXT_HOME="$DISTRO_DIR/root"
 
+echo "=== DEBUG TERMINAL ==="
+echo "PROOT_EXEC: $PROOT_EXEC"
+echo "PROOT: $PROOT"
+ls -l "$PROOT" || echo "PROOT file not found"
+echo "======================"
+
 # Check if setup was already performed successfully AND the container directory exists
 if [ ! -f "$LOCAL/.terminal_setup_ok_DO_NOT_REMOVE" ] || [ ! -d "$LOCAL/sandbox/etc" ]; then
     # Prepare the tarball for setup.sh
