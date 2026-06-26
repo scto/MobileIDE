@@ -203,9 +203,9 @@ object DistroManager {
         val shell = "/system/bin/sh"
         val args =
             if (initCommand != null) {
-                arrayOf(initHostScript.absolutePath, initCommand)
+                arrayOf(shell, initHostScript.absolutePath, initCommand)
             } else {
-                arrayOf(initHostScript.absolutePath)
+                arrayOf(shell, initHostScript.absolutePath)
             }
         LogCatcher.i(
             "DistroManager",
