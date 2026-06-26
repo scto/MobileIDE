@@ -15,7 +15,6 @@ import com.rk.terminal.ui.screens.terminal.stat
 import com.rk.terminal.ui.screens.terminal.vmstat
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.WorkspaceManager
-import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import java.io.File
@@ -216,14 +215,7 @@ object DistroManager {
             "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
         )
 
-        return TerminalSession(
-            shell,
-            context.filesDir.absolutePath,
-            args,
-            env.toTypedArray(),
-            10000,
-            client,
-        )
+        return TerminalSession(shell, context.filesDir.absolutePath, args, env.toTypedArray(), 10000, client)
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {
