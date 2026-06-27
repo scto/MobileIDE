@@ -19,6 +19,7 @@
 package com.scto.mobile.ide.ui.editor
 
 import android.content.Context
+import com.scto.mobile.ide.core.utils.LogCatcher
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
@@ -31,7 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.eclipse.tm4e.core.registry.IThemeSource
-import com.scto.mobile.ide.core.utils.LogCatcher
 
 object TextMateInitializer {
     @Volatile private var isInitialized = false
