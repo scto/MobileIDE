@@ -328,9 +328,15 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
 
     // TreeSitter language packs
-    implementation(libs.tree.sitter)
-    implementation(libs.tree.sitter.json)
-
+    //implementation(libs.tree.sitter)
+    //implementation(libs.tree.sitter.json)
+    implementation(libs.androidide.ts)
+    implementation(libs.androidide.ts.java)
+    implementation(libs.androidide.ts.json)
+    implementation(libs.androidide.ts.kotlin)
+    implementation(libs.androidide.ts.cpp)
+    implementation(libs.androidide.ts.log)
+    implementation(libs.androidide.ts.xml)
     // Media3 (Video Player)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
