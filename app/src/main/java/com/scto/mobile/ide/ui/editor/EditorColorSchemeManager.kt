@@ -96,6 +96,43 @@ object EditorColorSchemeManager {
         }
     }
 
+    /**
+     * Only applies structural/UI colors for TextMate editors.
+     * Does NOT touch TEXT_NORMAL, KEYWORD, COMMENT, etc. which are managed by TextMateColorScheme.
+     */
+    fun applyUiColors(scheme: EditorColorScheme, colorScheme: ColorScheme) {
+        val primary = colorScheme.primary.toArgb()
+        val surface = colorScheme.surface.toArgb()
+        val surfaceVariant = colorScheme.surfaceVariant.toArgb()
+        val onSurfaceVariant = colorScheme.onSurfaceVariant.toArgb()
+
+        scheme.apply {
+            setColor(EditorColorScheme.LINE_NUMBER_BACKGROUND, surface)
+            setColor(EditorColorScheme.LINE_DIVIDER, surfaceVariant)
+            setColor(EditorColorScheme.LINE_NUMBER, onSurfaceVariant)
+            setColor(EditorColorScheme.LINE_NUMBER_CURRENT, primary)
+            setColor(EditorColorScheme.CURRENT_LINE, adjustAlpha(surfaceVariant, 0.3f))
+            setColor(EditorColorScheme.SELECTED_TEXT_BACKGROUND, adjustAlpha(primary, 0.25f))
+            setColor(EditorColorScheme.SELECTION_INSERT, primary)
+            setColor(EditorColorScheme.SELECTION_HANDLE, primary)
+            setColor(EditorColorScheme.SCROLL_BAR_THUMB, adjustAlpha(onSurfaceVariant, 0.3f))
+            setColor(EditorColorScheme.SCROLL_BAR_THUMB_PRESSED, adjustAlpha(primary, 0.5f))
+            setColor(EditorColorScheme.COMPLETION_WND_BACKGROUND, surface)
+            setColor(EditorColorScheme.COMPLETION_WND_CORNER, surfaceVariant)
+            setColor(EditorColorScheme.COMPLETION_WND_ITEM_CURRENT, adjustAlpha(primary, 0.2f))
+            setColor(EditorColorScheme.TEXT_ACTION_WINDOW_BACKGROUND, surface)
+            setColor(EditorColorScheme.TEXT_ACTION_WINDOW_ICON_COLOR, primary)
+            setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_FOREGROUND, primary)
+            setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BACKGROUND, AndroidColor.TRANSPARENT)
+            setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_BORDER, AndroidColor.TRANSPARENT)
+            setColor(EditorColorScheme.HIGHLIGHTED_DELIMITERS_UNDERLINE, primary)
+            setColor(EditorColorScheme.UNDERLINE, primary)
+            setColor(EditorColorScheme.BLOCK_LINE, surfaceVariant)
+            setColor(EditorColorScheme.BLOCK_LINE_CURRENT, primary)
+            setColor(EditorColorScheme.SIDE_BLOCK_LINE, surfaceVariant)
+        }
+    }
+
     private fun adjustAlpha(color: Int, alpha: Float): Int {
         val a = (alpha * 255).toInt().coerceIn(0, 255)
         val r = AndroidColor.red(color)

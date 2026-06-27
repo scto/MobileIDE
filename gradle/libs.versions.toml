@@ -64,6 +64,7 @@ mavenPublish = "0.35.0"
 coroutines = "1.10.2"
 
 tsBinding = "4.3.2"
+tree-sitter = "1.0.1"
 
 # Required for lsp
 # ReTerminal dependency versions //🔥🔥🔥 Auto-complete configuration naming, specific camelCase rules for ReTerminal
@@ -151,6 +152,13 @@ org-eclipse-jgit-ssh-apache = { module = "org.eclipse.jgit:org.eclipse.jgit.ssh.
 
 # Tree-sitter / editor
 tree-sitter = { module = "com.itsaky.androidide.treesitter:android-tree-sitter", version.ref = "tsBinding" }
+androidide-ts = { module = "io.github.mohammed-baqer-null:android-tree-sitter", version.ref = "tree-sitter" }
+androidide-ts-java = { module = "io.github.mohammed-baqer-null:tree-sitter-java", version.ref = "tree-sitter" }
+androidide-ts-json = { module = "io.github.mohammed-baqer-null:tree-sitter-json", version.ref = "tree-sitter" }
+androidide-ts-kotlin = { module = "io.github.mohammed-baqer-null:tree-sitter-kotlin", version.ref = "tree-sitter" }
+androidide-ts-cpp = { module = "io.github.mohammed-baqer-null:tree-sitter-cpp", version.ref = "tree-sitter" }
+androidide-ts-log = { module = "io.github.mohammed-baqer-null:tree-sitter-log", version.ref = "tree-sitter" }
+androidide-ts-xml = { module = "io.github.mohammed-baqer-null:tree-sitter-xml", version.ref = "tree-sitter" }
 tree-sitter-java = { module = "com.itsaky.androidide.treesitter:tree-sitter-java", version.ref = "tsBinding" }
 tree-sitter-json = { module = "com.itsaky.androidide.treesitter:tree-sitter-json", version.ref = "tsBinding" }
 
