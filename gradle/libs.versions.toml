@@ -63,7 +63,7 @@ androidxAnnotation = "1.9.1"
 mavenPublish = "0.35.0"
 coroutines = "1.10.2"
 
-tsBinding = "4.3.2"
+#tsBinding = "4.3.2"
 tree-sitter = "1.0.1"
 
 # Required for lsp
@@ -151,7 +151,6 @@ org-eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref =
 org-eclipse-jgit-ssh-apache = { module = "org.eclipse.jgit:org.eclipse.jgit.ssh.apache", version.ref = "orgEclipseJgitSshApache" }
 
 # Tree-sitter / editor
-tree-sitter = { module = "com.itsaky.androidide.treesitter:android-tree-sitter", version.ref = "tsBinding" }
 androidide-ts = { module = "io.github.mohammed-baqer-null:android-tree-sitter", version.ref = "tree-sitter" }
 androidide-ts-java = { module = "io.github.mohammed-baqer-null:tree-sitter-java", version.ref = "tree-sitter" }
 androidide-ts-json = { module = "io.github.mohammed-baqer-null:tree-sitter-json", version.ref = "tree-sitter" }
@@ -159,8 +158,9 @@ androidide-ts-kotlin = { module = "io.github.mohammed-baqer-null:tree-sitter-kot
 androidide-ts-cpp = { module = "io.github.mohammed-baqer-null:tree-sitter-cpp", version.ref = "tree-sitter" }
 androidide-ts-log = { module = "io.github.mohammed-baqer-null:tree-sitter-log", version.ref = "tree-sitter" }
 androidide-ts-xml = { module = "io.github.mohammed-baqer-null:tree-sitter-xml", version.ref = "tree-sitter" }
-tree-sitter-java = { module = "com.itsaky.androidide.treesitter:tree-sitter-java", version.ref = "tsBinding" }
-tree-sitter-json = { module = "com.itsaky.androidide.treesitter:tree-sitter-json", version.ref = "tsBinding" }
+#tree-sitter = { module = "com.itsaky.androidide.treesitter:android-tree-sitter", version.ref = "tsBinding" }
+#tree-sitter-java = { module = "com.itsaky.androidide.treesitter:tree-sitter-java", version.ref = "tsBinding" }
+#tree-sitter-json = { module = "com.itsaky.androidide.treesitter:tree-sitter-json", version.ref = "tsBinding" }
 
 zipalign-java = { module = "com.github.iyxan23:zipalign-java", version.ref = "zipalignJava" }
 volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
