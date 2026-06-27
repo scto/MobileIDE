@@ -97,8 +97,8 @@ object EditorColorSchemeManager {
     }
 
     /**
-     * Only applies structural/UI colors for TextMate editors.
-     * Does NOT touch TEXT_NORMAL, KEYWORD, COMMENT, etc. which are managed by TextMateColorScheme.
+     * Only applies structural/UI colors for TextMate editors. Does NOT touch TEXT_NORMAL, KEYWORD, COMMENT, etc. which
+     * are managed by TextMateColorScheme.
      */
     fun applyUiColors(scheme: EditorColorScheme, colorScheme: ColorScheme) {
         val primary = colorScheme.primary.toArgb()
