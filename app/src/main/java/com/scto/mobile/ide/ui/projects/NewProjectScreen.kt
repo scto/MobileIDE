@@ -49,8 +49,6 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
 import java.util.Locale
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -398,17 +396,17 @@ private fun createNewProject(
             }
             projectDir.mkdirs()
 
-            setupGradleWrapper(projectDir, context)
-            setupTomlVersions(projectDir)
+            val templateName =
+                when (type) {
+                    ProjectType.BASIC_COMPOSE_ACTIVITY -> "BasicComposeActivity"
+                    ProjectType.EMPTY_COMPOSE_ACTIVITY -> "EmptyComposeActivity"
+                    ProjectType.BOTTOM_NAVIGATION -> "BottomNavigation"
+                    ProjectType.NAVIGATION_DRAWER_ACTIVITY -> "NavigationDrawerActivity"
+                    ProjectType.FLUTTER_APP -> "FlutterApp"
+                    ProjectType.CMAKE_APP -> "CmakeApp"
+                }
 
-            when (type) {
-                ProjectType.BASIC_COMPOSE_ACTIVITY -> createBasicComposeStructure(projectDir, name, packageName)
-                ProjectType.EMPTY_COMPOSE_ACTIVITY -> createEmptyComposeStructure(projectDir, name, packageName)
-                ProjectType.BOTTOM_NAVIGATION -> createBottomNavigationStructure(projectDir, name, packageName)
-                ProjectType.NAVIGATION_DRAWER_ACTIVITY -> createNavigationDrawerStructure(projectDir, name, packageName)
-                ProjectType.FLUTTER_APP -> createFlutterStructure(projectDir, name, packageName)
-                ProjectType.CMAKE_APP -> createCmakeStructure(projectDir, name, packageName)
-            }
+            extractTemplate(context, templateName, projectDir, name, packageName)
 
             withContext(Dispatchers.Main) { onSuccess(projectDir) }
         } catch (e: Exception) {
@@ -420,196 +418,61 @@ private fun createNewProject(
     }
 }
 
-private fun setupGradleWrapper(dir: File, context: Context) {
-    val gradleDir = File(dir, "gradle/wrapper")
-    gradleDir.mkdirs()
+private fun extractTemplate(
+    context: Context,
+    templateName: String,
+    targetDir: File,
+    projectName: String,
+    packageName: String,
+) {
+    val assetManager = context.assets
+    assetManager.open("templates/templates.zip").use { inputStream ->
+        java.util.zip.ZipInputStream(inputStream).use { zipInputStream ->
+            var entry = zipInputStream.nextEntry
+            val prefix = "$templateName/"
+            val prefixToStrip = if (templateName == "FlutterApp") prefix else "${prefix}kotlin/"
 
-    val sourceJar = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.jar")
-    val sourceProps = File("/data/data/com.termux/files/home/MobileIDE/gradle/wrapper/gradle-wrapper.properties")
-    val sourceGradlew = File("/data/data/com.termux/files/home/MobileIDE/gradlew")
-    val sourceGradlewBat = File("/data/data/com.termux/files/home/MobileIDE/gradlew.bat")
+            while (entry != null) {
+                if (entry.name.startsWith(prefix) && !entry.isDirectory) {
+                    val relativePath = entry.name.substring(prefixToStrip.length)
 
-    val targetJar = File(gradleDir, "gradle-wrapper.jar")
-    val targetProps = File(gradleDir, "gradle-wrapper.properties")
-    val targetGradlew = File(dir, "gradlew")
-    val targetGradlewBat = File(dir, "gradlew.bat")
+                    if (relativePath != "info.json" && relativePath != "icon.png") {
+                        val packagePath = packageName.replace('.', '/')
+                        val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
 
-    var copiedLocal = false
-    try {
-        if (sourceJar.exists() && sourceProps.exists() && sourceGradlew.exists()) {
-            sourceJar.copyTo(targetJar, overwrite = true)
-            sourceProps.copyTo(targetProps, overwrite = true)
-            sourceGradlew.copyTo(targetGradlew, overwrite = true)
-            if (sourceGradlewBat.exists()) {
-                sourceGradlewBat.copyTo(targetGradlewBat, overwrite = true)
-            }
-            targetGradlew.setExecutable(true)
-            copiedLocal = true
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
+                        val targetFile = File(targetDir, resolvedRelativePath)
+                        targetFile.parentFile?.mkdirs()
 
-    if (!copiedLocal) {
-        safeWrite(
-            targetProps,
-            """
-            distributionBase=GRADLE_USER_HOME
-            distributionPath=wrapper/dists
-            distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
-            zipStoreBase=GRADLE_USER_HOME
-            zipStorePath=wrapper/dists
-            """
-                .trimIndent(),
-        )
+                        val bytes = zipInputStream.readBytes()
+                        if (isTextFile(resolvedRelativePath)) {
+                            var content = String(bytes, Charsets.UTF_8)
+                            content = content.replace("\$packageName", packageName)
+                            content = content.replace("\$packagename", packageName)
+                            content = content.replace("\$projectName", projectName)
 
-        safeWrite(targetGradlew, ProjectTemplates.gradlewScript)
-        targetGradlew.setExecutable(true)
+                            val jniPackageName = packageName.replace(".", "_")
+                            content = content.replace("\$jniPackageName", jniPackageName)
 
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val url =
-                    URL("https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar")
-                url.openStream().use { input -> FileOutputStream(targetJar).use { output -> input.copyTo(output) } }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                            targetFile.writeText(content)
+                        } else {
+                            targetFile.writeBytes(bytes)
+                        }
+
+                        if (targetFile.name == "gradlew") {
+                            targetFile.setExecutable(true)
+                        }
+                    }
+                }
+                zipInputStream.closeEntry()
+                entry = zipInputStream.nextEntry
             }
         }
     }
 }
 
-private fun setupTomlVersions(dir: File) {
-    val gradleDir = File(dir, "gradle")
-    gradleDir.mkdirs()
-    val tomlFile = File(gradleDir, "libs.versions.toml")
-    safeWrite(tomlFile, ProjectTemplates.libsVersionsToml)
-}
-
-data class AndroidDirs(val appDir: File, val mainDir: File, val resDir: File, val valuesDir: File, val javaDir: File)
-
-private fun setupCommonAndroidDirs(dir: File, packageName: String): AndroidDirs {
-    val appDir = File(dir, "app")
-    val mainDir = File(appDir, "src/main")
-    val resDir = File(mainDir, "res")
-    val valuesDir = File(resDir, "values")
-    val packagePath = packageName.replace('.', '/')
-    val javaDir = File(mainDir, "java/$packagePath")
-    javaDir.mkdirs()
-    valuesDir.mkdirs()
-    return AndroidDirs(appDir, mainDir, resDir, valuesDir, javaDir)
-}
-
-private fun createComposeThemeStructure(dirs: AndroidDirs, packageName: String) {
-    val themeDir = File(dirs.javaDir, "ui/theme")
-    themeDir.mkdirs()
-    safeWrite(File(themeDir, "Color.kt"), ProjectTemplates.getColorKt(packageName))
-    safeWrite(File(themeDir, "Type.kt"), ProjectTemplates.getTypeKt(packageName))
-    safeWrite(File(themeDir, "Theme.kt"), ProjectTemplates.getThemeKt(packageName))
-}
-
-private fun createEmptyComposeStructure(dir: File, name: String, packageName: String) {
-    val dirs = setupCommonAndroidDirs(dir, packageName)
-    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
-    safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
-
-    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
-    safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
-    safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
-    safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getEmptyComposeMainActivity(packageName))
-    createComposeThemeStructure(dirs, packageName)
-}
-
-private fun createBasicComposeStructure(dir: File, name: String, packageName: String) {
-    val dirs = setupCommonAndroidDirs(dir, packageName)
-    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
-    safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
-
-    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
-    safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
-    safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
-    safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getBasicComposeMainActivity(packageName))
-    createComposeThemeStructure(dirs, packageName)
-}
-
-private fun createBottomNavigationStructure(dir: File, name: String, packageName: String) {
-    val dirs = setupCommonAndroidDirs(dir, packageName)
-    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
-    safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
-
-    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, true))
-    safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
-    safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
-    safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getBottomNavigationMainActivity(packageName))
-    createComposeThemeStructure(dirs, packageName)
-}
-
-private fun createNavigationDrawerStructure(dir: File, name: String, packageName: String) {
-    val dirs = setupCommonAndroidDirs(dir, packageName)
-    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
-    safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
-
-    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCompose(packageName, false))
-    safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
-    safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
-    safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getNavigationDrawerMainActivity(packageName))
-    createComposeThemeStructure(dirs, packageName)
-}
-
-private fun createFlutterStructure(dir: File, name: String, packageName: String) {
-    val libDir = File(dir, "lib")
-    val androidDir = File(dir, "android")
-    val packagePath = packageName.replace('.', '/')
-    val androidAppDir = File(androidDir, "app")
-    val androidMainDir = File(androidAppDir, "src/main")
-    val androidKotlinDir = File(androidMainDir, "kotlin/$packagePath")
-    val androidResValuesDir = File(androidMainDir, "res/values")
-
-    libDir.mkdirs()
-    androidKotlinDir.mkdirs()
-    androidResValuesDir.mkdirs()
-
-    safeWrite(File(dir, "pubspec.yaml"), ProjectTemplates.flutterPubspec)
-    safeWrite(File(libDir, "main.dart"), ProjectTemplates.flutterMainDart)
-
-    safeWrite(File(androidDir, "build.gradle"), ProjectTemplates.flutterAndroidBuildGradle)
-    safeWrite(File(androidDir, "settings.gradle"), ProjectTemplates.flutterAndroidSettingsGradle)
-    safeWrite(File(androidAppDir, "build.gradle"), ProjectTemplates.flutterAndroidAppBuildGradle)
-    safeWrite(File(androidMainDir, "AndroidManifest.xml"), ProjectTemplates.getFlutterAndroidManifest(packageName))
-    safeWrite(File(androidKotlinDir, "MainActivity.kt"), ProjectTemplates.getFlutterMainActivity(packageName))
-    safeWrite(File(androidResValuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(androidResValuesDir, "themes.xml"), ProjectTemplates.themesXml)
-}
-
-private fun createCmakeStructure(dir: File, name: String, packageName: String) {
-    val dirs = setupCommonAndroidDirs(dir, packageName)
-    val cppDir = File(dirs.appDir, "src/main/cpp")
-    cppDir.mkdirs()
-
-    safeWrite(File(dir, "settings.gradle.kts"), ProjectTemplates.getSettingsGradle(name))
-    safeWrite(File(dir, "build.gradle.kts"), ProjectTemplates.rootBuildGradleAndroid)
-    safeWrite(File(dir, "gradle.properties"), ProjectTemplates.gradleProperties)
-
-    safeWrite(File(dirs.appDir, "build.gradle.kts"), ProjectTemplates.getAppBuildGradleCmake(packageName))
-    safeWrite(File(dirs.appDir, "CMakeLists.txt"), ProjectTemplates.cmakeLists)
-    safeWrite(File(cppDir, "native-lib.cpp"), ProjectTemplates.getNativeLibCpp(packageName))
-
-    safeWrite(File(dirs.mainDir, "AndroidManifest.xml"), ProjectTemplates.getAndroidManifest(packageName))
-    safeWrite(File(dirs.valuesDir, "strings.xml"), ProjectTemplates.getStringsXml(name))
-    safeWrite(File(dirs.valuesDir, "themes.xml"), ProjectTemplates.themesXml)
-    safeWrite(File(dirs.javaDir, "MainActivity.kt"), ProjectTemplates.getCmakeMainActivity(packageName))
-}
-
-private fun safeWrite(file: File, content: String) {
-    try {
-        file.parentFile!!.mkdirs()
-        file.writeText(content)
-    } catch (_: Exception) {}
+private fun isTextFile(fileName: String): Boolean {
+    val textExtensions =
+        listOf("kt", "java", "xml", "gradle", "kts", "toml", "properties", "json", "dart", "yaml", "txt", "cpp", "h")
+    val ext = fileName.substringAfterLast('.', "").lowercase()
+    return ext in textExtensions
 }
