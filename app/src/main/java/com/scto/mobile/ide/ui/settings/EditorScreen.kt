@@ -2,6 +2,8 @@ package com.scto.mobile.ide.ui.settings
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -83,7 +85,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize().verticalScroll(rememberScrollState())) {
             EditorSettingsItem(
                 fontSize = fontSize,
                 onFontSizeChange = { fontSize = it },

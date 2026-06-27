@@ -190,7 +190,7 @@
     {
       "grammar": "textmate/objective-c/syntaxes/objective-c++.tmLanguage.json",
       "name": "objective-cpp",
-      "scopeName": "source.objc++",
+      "scopeName": "source.objcpp",
       "languageConfiguration": "textmate/objective-c/language-configuration.json"
     },
     {
@@ -226,7 +226,7 @@
     {
       "grammar": "textmate/restructuredtext/syntaxes/rst.tmLanguage.json",
       "name": "restructuredtext",
-      "scopeName": "text.restructuredtext",
+      "scopeName": "source.rst",
       "languageConfiguration": "textmate/restructuredtext/language-configuration.json"
     },
     {
@@ -339,6 +339,54 @@
       "grammar": "textmate/typescript/syntaxes/jsdoc.ts.injection.tmLanguage.json",
       "name": "jsdoc-ts-injection",
       "scopeName": "documentation.injection.ts"
+    },
+    {
+      "grammar": "textmate/kotlin/syntaxes/kotlin.tmLanguage.json",
+      "name": "kotlin",
+      "scopeName": "source.kotlin",
+      "languageConfiguration": "textmate/kotlin/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/xml/syntaxes/xml.tmLanguage.json",
+      "name": "xml",
+      "scopeName": "text.xml",
+      "languageConfiguration": "textmate/xml/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/properties/syntaxes/properties.tmLanguage.json",
+      "name": "properties",
+      "scopeName": "source.properties",
+      "languageConfiguration": "textmate/properties/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/toml/syntaxes/toml.tmLanguage.json",
+      "name": "toml",
+      "scopeName": "source.toml",
+      "languageConfiguration": "textmate/toml/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/ini/syntaxes/ini.tmLanguage.json",
+      "name": "ini",
+      "scopeName": "source.ini",
+      "languageConfiguration": "textmate/ini/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/cmake/syntaxes/cmake.tmLanguage.json",
+      "name": "cmake",
+      "scopeName": "source.cmake",
+      "languageConfiguration": "textmate/cmake/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/log/syntaxes/log.tmLanguage.json",
+      "name": "log",
+      "scopeName": "text.log",
+      "languageConfiguration": "textmate/log/language-configuration.json"
+    },
+    {
+      "grammar": "textmate/aidl/syntaxes/aidl.tmLanguage.json",
+      "name": "aidl",
+      "scopeName": "source.aidl",
+      "languageConfiguration": "textmate/aidl/language-configuration.json"
     }
   ]
 }

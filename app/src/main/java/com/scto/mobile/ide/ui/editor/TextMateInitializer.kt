@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.eclipse.tm4e.core.registry.IThemeSource
+import com.scto.mobile.ide.core.utils.LogCatcher
 
 object TextMateInitializer {
     @Volatile private var isInitialized = false
@@ -58,12 +59,17 @@ object TextMateInitializer {
                     return@withLock
                 }
 
+                LogCatcher.i("TextMate", "Starting TextMate initialization...")
                 try {
                     val appContext = context.applicationContext
-                    // Prevent duplicate provider registration
+
+                    // Always re-register the file provider (handles fresh process)
                     try {
                         FileProviderRegistry.getInstance().addFileProvider(AssetsFileResolver(appContext.assets))
-                    } catch (_: Exception) {}
+                        LogCatcher.i("TextMate", "AssetsFileResolver registered")
+                    } catch (e: Exception) {
+                        LogCatcher.w("TextMate", "AssetsFileResolver registration note: ${e.message}")
+                    }
 
                     val themeRegistry = ThemeRegistry.getInstance()
                     val themes =
@@ -71,26 +77,38 @@ object TextMateInitializer {
 
                     themes.forEach { (name, path) ->
                         try {
-                            FileProviderRegistry.getInstance().tryGetInputStream(path)?.use { inputStream ->
-                                themeRegistry.loadTheme(
-                                    ThemeModel(IThemeSource.fromInputStream(inputStream, path, null), name)
-                                )
+                            val stream = FileProviderRegistry.getInstance().tryGetInputStream(path)
+                            if (stream == null) {
+                                LogCatcher.e("TextMate", "Theme file not found: $path")
+                            } else {
+                                stream.use { inputStream ->
+                                    themeRegistry.loadTheme(
+                                        ThemeModel(IThemeSource.fromInputStream(inputStream, path, null), name)
+                                    )
+                                    LogCatcher.i("TextMate", "Theme loaded successfully: $name")
+                                }
                             }
                         } catch (e: Exception) {
+                            LogCatcher.e("TextMate", "Failed to load theme: $name", e)
                             e.printStackTrace()
                         }
                     }
 
                     // Load grammars
                     try {
+                        LogCatcher.i("TextMate", "Loading grammars from textmate/languages.json...")
                         GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
+                        LogCatcher.i("TextMate", "Grammars loaded successfully.")
                     } catch (e: Exception) {
+                        LogCatcher.e("TextMate", "Failed to load grammars from languages.json", e)
                         e.printStackTrace()
                     }
 
                     isInitialized = true
+                    LogCatcher.i("TextMate", "TextMate initialization completed.")
                     notifyCallbacks()
                 } catch (e: Exception) {
+                    LogCatcher.e("TextMate", "Initialization crash", e)
                     e.printStackTrace()
                 }
             }

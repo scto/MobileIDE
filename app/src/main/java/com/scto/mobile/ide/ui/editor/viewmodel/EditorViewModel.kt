@@ -363,19 +363,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             } else {
                 filenameOrExtension.lowercase()
             }
+        LogCatcher.i("EditorHighlight", "Applying language for file: $filenameOrExtension, ext: $ext")
         val tsLanguage = loadTreeSitterLanguage(context, ext)
 
         if (tsLanguage != null) {
+            LogCatcher.i("EditorHighlight", "Applied TreeSitter language for $ext")
             editor.setEditorLanguage(tsLanguage)
             configureRainbowColors(editor.colorScheme)
         } else {
             val tmLanguage = loadTextMateLanguage(context, ext)
             if (tmLanguage != null) {
+                LogCatcher.i("EditorHighlight", "Applied TextMate language for $ext")
                 editor.setEditorLanguage(tmLanguage)
                 try {
                     editor.colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-                } catch (_: Exception) {}
+                    LogCatcher.i("EditorHighlight", "Applied TextMateColorScheme successfully")
+                } catch (e: Exception) {
+                    LogCatcher.e("EditorHighlight", "Failed to apply TextMateColorScheme", e)
+                }
             } else {
+                LogCatcher.i("EditorHighlight", "No language found for $ext. Applied EmptyLanguage")
                 editor.setEditorLanguage(EmptyLanguage())
             }
         }
@@ -498,8 +505,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun loadTextMateLanguage(context: Context, extension: String): TextMateLanguage? {
+        LogCatcher.i("TextMateLanguage", "loadTextMateLanguage called for extension: $extension")
         return try {
             if (!TextMateInitializer.isReady()) {
+                LogCatcher.i("TextMateLanguage", "TextMateInitializer is NOT ready. Starting initialization.")
                 TextMateInitializer.initialize(context)
                 return null
             }
@@ -548,6 +557,27 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "hlsl" -> "source.hlsl"
                     "java",
                     "jav" -> "source.java"
+                    "kt",
+                    "kts" -> "source.kotlin"
+                    "xml",
+                    "xaml",
+                    "dtd",
+                    "plist",
+                    "svg" -> "text.xml"
+                    "properties",
+                    "cfg",
+                    "conf",
+                    "config",
+                    "editorconfig",
+                    "gitconfig",
+                    "gitmodules",
+                    "gitattributes" -> "source.properties"
+                    "toml" -> "source.toml"
+                    "ini" -> "source.ini"
+                    "cmake",
+                    "cmakelists" -> "source.cmake"
+                    "log" -> "text.log"
+                    "aidl" -> "source.aidl"
                     "json" -> "source.json"
                     "jsonc" -> "source.json.comments"
                     "jsonl" -> "source.json.lines"
@@ -562,7 +592,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "md",
                     "markdown" -> "text.html.markdown"
                     "m" -> "source.objc"
-                    "mm" -> "source.objc++"
+                    "mm" -> "source.objcpp"
                     "ps1",
                     "psm1",
                     "psd1" -> "source.powershell"
@@ -577,7 +607,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "rhistory",
                     "rprofile" -> "source.r"
                     "cshtml" -> "text.html.cshtml"
-                    "rst" -> "text.restructuredtext"
+                    "rst" -> "source.rst"
                     "rb",
                     "rbx",
                     "rjs",
@@ -594,12 +624,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "vbs" -> "source.asp.vb.net"
                     "yaml",
                     "yml" -> "source.yaml"
-                    else -> return null
+                    else -> {
+                        LogCatcher.i("TextMateLanguage", "No scopeName mapped for extension: $extension")
+                        return null
+                    }
                 }
+            LogCatcher.i("TextMateLanguage", "Mapped extension $extension to scope: $scopeName")
             val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
             val lspEnabled = prefs.getBoolean("editor_lsp_enabled", false)
-            TextMateLanguage.create(scopeName, !lspEnabled)
-        } catch (_: Exception) {
+            val tmLang = TextMateLanguage.create(scopeName, !lspEnabled)
+            LogCatcher.i("TextMateLanguage", "TextMateLanguage created successfully for scope: $scopeName")
+            tmLang
+        } catch (e: Exception) {
+            LogCatcher.e("TextMateLanguage", "Failed to create TextMateLanguage for extension: $extension", e)
             null
         }
     }
@@ -869,11 +906,17 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun updateEditorTheme(colorScheme: ColorScheme) {
         editorInstances.values.forEach { editor ->
-            EditorColorSchemeManager.applyThemeColors(editor.colorScheme, colorScheme)
-
-            // Re-apply rainbow colors if needed (as applying theme colors might reset some custom colors)
-            if (editor.editorLanguage is TsLanguage) {
-                configureRainbowColors(editor.colorScheme)
+            if (editor.editorLanguage is TextMateLanguage) {
+                // For TextMate editors, only apply background/UI colors, not syntax colors.
+                // The TextMateColorScheme manages syntax colors from the theme JSON files.
+                // We only need to update structural colors (background, line numbers etc.)
+                EditorColorSchemeManager.applyUiColors(editor.colorScheme, colorScheme)
+            } else {
+                EditorColorSchemeManager.applyThemeColors(editor.colorScheme, colorScheme)
+                // Re-apply rainbow colors if needed (as applying theme colors might reset some custom colors)
+                if (editor.editorLanguage is TsLanguage) {
+                    configureRainbowColors(editor.colorScheme)
+                }
             }
             editor.invalidate()
         }
