@@ -89,7 +89,8 @@ android {
 
 dependencies {
     compileOnly(project(":editor"))
-    api(libs.tree.sitter)
+    api(libs.androidide.ts)
+    //api(libs.tree.sitter)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)
