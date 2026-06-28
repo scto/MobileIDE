@@ -26,12 +26,12 @@ package io.github.rosemoe.sora.editor.ts
 
 import android.os.Message
 import android.util.Log
-import com.itsaky.androidide.treesitter.TSInputEdit
-import com.itsaky.androidide.treesitter.TSParser
-import com.itsaky.androidide.treesitter.TSQueryCursor
-import com.itsaky.androidide.treesitter.TSTree
-import com.itsaky.androidide.treesitter.string.UTF16String
-import com.itsaky.androidide.treesitter.string.UTF16StringFactory
+import com.tom.rv2ide.treesitter.TSInputEdit
+import com.tom.rv2ide.treesitter.TSParser
+import com.tom.rv2ide.treesitter.TSQueryCursor
+import com.tom.rv2ide.treesitter.TSTree
+import com.tom.rv2ide.treesitter.string.UTF16String
+import com.tom.rv2ide.treesitter.string.UTF16StringFactory
 import io.github.rosemoe.sora.editor.ts.spans.DefaultSpanFactory
 import io.github.rosemoe.sora.editor.ts.spans.TsSpanFactory
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver

@@ -24,7 +24,7 @@
 
 package io.github.rosemoe.sora.editor.ts.multilang
 
-import com.itsaky.androidide.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.TSLanguage
 import io.github.rosemoe.sora.editor.ts.LocalsCaptureSpec
 import io.github.rosemoe.sora.editor.ts.TsLanguageSpec
 import io.github.rosemoe.sora.editor.ts.TsThemeBuilder
