@@ -328,8 +328,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.ui)
 
     // TreeSitter language packs
-    //implementation(libs.tree.sitter)
-    //implementation(libs.tree.sitter.json)
+    // implementation(libs.tree.sitter)
+    // implementation(libs.tree.sitter.json)
     implementation(libs.androidide.ts)
     implementation(libs.androidide.ts.java)
     implementation(libs.androidide.ts.json)
