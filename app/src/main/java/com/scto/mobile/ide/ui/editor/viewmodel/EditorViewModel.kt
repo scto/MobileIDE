@@ -32,8 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.itsaky.androidide.treesitter.TSLanguage
-import com.itsaky.androidide.treesitter.json.TSLanguageJson
+import com.tom.rv2ide.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.json.TSLanguageJson
+import com.tom.rv2ide.treesitter.kotlin.TSLanguageKotlin
+import com.tom.rv2ide.treesitter.xml.TSLanguageXml
+import com.tom.rv2ide.treesitter.log.TSLanguageLog
+import com.tom.rv2ide.treesitter.java.TSLanguageJava
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.BackupUtils
 import com.scto.mobile.ide.core.utils.LogCatcher
@@ -459,16 +463,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "htm" -> HtmlLanguage()
                     "css" -> CssLanguage()
                     "js",
+                    "mjs",
+                    "cjs",
                     "javascript" -> JavaScriptLanguage()
                     "json",
                     "JSON" -> TSLanguageJson.getInstance()
+                    "kt",
+                    "kts" -> TSLanguageKotlin.getInstance()
+                    "java",
+                    "jav" -> TSLanguageJava.getInstance()
+                    "xml",
+                    "xaml",
+                    "svg",
+                    "plist" -> TSLanguageXml.getInstance()
+                    "log" -> TSLanguageLog.getInstance()
                     else -> return null
                 }
             val langFolderName =
                 when (extension) {
-                    "js",
-                    "javascript" -> "javascript"
+                    "js", "mjs", "cjs", "javascript" -> "javascript"
                     "htm" -> "html"
+                    "kts" -> "kotlin"
+                    "jav" -> "java"
+                    "xaml", "svg", "plist" -> "xml"
                     else -> extension
                 }
             val highlightsScm =
@@ -480,27 +497,145 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     ""
                 }
 
-            if (highlightsScm.isBlank()) return null
-            val spec = TsLanguageSpec(language, highlightsScm).apply { rainbowBracketsEnabled = true }
+            if (highlightsScm.isBlank()) {
+                LogCatcher.w("EditorHighlight", "No highlights.scm found for: $langFolderName")
+                return null
+            }
+
+            val spec = TsLanguageSpec(language, highlightsScm).apply {
+                rainbowBracketsEnabled = true
+                rainbowBracketsBaseColorId = 256
+                rainbowBracketsColorCount = 6
+            }
             return TsLanguage(spec) {
-                TextStyle.makeStyle(EditorColorScheme.TEXT_NORMAL) applyTo ""
-                TextStyle.makeStyle(EditorColorScheme.KEYWORD) applyTo "keyword"
-                TextStyle.makeStyle(EditorColorScheme.COMMENT) applyTo "comment"
-                TextStyle.makeStyle(EditorColorScheme.OPERATOR) applyTo
-                    arrayOf("operator", "punctuation.bracket", "punctuation.delimiter", "punctuation.special")
-                val stringColorId =
-                    if (langFolderName == "html") EditorColorScheme.ATTRIBUTE_VALUE else EditorColorScheme.LITERAL
-                TextStyle.makeStyle(stringColorId) applyTo arrayOf("string", "string.special")
-                TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo arrayOf("number", "constant", "constant.builtin")
-                TextStyle.makeStyle(EditorColorScheme.FUNCTION_NAME) applyTo
-                    arrayOf("function", "function.method", "function.builtin", "constructor")
-                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_VAR) applyTo arrayOf("variable", "variable.builtin")
-                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo arrayOf("property", "type")
+                applyTreeSitterTheme(langFolderName)
+            }
+        } catch (e: Throwable) {
+            LogCatcher.e("EditorHighlight", "Failed to create TreeSitter language for: $extension", e)
+            return null
+        }
+    }
+
+    /**
+     * Applies a rich Tree-sitter color theme based on the language.
+     * All languages share a common set of semantic token mappings.
+     */
+    private fun io.github.rosemoe.sora.editor.ts.TsThemeBuilder.applyTreeSitterTheme(langFolder: String) {
+        // === Common semantic tokens ===
+        // Default text
+        TextStyle.makeStyle(EditorColorScheme.TEXT_NORMAL) applyTo ""
+
+        // Keywords
+        TextStyle.makeStyle(EditorColorScheme.KEYWORD) applyTo arrayOf(
+            "keyword",
+            "keyword.control",
+            "keyword.operator",
+            "keyword.return",
+            "keyword.import",
+            "keyword.modifier",
+            "keyword.type",
+            "keyword.function"
+        )
+
+        // Comments
+        TextStyle.makeStyle(EditorColorScheme.COMMENT) applyTo arrayOf(
+            "comment",
+            "comment.line",
+            "comment.block",
+            "comment.documentation"
+        )
+
+        // Strings
+        val stringColorId = when (langFolder) {
+            "html" -> EditorColorScheme.ATTRIBUTE_VALUE
+            else -> EditorColorScheme.LITERAL
+        }
+        TextStyle.makeStyle(stringColorId) applyTo arrayOf(
+            "string",
+            "string.special",
+            "string.special.key",
+            "string.escape",
+            "string.template",
+            "string.regex"
+        )
+
+        // Numbers and constants
+        TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo arrayOf(
+            "number",
+            "number.float",
+            "constant",
+            "constant.builtin",
+            "constant.numeric",
+            "constant.language",
+            "escape"
+        )
+
+        // Functions
+        TextStyle.makeStyle(EditorColorScheme.FUNCTION_NAME) applyTo arrayOf(
+            "function",
+            "function.call",
+            "function.method",
+            "function.method.call",
+            "function.builtin",
+            "function.constructor",
+            "constructor"
+        )
+
+        // Variables
+        TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_VAR) applyTo arrayOf(
+            "variable",
+            "variable.builtin",
+            "variable.parameter",
+            "variable.other",
+            "variable.other.readwrite"
+        )
+
+        // Types
+        TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo arrayOf(
+            "type",
+            "type.builtin",
+            "type.definition",
+            "type.parameter",
+            "class",
+            "class.name"
+        )
+
+        // Properties
+        TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo "property"
+
+        // Operators and punctuation
+        TextStyle.makeStyle(EditorColorScheme.OPERATOR) applyTo arrayOf(
+            "operator",
+            "punctuation.special"
+        )
+        TextStyle.makeStyle(EditorColorScheme.OPERATOR) applyTo arrayOf(
+            "punctuation.bracket",
+            "punctuation.delimiter"
+        )
+
+        // === Language-specific tokens ===
+        when (langFolder) {
+            "html", "xml" -> {
                 TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo arrayOf("tag", "tag.error")
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo "attribute"
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_VALUE) applyTo "string"
             }
-        } catch (_: Throwable) {
-            return null
+            "css" -> {
+                TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo "tag"
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "property")
+                TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo "string.special" // color values
+            }
+            "kotlin", "java" -> {
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "annotation")
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo "type"
+                TextStyle.makeStyle(EditorColorScheme.FUNCTION_NAME) applyTo arrayOf("function", "function.method", "constructor")
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_VAR) applyTo arrayOf("variable", "variable.builtin")
+            }
+            "python" -> {
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo "decorator"
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo "type"
+                TextStyle.makeStyle(EditorColorScheme.FUNCTION_NAME) applyTo arrayOf("function", "function.method", "function.builtin")
+            }
         }
     }
 

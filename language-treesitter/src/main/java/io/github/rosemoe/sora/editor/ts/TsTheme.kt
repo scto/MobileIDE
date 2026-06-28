@@ -25,7 +25,7 @@
 package io.github.rosemoe.sora.editor.ts
 
 import android.util.SparseLongArray
-import com.itsaky.androidide.treesitter.TSQuery
+import com.tom.rv2ide.treesitter.TSQuery
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 

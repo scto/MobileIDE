@@ -1,9 +1,9 @@
 package io.github.rosemoe.sora.editor.ts
 
-import com.itsaky.androidide.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.TSLanguage
 
 /**
- * HTML 语言绑定
+ * HTML language binding (custom native lib in jniLibs)
  */
 class HtmlLanguage : TSLanguage("html", Companion.tree_sitter_html()) {
     companion object {
@@ -15,7 +15,7 @@ class HtmlLanguage : TSLanguage("html", Companion.tree_sitter_html()) {
 }
 
 /**
- * CSS 语言绑定
+ * CSS language binding (custom native lib in jniLibs)
  */
 class CssLanguage : TSLanguage("css", Companion.tree_sitter_css()) {
     companion object {
@@ -27,7 +27,7 @@ class CssLanguage : TSLanguage("css", Companion.tree_sitter_css()) {
 }
 
 /**
- * JavaScript 语言绑定
+ * JavaScript language binding (custom native lib in jniLibs)
  */
 class JavaScriptLanguage : TSLanguage("javascript", Companion.tree_sitter_javascript()) {
     companion object {
@@ -37,4 +37,3 @@ class JavaScriptLanguage : TSLanguage("javascript", Companion.tree_sitter_javasc
         @JvmStatic external fun tree_sitter_javascript(): Long
     }
 }
-

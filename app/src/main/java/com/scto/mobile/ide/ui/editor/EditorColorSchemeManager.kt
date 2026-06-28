@@ -80,18 +80,31 @@ object EditorColorSchemeManager {
             val onBackground = colorScheme.onBackground.toArgb()
             setColor(EditorColorScheme.TEXT_NORMAL, onBackground)
 
-            // 如果是浅色模式，优化 TreeSitter 的默认高亮颜色 (简单的覆盖，防止看不清)
-            if (!isDarkScheme(this)) {
-                setColor(EditorColorScheme.KEYWORD, 0xFF0000FF.toInt()) // 蓝色关键字
-                setColor(EditorColorScheme.COMMENT, 0xFF008000.toInt()) // 绿色注释
-                setColor(EditorColorScheme.LITERAL, 0xFF098658.toInt()) // 深绿数字/常量
-                setColor(EditorColorScheme.OPERATOR, 0xFF333333.toInt()) // 深灰操作符
-                setColor(EditorColorScheme.IDENTIFIER_NAME, 0xFF001080.toInt()) // 深蓝标识符
-                setColor(EditorColorScheme.IDENTIFIER_VAR, 0xFF001080.toInt()) // 深蓝变量
-                setColor(EditorColorScheme.FUNCTION_NAME, 0xFF795E26.toInt()) // 金色函数名
-                setColor(EditorColorScheme.ATTRIBUTE_NAME, 0xFF001080.toInt()) // 属性名
-                setColor(EditorColorScheme.ATTRIBUTE_VALUE, 0xFFA31515.toInt()) // 属性值
-                setColor(EditorColorScheme.HTML_TAG, 0xFF800000.toInt()) // HTML标签
+            // Apply syntax highlighting colors based on light/dark mode
+            if (isDarkScheme(this)) {
+                // === Dark Mode - Darcula-inspired palette ===
+                setColor(EditorColorScheme.KEYWORD, 0xFFCC7832.toInt())          // Orange: keywords
+                setColor(EditorColorScheme.COMMENT, 0xFF808080.toInt())          // Gray: comments
+                setColor(EditorColorScheme.LITERAL, 0xFF6A8759.toInt())          // Green: strings/literals
+                setColor(EditorColorScheme.OPERATOR, 0xFFFFFFFF.toInt())         // White: operators
+                setColor(EditorColorScheme.IDENTIFIER_NAME, 0xFFFFC66D.toInt())  // Yellow: types/identifiers
+                setColor(EditorColorScheme.IDENTIFIER_VAR, 0xFF9876AA.toInt())   // Purple: variables
+                setColor(EditorColorScheme.FUNCTION_NAME, 0xFFFFC66D.toInt())    // Yellow: functions
+                setColor(EditorColorScheme.ATTRIBUTE_NAME, 0xFFBBB529.toInt())   // Yellow-green: attributes
+                setColor(EditorColorScheme.ATTRIBUTE_VALUE, 0xFF6A8759.toInt())  // Green: attribute values
+                setColor(EditorColorScheme.HTML_TAG, 0xFFE8BF6A.toInt())         // Gold: HTML/XML tags
+            } else {
+                // === Light Mode - VS Code-inspired palette ===
+                setColor(EditorColorScheme.KEYWORD, 0xFF0000FF.toInt())          // Blue: keywords
+                setColor(EditorColorScheme.COMMENT, 0xFF008000.toInt())          // Green: comments
+                setColor(EditorColorScheme.LITERAL, 0xFF098658.toInt())          // Dark green: strings/literals
+                setColor(EditorColorScheme.OPERATOR, 0xFF333333.toInt())         // Dark gray: operators
+                setColor(EditorColorScheme.IDENTIFIER_NAME, 0xFF001080.toInt())  // Dark blue: types
+                setColor(EditorColorScheme.IDENTIFIER_VAR, 0xFF001080.toInt())   // Dark blue: variables
+                setColor(EditorColorScheme.FUNCTION_NAME, 0xFF795E26.toInt())    // Gold: functions
+                setColor(EditorColorScheme.ATTRIBUTE_NAME, 0xFF001080.toInt())   // Dark blue: attributes
+                setColor(EditorColorScheme.ATTRIBUTE_VALUE, 0xFFA31515.toInt())  // Red: attribute values
+                setColor(EditorColorScheme.HTML_TAG, 0xFF800000.toInt())         // Dark red: HTML/XML tags
             }
         }
     }

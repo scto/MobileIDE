@@ -24,10 +24,10 @@
 
 package io.github.rosemoe.sora.editor.ts
 
-import com.itsaky.androidide.treesitter.TSInputEdit
-import com.itsaky.androidide.treesitter.TSLanguage
-import com.itsaky.androidide.treesitter.TSNode
-import com.itsaky.androidide.treesitter.TSTree
+import com.tom.rv2ide.treesitter.TSInputEdit
+import com.tom.rv2ide.treesitter.TSLanguage
+import com.tom.rv2ide.treesitter.TSNode
+import com.tom.rv2ide.treesitter.TSTree
 import java.util.concurrent.locks.ReentrantLock
 
 /**
