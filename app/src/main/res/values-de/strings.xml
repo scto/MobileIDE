@@ -123,6 +123,9 @@
     <string name="settings_assistance">Unterstützung</string>
     <string name="settings_ai_assistant">KI-Code-Assistent</string>
     <string name="settings_lsp_completion">LSP Code-Vervollständigung</string>
+    <string name="settings_editor_type_title">Editor-Engine</string>
+    <string name="editor_type_textmate">Normaler Editor (TextMate)</string>
+    <string name="editor_type_treesitter">LSP-Editor (TreeSitter)</string>
     <string name="settings_indent_width">Einrückungsbreite</string>
     <string name="settings_spaces_format">%1$d Leerzeichen</string>
     <string name="settings_editor_font">Editor-Schriftart</string>

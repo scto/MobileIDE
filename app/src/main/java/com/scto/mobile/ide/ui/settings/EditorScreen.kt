@@ -33,6 +33,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
     var lspEnabled by remember { mutableStateOf(prefs.getBoolean("editor_lsp_enabled", false)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var fontPath by remember { mutableStateOf(prefs.getString("editor_font_path", "") ?: "") }
+    var editorType by remember { mutableStateOf(prefs.getString("editor_type", "textmate") ?: "textmate") }
     var customSymbols by remember {
         mutableStateOf(
             prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
@@ -40,6 +41,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
     }
 
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
+    var previousEditorType by remember { mutableStateOf(editorType) }
 
     LaunchedEffect(
         fontSize,
@@ -53,6 +55,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
         aiEnabled,
         fontPath,
         customSymbols,
+        editorType,
     ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)
@@ -66,10 +69,12 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             putBoolean("editor_ai_enabled", aiEnabled)
             putString("editor_font_path", fontPath)
             putString("editor_custom_symbols", customSymbols)
+            putString("editor_type", editorType)
         }
-        if (lspEnabled != previousLspEnabled) {
+        if (lspEnabled != previousLspEnabled || editorType != previousEditorType) {
             editorViewModel?.reloadAllEditors(context)
             previousLspEnabled = lspEnabled
+            previousEditorType = editorType
         }
     }
 
@@ -109,6 +114,8 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
                 onFontPathChange = { fontPath = it },
                 customSymbols = customSymbols,
                 onCustomSymbolsChange = { customSymbols = it },
+                editorType = editorType,
+                onEditorTypeChange = { editorType = it },
             )
         }
     }
