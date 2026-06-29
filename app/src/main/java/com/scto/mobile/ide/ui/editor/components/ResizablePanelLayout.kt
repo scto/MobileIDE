@@ -63,6 +63,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.scto.mobile.ide.R
+import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
+import com.scto.mobile.ide.core.tooling.impl.ui.BuildAndTasksPanel
+import com.scto.mobile.ide.core.tooling.impl.ui.ToolingLogPanel
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.LogEntry
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
@@ -73,9 +76,6 @@ import java.util.Date
 import java.util.Locale
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
-import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
-import com.scto.mobile.ide.core.tooling.impl.ui.BuildAndTasksPanel
-import com.scto.mobile.ide.core.tooling.impl.ui.ToolingLogPanel
 
 enum class PanelPage(@StringRes val titleRes: Int) {
     TERMINAL_LOGS(R.string.panel_terminal_logs),
@@ -234,7 +234,8 @@ fun EditorPanelLayout(
                         PanelPage.DIAGNOSTICS -> DiagnosticsPanel(viewModel)
                         PanelPage.IDE_LOG -> ToolingLogPanel(category = ToolingLogCategory.IDE_LOG)
                         PanelPage.BUILD_LOG -> {
-                            val activeProject = com.scto.mobile.ide.core.utils.WorkspaceManager.getWorkspacePath(LocalContext.current)
+                            val activeProject =
+                                com.scto.mobile.ide.core.utils.WorkspaceManager.getWorkspacePath(LocalContext.current)
                             BuildAndTasksPanel(projectPath = activeProject)
                         }
                         PanelPage.LSP -> ToolingLogPanel(category = ToolingLogCategory.LSP)
