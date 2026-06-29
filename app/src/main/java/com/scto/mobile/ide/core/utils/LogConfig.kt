@@ -190,7 +190,7 @@ object LogCatcher {
 
     @JvmStatic
     @JvmOverloads
-    fun e(tag: String, message: String, exception: Exception? = null) {
+    fun e(tag: String, message: String, exception: Throwable? = null) {
         android.util.Log.e(tag, message, exception)
         val msg = "$message${exception?.let { " - ${it.message}" } ?: ""}"
         emitLog("ERROR", tag, msg)
