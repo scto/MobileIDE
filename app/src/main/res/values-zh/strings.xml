@@ -521,6 +521,9 @@
 
     <string name="panel_build">构建</string>
     <string name="panel_diagnostics">问题</string>
+    <string name="panel_terminal_logs">终端日志</string>
+    <string name="panel_ide_log">IDE日志</string>
+    <string name="panel_lsp">LSP</string>
     <string name="panel_no_diagnostics">无问题</string>
     <string name="panel_no_build_logs">无构建日志</string>
     <string name="panel_lsp_success">LSP 成功</string>

@@ -73,10 +73,16 @@ import java.util.Date
 import java.util.Locale
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.DiagnosticSeverity
+import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
+import com.scto.mobile.ide.core.tooling.impl.ui.BuildAndTasksPanel
+import com.scto.mobile.ide.core.tooling.impl.ui.ToolingLogPanel
 
 enum class PanelPage(@StringRes val titleRes: Int) {
-    BUILD_LOG(R.string.panel_build),
+    TERMINAL_LOGS(R.string.panel_terminal_logs),
     DIAGNOSTICS(R.string.panel_diagnostics),
+    IDE_LOG(R.string.panel_ide_log),
+    BUILD_LOG(R.string.panel_build),
+    LSP(R.string.panel_lsp),
 }
 
 @SuppressLint("FrequentlyChangingValue")
@@ -224,8 +230,14 @@ fun EditorPanelLayout(
                             .alpha(contentAlpha)
                 ) {
                     when (tabs[selectedTabIndex]) {
-                        PanelPage.BUILD_LOG -> BuildLogPanel()
+                        PanelPage.TERMINAL_LOGS -> ToolingLogPanel(category = ToolingLogCategory.TERMINAL_ERRORS)
                         PanelPage.DIAGNOSTICS -> DiagnosticsPanel(viewModel)
+                        PanelPage.IDE_LOG -> ToolingLogPanel(category = ToolingLogCategory.IDE_LOG)
+                        PanelPage.BUILD_LOG -> {
+                            val activeProject = com.scto.mobile.ide.core.utils.WorkspaceManager.getWorkspacePath(LocalContext.current)
+                            BuildAndTasksPanel(projectPath = activeProject)
+                        }
+                        PanelPage.LSP -> ToolingLogPanel(category = ToolingLogCategory.LSP)
                     }
                 }
             }

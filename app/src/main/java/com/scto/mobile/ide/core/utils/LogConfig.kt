@@ -206,6 +206,10 @@ object LogCatcher {
         }
 
         _logFlow.tryEmit(entry)
+
+        try {
+            com.scto.mobile.ide.core.tooling.impl.ToolingLogManagerImpl.handleLogEntry(level, tag, message)
+        } catch (_: Exception) {}
     }
 
     @OptIn(DelicateCoroutinesApi::class)

@@ -342,10 +342,11 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
 
-    // Editor
     implementation(project(":editor"))
     implementation(project(":language-treesitter"))
     implementation(project(":core:apk-builder"))
+    implementation(project(":core:tooling:tooling-api"))
+    implementation(project(":core:tooling:tooling-impl"))
     implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

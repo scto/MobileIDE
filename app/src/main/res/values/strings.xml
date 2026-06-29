@@ -521,6 +521,9 @@
 
     <string name="panel_build">Build</string>
     <string name="panel_diagnostics">Problems</string>
+    <string name="panel_terminal_logs">Terminal Logs</string>
+    <string name="panel_ide_log">IDE Log</string>
+    <string name="panel_lsp">LSP</string>
     <string name="panel_no_diagnostics">No problems</string>
     <string name="panel_no_build_logs">No build logs</string>
     <string name="panel_lsp_success">LSP Success</string>
