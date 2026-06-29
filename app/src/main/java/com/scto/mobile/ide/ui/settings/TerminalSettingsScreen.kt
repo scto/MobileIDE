@@ -30,6 +30,15 @@ fun TerminalSettingsScreen(navController: NavController) {
     var reinstallStatus by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
+    val editorPrefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
+    var lspEnabled by remember { mutableStateOf(editorPrefs.getBoolean("editor_lsp_enabled", false)) }
+
+    LaunchedEffect(lspEnabled) {
+        editorPrefs.edit {
+            putBoolean("editor_lsp_enabled", lspEnabled)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,6 +91,8 @@ fun TerminalSettingsScreen(navController: NavController) {
                         Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
                     }
                 },
+                lspEnabled = lspEnabled,
+                onLspEnabledChange = { lspEnabled = it },
             )
         }
     }
