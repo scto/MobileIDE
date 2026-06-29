@@ -374,7 +374,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val editorType = prefs.getString("editor_type", "textmate") ?: "textmate"
 
         if (LogCatcher.isLoggingEnabled) {
-            LogCatcher.i("EditorHighlight", "Applying language for file: $filenameOrExtension, ext: $ext, preferred engine: $editorType")
+            LogCatcher.i(
+                "EditorHighlight",
+                "Applying language for file: $filenameOrExtension, ext: $ext, preferred engine: $editorType",
+            )
         }
 
         var applied = false
@@ -386,14 +389,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     LogCatcher.i("EditorHighlight", "Applied TreeSitter language for $ext")
                 }
                 editor.setEditorLanguage(tsLanguage)
-                lastColorScheme?.let {
-                    EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it)
-                }
+                lastColorScheme?.let { EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it) }
                 configureRainbowColors(editor.colorScheme)
                 applied = true
             } else {
                 if (LogCatcher.isLoggingEnabled) {
-                    LogCatcher.i("EditorHighlight", "TreeSitter language not supported for $ext, falling back to TextMate")
+                    LogCatcher.i(
+                        "EditorHighlight",
+                        "TreeSitter language not supported for $ext, falling back to TextMate",
+                    )
                 }
             }
         }
@@ -431,9 +435,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     LogCatcher.i("EditorHighlight", "Fallback: Applied TreeSitter language for $ext")
                 }
                 editor.setEditorLanguage(tsLanguage)
-                lastColorScheme?.let {
-                    EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it)
-                }
+                lastColorScheme?.let { EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it) }
                 configureRainbowColors(editor.colorScheme)
                 applied = true
             }
@@ -544,7 +546,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "cjs",
                     "javascript" -> "javascript"
                     "htm" -> "html"
-                    "kt", "kts" -> "kotlin"
+                    "kt",
+                    "kts" -> "kotlin"
                     "jav" -> "java"
                     "xaml",
                     "svg",
@@ -675,8 +678,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "attr.name")
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_VALUE) applyTo arrayOf("string", "attr.value")
                 TextStyle.makeStyle(EditorColorScheme.KEYWORD) applyTo "xml_decl"
-                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo arrayOf("ns_declarator", "xmlns.prefix", "attr.prefix")
-                TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo arrayOf("xml.ref", "cdata.start", "cdata.end", "cdata.data")
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo
+                    arrayOf("ns_declarator", "xmlns.prefix", "attr.prefix")
+                TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo
+                    arrayOf("xml.ref", "cdata.start", "cdata.end", "cdata.data")
             }
             "css" -> {
                 TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo "tag"
