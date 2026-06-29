@@ -29,11 +29,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -581,16 +581,13 @@ private fun AutoSaveDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditorTypeDialog(
-    selectedType: String,
-    onTypeSelected: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
+private fun EditorTypeDialog(selectedType: String, onTypeSelected: (String) -> Unit, onDismiss: () -> Unit) {
     val options = listOf("textmate", "treesitter")
-    val optionLabels = mapOf(
-        "textmate" to stringResource(R.string.editor_type_textmate),
-        "treesitter" to stringResource(R.string.editor_type_treesitter)
-    )
+    val optionLabels =
+        mapOf(
+            "textmate" to stringResource(R.string.editor_type_textmate),
+            "treesitter" to stringResource(R.string.editor_type_treesitter),
+        )
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -599,14 +596,10 @@ private fun EditorTypeDialog(
             Column {
                 options.forEach { option ->
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = option == selectedType,
-                                onClick = { onTypeSelected(option) }
-                            )
+                        Modifier.fillMaxWidth()
+                            .selectable(selected = option == selectedType, onClick = { onTypeSelected(option) })
                             .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = option == selectedType, onClick = null)
                         Spacer(Modifier.width(8.dp))
@@ -671,7 +664,7 @@ fun EditorSettingsItem(
                 onEditorTypeChange(it)
                 showEditorTypeDialog = false
             },
-            onDismiss = { showEditorTypeDialog = false }
+            onDismiss = { showEditorTypeDialog = false },
         )
     }
 
@@ -755,22 +748,29 @@ fun EditorSettingsItem(
                     CompactSwitchRow(stringResource(R.string.settings_lsp_completion), lspEnabled, onLspEnabledChange)
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showEditorTypeDialog = true }
-                            .padding(vertical = 8.dp),
+                        modifier =
+                            Modifier.fillMaxWidth().clickable { showEditorTypeDialog = true }.padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.settings_editor_type_title), style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = if (editorType == "treesitter") stringResource(R.string.editor_type_treesitter) else stringResource(R.string.editor_type_textmate),
+                                stringResource(R.string.settings_editor_type_title),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Text(
+                                text =
+                                    if (editorType == "treesitter") stringResource(R.string.editor_type_treesitter)
+                                    else stringResource(R.string.editor_type_textmate),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(
+                            Icons.Filled.ArrowDropDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
