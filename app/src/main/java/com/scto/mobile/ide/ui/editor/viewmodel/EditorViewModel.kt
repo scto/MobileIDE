@@ -147,6 +147,8 @@ data class EditorConfig(
 
 class EditorViewModel(application: Application) : AndroidViewModel(application) {
 
+    private var lastColorScheme: ColorScheme? = null
+
     var hasShownInitialLoader by mutableStateOf(false)
         private set
 
@@ -367,28 +369,81 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             } else {
                 filenameOrExtension.lowercase()
             }
-        LogCatcher.i("EditorHighlight", "Applying language for file: $filenameOrExtension, ext: $ext")
-        val tsLanguage = loadTreeSitterLanguage(context, ext)
 
-        if (tsLanguage != null) {
-            LogCatcher.i("EditorHighlight", "Applied TreeSitter language for $ext")
-            editor.setEditorLanguage(tsLanguage)
-            configureRainbowColors(editor.colorScheme)
-        } else {
+        val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
+        val editorType = prefs.getString("editor_type", "textmate") ?: "textmate"
+
+        if (LogCatcher.isLoggingEnabled) {
+            LogCatcher.i("EditorHighlight", "Applying language for file: $filenameOrExtension, ext: $ext, preferred engine: $editorType")
+        }
+
+        var applied = false
+
+        if (editorType == "treesitter") {
+            val tsLanguage = loadTreeSitterLanguage(context, ext)
+            if (tsLanguage != null) {
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("EditorHighlight", "Applied TreeSitter language for $ext")
+                }
+                editor.setEditorLanguage(tsLanguage)
+                lastColorScheme?.let {
+                    EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it)
+                }
+                configureRainbowColors(editor.colorScheme)
+                applied = true
+            } else {
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("EditorHighlight", "TreeSitter language not supported for $ext, falling back to TextMate")
+                }
+            }
+        }
+
+        if (!applied) {
             val tmLanguage = loadTextMateLanguage(context, ext)
             if (tmLanguage != null) {
-                LogCatcher.i("EditorHighlight", "Applied TextMate language for $ext")
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("EditorHighlight", "Applied TextMate language for $ext")
+                }
                 editor.setEditorLanguage(tmLanguage)
                 try {
                     editor.colorScheme = TextMateColorScheme.create(ThemeRegistry.getInstance())
-                    LogCatcher.i("EditorHighlight", "Applied TextMateColorScheme successfully")
+                    if (LogCatcher.isLoggingEnabled) {
+                        LogCatcher.i("EditorHighlight", "Applied TextMateColorScheme successfully")
+                    }
                 } catch (e: Exception) {
-                    LogCatcher.e("EditorHighlight", "Failed to apply TextMateColorScheme", e)
+                    if (LogCatcher.isLoggingEnabled) {
+                        LogCatcher.e("EditorHighlight", "Failed to apply TextMateColorScheme", e)
+                    }
                 }
+                applied = true
             } else {
-                LogCatcher.i("EditorHighlight", "No language found for $ext. Applied EmptyLanguage")
-                editor.setEditorLanguage(EmptyLanguage())
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("EditorHighlight", "TextMate language not supported for $ext")
+                }
             }
+        }
+
+        if (!applied && editorType != "treesitter") {
+            // Fallback to TreeSitter if TextMate wasn't supported
+            val tsLanguage = loadTreeSitterLanguage(context, ext)
+            if (tsLanguage != null) {
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("EditorHighlight", "Fallback: Applied TreeSitter language for $ext")
+                }
+                editor.setEditorLanguage(tsLanguage)
+                lastColorScheme?.let {
+                    EditorColorSchemeManager.applyThemeColors(editor.colorScheme, it)
+                }
+                configureRainbowColors(editor.colorScheme)
+                applied = true
+            }
+        }
+
+        if (!applied) {
+            if (LogCatcher.isLoggingEnabled) {
+                LogCatcher.i("EditorHighlight", "No language found for $ext. Applied EmptyLanguage")
+            }
+            editor.setEditorLanguage(EmptyLanguage())
         }
     }
 
@@ -456,6 +511,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun loadTreeSitterLanguage(context: Context, extension: String): TsLanguage? {
+        if (LogCatcher.isLoggingEnabled) {
+            LogCatcher.i("EditorHighlight", "loadTreeSitterLanguage called for extension: $extension")
+        }
         try {
             val language: TSLanguage =
                 when (extension) {
@@ -486,7 +544,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "cjs",
                     "javascript" -> "javascript"
                     "htm" -> "html"
-                    "kts" -> "kotlin"
+                    "kt", "kts" -> "kotlin"
                     "jav" -> "java"
                     "xaml",
                     "svg",
@@ -503,7 +561,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 }
 
             if (highlightsScm.isBlank()) {
-                LogCatcher.w("EditorHighlight", "No highlights.scm found for: $langFolderName")
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.w("EditorHighlight", "No highlights.scm found for: $langFolderName")
+                }
                 return null
             }
 
@@ -515,7 +575,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 }
             return TsLanguage(spec) { applyTreeSitterTheme(langFolderName) }
         } catch (e: Throwable) {
-            LogCatcher.e("EditorHighlight", "Failed to create TreeSitter language for: $extension", e)
+            if (LogCatcher.isLoggingEnabled) {
+                LogCatcher.e("EditorHighlight", "Failed to create TreeSitter language for: $extension", e)
+            }
             return null
         }
     }
@@ -603,11 +665,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
         // === Language-specific tokens ===
         when (langFolder) {
-            "html",
-            "xml" -> {
+            "html" -> {
                 TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo arrayOf("tag", "tag.error")
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo "attribute"
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_VALUE) applyTo "string"
+            }
+            "xml" -> {
+                TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo arrayOf("tag", "tag.error", "element.tag")
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "attr.name")
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_VALUE) applyTo arrayOf("string", "attr.value")
+                TextStyle.makeStyle(EditorColorScheme.KEYWORD) applyTo "xml_decl"
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo arrayOf("ns_declarator", "xmlns.prefix", "attr.prefix")
+                TextStyle.makeStyle(EditorColorScheme.LITERAL) applyTo arrayOf("xml.ref", "cdata.start", "cdata.end", "cdata.data")
             }
             "css" -> {
                 TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo "tag"
@@ -632,10 +701,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun loadTextMateLanguage(context: Context, extension: String): TextMateLanguage? {
-        LogCatcher.i("TextMateLanguage", "loadTextMateLanguage called for extension: $extension")
+        if (LogCatcher.isLoggingEnabled) {
+            LogCatcher.i("TextMateLanguage", "loadTextMateLanguage called for extension: $extension")
+        }
         return try {
             if (!TextMateInitializer.isReady()) {
-                LogCatcher.i("TextMateLanguage", "TextMateInitializer is NOT ready. Starting initialization.")
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("TextMateLanguage", "TextMateInitializer is NOT ready. Starting initialization.")
+                }
                 TextMateInitializer.initialize(context)
                 return null
             }
@@ -752,18 +825,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "yaml",
                     "yml" -> "source.yaml"
                     else -> {
-                        LogCatcher.i("TextMateLanguage", "No scopeName mapped for extension: $extension")
+                        if (LogCatcher.isLoggingEnabled) {
+                            LogCatcher.i("TextMateLanguage", "No scopeName mapped for extension: $extension")
+                        }
                         return null
                     }
                 }
-            LogCatcher.i("TextMateLanguage", "Mapped extension $extension to scope: $scopeName")
+            if (LogCatcher.isLoggingEnabled) {
+                LogCatcher.i("TextMateLanguage", "Mapped extension $extension to scope: $scopeName")
+            }
             val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
             val lspEnabled = prefs.getBoolean("editor_lsp_enabled", false)
             val tmLang = TextMateLanguage.create(scopeName, !lspEnabled)
-            LogCatcher.i("TextMateLanguage", "TextMateLanguage created successfully for scope: $scopeName")
+            if (LogCatcher.isLoggingEnabled) {
+                LogCatcher.i("TextMateLanguage", "TextMateLanguage created successfully for scope: $scopeName")
+            }
             tmLang
         } catch (e: Exception) {
-            LogCatcher.e("TextMateLanguage", "Failed to create TextMateLanguage for extension: $extension", e)
+            if (LogCatcher.isLoggingEnabled) {
+                LogCatcher.e("TextMateLanguage", "Failed to create TextMateLanguage for extension: $extension", e)
+            }
             null
         }
     }
@@ -1032,6 +1113,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun updateEditorTheme(colorScheme: ColorScheme) {
+        lastColorScheme = colorScheme
         editorInstances.values.forEach { editor ->
             if (editor.editorLanguage is TextMateLanguage) {
                 // For TextMate editors, only apply background/UI colors, not syntax colors.

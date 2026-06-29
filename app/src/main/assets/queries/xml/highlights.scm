@@ -1,61 +1,45 @@
-; XML Tags
-(element
-  open_tag: (STag
-    "<" @punctuation.bracket
-    (Name) @tag
-    ">" @punctuation.bracket))
+(xml_decl
+  decl: "xml" @xml_decl)
 
-(element
-  close_tag: (ETag
-    "</" @punctuation.bracket
-    (Name) @tag
-    ">" @punctuation.bracket))
+(xml_version
+  version_attr: "version" @attr.name)
+
+(xml_encoding
+  encoding_attr: "encoding" @attr.name)
+
+(xml_version_value) @attr.value
+(xml_encoding_value) @attr.value
 
 (empty_element
-  "<" @punctuation.bracket
-  (Name) @tag
-  "/>" @punctuation.bracket)
+  tag_name: (name) @element.tag)
 
-; Attributes
-(Attribute
-  (Name) @attribute)
+(tag_start
+  tag_name: (name) @element.tag)
 
-; Attribute values
-(AttValue) @string
+(tag_end
+  tag_name: (name) @element.tag)
 
-; Comments
-(Comment) @comment
+"xmlns" @ns_declarator
+(ns_decl
+  xmlns_prefix: (name) @xmlns.prefix)
 
-; Processing instructions
-(PI
-  "<?" @punctuation.bracket
-  (PITarget) @keyword
-  "?>" @punctuation.bracket)
+(xml_attr
+  ns_prefix: (name) @attr.prefix
+  attr_name: (name) @attr.name)
 
-; CDATA
-(CDSect
-  "<![CDATA[" @punctuation.special
-  "]]]>" @punctuation.special) @string.special
+(attr_value) @attr.value
 
-; DOCTYPE declaration
-(doctypedecl
-  "<!DOCTYPE" @keyword
-  ">" @punctuation.bracket)
+(entity_ref) @xml.ref
+(char_ref) @xml.ref
 
-; Entity references
-(EntityRef
-  "&" @punctuation.special
-  (Name) @string.special
-  ";" @punctuation.special)
+(comment) @comment
 
-(CharRef) @number
+(cdata_start) @cdata.start
+(cdata_end) @cdata.end
+(cdata) @cdata.data
 
-; XML declaration
-(XMLDecl
-  "<?xml" @keyword
-  "?>" @punctuation.bracket)
+(eq) @operator
 
-; Namespace prefixes
-(NSAttName
-  (PrefixedAttName
-    (NCName) @attribute))
+(char_data) @text
+
+; ["<" "</" ">" "<?" "?>" "/>"] @operator

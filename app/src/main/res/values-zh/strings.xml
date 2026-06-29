@@ -124,6 +124,9 @@
     <string name="settings_assistance">智能辅助</string>
     <string name="settings_ai_assistant">AI 助手</string>
     <string name="settings_lsp_completion">LSP 代码补全</string>
+    <string name="settings_editor_type_title">编辑器引擎</string>
+    <string name="editor_type_textmate">常规编辑器 (TextMate)</string>
+    <string name="editor_type_treesitter">LSP 编辑器 (TreeSitter)</string>
     <string name="settings_indent_width">缩进宽度</string>
     <string name="settings_spaces_format">%1$d 个空格</string>
     <string name="settings_editor_font">编辑器字体</string>

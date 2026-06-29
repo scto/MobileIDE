@@ -105,6 +105,10 @@ object LogCatcher {
     // ✅ After fixing, the type reference becomes the simpler LogConfigState
     private var logConfig: LogConfigState? = null
 
+    @JvmStatic
+    val isLoggingEnabled: Boolean
+        get() = logConfig?.isLogEnabled ?: true
+
     @Volatile private var isInitialized = false
     @Volatile private var logFile: File? = null
 
