@@ -46,3 +46,16 @@ Added a dedicated **LSP Status** card to verify language server availability:
 ### 4. TreeSitter Kotlin Script (KTS) Query Fixes
 *   **Grammar Alignment**: Replaced local Kotlin highlights schema with the official `fwcd/tree-sitter-kotlin` highlight schema configuration. This eliminated parser errors caused by obsolete or incorrect Kotlin AST nodes (like `multiline_lambda_parameter` and `receiver_type: (_)`).
 *   **Immediate Highlight Color Application**: Fixed a timing bug where newly opened file tabs rendered monochrome text by caching the active Jetpack Compose `ColorScheme` and applying theme colors immediately when loading TreeSitter instances.
+
+### 5. APK Compilation & Gradlew Permissions Resolution
+*   **PRoot Compile Environment**: Resolved execute permission (`Permission denied`) and environment (`JAVA_HOME set to an invalid directory`) errors when running `gradlew` from shared storage. The build process now executes inside the Alpine PRoot container using `DistroManager.buildProotCommand` and correct PRoot environment variables.
+*   **Pre-Build Verification**: Added automatic checks before launching the build process to verify the installation of OpenJDK 17/21, Gradle, Android SDK, and optionally CMake/NDK if C/C++ files are present, logging detailed instructions on failure.
+
+### 6. Settings Panel Refactoring
+*   **LSP Switch Migration**: Moved the general LSP Completion toggle to `TerminalSettings` as *"LSP Bash Scripts"* (`settings_lsp_bash_scripts`).
+*   **LSP Editor Toggle**: Added a new *"LSP-Editor"* switch to `EditorSettings`, which defaults to `on` (TrueSitter) and provides a description explaining the difference between TreeSitter semantic highlighting and classic TextMate.
+
+### 7. Core Tooling Submodules (API & IMPL)
+*   **Module Separation**: Created `:core:tooling:tooling-api` and `:core:tooling:tooling-impl` submodules to handle logging and build tools.
+*   **Categorized Logs**: Implemented real-time routing of app logs into five dedicated tabs inside the bottom sheet panel: *Terminal Logs*, *Problems (Diagnostics)*, *IDE Log*, *Build*, and *LSP*.
+*   **Interactive Gradle Tasks Panel**: Queried Gradle tasks dynamically inside the container and listed them with checkboxes inside the *Build / Tasks* bottom panel. Enabled task execution using a Play icon button, streaming output directly to the Build logs in real-time.
