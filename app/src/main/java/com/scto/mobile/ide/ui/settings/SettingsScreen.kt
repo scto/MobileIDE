@@ -1749,8 +1749,6 @@ fun BuildSettingsItem(
                                 }
                             },
                         )
-
-
                     }
                 }
             }
