@@ -29,3 +29,20 @@ Added a dedicated **LSP Status** card to verify language server availability:
 *   **Kotlin LSP**: Check/install `kotlin-language-server` from edge testing repositories.
 *   **TypeScript LSP**: Check/install Node/npm and `typescript-language-server`.
 *   **Web LSPs**: Check/install HTML/CSS/JSON language servers (`vscode-langservers-extracted`).
+
+## [2026-06-29] Editor Engine Selection & TreeSitter Syntax Highlighting Fixes
+
+### 1. Editor Highlight Engine Selection
+*   **Engine Preference Toggle**: Added list selection to `EditorScreen.kt` and `SettingsScreen.kt` to allow users to switch between the classic TextMate highlighter and the TreeSitter (LSP) highlighter.
+*   **Fallback Logic**: If TreeSitter is preferred but unsupported for the target file extension, the editor gracefully falls back to the TextMate engine.
+
+### 2. LogCatcher Configuration
+*   **Logging Settings Control**: Integrated an optional LogCatcher logging control toggle. When enabled/disabled in the Settings panel, verbose log messages are written/suppressed dynamically inside the workspace directory (`/sdcard/MobileIDEProjects/logs/`).
+
+### 3. TreeSitter XML Grammar Corrections
+*   **AndroidIDE Compatibility Fix**: Resolved SCM parsing error (`Failed to create TreeSitter language for: xml - bad scm sources: error NodeType occurs in highlight range`) by migrating highlights queries to Yadav's custom AndroidIDE `tree-sitter-xml` node definition syntax (mapping `empty_element`, `tag_start`, `tag_end`, `xml_decl`, etc.).
+*   **Theme Mapping**: Configured proper sora-editor theme color mapping in `EditorViewModel.kt` to bind the new AndroidIDE-specific XML query tags to CSS/HTML theme colors.
+
+### 4. TreeSitter Kotlin Script (KTS) Query Fixes
+*   **Grammar Alignment**: Replaced local Kotlin highlights schema with the official `fwcd/tree-sitter-kotlin` highlight schema configuration. This eliminated parser errors caused by obsolete or incorrect Kotlin AST nodes (like `multiline_lambda_parameter` and `receiver_type: (_)`).
+*   **Immediate Highlight Color Application**: Fixed a timing bug where newly opened file tabs rendered monochrome text by caching the active Jetpack Compose `ColorScheme` and applying theme colors immediately when loading TreeSitter instances.

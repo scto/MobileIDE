@@ -51,7 +51,9 @@ com.scto.mobile.ide
 
 ## Features
 
-*   **Syntax Highlighting**: Based on TextMate grammar files, providing perfect support for HTML, CSS, JavaScript, and JSON.
+*   **Syntax Highlighting**: Dual-engine architecture supporting both **TextMate** (providing robust styling for HTML, CSS, JavaScript, JSON, etc.) and **TreeSitter** (offering high-performance semantic parsing for Kotlin, Java, CPP, JSON, Log, and XML).
+*   **Editor Engine Selection**: Preferences entry allowing users to switch between the classic TextMate engine and the TreeSitter (LSP) engine on the fly, with automatic fail-safe fallback.
+*   **Optional Logging**: Built-in LogCatcher subsystem with a toggle in settings to enable or disable verbose debugging logs for compiler and editor operations.
 *   **Project Management**: Full file system access permissions, supporting the creation and management of multi-file Web projects.
 *   **Real-time Preview**: Integrated WebView preview environment supporting JavaScript interaction testing.
 *   **Modern UI**: Written 100% in Kotlin and Jetpack Compose, supporting dynamic themes.

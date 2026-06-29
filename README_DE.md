@@ -52,7 +52,11 @@ com.scto.mobile.ide
 
 ## Funktionen
 
-* **Syntaxhervorhebung**: Basierend auf TextMate-Grammatikdateien, bietet sie optimale Unterstützung für HTML, CSS, JavaScript und JSON.
+* **Syntaxhervorhebung**: Duale Highlight-Architektur mit Unterstützung für **TextMate** (robuste Stile für HTML, CSS, JavaScript, JSON usw.) und **TreeSitter** (leistungsstarke semantische Analyse für Kotlin, Java, CPP, JSON, Log und XML).
+
+* **Editor-Engine-Auswahl**: Eintrag in den Einstellungen, der es Benutzern ermöglicht, flexibel zwischen der klassischen TextMate-Engine und der TreeSitter (LSP)-Engine zu wechseln, inklusive automatischem Fallback-Schutz.
+
+* **Optionale Protokollierung**: Integriertes LogCatcher-Subsystem mit einem Schalter in den Einstellungen zum Aktivieren oder Deaktivieren ausführlicher Debug-Protokolle für Compiler- und Editor-Vorgänge.
 
 * **Projektmanagement**: Voller Dateisystemzugriff zur Erstellung und Verwaltung von Webprojekten mit mehreren Dateien.
 
@@ -60,7 +64,7 @@ com.scto.mobile.ide
 
 * **Moderne Benutzeroberfläche**: Vollständig in Kotlin und Jetpack Compose geschrieben, mit Unterstützung für dynamische Designs.
 
-* **Git-Integration**: Integrierte Git-Versionskontrolle mit visueller Commit-Historie, unterstützt Klonen, Commit, Push, Pull und Branch-Verwaltung. Ignoriert automatisch sensible Dateien und Build-Artefakte.
+* **Git-Integration**: Integrierte Git-Versionskontrolle mit einer visuellen Commit-Historie, unterstützt Klonen, Commit, Push, Pull und Branch-Verwaltung. Ignoriert automatisch sensible Dateien und Build-Artefakte.
 
  ## Diskussion
 
