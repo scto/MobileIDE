@@ -33,11 +33,7 @@ fun TerminalSettingsScreen(navController: NavController) {
     val editorPrefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
     var lspEnabled by remember { mutableStateOf(editorPrefs.getBoolean("editor_lsp_enabled", false)) }
 
-    LaunchedEffect(lspEnabled) {
-        editorPrefs.edit {
-            putBoolean("editor_lsp_enabled", lspEnabled)
-        }
-    }
+    LaunchedEffect(lspEnabled) { editorPrefs.edit { putBoolean("editor_lsp_enabled", lspEnabled) } }
 
     Scaffold(
         topBar = {

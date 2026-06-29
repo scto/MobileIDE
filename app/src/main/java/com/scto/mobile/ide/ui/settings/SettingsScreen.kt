@@ -734,7 +734,7 @@ fun EditorSettingsItem(
                         title = stringResource(R.string.settings_lsp_editor_title),
                         description = stringResource(R.string.settings_lsp_editor_desc),
                         checked = editorType == "treesitter",
-                        onCheckedChange = { onEditorTypeChange(if (it) "treesitter" else "textmate") }
+                        onCheckedChange = { onEditorTypeChange(if (it) "treesitter" else "textmate") },
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -925,7 +925,11 @@ fun SwitchRowWithDescription(title: String, description: String, checked: Boolea
     ) {
         Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
             Text(title, style = MaterialTheme.typography.bodyMedium)
-            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
@@ -1412,7 +1416,7 @@ fun TerminalSettingsItem(
                     CompactSwitchRow(
                         title = stringResource(R.string.settings_lsp_bash_scripts),
                         checked = lspEnabled,
-                        onCheckedChange = onLspEnabledChange
+                        onCheckedChange = onLspEnabledChange,
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
