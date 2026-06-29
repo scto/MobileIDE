@@ -629,8 +629,6 @@ fun EditorSettingsItem(
     onShowToolbarChange: (Boolean) -> Unit,
     showHistory: Boolean,
     onShowHistoryChange: (Boolean) -> Unit,
-    lspEnabled: Boolean,
-    onLspEnabledChange: (Boolean) -> Unit,
     isAiEnabled: Boolean,
     onIsAiEnabledChange: (Boolean) -> Unit,
     fontPath: String,
@@ -648,9 +646,9 @@ fun EditorSettingsItem(
     var isFontDropdownExpanded by remember { mutableStateOf(false) }
     val fontPresetOptions =
         listOf(
-            FontPresetOption(stringResource(R.string.font_system_default), ""),
-            FontPresetOption(stringResource(R.string.font_fira_code), "ttf/FiraCode-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_default), ""),
             FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
+            FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
             FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
             FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf"),
         )
