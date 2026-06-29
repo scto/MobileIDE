@@ -1645,6 +1645,62 @@ private suspend fun performBuild(
         com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
         com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Project Path: $projectPath")
 
+        val prefixDir = context.filesDir.parentFile!!
+        val sandboxDir = File(prefixDir, "local/sandbox")
+        
+        // 1. Check OpenJDK installation
+        val isJdk17Installed = File(sandboxDir, "usr/lib/jvm/java-17-openjdk/bin/java").exists() ||
+                File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
+        val isJdk21Installed = File(sandboxDir, "usr/lib/jvm/java-21-openjdk/bin/java").exists() ||
+                File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
+        
+        // 2. Check Gradle installation
+        val isGradleInstalled = File(sandboxDir, "usr/bin/gradle").exists()
+        
+        // 3. Check Android SDK installation
+        val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
+        val distroSdk = File(sandboxDir, "root/android-sdk")
+        val isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
+
+        // 4. Optional: Check NDK and CMake if project has native files
+        val hasCpp = File(projectPath, "app/src/main/cpp").exists() || 
+                File(projectPath, "app/src/main/jni").exists() ||
+                File(projectPath, "CMakeLists.txt").exists() ||
+                File(projectPath, "app/CMakeLists.txt").exists()
+        
+        val isCmakeInstalled = File(sandboxDir, "usr/bin/cmake").exists()
+        val isNdkInstalled = (hostSdk.exists() && (File(hostSdk, "ndk").exists() || File(hostSdk, "ndk-bundle").exists())) ||
+                (distroSdk.exists() && File(distroSdk, "ndk").exists())
+
+        // Compile list of missing components
+        val missingComponents = mutableListOf<String>()
+        if (!isJdk17Installed && !isJdk21Installed) {
+            missingComponents.add("OpenJDK 17 or OpenJDK 21")
+        }
+        if (!isGradleInstalled) {
+            missingComponents.add("Gradle Build System")
+        }
+        if (!isAndroidSdkInstalled) {
+            missingComponents.add("Android SDK")
+        }
+        if (hasCpp) {
+            if (!isCmakeInstalled) {
+                missingComponents.add("CMake (required for C/C++ compilation)")
+            }
+            if (!isNdkInstalled) {
+                missingComponents.add("Android NDK (required for C/C++ compilation)")
+            }
+        }
+
+        if (missingComponents.isNotEmpty()) {
+            val errorDetails = "Build failed! Missing required components:\n" +
+                    missingComponents.joinToString("\n") { "  * $it" } +
+                    "\n\nPlease install them from Settings -> Build Config."
+            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", errorDetails)
+            onResult(BuildResultState.Finished("Build failed: missing components"))
+            return@withContext
+        }
+
         val saved = viewModel.saveAllModifiedFiles(context, snackbarHostState)
         if (!saved) {
             com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Failed to save modified files. Build aborted.")
@@ -1652,26 +1708,36 @@ private suspend fun performBuild(
             return@withContext
         }
 
-        val gradlewFile = File(projectPath, "gradlew")
-        val cmd =
-            if (gradlewFile.exists()) {
-                listOf("bash", gradlewFile.absolutePath, "assembleDebug")
-            } else {
-                listOf("gradle", "assembleDebug")
-            }
+        // Determine JAVA_HOME inside PRoot container
+        val javaHomeInContainer = when {
+            File(sandboxDir, "usr/lib/jvm/java-21-openjdk").exists() -> "/usr/lib/jvm/java-21-openjdk"
+            File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64").exists() -> "/usr/lib/jvm/java-21-openjdk-amd64"
+            File(sandboxDir, "usr/lib/jvm/java-17-openjdk").exists() -> "/usr/lib/jvm/java-17-openjdk"
+            File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64").exists() -> "/usr/lib/jvm/java-17-openjdk-amd64"
+            else -> ""
+        }
 
-        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing command: ${cmd.joinToString(" ")}")
+        val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
+        
+        val gradlewFile = File(projectPath, "gradlew")
+        val compileCmd = if (gradlewFile.exists()) {
+            "${javaHomeExport}cd $projectPath && ./gradlew assembleDebug"
+        } else {
+            "${javaHomeExport}cd $projectPath && gradle assembleDebug"
+        }
+
+        // Run command inside Alpine container via PRoot
+        val cmd = com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+
+        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
 
         try {
             val processBuilder = ProcessBuilder(cmd)
             processBuilder.directory(File(projectPath))
-
-            // Set Termux/SDK environment variables so Gradle can locate java, aapt2, etc.
+            
+            // Set PRoot environment variables so native loader works properly
             val env = processBuilder.environment()
-            env["PATH"] =
-                "/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:" + (env["PATH"] ?: "")
-            env["JAVA_HOME"] = "/data/data/com.termux/files/usr"
-            env["ANDROID_HOME"] = "/data/data/com.termux/files/home/android-sdk"
+            env.putAll(com.scto.mobile.ide.ui.terminal.DistroManager.getProotEnv(context))
 
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")

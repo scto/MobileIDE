@@ -124,6 +124,9 @@
     <string name="settings_assistance">Smart Assistance</string>
     <string name="settings_ai_assistant">AI Assistant</string>
     <string name="settings_lsp_completion">LSP Code Completion</string>
+    <string name="settings_lsp_bash_scripts">LSP Bash Scripts</string>
+    <string name="settings_lsp_editor_title">LSP Editor</string>
+    <string name="settings_lsp_editor_desc">Use the modern TreeSitter parser for high-performance semantic syntax highlighting instead of the classic TextMate highlighter.</string>
     <string name="settings_editor_type_title">Editor Engine</string>
     <string name="editor_type_textmate">Normal Editor (TextMate)</string>
     <string name="editor_type_treesitter">LSP Editor (TreeSitter)</string>

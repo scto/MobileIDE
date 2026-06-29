@@ -648,25 +648,12 @@ fun EditorSettingsItem(
     var isFontDropdownExpanded by remember { mutableStateOf(false) }
     val fontPresetOptions =
         listOf(
-            FontPresetOption(stringResource(R.string.font_default), ""),
+            FontPresetOption(stringResource(R.string.font_system_default), ""),
+            FontPresetOption(stringResource(R.string.font_fira_code), "ttf/FiraCode-Regular.ttf"),
             FontPresetOption(stringResource(R.string.font_jetbrains_mono), "ttf/JetBrainsMono-Regular.ttf"),
-            FontPresetOption(stringResource(R.string.font_roboto_mono), "ttf/RobotoMono-Regular.ttf"),
             FontPresetOption(stringResource(R.string.font_source_code_pro), "ttf/SourceCodePro-Regular.ttf"),
             FontPresetOption(stringResource(R.string.font_comic_sans), "ttf/Comic-Sans-MS-Regular-2.ttf"),
         )
-
-    var showEditorTypeDialog by remember { mutableStateOf(false) }
-
-    if (showEditorTypeDialog) {
-        EditorTypeDialog(
-            selectedType = editorType,
-            onTypeSelected = {
-                onEditorTypeChange(it)
-                showEditorTypeDialog = false
-            },
-            onDismiss = { showEditorTypeDialog = false },
-        )
-    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -745,33 +732,12 @@ fun EditorSettingsItem(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     CompactSwitchRow(stringResource(R.string.settings_ai_assistant), isAiEnabled, onIsAiEnabledChange)
-                    CompactSwitchRow(stringResource(R.string.settings_lsp_completion), lspEnabled, onLspEnabledChange)
-
-                    Row(
-                        modifier =
-                            Modifier.fillMaxWidth().clickable { showEditorTypeDialog = true }.padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                stringResource(R.string.settings_editor_type_title),
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                            Text(
-                                text =
-                                    if (editorType == "treesitter") stringResource(R.string.editor_type_treesitter)
-                                    else stringResource(R.string.editor_type_textmate),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        Icon(
-                            Icons.Filled.ArrowDropDown,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    SwitchRowWithDescription(
+                        title = stringResource(R.string.settings_lsp_editor_title),
+                        description = stringResource(R.string.settings_lsp_editor_desc),
+                        checked = editorType == "treesitter",
+                        onCheckedChange = { onEditorTypeChange(if (it) "treesitter" else "textmate") }
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -948,6 +914,21 @@ fun CompactSwitchRow(title: String, checked: Boolean, onCheckedChange: (Boolean)
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(title, style = MaterialTheme.typography.bodyMedium)
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+fun SwitchRowWithDescription(title: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }.padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium)
+            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
@@ -1352,6 +1333,8 @@ fun TerminalSettingsItem(
     reinstallDownloaded: Long = 0L,
     reinstallTotal: Long = -1L,
     reinstallStatus: String = "",
+    lspEnabled: Boolean,
+    onLspEnabledChange: (Boolean) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -1426,6 +1409,13 @@ fun TerminalSettingsItem(
                             )
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    CompactSwitchRow(
+                        title = stringResource(R.string.settings_lsp_bash_scripts),
+                        checked = lspEnabled,
+                        onCheckedChange = onLspEnabledChange
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 

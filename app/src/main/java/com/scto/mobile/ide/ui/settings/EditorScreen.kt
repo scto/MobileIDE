@@ -30,17 +30,15 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
     var codeFolding by remember { mutableStateOf(prefs.getBoolean("editor_code_folding", true)) }
     var showToolbar by remember { mutableStateOf(prefs.getBoolean("editor_show_toolbar", true)) }
     var showHistory by remember { mutableStateOf(prefs.getBoolean("editor_show_history", true)) }
-    var lspEnabled by remember { mutableStateOf(prefs.getBoolean("editor_lsp_enabled", false)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var fontPath by remember { mutableStateOf(prefs.getString("editor_font_path", "") ?: "") }
-    var editorType by remember { mutableStateOf(prefs.getString("editor_type", "textmate") ?: "textmate") }
+    var editorType by remember { mutableStateOf(prefs.getString("editor_type", "treesitter") ?: "treesitter") }
     var customSymbols by remember {
         mutableStateOf(
             prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
         )
     }
 
-    var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
     var previousEditorType by remember { mutableStateOf(editorType) }
 
     LaunchedEffect(
@@ -51,7 +49,6 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
         codeFolding,
         showToolbar,
         showHistory,
-        lspEnabled,
         aiEnabled,
         fontPath,
         customSymbols,
@@ -65,15 +62,13 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             putBoolean("editor_code_folding", codeFolding)
             putBoolean("editor_show_toolbar", showToolbar)
             putBoolean("editor_show_history", showHistory)
-            putBoolean("editor_lsp_enabled", lspEnabled)
             putBoolean("editor_ai_enabled", aiEnabled)
             putString("editor_font_path", fontPath)
             putString("editor_custom_symbols", customSymbols)
             putString("editor_type", editorType)
         }
-        if (lspEnabled != previousLspEnabled || editorType != previousEditorType) {
+        if (editorType != previousEditorType) {
             editorViewModel?.reloadAllEditors(context)
-            previousLspEnabled = lspEnabled
             previousEditorType = editorType
         }
     }
@@ -106,8 +101,6 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
                 onShowToolbarChange = { showToolbar = it },
                 showHistory = showHistory,
                 onShowHistoryChange = { showHistory = it },
-                lspEnabled = lspEnabled,
-                onLspEnabledChange = { lspEnabled = it },
                 isAiEnabled = aiEnabled,
                 onIsAiEnabledChange = { aiEnabled = it },
                 fontPath = fontPath,
