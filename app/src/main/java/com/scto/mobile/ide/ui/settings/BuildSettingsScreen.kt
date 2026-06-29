@@ -148,7 +148,6 @@ fun BuildSettingsScreen(navController: NavController) {
             BuildSettingsItem(
                 isJdk17Installed = isJdk17Installed,
                 isJdk21Installed = isJdk21Installed,
-                isGradleInstalled = isGradleInstalled,
                 isAndroidSdkInstalled = isAndroidSdkInstalled,
                 isBuildTools35Installed = isBuildTools35Installed,
                 isBuildTools36Installed = isBuildTools36Installed,
@@ -156,7 +155,6 @@ fun BuildSettingsScreen(navController: NavController) {
                 isPlatform35Installed = isPlatform35Installed,
                 isCmakeInstalled = isCmakeInstalled,
                 isNdkInstalled = isNdkInstalled,
-                isBaseUtilsInstalled = isBaseUtilsInstalled,
                 onInstall = { name, cmd -> runInstall(name, cmd) },
             )
         }

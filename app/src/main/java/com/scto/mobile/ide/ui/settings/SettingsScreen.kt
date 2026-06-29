@@ -1540,7 +1540,6 @@ fun TerminalSettingsItem(
 fun BuildSettingsItem(
     isJdk17Installed: Boolean,
     isJdk21Installed: Boolean,
-    isGradleInstalled: Boolean,
     isAndroidSdkInstalled: Boolean,
     isBuildTools35Installed: Boolean,
     isBuildTools36Installed: Boolean,
@@ -1548,7 +1547,6 @@ fun BuildSettingsItem(
     isPlatform35Installed: Boolean,
     isCmakeInstalled: Boolean,
     isNdkInstalled: Boolean,
-    isBaseUtilsInstalled: Boolean,
     onInstall: (String, String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
@@ -1637,12 +1635,6 @@ fun BuildSettingsItem(
                                     }
                                 }
                             },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_gradle),
-                            isInstalled = isGradleInstalled,
-                            onInstall = { onInstall("Gradle", "apk add gradle || apt install -y gradle") },
                         )
 
                         BuildToolRow(
@@ -1758,16 +1750,7 @@ fun BuildSettingsItem(
                             },
                         )
 
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_base_utils),
-                            isInstalled = isBaseUtilsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Base Build Utils",
-                                    "apk add build-base bash git wget curl gcompat || apt install -y build-essential bash git wget curl",
-                                )
-                            },
-                        )
+
                     }
                 }
             }
