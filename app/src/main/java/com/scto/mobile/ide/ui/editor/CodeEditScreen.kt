@@ -1665,10 +1665,11 @@ private suspend fun performBuild(
         try {
             val processBuilder = ProcessBuilder(cmd)
             processBuilder.directory(File(projectPath))
-            
+
             // Set Termux/SDK environment variables so Gradle can locate java, aapt2, etc.
             val env = processBuilder.environment()
-            env["PATH"] = "/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:" + (env["PATH"] ?: "")
+            env["PATH"] =
+                "/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:" + (env["PATH"] ?: "")
             env["JAVA_HOME"] = "/data/data/com.termux/files/usr"
             env["ANDROID_HOME"] = "/data/data/com.termux/files/home/android-sdk"
 
