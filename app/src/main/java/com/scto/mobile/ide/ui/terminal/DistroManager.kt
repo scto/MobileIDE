@@ -139,6 +139,8 @@ object DistroManager {
         copyAsset(context, "terminal/sandbox.sh", File(binDir, "sandbox"))
         copyAsset(context, "terminal/universal_runner.sh", File(binDir, "universal_runner"))
         copyAsset(context, "terminal/termux-x11.sh", File(binDir, "termux-x11"))
+        copyAsset(context, "terminal/bin/ideenv", File(binDir, "ideenv"))
+        copyAsset(context, "terminal/bin/idesetup", File(binDir, "idesetup"))
 
         val lspDir = File(binDir, "lsp").apply { mkdirs() }
         val lspAssets = context.assets.list("terminal/lsp") ?: emptyArray()
@@ -154,6 +156,8 @@ object DistroManager {
         File(binDir, "sandbox").setExecutable(true)
         File(binDir, "universal_runner").setExecutable(true)
         File(binDir, "termux-x11").setExecutable(true)
+        File(binDir, "ideenv").setExecutable(true)
+        File(binDir, "idesetup").setExecutable(true)
         val workspacePath = WorkspaceManager.getWorkspacePath(context)
         var versionName = "Unknown"
         var versionCode = 0L
