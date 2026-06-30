@@ -141,9 +141,6 @@ touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 info "Installing Git and Gradle inside Ubuntu container..."
 sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle"
 
-info "Running idesetup script..."
-sh $LOCAL/bin/sandbox "idesetup"
-
 info "Installing Node.js APT hook…"
 
 mkdir -p "$SANDBOX_DIR/etc/apt/apt.conf.d"
