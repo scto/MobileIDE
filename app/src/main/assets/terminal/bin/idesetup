@@ -49,7 +49,7 @@ print_help() {
     echo "For testing purposes:"
     echo "-a   CPU architecture. Extracted using 'uname -m' by default."
     echo "-p   Package manager. Defaults to 'apt'."
-    echo "-l   Name of curl package that will be installed before starting installation process. Defaults to 'libcurl'."
+    echo "-l   Name of curl package that will be installed before starting installation process. Defaults to 'curl'."
     echo ""
     echo "-h   Prints this message."
 }
@@ -144,7 +144,7 @@ sdkver_org=36.0.1
 with_cmdline=false
 manifest="https://raw.githubusercontent.com/scto/mobileide-tools/main/manifest.json"
 aptm="apt"
-apt_curl="libcurl"
+apt_curl="curl"
 jdk_version="17"
 
 OPTIND=1
