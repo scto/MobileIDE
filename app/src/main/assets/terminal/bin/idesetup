@@ -202,6 +202,11 @@ fi
 sdk_version="_${sdkver_org//'.'/'_'}"
 
 apts="$apt_curl jq tar"
+if [ "$aptm" = "apt" ]; then
+    apts+=" xz-utils"
+else
+    apts+=" xz"
+fi
 
 # Ask the user whether 'git' should be installed as well
 if is_yes "Do you want to install git?"; then
