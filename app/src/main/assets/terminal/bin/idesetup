@@ -293,7 +293,7 @@ else
         printf "JAVA_HOME=$jdk_dir" > $props
         print_success "Properties file updated successfully!"
     else
-        print_err "Manually edit $SYSROOT/etc/ide-environment.properties file and set JAVA_HOME and ANDROID_SDK_ROOT."
+        print_err "Manually edit $SYSROOT/etc/mobileide-environment.properties file and set JAVA_HOME and ANDROID_SDK_ROOT."
     fi
 fi
 
