@@ -5,6 +5,9 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 ---
 
 ## [2026-07-01]
+### Theme Switching Fix
+*   **Global Light/Dark Mode Sync**: Fixed an issue where the app (especially Android Views like `CodeEditorView` and `TerminalView`) remained dark when switching to the Light design. Synchronized `AppCompatDelegate` with Compose's `ThemeState` inside `MainActivity` to ensure the Activity configuration correctly resets to `uiMode = night=no`, allowing system color schemes and view backgrounds to correctly resolve to light variants.
+
 ### Terminal UI & UX Refinement
 *   **Scrollable Terminal Settings**: Added `verticalScroll` and `rememberScrollState` to `TerminalSettingsScreen` to ensure that all options are reachable on smaller screens.
 *   **Terminal Font Size Scaling Fix**: Fixed microscopic text size bug in terminal by converting the font size setting (10-30sp, default 12) to physical pixels using the device display metrics (`scaledDensity`) before passing it to `TerminalView.setTextSize()`.
