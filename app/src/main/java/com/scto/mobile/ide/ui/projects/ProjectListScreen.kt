@@ -171,7 +171,9 @@ fun ProjectListScreen(navController: NavController) {
             }
 
             if (projectDir.exists() && projectDir.isDirectory) {
-                val rawFiles = projectDir.listFiles { file -> file.isDirectory && file.name != "logs" } ?: emptyArray()
+                val rawFiles = projectDir.listFiles { file ->
+                    file.isDirectory && file.name != "logs" && file.name != "gradle" && !file.name.startsWith(".")
+                } ?: emptyArray()
 
                 val items = rawFiles.map { ProjectItem(name = it.name, lastModified = it.lastModified()) }
 

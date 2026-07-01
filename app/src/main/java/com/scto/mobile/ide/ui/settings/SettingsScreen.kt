@@ -1337,6 +1337,12 @@ fun TerminalSettingsItem(
     reinstallStatus: String = "",
     lspEnabled: Boolean,
     onLspEnabledChange: (Boolean) -> Unit,
+    fontSize: Float,
+    onFontSizeChange: (Float) -> Unit,
+    scrollbackLines: Float,
+    onScrollbackLinesChange: (Float) -> Unit,
+    closeBehavior: String,
+    onCloseBehaviorChange: (String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -1418,6 +1424,77 @@ fun TerminalSettingsItem(
                         checked = lspEnabled,
                         onCheckedChange = onLspEnabledChange,
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Terminal-Schriftgröße: ${fontSize.toInt()}sp",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Slider(
+                        value = fontSize,
+                        onValueChange = onFontSizeChange,
+                        valueRange = 10f..30f,
+                        steps = 19,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Scrollback Lines: ${scrollbackLines.toInt()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Slider(
+                        value = scrollbackLines,
+                        onValueChange = onScrollbackLinesChange,
+                        valueRange = 500f..50000f,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Verhalten beim Schließen der letzten Sitzung",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("exit_app") }
+                        ) {
+                            RadioButton(
+                                selected = closeBehavior == "exit_app",
+                                onClick = { onCloseBehaviorChange("exit_app") }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text("App beenden", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                Text("Schließt die gesamte Anwendung beim Beenden der letzten Sitzung.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("new_session") }
+                        ) {
+                            RadioButton(
+                                selected = closeBehavior == "new_session",
+                                onClick = { onCloseBehaviorChange("new_session") }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text("Neue Sitzung", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                Text("Erstellt eine neue Sitzung, anstatt die Anwendung zu beenden.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 

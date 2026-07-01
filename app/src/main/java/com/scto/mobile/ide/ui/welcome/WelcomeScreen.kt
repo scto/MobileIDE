@@ -187,7 +187,6 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     CompositionLocalProvider(LocalContentColor provides contentColor) {
         Scaffold(
             containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 // Calculate the highlight color of the bottom navigation bar
                 val activeColor =

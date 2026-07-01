@@ -111,12 +111,17 @@ object LogCatcher {
 
     @Volatile private var isInitialized = false
     @Volatile private var logFile: File? = null
+    @Volatile private var cachedProject: String? = null
 
     private val _logFlow = MutableSharedFlow<LogEntry>(extraBufferCapacity = 1000)
     val logFlow = _logFlow.asSharedFlow()
 
     // Used to store the history records of build logs
     private val _buildLogs = Collections.synchronizedList(ArrayList<LogEntry>())
+
+    @JvmStatic
+    val currentLogFilePath: String?
+        get() = getOrUpdateLogFile()?.absolutePath
 
     @JvmStatic
     fun getBuildLogs(): List<LogEntry> {
@@ -130,36 +135,48 @@ object LogCatcher {
         _buildLogs.clear()
     }
 
+    private fun getOrUpdateLogFile(): File? {
+        val config = logConfig ?: return null
+        if (!config.isLogEnabled || config.logFilePath.isEmpty()) return null
+
+        val currentProj = com.scto.mobile.ide.ui.terminal.DistroManager.currentProject
+        if (logFile == null || currentProj != cachedProject) {
+            synchronized(this) {
+                if (logFile == null || currentProj != cachedProject) {
+                    cachedProject = currentProj
+                    val logDir = if (!currentProj.isNullOrBlank()) {
+                        val projName = File(currentProj).name
+                        File(config.logFilePath, projName)
+                    } else {
+                        File(config.logFilePath)
+                    }
+                    if (!logDir.exists()) {
+                        logDir.mkdirs()
+                    }
+                    val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                    val formattedDate = sdf.format(Date())
+                    var file = File(logDir, "mobileide_$formattedDate.log")
+                    var counter = 1
+                    while (file.exists()) {
+                        file = File(logDir, "mobileide_${formattedDate}_$counter.log")
+                        counter++
+                    }
+                    logFile = file
+                }
+            }
+        }
+        return logFile
+    }
+
     @JvmStatic
     fun updateConfig(config: LogConfigState) {
-        val oldConfig = logConfig
         logConfig = config
         isInitialized = true
-
-        if (config.isLogEnabled && config.logFilePath.isNotEmpty()) {
-            if (
-                oldConfig == null ||
-                    !oldConfig.isLogEnabled ||
-                    oldConfig.logFilePath != config.logFilePath ||
-                    logFile == null
-            ) {
-                val logDir = File(config.logFilePath)
-                if (!logDir.exists()) {
-                    logDir.mkdirs()
-                }
-                val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-                val formattedDate = sdf.format(Date())
-                var file = File(logDir, "mobileide_$formattedDate.log")
-                var counter = 1
-                while (file.exists()) {
-                    file = File(logDir, "mobileide_${formattedDate}_$counter.log")
-                    counter++
-                }
-                logFile = file
-            }
-        } else {
+        synchronized(this) {
             logFile = null
+            cachedProject = null
         }
+        getOrUpdateLogFile()
 
         i(
             "LogCatcher",
@@ -216,7 +233,7 @@ object LogCatcher {
     private fun writeToFile(level: String, tag: String, message: String) {
         val config = logConfig ?: return
         if (!config.isLogEnabled) return
-        val targetFile = logFile ?: return
+        val targetFile = getOrUpdateLogFile() ?: return
 
         GlobalScope.launch(Dispatchers.IO) {
             try {

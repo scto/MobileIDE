@@ -433,10 +433,14 @@ private fun extractTemplate(
             val prefixToStrip = if (templateName == "FlutterApp") prefix else "${prefix}kotlin/"
 
             while (entry != null) {
-                if (entry.name.startsWith(prefix) && !entry.isDirectory) {
-                    val relativePath = entry.name.substring(prefixToStrip.length)
-
-                    if (relativePath != "info.json" && relativePath != "icon.png") {
+                val entryName = entry.name
+                if (entryName.startsWith(prefix) && !entry.isDirectory) {
+                    if (entryName.endsWith("/info.json") || entryName.endsWith("/icon.png") || !entryName.startsWith(prefixToStrip)) {
+                        zipInputStream.closeEntry()
+                        entry = zipInputStream.nextEntry
+                        continue
+                    }
+                    val relativePath = entryName.substring(prefixToStrip.length)
                         val packagePath = packageName.replace('.', '/')
                         val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
 
@@ -461,7 +465,6 @@ private fun extractTemplate(
                         if (targetFile.name == "gradlew") {
                             targetFile.setExecutable(true)
                         }
-                    }
                 }
                 zipInputStream.closeEntry()
                 entry = zipInputStream.nextEntry

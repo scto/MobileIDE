@@ -133,7 +133,7 @@ object MkSession {
                 workingDir,
                 args,
                 env.toTypedArray(),
-                10000,
+                com.rk.settings.Settings.terminal_scrollback_lines,
                 sessionClient,
             )
         }
