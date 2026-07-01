@@ -35,8 +35,16 @@ object Settings {
         set(value) = Preference.setInt(key = "default_night_mode",value)
 
     var terminal_font_size
-        get() = Preference.getInt(key = "terminal_font_size", default = 13)
+        get() = Preference.getInt(key = "terminal_font_size", default = 12)
         set(value) = Preference.setInt(key = "terminal_font_size",value)
+
+    var terminal_scrollback_lines
+        get() = Preference.getInt(key = "terminal_scrollback_lines", default = 2000)
+        set(value) = Preference.setInt(key = "terminal_scrollback_lines", value)
+
+    var terminal_close_behavior
+        get() = Preference.getString(key = "terminal_close_behavior", default = "exit_app")
+        set(value) = Preference.setString(key = "terminal_close_behavior", value)
 
     var wallTransparency
         get() = Preference.getFloat(key = "wallTransparency", default = 0f)

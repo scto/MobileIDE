@@ -5,6 +5,9 @@ shopt -s checkwinsize
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:$LOCAL/bin:$PATH
 export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
+export SYSROOT="/"
+export HOME="/root"
+export PROJECTS="/storage/emulated/0/MobileIDEProjects"
 
 source "$LOCAL/bin/utils"
 
@@ -107,10 +110,8 @@ fi
 cd "$WKDIR" || cd $HOME
 
 # Enable arrow up/down history prefix search
-if [ -t 0 ]; then
-    bind '"\e[A": history-search-backward'
-    bind '"\e[B": history-search-forward'
-fi
+bind '"\e[A": history-search-backward' 2>/dev/null
+bind '"\e[B": history-search-forward' 2>/dev/null
 
 # Load bash completion
 if [ -f /etc/profile.d/bash_completion.sh ]; then

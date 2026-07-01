@@ -56,11 +56,11 @@ fun logErrorOrExit(throwable: Throwable){
             
             var logged = false
             runCatching {
-                val projectsDir = File(workspacePath)
-                if (!projectsDir.exists()) {
-                    projectsDir.mkdirs()
+                val logsDir = File(workspacePath, "logs")
+                if (!logsDir.exists()) {
+                    logsDir.mkdirs()
                 }
-                val logFile = File(projectsDir, "crash.log")
+                val logFile = File(logsDir, "crash.log")
                 logFile.appendText("\n$stackTraceString\n")
                 logged = true
             }

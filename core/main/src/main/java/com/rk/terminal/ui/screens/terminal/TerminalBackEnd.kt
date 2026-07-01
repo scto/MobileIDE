@@ -31,8 +31,11 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
 
-// 将 activity: MainActivity 改为 context: Context
-class TerminalBackEnd(val terminal: TerminalView, val context: Context) : TerminalViewClient, TerminalSessionClient {
+class TerminalBackEnd(
+    val terminal: TerminalView,
+    val context: Context,
+    val onSessionCloseRequested: ((TerminalSession) -> Unit)? = null
+) : TerminalViewClient, TerminalSessionClient {
     override fun onTextChanged(changedSession: TerminalSession) {
         terminal.onScreenUpdated()
     }
@@ -167,19 +170,7 @@ class TerminalBackEnd(val terminal: TerminalView, val context: Context) : Termin
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
         if (keyCode == KeyEvent.KEYCODE_ENTER && !session.isRunning) {
-            // 移除 SessionService 逻辑
-            /*
-            activity.sessionBinder?.terminateSession(activity.sessionBinder!!.getService().currentSession.value.first)
-            if (activity.sessionBinder!!.getService().sessionList.isEmpty()){
-                activity.finish()
-            }else{
-                changeSession(activity,activity.sessionBinder!!.getService().sessionList.keys.first())
-            }
-            */
-            // 可以在这里添加自定义的会话结束处理，例如关闭 Activity
-            if (context is Activity) {
-                context.finish()
-            }
+            onSessionCloseRequested?.invoke(session)
             return true
         }
         return false

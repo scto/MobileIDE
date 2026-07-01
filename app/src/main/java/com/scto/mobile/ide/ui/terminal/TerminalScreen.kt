@@ -425,23 +425,34 @@ fun TerminalScreen(navController: NavController) {
                     factory = { ctx ->
                         TerminalView(ctx, null).apply {
                             terminalViewRef = WeakReference(this)
-                            setTextSize(42)
+                            setTextSize(com.rk.settings.Settings.terminal_font_size)
                             setTypeface(TerminalFontManager.getTypeface(ctx))
                             keepScreenOn = true
                             isFocusable = true
                             isFocusableInTouchMode = true
                             attachSession(currentSession)
-                            val client = TerminalBackEnd(this, ctx)
+                            val client = TerminalBackEnd(this, ctx) { finishedSession ->
+                                val wrapper = SessionManager.sessions.find { it.session == finishedSession }
+                                if (wrapper != null) {
+                                    SessionManager.removeSession(wrapper)
+                                }
+                            }
                             setTerminalViewClient(client)
                             currentSession.updateTerminalSessionClient(client)
                         }
                     },
                     update = { view ->
                         view.setTypeface(TerminalFontManager.getTypeface(context))
+                        view.setTextSize(com.rk.settings.Settings.terminal_font_size)
                         view.setBackgroundColor(TerminalConfig.getBackgroundColor(isSystemDark))
                         if (view.currentSession != currentSession) {
                             view.attachSession(currentSession)
-                            val client = TerminalBackEnd(view, context)
+                            val client = TerminalBackEnd(view, context) { finishedSession ->
+                                val wrapper = SessionManager.sessions.find { it.session == finishedSession }
+                                if (wrapper != null) {
+                                    SessionManager.removeSession(wrapper)
+                                }
+                            }
                             view.setTerminalViewClient(client)
                             currentSession.updateTerminalSessionClient(client)
                             view.onScreenUpdated()

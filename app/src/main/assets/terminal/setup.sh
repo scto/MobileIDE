@@ -139,7 +139,7 @@ rm "$TMP_DIR"/sandbox.tar.gz
 touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 
 info "Installing Git and Gradle inside Ubuntu container..."
-sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle"
+sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle bash-completion"
 
 info "Installing Node.js APT hook…"
 

@@ -41,7 +41,9 @@ object SessionManager {
                 override fun onSessionFinished(finishedSession: TerminalSession) {
                     val wrapper = sessions.find { it.session == finishedSession }
                     if (wrapper != null) {
-                        removeSession(wrapper)
+                        if (finishedSession.exitStatus == 0) {
+                            removeSession(wrapper)
+                        }
                     }
                 }
 
@@ -95,10 +97,17 @@ object SessionManager {
             currentSessionIndex = (sessions.size - 1).coerceAtLeast(0)
         }
         if (sessions.isEmpty()) {
-            LogCatcher.i("SessionManager", "All sessions removed. Stopping TerminalService.")
-            val ctx = com.scto.mobile.ide.utils.application
-            if (ctx != null) {
-                TerminalService.stopService(ctx)
+            if (com.rk.settings.Settings.terminal_close_behavior == "new_session") {
+                val ctx = com.scto.mobile.ide.utils.application
+                if (ctx != null) {
+                    addNewSession(ctx)
+                }
+            } else {
+                LogCatcher.i("SessionManager", "All sessions removed. Stopping TerminalService.")
+                val ctx = com.scto.mobile.ide.utils.application
+                if (ctx != null) {
+                    TerminalService.stopService(ctx)
+                }
             }
         }
     }
