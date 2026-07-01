@@ -36,6 +36,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -1343,6 +1345,8 @@ fun TerminalSettingsItem(
     onScrollbackLinesChange: (Float) -> Unit,
     closeBehavior: String,
     onCloseBehaviorChange: (String) -> Unit,
+    colorscheme: String,
+    onColorschemeChange: (String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -1455,6 +1459,29 @@ fun TerminalSettingsItem(
                         valueRange = 500f..50000f,
                         modifier = Modifier.fillMaxWidth(),
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Terminal Farbschema",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val schemes = listOf("default", "dracula", "solarized_dark", "nord", "monokai")
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        schemes.forEach { scheme ->
+                            FilterChip(
+                                selected = colorscheme == scheme,
+                                onClick = { onColorschemeChange(scheme) },
+                                label = { Text(scheme.replace('_', ' ').replaceFirstChar { it.uppercase() }) }
+                            )
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 

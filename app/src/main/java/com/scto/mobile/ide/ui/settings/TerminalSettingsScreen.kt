@@ -17,6 +17,9 @@ import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.SetupWorker
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TerminalSettingsScreen(navController: NavController) {
@@ -38,11 +41,13 @@ fun TerminalSettingsScreen(navController: NavController) {
         mutableFloatStateOf(com.rk.settings.Settings.terminal_scrollback_lines.toFloat())
     }
     var closeBehavior by remember { mutableStateOf(com.rk.settings.Settings.terminal_close_behavior) }
+    var colorscheme by remember { mutableStateOf(com.rk.settings.Settings.terminal_colorscheme) }
 
     LaunchedEffect(lspEnabled) { editorPrefs.edit { putBoolean("editor_lsp_enabled", lspEnabled) } }
     LaunchedEffect(fontSize) { com.rk.settings.Settings.terminal_font_size = fontSize.toInt() }
     LaunchedEffect(scrollbackLines) { com.rk.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
     LaunchedEffect(closeBehavior) { com.rk.settings.Settings.terminal_close_behavior = closeBehavior }
+    LaunchedEffect(colorscheme) { com.rk.settings.Settings.terminal_colorscheme = colorscheme }
 
     Scaffold(
         topBar = {
@@ -56,7 +61,7 @@ fun TerminalSettingsScreen(navController: NavController) {
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize().verticalScroll(rememberScrollState())) {
             TerminalSettingsItem(
                 selectedDistro = selectedDistro,
                 onDistroSelected = { distro ->
@@ -104,6 +109,8 @@ fun TerminalSettingsScreen(navController: NavController) {
                 onScrollbackLinesChange = { scrollbackLines = it },
                 closeBehavior = closeBehavior,
                 onCloseBehaviorChange = { closeBehavior = it },
+                colorscheme = colorscheme,
+                onColorschemeChange = { colorscheme = it }
             )
         }
     }

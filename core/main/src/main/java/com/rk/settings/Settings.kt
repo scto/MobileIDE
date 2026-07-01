@@ -43,8 +43,12 @@ object Settings {
         set(value) = Preference.setInt(key = "terminal_scrollback_lines", value)
 
     var terminal_close_behavior
-        get() = Preference.getString(key = "terminal_close_behavior", default = "exit_app")
+        get() = Preference.getString(key = "terminal_close_behavior", default = "new_session")
         set(value) = Preference.setString(key = "terminal_close_behavior", value)
+
+    var terminal_colorscheme
+        get() = Preference.getString(key = "terminal_colorscheme", default = "default")
+        set(value) = Preference.setString(key = "terminal_colorscheme", value)
 
     var wallTransparency
         get() = Preference.getFloat(key = "wallTransparency", default = 0f)
