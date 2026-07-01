@@ -76,6 +76,21 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         )
         window.isNavigationBarContrastEnforced = false
 
+        val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
+            try {
+                val crashFile = java.io.File(getExternalFilesDir(null), "crash.log")
+                crashFile.appendText("\n\n--- CRASH AT ${java.util.Date()} ---\n")
+                crashFile.appendText("Thread: ${thread.name}\n")
+                val sw = java.io.StringWriter()
+                exception.printStackTrace(java.io.PrintWriter(sw))
+                crashFile.appendText(sw.toString())
+            } catch (e: Exception) {
+                // Ignore
+            }
+            defaultExceptionHandler?.uncaughtException(thread, exception)
+        }
+
         init()
     }
 
