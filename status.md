@@ -62,6 +62,7 @@ Added a dedicated **LSP Status** card to verify language server availability:
 *   **Setup Script Integration**: Automatically copied `ideenv` and `idesetup` shell executables into Alpine host bin paths to enable workspace command-line tooling.
 
 ## [2026-07-01] Terminal Usability & Custom Styling
+*   **Theme Switching Fix**: Resolved an issue where the app layout (including Android Views like the CodeEditor and Terminal) remained dark despite switching to the Light design mode by synchronizing `AppCompatDelegate`'s default night mode dynamically inside `MainActivity` using `LaunchedEffect`.
 *   **Terminal Settings Scrollability**: Fixed a UI layout bug where settings were unreachable on smaller screens by wrapping the `TerminalSettingsScreen` Column in a scrollable container.
 *   **Density-Independent Font Size scaling**: Fixed microscopic terminal text sizes by scaling the font size preference (10-30sp) into physical pixels using device `scaledDensity` display metrics before setting the view text size.
 *   **Default session close behavior**: Swapped default terminal close action to `"new_session"`, automatically opening a new shell terminal instead of exiting the app when the last tab is closed.

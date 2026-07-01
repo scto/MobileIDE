@@ -46,7 +46,7 @@ import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 
-class MainActivity : ComponentActivity() {
+class MainActivity : androidx.appcompat.app.AppCompatActivity() {
     val fileManager = com.scto.mobile.ide.files.FileManager(this)
 
     companion object {
@@ -126,6 +126,16 @@ class MainActivity : ComponentActivity() {
                 } else {
                     AppTheme(themeState = themeState) {
                         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                            // Sync global night mode for Android Views (Editor, Terminal, etc.)
+                            LaunchedEffect(themeState.selectedModeIndex) {
+                                val mode = when (themeState.selectedModeIndex) {
+                                    1 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                                    2 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                                    else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                                }
+                                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(mode)
+                            }
+                            
                             // ✅ Core change 2: Initialize state according to WelcomePreferences
                             var showWelcomeScreen by remember {
                                 mutableStateOf(!WelcomePreferences.isWelcomeCompleted(context))
