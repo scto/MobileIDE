@@ -435,36 +435,40 @@ private fun extractTemplate(
             while (entry != null) {
                 val entryName = entry.name
                 if (entryName.startsWith(prefix) && !entry.isDirectory) {
-                    if (entryName.endsWith("/info.json") || entryName.endsWith("/icon.png") || !entryName.startsWith(prefixToStrip)) {
+                    if (
+                        entryName.endsWith("/info.json") ||
+                            entryName.endsWith("/icon.png") ||
+                            !entryName.startsWith(prefixToStrip)
+                    ) {
                         zipInputStream.closeEntry()
                         entry = zipInputStream.nextEntry
                         continue
                     }
                     val relativePath = entryName.substring(prefixToStrip.length)
-                        val packagePath = packageName.replace('.', '/')
-                        val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
+                    val packagePath = packageName.replace('.', '/')
+                    val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
 
-                        val targetFile = File(targetDir, resolvedRelativePath)
-                        targetFile.parentFile?.mkdirs()
+                    val targetFile = File(targetDir, resolvedRelativePath)
+                    targetFile.parentFile?.mkdirs()
 
-                        val bytes = zipInputStream.readBytes()
-                        if (isTextFile(resolvedRelativePath)) {
-                            var content = String(bytes, Charsets.UTF_8)
-                            content = content.replace("\$packageName", packageName)
-                            content = content.replace("\$packagename", packageName)
-                            content = content.replace("\$projectName", projectName)
+                    val bytes = zipInputStream.readBytes()
+                    if (isTextFile(resolvedRelativePath)) {
+                        var content = String(bytes, Charsets.UTF_8)
+                        content = content.replace("\$packageName", packageName)
+                        content = content.replace("\$packagename", packageName)
+                        content = content.replace("\$projectName", projectName)
 
-                            val jniPackageName = packageName.replace(".", "_")
-                            content = content.replace("\$jniPackageName", jniPackageName)
+                        val jniPackageName = packageName.replace(".", "_")
+                        content = content.replace("\$jniPackageName", jniPackageName)
 
-                            targetFile.writeText(content)
-                        } else {
-                            targetFile.writeBytes(bytes)
-                        }
+                        targetFile.writeText(content)
+                    } else {
+                        targetFile.writeBytes(bytes)
+                    }
 
-                        if (targetFile.name == "gradlew") {
-                            targetFile.setExecutable(true)
-                        }
+                    if (targetFile.name == "gradlew") {
+                        targetFile.setExecutable(true)
+                    }
                 }
                 zipInputStream.closeEntry()
                 entry = zipInputStream.nextEntry
