@@ -20,35 +20,25 @@ Dies ist ein experimentelles Entwicklungsprojekt; seine Kernarchitektur und Code
 
 ## Projektstruktur
 
-Der Hauptcode befindet sich in `app/src/main/java/com/scto/mobile/ide/`.  Die Verzeichnisstruktur und die Funktionen sind wie folgt:
+Das Projekt wurde in eine hochgradig modulare Struktur mit folgenden Kernmodulen aufgeteilt:
 
-```text
-com.scto.mobile.ide
-├── build/ # Benutzerdefiniertes APK-Erstellungssystem
-│ ├── ApkBuilder.java # Kernlogik zum Kompilieren und Verpacken von APKs
-│ ├── ApkInstaller.kt # APK-Installation
-│ └── ... # Verschlüsselung, ZipAligner
-├── core/ # App-spezifische Kerninfrastruktur
-│ └── utils/ # Hilfsprogramme (Backup, CodeFormatter, WorkspaceManager usw.)
-├── files/ # Dateisystemmodul
-│ ├── FileIcons.kt # Zuordnung von Symbolressourcen
-│ └── FileTree.kt # Benutzeroberfläche für den Datei-Explorer  Logik
-├── ui/ # Benutzeroberfläche (Jetpack Compose)
-│ ├── components/ # Gemeinsame UI-Komponenten
-│ ├── editor/ # Code-Editor
-│ ├── preview/ # Web-Vorschau
-│ ├── settings/ # Anwendungseinstellungen und Info-Bildschirme
-│ ├── terminal/ # Terminalemulator (Alpine Linux-Integration)
-│ ├── theme/ # Designsystem (Farben, Typografie)
-│ └── welcome/ # Willkommens-/Onboarding-Bildschirm
-
+*   `:app` - Hauptanwendung (UI-Bildschirme, Onboarding, Willkommenslogik, Projektauswahl, Einstellungen, Vorlagen-Extraktion).
+*   `:editor` - Code-Editor-Logik (basierend auf sora-editor, Verwaltung geöffneter Tabs und Editoraktionen).
+*   `:editor-lsp` - LSP (Language Server Protocol) Integration und Unterstützung für den Editor.
+*   `:language-treesitter` - Syntaxhervorhebungs- und semantische Analyse-Engine via TreeSitter für Java, Kotlin, XML, Log und C++.
+*   `:core:main` - Zentrales Kern-IDE-Modul (Hauptnavigation, Terminal-Sitzungsverwaltung-Backend, Design- und Theme-Konfigurationen).
+*   `:core:components` - Allgemeine UI-Komponenten, Jetpack Compose Einstellungs-Widgets und BottomSheet-Komponenten.
+*   `:core:resources` - Allgemeine Ressourcen (Symbole, String-Übersetzungen, Bild-Assets).
+*   `:core:terminal-emulator` - Terminal-Parser, ANSI-Steuerzeichen-Interpreter, PTY-Prozess-Starter/Runner.
+*   `:core:terminal-view` - Core-Android-View zur Darstellung der Terminalmatrix und Erfassung von Tastatureingaben.
+*   `:core:apk-builder` - Eigenes APK-Kompilierungs-Tool (AAPT2-Compiler, DX/D8-Compiler, Signierung, Zipalign und Paketierung).
+*   `:core:tooling:tooling-api` - Schnittstellen für das Logging-Framework und Gradle-Task-Definitionen.
+*   `:core:tooling:tooling-impl` - Kategorisiertes Echtzeit-Logging-Panel (Terminal, Fehler, IDE-Protokoll, Build, LSP) und Gradle-Task-Panel mit Checklisten-UI.
 
 **Wichtige Assets (`app/src/main/assets/`)**:
-
-* `textmate/`: TextMate-Grammatiken und -Konfigurationen für Syntaxhervorhebung.
-
-* `queries/`: Syntaxbaumabfragen. 
-* `init-host.sh`, `init.sh`, `proot`, `rootfs.bin`: Dateien für die eingebettete Alpine Linux-Umgebung.
+*   `textmate/`: TextMate-Grammatiken und Konfigurationen für die Ausweich-Syntaxhervorhebung.
+*   `queries/`: TreeSitter-Abfragen (Query-Dateien).
+*   `terminal/`: Integrierte Terminal-Startskripte (`ideenv`, `idesetup`, `init.sh`, `setup.sh`) sowie integrierte Farbschemata unter `terminal/colorschemes/`.
 
 ## Funktionen
 

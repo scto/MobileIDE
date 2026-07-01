@@ -20,33 +20,25 @@ This is an experimental engineering project; its core architecture and code logi
 
 ## Project Structure
 
-The main code is located in `app/src/main/java/com/scto/mobile/ide/`. The directory structure and functions are as follows:
+The project has been refactored into a highly modular system consisting of the following key submodules:
 
-```text
-com.scto.mobile.ide
-├── build/              # Custom APK build system
-│   ├── ApkBuilder.java # Core logic for compiling and packaging APKs
-│   ├── ApkInstaller.kt # Handles APK installation
-│   └── ...             # Encryptor, ZipAligner
-├── core/               # App-specific core infrastructure
-│   └── utils/          # Utilities (Backup, CodeFormatter, WorkspaceManager, etc.)
-├── files/              # File system module
-│   ├── FileIcons.kt    # Icon resource mapping
-│   └── FileTree.kt     # File explorer UI and logic
-├── ui/                 # Interface layer (Jetpack Compose)
-│   ├── components/     # Shared UI components
-│   ├── editor/         # Code editor screen
-│   ├── preview/        # Web preview screen
-│   ├── settings/       # Application settings and about screens
-│   ├── terminal/       # Terminal emulator (Alpine Linux integration)
-│   ├── theme/          # Design system (Colors, Typography)
-│   └── welcome/        # Welcome/Onboarding screen
-```
+*   `:app` - Main application entry point (UI screens, onboarding, welcome logic, project selection, setting screens, template extraction logic).
+*   `:editor` - Code editor logic (based on sora-editor integration, handles open file tabs, and editor actions).
+*   `:editor-lsp` - LSP (Language Server Protocol) integration and support for the editor.
+*   `:language-treesitter` - Syntax highlighting and semantic parsing engine using TreeSitter for Java, Kotlin, XML, Log, and C++.
+*   `:core:main` - Central core IDE module (handles main navigation, Terminal session view backend, theme configurations).
+*   `:core:components` - Common UI widgets, Jetpack Compose preference components, and bottom sheet widgets.
+*   `:core:resources` - Universal resources (icons, string translations, drawable assets).
+*   `:core:terminal-emulator` - Terminal parser, ANSI escape code interpreter, PTY process launcher/runner.
+*   `:core:terminal-view` - Core Android View widget rendering the terminal session matrix and capturing hardware key events.
+*   `:core:apk-builder` - Custom APK compilation toolset (AAPT2 compiler, DX/D8 compilers, signing, zipalign, and packaging).
+*   `:core:tooling:tooling-api` - Logging framework interfaces and Gradle task definition objects.
+*   `:core:tooling:tooling-impl` - Categorized real-time logging panel (Terminal, Problems, IDE, Build, LSP logs) and Gradle tasks panel with checkbox list UI.
 
 **Key Assets (`app/src/main/assets/`)**:
-*   `textmate/`: TextMate grammars and configurations for syntax highlighting.
-*   `queries/`: Syntax tree queries.
-*   `init-host.sh`, `init.sh`, `proot`, `rootfs.bin`: Files for the embedded Alpine Linux environment.
+*   `textmate/`: TextMate grammars and configurations for syntax highlighting fallback.
+*   `queries/`: TreeSitter query definitions.
+*   `terminal/`: Embedded terminal setup files (`ideenv`, `idesetup`, `init.sh`, `setup.sh`), as well as built-in color schemes under `terminal/colorschemes/`.
 
 
 ## Features

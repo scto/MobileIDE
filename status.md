@@ -50,12 +50,20 @@ Added a dedicated **LSP Status** card to verify language server availability:
 ### 5. APK Compilation & Gradlew Permissions Resolution
 *   **PRoot Compile Environment**: Resolved execute permission (`Permission denied`) and environment (`JAVA_HOME set to an invalid directory`) errors when running `gradlew` from shared storage. The build process now executes inside the Alpine PRoot container using `DistroManager.buildProotCommand` and correct PRoot environment variables.
 *   **Pre-Build Verification**: Added automatic checks before launching the build process to verify the installation of OpenJDK 17/21, Gradle, Android SDK, and optionally CMake/NDK if C/C++ files are present, logging detailed instructions on failure.
-
-### 6. Settings Panel Refactoring
-*   **LSP Switch Migration**: Moved the general LSP Completion toggle to `TerminalSettings` as *"LSP Bash Scripts"* (`settings_lsp_bash_scripts`).
-*   **LSP Editor Toggle**: Added a new *"LSP-Editor"* switch to `EditorSettings`, which defaults to `on` (TrueSitter) and provides a description explaining the difference between TreeSitter semantic highlighting and classic TextMate.
-
-### 7. Core Tooling Submodules (API & IMPL)
-*   **Module Separation**: Created `:core:tooling:tooling-api` and `:core:tooling:tooling-impl` submodules to handle logging and build tools.
+*   **Settings Panel Refactoring**: Moved the general LSP Completion toggle to `TerminalSettings` as *"LSP Bash Scripts"* (`settings_lsp_bash_scripts`).
+*   **LSP Editor Toggle**: Added a new *"LSP-Editor"* switch to `EditorSettings`, which defaults to `on` (TreeSitter) and provides a description explaining the difference between TreeSitter semantic highlighting and classic TextMate.
+*   **Core Tooling Submodules (API & IMPL)**: Created `:core:tooling:tooling-api` and `:core:tooling:tooling-impl` submodules to handle logging and build tools.
 *   **Categorized Logs**: Implemented real-time routing of app logs into five dedicated tabs inside the bottom sheet panel: *Terminal Logs*, *Problems (Diagnostics)*, *IDE Log*, *Build*, and *LSP*.
 *   **Interactive Gradle Tasks Panel**: Queried Gradle tasks dynamically inside the container and listed them with checkboxes inside the *Build / Tasks* bottom panel. Enabled task execution using a Play icon button, streaming output directly to the Build logs in real-time.
+
+## [2026-06-30] Sandboxed CLI & FGS Permission Fixes
+*   **Foreground Service Permission Onboarding**: Prevented `ForegroundServiceStartNotAllowedException` crashes on Android 12+ by dynamically prompting the user for Post Notification permissions during onboarding.
+*   **CLI Decompression Compatibility**: Resolved extraction errors for `tar.xz` archives by packaging `xz-utils` (Debian/Ubuntu) / `xz` (Alpine) into container requirements.
+*   **Setup Script Integration**: Automatically copied `ideenv` and `idesetup` shell executables into Alpine host bin paths to enable workspace command-line tooling.
+
+## [2026-07-01] Terminal Usability & Custom Styling
+*   **Terminal Settings Scrollability**: Fixed a UI layout bug where settings were unreachable on smaller screens by wrapping the `TerminalSettingsScreen` Column in a scrollable container.
+*   **Density-Independent Font Size scaling**: Fixed microscopic terminal text sizes by scaling the font size preference (10-30sp) into physical pixels using device `scaledDensity` display metrics before setting the view text size.
+*   **Default session close behavior**: Swapped default terminal close action to `"new_session"`, automatically opening a new shell terminal instead of exiting the app when the last tab is closed.
+*   **Modular decoupling**: Decoupled session termination callbacks from the core terminal backend view-client to isolate `:core:main` dependencies from `:app`, preventing compile circular references.
+*   **Custom Terminal Color Schemes**: Added a new `terminal_colorscheme` setting and created five built-in properties-based themes: `default`, `dracula`, `solarized_dark`, `nord`, and `monokai`. Updated the terminal rendering views to apply these color properties dynamically.

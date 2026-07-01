@@ -1,0 +1,48 @@
+# MobileIDE Progress History
+
+This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
+
+---
+
+## [2026-07-01]
+### Terminal UI & UX Refinement
+*   **Scrollable Terminal Settings**: Added `verticalScroll` and `rememberScrollState` to `TerminalSettingsScreen` to ensure that all options are reachable on smaller screens.
+*   **Terminal Font Size Scaling Fix**: Fixed microscopic text size bug in terminal by converting the font size setting (10-30sp, default 12) to physical pixels using the device display metrics (`scaledDensity`) before passing it to `TerminalView.setTextSize()`.
+*   **Default Close Last Session Behavior**: Changed default behavior when closing the last terminal session from exiting the application (`exit_app`) to creating a new terminal session (`new_session`).
+*   **Custom Terminal Color Schemes**:
+    *   Added a new `terminal_colorscheme` preference to `Settings`.
+    *   Created five built-in properties-based themes inside `app/src/main/assets/terminal/colorschemes/`: `default`, `dracula`, `solarized_dark`, `nord`, and `monokai`.
+    *   Implemented dynamic theme application on the `TerminalView` using `TerminalColors.COLOR_SCHEME.updateWith(props)` and forcing emulator color reset on creation and updates.
+    *   Exposed a scrollable horizontal filter chip selection row for Farbschemas inside the `TerminalSettingsItem` UI.
+*   **Documentation overhaul**: Revised `README.md` and `README_DE.md` to reflect the newly modularized subproject layout of the repository. Created `PROGRESS.md` to track commit history by date.
+*   **Gradle dependency and sandbox isolation fixes**: Handled finished terminal session close requests using a decoupled callback inside `TerminalBackEnd.kt` to avoid circular dependency compile errors between `:core:main` and `:app`.
+
+---
+
+## [2026-06-30]
+### Initial Environment Boot & Sandboxed CLI Setup
+*   **FGS Start Exception Fix**: Resolved `ForegroundServiceStartNotAllowedException` on Android 12+ by prompting the user for Post Notification permissions on the welcome/permissions screen before launching `TerminalService`.
+*   **Tar Archive Decompression Resolution**: Fixed initial extraction failure of `tar.xz` packages by adding `xz` (Alpine) / `xz-utils` (Debian/Ubuntu) to the automated requirements check during setup.
+*   **CURL Package Fallback**: Swapped `libcurl` with standard `curl` in Debian/Ubuntu setup packages to guarantee compatibility and prevent package installation blockages.
+*   **Interactive Onboarding Flow**: Replaced raw shell invocation of `idesetup` during setup with an interactive setup notice screen, preventing headless TTY read errors when starting container environments.
+*   **Setup Asset copy**: Added copying logic for `ideenv` and `idesetup` shell helper executables inside `setup.sh` to initialize Distro paths.
+
+---
+
+## [2026-06-29]
+### Refactoring, Build Pre-checks, and Core Tooling Submodules
+*   **Git and Gradle Sandbox Automations**: Removed redundant manual Gradle items from Settings, opting to auto-install `git` and `gradle` directly into the Ubuntu container environment.
+*   **Gradle Permissive Builds**: Fixed shared storage permissions blockage (`Permission denied`) when calling `gradlew` by wrapper-script execution via bash shell and passing environment variables.
+*   **Settings Screen Clean-up**: Separated LSP completion options into *"LSP Bash Scripts"* (Terminal Settings) and *"LSP Editor"* (Editor Settings) toggle switches with descriptive details.
+*   **TreeSitter XML & KTS Syntax Highlight Fixes**: Resolved XML node syntax query errors, replaced outdated KTS highlights queries with official schemas, and resolved a tab rendering bug by immediate application of compose themes.
+*   **LogCatcher Logging Control**: Added optional LogCatcher logging control toggles to enable or disable verbose runtime debugging.
+*   **Modular Architecture Refactoring**: Moved build and logging logic into two new submodules `:core:tooling:tooling-api` and `:core:tooling:tooling-impl`.
+*   **Categorized Logs sheet**: Created real-time log categorization routing under *Terminal*, *Problems*, *IDE*, *Build*, and *LSP* tabs.
+*   **Interactive Gradle Tasks Panel**: Built a dynamic parser querying container Gradle tasks, listing them with checkbox selection, and executing them asynchronously inside the logs pane.
+
+---
+
+## [2026-06-28]
+### Semantic Highlighting Engine Integration
+*   **TreeSitter Engine Integration**: Added `:language-treesitter` module with support for Java, Kotlin, XML, and Log file types.
+*   **Launcher Icon Assets**: Updated launcher icon resources across project configurations.

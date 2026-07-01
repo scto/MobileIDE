@@ -274,8 +274,13 @@ if [ "$with_cmdline" = true ]; then
 fi
 
 # Install JDK
-print_info "Installing package: 'openjdk-$jdk_version'"
-$aptm install "openjdk-$jdk_version" -y
+if [ "$aptm" = "apk" ]; then
+    pkg_name="openjdk$jdk_version"
+else
+    pkg_name="openjdk-$jdk_version-jdk"
+fi
+print_info "Installing package: '$pkg_name'"
+$aptm install "$pkg_name" -y
 print_info "JDK $jdk_version has been installed."
 
 jdk_dir="$SYSROOT/opt/openjdk"

@@ -425,7 +425,8 @@ fun TerminalScreen(navController: NavController) {
                     factory = { ctx ->
                         TerminalView(ctx, null).apply {
                             terminalViewRef = WeakReference(this)
-                            setTextSize(com.rk.settings.Settings.terminal_font_size)
+                            val fontSizePx = (com.rk.settings.Settings.terminal_font_size * ctx.resources.displayMetrics.scaledDensity).toInt()
+                            setTextSize(fontSizePx)
                             setTypeface(TerminalFontManager.getTypeface(ctx))
                             keepScreenOn = true
                             isFocusable = true
@@ -440,12 +441,39 @@ fun TerminalScreen(navController: NavController) {
                                 }
                             setTerminalViewClient(client)
                             currentSession.updateTerminalSessionClient(client)
+                            
+                            val props = java.util.Properties()
+                            try {
+                                val scheme = com.rk.settings.Settings.terminal_colorscheme
+                                ctx.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
+                                    props.load(input)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
+                            mEmulator?.mColors?.reset()
                         }
                     },
                     update = { view ->
                         view.setTypeface(TerminalFontManager.getTypeface(context))
-                        view.setTextSize(com.rk.settings.Settings.terminal_font_size)
+                        val fontSizePx = (com.rk.settings.Settings.terminal_font_size * context.resources.displayMetrics.scaledDensity).toInt()
+                        view.setTextSize(fontSizePx)
                         view.setBackgroundColor(TerminalConfig.getBackgroundColor(isSystemDark))
+                        
+                        val props = java.util.Properties()
+                        try {
+                            val scheme = com.rk.settings.Settings.terminal_colorscheme
+                            context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
+                                props.load(input)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
+                        view.mEmulator?.mColors?.reset()
+                        view.onScreenUpdated()
+
                         if (view.currentSession != currentSession) {
                             view.attachSession(currentSession)
                             val client =
