@@ -115,7 +115,7 @@ fun SearchPanel(
                                     )
                                 }
                             }
-                            
+
                             // Regex 切换按钮
                             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                                 IconButton(
