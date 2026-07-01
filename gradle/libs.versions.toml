@@ -24,7 +24,7 @@ coilSvg = "2.7.0"
 datastoreCore = "1.2.0"
 desugar_jdk_libs = "2.1.5"
 editorVersion = "0.24.4"
-jsoup = "1.22.1"
+jsoup = "1.22.2"
 
 coreKtx = "1.17.0"
 junit = "4.13.2"
