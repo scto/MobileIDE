@@ -144,12 +144,13 @@ object LogCatcher {
             synchronized(this) {
                 if (logFile == null || currentProj != cachedProject) {
                     cachedProject = currentProj
-                    val logDir = if (!currentProj.isNullOrBlank()) {
-                        val projName = File(currentProj).name
-                        File(config.logFilePath, projName)
-                    } else {
-                        File(config.logFilePath)
-                    }
+                    val logDir =
+                        if (!currentProj.isNullOrBlank()) {
+                            val projName = File(currentProj).name
+                            File(config.logFilePath, projName)
+                        } else {
+                            File(config.logFilePath)
+                        }
                     if (!logDir.exists()) {
                         logDir.mkdirs()
                     }

@@ -34,7 +34,9 @@ fun TerminalSettingsScreen(navController: NavController) {
     var lspEnabled by remember { mutableStateOf(editorPrefs.getBoolean("editor_lsp_enabled", false)) }
 
     var fontSize by remember { mutableFloatStateOf(com.rk.settings.Settings.terminal_font_size.toFloat()) }
-    var scrollbackLines by remember { mutableFloatStateOf(com.rk.settings.Settings.terminal_scrollback_lines.toFloat()) }
+    var scrollbackLines by remember {
+        mutableFloatStateOf(com.rk.settings.Settings.terminal_scrollback_lines.toFloat())
+    }
     var closeBehavior by remember { mutableStateOf(com.rk.settings.Settings.terminal_close_behavior) }
 
     LaunchedEffect(lspEnabled) { editorPrefs.edit { putBoolean("editor_lsp_enabled", lspEnabled) } }
@@ -101,7 +103,7 @@ fun TerminalSettingsScreen(navController: NavController) {
                 scrollbackLines = scrollbackLines,
                 onScrollbackLinesChange = { scrollbackLines = it },
                 closeBehavior = closeBehavior,
-                onCloseBehaviorChange = { closeBehavior = it }
+                onCloseBehaviorChange = { closeBehavior = it },
             )
         }
     }

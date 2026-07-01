@@ -1438,7 +1438,7 @@ fun TerminalSettingsItem(
                         onValueChange = onFontSizeChange,
                         valueRange = 10f..30f,
                         steps = 19,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -1453,7 +1453,7 @@ fun TerminalSettingsItem(
                         value = scrollbackLines,
                         onValueChange = onScrollbackLinesChange,
                         valueRange = 500f..50000f,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -1468,30 +1468,46 @@ fun TerminalSettingsItem(
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("exit_app") }
+                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("exit_app") },
                         ) {
                             RadioButton(
                                 selected = closeBehavior == "exit_app",
-                                onClick = { onCloseBehaviorChange("exit_app") }
+                                onClick = { onCloseBehaviorChange("exit_app") },
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text("App beenden", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text("Schließt die gesamte Anwendung beim Beenden der letzten Sitzung.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "App beenden",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    "Schließt die gesamte Anwendung beim Beenden der letzten Sitzung.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("new_session") }
+                            modifier = Modifier.fillMaxWidth().clickable { onCloseBehaviorChange("new_session") },
                         ) {
                             RadioButton(
                                 selected = closeBehavior == "new_session",
-                                onClick = { onCloseBehaviorChange("new_session") }
+                                onClick = { onCloseBehaviorChange("new_session") },
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text("Neue Sitzung", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text("Erstellt eine neue Sitzung, anstatt die Anwendung zu beenden.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "Neue Sitzung",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    "Erstellt eine neue Sitzung, anstatt die Anwendung zu beenden.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
