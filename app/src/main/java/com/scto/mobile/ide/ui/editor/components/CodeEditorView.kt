@@ -332,6 +332,20 @@ fun CodeEditorView(
                 view.setFoldingEnabled(editorConfig.codeFolding)
                 view.setScaleTextSizes(2f, 300f)
                 editor.setHighlightBracketPair(true)
+                
+                // Sora Editor specific features
+                view.isLineNumberEnabled = editorConfig.showLineNumbers
+                view.setPinLineNumber(editorConfig.pinLineNumber)
+                view.isHighlightCurrentLine = editorConfig.highlightCurrentLine
+                view.isHighlightCurrentBlock = editorConfig.highlightCurrentBlock
+                
+                try {
+                    view.props.symbolPairAutoCompletion = editorConfig.autoCloseBrackets
+                    view.setCursorAnimationEnabled(editorConfig.cursorAnimationEnabled)
+                    view.setCursorBlinkPeriod(editorConfig.cursorBlinkPeriod)
+                } catch (e: Exception) {
+                    // Ignore if props are slightly different
+                }
 
                 if (editorConfig.showInvisibles) {
                     view.nonPrintablePaintingFlags =
