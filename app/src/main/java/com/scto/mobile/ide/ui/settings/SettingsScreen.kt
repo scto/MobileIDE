@@ -902,7 +902,7 @@ fun EditorSettingsItem(
 
                     Text(
                         "Sora Editor Features", // Hardcoded string or we can use stringResource if exists, but we'll
-                                                // use a direct string for now
+                        // use a direct string for now
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
