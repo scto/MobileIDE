@@ -32,7 +32,17 @@ class TerminalService : Service() {
             LogCatcher.i("TerminalService", "startService requested")
             val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_START }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
+                try {
+                    context.startForegroundService(intent)
+                } catch (e: Exception) {
+                    LogCatcher.e("TerminalService", "Failed to start foreground service", e)
+                    // Fallback to startService, although it might also fail if not in foreground
+                    try {
+                        context.startService(intent)
+                    } catch (e2: Exception) {
+                        LogCatcher.e("TerminalService", "Failed to start service fallback", e2)
+                    }
+                }
             } else {
                 context.startService(intent)
             }
