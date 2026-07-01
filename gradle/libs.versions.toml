@@ -9,7 +9,7 @@ versionCode    = "1"
 versionName    = "0.0.1"
 
 # ── Build toolchain ───────────────────────────────────────────────────────────
-agp    = "8.11.2"
+agp    = "8.13.2"
 kotlin = "2.2.20"
 java = "17"
 ktfmt = "0.25.0"
