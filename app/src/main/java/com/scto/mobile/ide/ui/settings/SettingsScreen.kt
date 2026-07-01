@@ -29,15 +29,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -1472,13 +1472,13 @@ fun TerminalSettingsItem(
                     val schemes = listOf("default", "dracula", "solarized_dark", "nord", "monokai")
                     Row(
                         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         schemes.forEach { scheme ->
                             FilterChip(
                                 selected = colorscheme == scheme,
                                 onClick = { onColorschemeChange(scheme) },
-                                label = { Text(scheme.replace('_', ' ').replaceFirstChar { it.uppercase() }) }
+                                label = { Text(scheme.replace('_', ' ').replaceFirstChar { it.uppercase() }) },
                             )
                         }
                     }

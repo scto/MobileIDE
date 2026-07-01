@@ -425,7 +425,10 @@ fun TerminalScreen(navController: NavController) {
                     factory = { ctx ->
                         TerminalView(ctx, null).apply {
                             terminalViewRef = WeakReference(this)
-                            val fontSizePx = (com.rk.settings.Settings.terminal_font_size * ctx.resources.displayMetrics.scaledDensity).toInt()
+                            val fontSizePx =
+                                (com.rk.settings.Settings.terminal_font_size *
+                                        ctx.resources.displayMetrics.scaledDensity)
+                                    .toInt()
                             setTextSize(fontSizePx)
                             setTypeface(TerminalFontManager.getTypeface(ctx))
                             keepScreenOn = true
@@ -441,7 +444,7 @@ fun TerminalScreen(navController: NavController) {
                                 }
                             setTerminalViewClient(client)
                             currentSession.updateTerminalSessionClient(client)
-                            
+
                             val props = java.util.Properties()
                             try {
                                 val scheme = com.rk.settings.Settings.terminal_colorscheme
@@ -457,10 +460,13 @@ fun TerminalScreen(navController: NavController) {
                     },
                     update = { view ->
                         view.setTypeface(TerminalFontManager.getTypeface(context))
-                        val fontSizePx = (com.rk.settings.Settings.terminal_font_size * context.resources.displayMetrics.scaledDensity).toInt()
+                        val fontSizePx =
+                            (com.rk.settings.Settings.terminal_font_size *
+                                    context.resources.displayMetrics.scaledDensity)
+                                .toInt()
                         view.setTextSize(fontSizePx)
                         view.setBackgroundColor(TerminalConfig.getBackgroundColor(isSystemDark))
-                        
+
                         val props = java.util.Properties()
                         try {
                             val scheme = com.rk.settings.Settings.terminal_colorscheme

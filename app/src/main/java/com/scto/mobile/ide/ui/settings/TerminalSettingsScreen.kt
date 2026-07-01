@@ -3,6 +3,8 @@ package com.scto.mobile.ide.ui.settings
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -16,9 +18,6 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.SetupWorker
 import kotlinx.coroutines.launch
-
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +109,7 @@ fun TerminalSettingsScreen(navController: NavController) {
                 closeBehavior = closeBehavior,
                 onCloseBehaviorChange = { closeBehavior = it },
                 colorscheme = colorscheme,
-                onColorschemeChange = { colorscheme = it }
+                onColorschemeChange = { colorscheme = it },
             )
         }
     }
