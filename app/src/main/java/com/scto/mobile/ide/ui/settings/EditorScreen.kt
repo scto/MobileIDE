@@ -38,7 +38,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
         )
     }
-    
+
     var pinLineNumber by remember { mutableStateOf(prefs.getBoolean("editor_pin_line_number", false)) }
     var cursorAnimation by remember { mutableStateOf(prefs.getBoolean("editor_cursor_animation", true)) }
     var smoothScroll by remember { mutableStateOf(prefs.getBoolean("editor_smooth_scroll", true)) }
@@ -67,7 +67,7 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
         cursorBlink,
         highlightCurrentLine,
         highlightCurrentBlock,
-        autoCloseBrackets
+        autoCloseBrackets,
     ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)

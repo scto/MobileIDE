@@ -901,7 +901,8 @@ fun EditorSettingsItem(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
                     Text(
-                        "Sora Editor Features", // Hardcoded string or we can use stringResource if exists, but we'll use a direct string for now
+                        "Sora Editor Features", // Hardcoded string or we can use stringResource if exists, but we'll
+                                                // use a direct string for now
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )

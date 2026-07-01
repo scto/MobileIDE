@@ -1196,8 +1196,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 // 先停止之前的搜索，避免状态混乱
                 editor.searcher.stopSearch()
-                val type = if (useRegex) io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_REGULAR_EXPRESSION else io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_NORMAL
-                editor.searcher.search(query, io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions(type, ignoreCase))
+                val type =
+                    if (useRegex) io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_REGULAR_EXPRESSION
+                    else io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_NORMAL
+                editor.searcher.search(
+                    query,
+                    io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions(type, ignoreCase),
+                )
             } catch (e: Exception) {
                 LogCatcher.e("Search", "Search failed", e)
             }
