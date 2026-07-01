@@ -185,7 +185,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private var lspProject: LspProject? = null
     private val addedLspDefinitions = mutableSetOf<String>()
     private var lastSearchQuery = ""
-    private var isIgnoreCase = true
+    var isIgnoreCase = true
     private var isFormatting = false
 
     // ==========================================
