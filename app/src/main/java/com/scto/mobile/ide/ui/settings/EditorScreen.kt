@@ -38,6 +38,14 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: ""
         )
     }
+    
+    var pinLineNumber by remember { mutableStateOf(prefs.getBoolean("editor_pin_line_number", false)) }
+    var cursorAnimation by remember { mutableStateOf(prefs.getBoolean("editor_cursor_animation", true)) }
+    var smoothScroll by remember { mutableStateOf(prefs.getBoolean("editor_smooth_scroll", true)) }
+    var cursorBlink by remember { mutableIntStateOf(prefs.getInt("editor_cursor_blink", 500)) }
+    var highlightCurrentLine by remember { mutableStateOf(prefs.getBoolean("editor_highlight_current_line", true)) }
+    var highlightCurrentBlock by remember { mutableStateOf(prefs.getBoolean("editor_highlight_current_block", true)) }
+    var autoCloseBrackets by remember { mutableStateOf(prefs.getBoolean("editor_auto_close_brackets", true)) }
 
     var previousEditorType by remember { mutableStateOf(editorType) }
 
@@ -53,6 +61,13 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
         fontPath,
         customSymbols,
         editorType,
+        pinLineNumber,
+        cursorAnimation,
+        smoothScroll,
+        cursorBlink,
+        highlightCurrentLine,
+        highlightCurrentBlock,
+        autoCloseBrackets
     ) {
         prefs.edit {
             putFloat("editor_font_size", fontSize)
@@ -66,6 +81,13 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             putString("editor_font_path", fontPath)
             putString("editor_custom_symbols", customSymbols)
             putString("editor_type", editorType)
+            putBoolean("editor_pin_line_number", pinLineNumber)
+            putBoolean("editor_cursor_animation", cursorAnimation)
+            putBoolean("editor_smooth_scroll", smoothScroll)
+            putInt("editor_cursor_blink", cursorBlink)
+            putBoolean("editor_highlight_current_line", highlightCurrentLine)
+            putBoolean("editor_highlight_current_block", highlightCurrentBlock)
+            putBoolean("editor_auto_close_brackets", autoCloseBrackets)
         }
         if (editorType != previousEditorType) {
             editorViewModel?.reloadAllEditors(context)
@@ -109,6 +131,20 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
                 onCustomSymbolsChange = { customSymbols = it },
                 editorType = editorType,
                 onEditorTypeChange = { editorType = it },
+                pinLineNumber = pinLineNumber,
+                onPinLineNumberChange = { pinLineNumber = it },
+                cursorAnimation = cursorAnimation,
+                onCursorAnimationChange = { cursorAnimation = it },
+                smoothScroll = smoothScroll,
+                onSmoothScrollChange = { smoothScroll = it },
+                cursorBlink = cursorBlink,
+                onCursorBlinkChange = { cursorBlink = it },
+                highlightCurrentLine = highlightCurrentLine,
+                onHighlightCurrentLineChange = { highlightCurrentLine = it },
+                highlightCurrentBlock = highlightCurrentBlock,
+                onHighlightCurrentBlockChange = { highlightCurrentBlock = it },
+                autoCloseBrackets = autoCloseBrackets,
+                onAutoCloseBracketsChange = { autoCloseBrackets = it },
             )
         }
     }

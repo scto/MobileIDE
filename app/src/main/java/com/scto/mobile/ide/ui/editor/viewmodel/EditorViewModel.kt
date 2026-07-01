@@ -139,6 +139,13 @@ data class EditorConfig(
     val showHistory: Boolean = true,
     val fontPath: String = "",
     val customSymbols: String = "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|",
+    val pinLineNumber: Boolean = false,
+    val cursorAnimationEnabled: Boolean = true,
+    val smoothScrollEnabled: Boolean = true,
+    val cursorBlinkPeriod: Int = 500,
+    val highlightCurrentLine: Boolean = true,
+    val highlightCurrentBlock: Boolean = true,
+    val autoCloseBrackets: Boolean = true,
 ) {
     fun getSymbolList(): List<String> = customSymbols.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 }
@@ -1101,6 +1108,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 fontPath = prefs.getString("editor_font_path", "") ?: "",
                 customSymbols =
                     prefs.getString("editor_custom_symbols", "Tab,<,>,/,=,\",',!,?,;,:,{,},[,],(,),+,-,*,_,&,|") ?: "",
+                pinLineNumber = prefs.getBoolean("editor_pin_line_number", false),
+                cursorAnimationEnabled = prefs.getBoolean("editor_cursor_animation", true),
+                smoothScrollEnabled = prefs.getBoolean("editor_smooth_scroll", true),
+                cursorBlinkPeriod = prefs.getInt("editor_cursor_blink", 500),
+                highlightCurrentLine = prefs.getBoolean("editor_highlight_current_line", true),
+                highlightCurrentBlock = prefs.getBoolean("editor_highlight_current_block", true),
+                autoCloseBrackets = prefs.getBoolean("editor_auto_close_brackets", true),
             )
     }
 
@@ -1171,15 +1185,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun searchText(query: String, ignoreCase: Boolean = isIgnoreCase) {
+    var isUseRegex = false
+
+    fun searchText(query: String, ignoreCase: Boolean = isIgnoreCase, useRegex: Boolean = isUseRegex) {
         lastSearchQuery = query
         isIgnoreCase = ignoreCase
+        isUseRegex = useRegex
         val editor = getActiveEditor() ?: return
         if (query.isNotEmpty()) {
             try {
                 // 先停止之前的搜索，避免状态混乱
                 editor.searcher.stopSearch()
-                editor.searcher.search(query, EditorSearcher.SearchOptions(ignoreCase, false))
+                val type = if (useRegex) io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_REGULAR_EXPRESSION else io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions.TYPE_NORMAL
+                editor.searcher.search(query, io.github.rosemoe.sora.widget.EditorSearcher.SearchOptions(type, ignoreCase))
             } catch (e: Exception) {
                 LogCatcher.e("Search", "Search failed", e)
             }

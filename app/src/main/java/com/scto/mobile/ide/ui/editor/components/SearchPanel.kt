@@ -75,7 +75,8 @@ fun SearchPanel(
 ) {
     var replaceText by remember { mutableStateOf("") }
     var isReplaceVisible by remember { mutableStateOf(false) }
-    var ignoreCase by remember { mutableStateOf(true) }
+    var ignoreCase by remember { mutableStateOf(viewModel.isIgnoreCase) }
+    var useRegex by remember { mutableStateOf(viewModel.isUseRegex) }
 
     Surface(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)) {
@@ -88,29 +89,50 @@ fun SearchPanel(
                     value = searchText,
                     onValueChange = {
                         onSearchTextChange(it)
-                        viewModel.searchText(it, ignoreCase)
+                        viewModel.searchText(it, ignoreCase, useRegex)
                     },
                     modifier = Modifier.weight(1f).defaultMinSize(minHeight = 40.dp),
                     placeholder = {
                         Text(stringResource(R.string.search_placeholder), style = MaterialTheme.typography.bodyMedium)
                     },
                     leadingIcon = {
-                        // 大小写切换按钮放在左侧，节省空间
-                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                            IconButton(
-                                onClick = {
-                                    ignoreCase = !ignoreCase
-                                    viewModel.searchText(searchText, ignoreCase)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // 大小写切换按钮
+                            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                                IconButton(
+                                    onClick = {
+                                        ignoreCase = !ignoreCase
+                                        viewModel.searchText(searchText, ignoreCase, useRegex)
+                                    }
+                                ) {
+                                    Text(
+                                        "Aa",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (!ignoreCase) FontWeight.Bold else FontWeight.Normal,
+                                        color =
+                                            if (!ignoreCase) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.outline,
+                                    )
                                 }
-                            ) {
-                                Text(
-                                    "Aa",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (!ignoreCase) FontWeight.Bold else FontWeight.Normal,
-                                    color =
-                                        if (!ignoreCase) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.outline,
-                                )
+                            }
+                            
+                            // Regex 切换按钮
+                            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                                IconButton(
+                                    onClick = {
+                                        useRegex = !useRegex
+                                        viewModel.searchText(searchText, ignoreCase, useRegex)
+                                    }
+                                ) {
+                                    Text(
+                                        ".*",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = if (useRegex) FontWeight.Bold else FontWeight.Normal,
+                                        color =
+                                            if (useRegex) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.outline,
+                                    )
+                                }
                             }
                         }
                     },
@@ -119,7 +141,7 @@ fun SearchPanel(
                             IconButton(
                                 onClick = {
                                     onSearchTextChange("")
-                                    viewModel.searchText("", ignoreCase)
+                                    viewModel.searchText("", ignoreCase, useRegex)
                                 },
                                 modifier = Modifier.size(24.dp),
                             ) {

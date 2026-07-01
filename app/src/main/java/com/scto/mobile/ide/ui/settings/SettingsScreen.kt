@@ -639,6 +639,20 @@ fun EditorSettingsItem(
     onCustomSymbolsChange: (String) -> Unit,
     editorType: String,
     onEditorTypeChange: (String) -> Unit,
+    pinLineNumber: Boolean = false,
+    onPinLineNumberChange: (Boolean) -> Unit = {},
+    cursorAnimation: Boolean = true,
+    onCursorAnimationChange: (Boolean) -> Unit = {},
+    smoothScroll: Boolean = true,
+    onSmoothScrollChange: (Boolean) -> Unit = {},
+    cursorBlink: Int = 500,
+    onCursorBlinkChange: (Int) -> Unit = {},
+    highlightCurrentLine: Boolean = true,
+    onHighlightCurrentLineChange: (Boolean) -> Unit = {},
+    highlightCurrentBlock: Boolean = true,
+    onHighlightCurrentBlockChange: (Boolean) -> Unit = {},
+    autoCloseBrackets: Boolean = true,
+    onAutoCloseBracketsChange: (Boolean) -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -883,6 +897,41 @@ fun EditorSettingsItem(
                         onShowInvisiblesChange,
                     )
                     CompactSwitchRow(stringResource(R.string.settings_code_folding), codeFolding, onCodeFoldingChange)
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
+
+                    Text(
+                        "Sora Editor Features", // Hardcoded string or we can use stringResource if exists, but we'll use a direct string for now
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    CompactSwitchRow("Pin Line Number", pinLineNumber, onPinLineNumberChange)
+                    CompactSwitchRow("Cursor Animation", cursorAnimation, onCursorAnimationChange)
+                    CompactSwitchRow("Smooth Scrolling", smoothScroll, onSmoothScrollChange)
+                    CompactSwitchRow("Highlight Current Line", highlightCurrentLine, onHighlightCurrentLineChange)
+                    CompactSwitchRow("Highlight Current Block", highlightCurrentBlock, onHighlightCurrentBlockChange)
+                    CompactSwitchRow("Auto Close Brackets", autoCloseBrackets, onAutoCloseBracketsChange)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Cursor Blink Period (ms)", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            cursorBlink.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Slider(
+                        value = cursorBlink.toFloat(),
+                        onValueChange = { onCursorBlinkChange(it.toInt()) },
+                        valueRange = 0f..2000f,
+                        steps = 19,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), thickness = 0.5.dp)
 
