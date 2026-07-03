@@ -188,6 +188,7 @@ object DistroManager {
                 "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
                 "MOBILEIDE_DISTRO=${getDistroName(context)}",
                 "PROJECTS=$workspacePath",
+                "NATIVE_LIB_DIR=$nativeLibDir",
             )
 
         if (File(nativeLibDir, "libproot-loader.so").exists()) {
