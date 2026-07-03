@@ -300,14 +300,14 @@ if [ ! -d $props_dir ]; then
 fi
 
 if [ ! -e $props ]; then
-    printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\n" > $props
+    printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\nGRADLE_USER_HOME=\$HOME/.gradle\n" > $props
     print_success "Properties file updated successfully!"
 else
     if is_yes "$props file already exists. Would you like to overwrite it?"; then
-        printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\n" > $props
+        printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\nGRADLE_USER_HOME=\$HOME/.gradle\n" > $props
         print_success "Properties file updated successfully!"
     else
-        print_err "Manually edit $SYSROOT/etc/mobileide-environment.properties file and set JAVA_HOME and ANDROID_SDK_ROOT."
+        print_err "Manually edit $SYSROOT/etc/mobileide-environment.properties file and set JAVA_HOME, ANDROID_SDK_ROOT and GRADLE_USER_HOME."
     fi
 fi
 

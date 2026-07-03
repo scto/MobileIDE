@@ -214,6 +214,24 @@ chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
 
 info "Node.js APT hook installed"
 
+info "Configuring bashrc..."
+mkdir -p "$SANDBOX_DIR/root"
+cat > "$SANDBOX_DIR/root/.bashrc" << 'EOF'
+# Load bash completion
+if [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
+elif [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
+# Automatically export the properties to the environment
+if [ -f "/etc/mobileide-environment.properties" ]; then
+    set -a
+    source "/etc/mobileide-environment.properties"
+    set +a
+fi
+EOF
+
 if [ $# -gt 0 ]; then
     sh $LOCAL/bin/sandbox "$@"
 else
