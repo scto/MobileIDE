@@ -390,7 +390,7 @@ fun TerminalScreen(navController: NavController) {
                         )
                     }
                     Box(
-                        modifier = Modifier.size(45.dp).clickable { navController.navigate("terminal_settings") },
+                        modifier = Modifier.size(45.dp).clickable { navController.navigate("settings/terminal") },
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(

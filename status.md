@@ -2,6 +2,16 @@
 
 This file tracks the features, bug fixes, and improvements implemented by AI coding assistants.
 
+## [2026-07-03] Terminal Stability & Initialization Flow
+
+### 1. Terminal Startup Fixes
+*   **Foreground Service Crash**: Fixed an `IllegalArgumentException` causing the `TerminalService` to crash on launch by replacing the Adaptive Icon (`R.mipmap.ic_launcher`) with a standard vector drawable (`R.drawable.ic_code`) for the foreground notification.
+*   **Settings Navigation Crash**: Corrected a route mismatch in `TerminalScreen` where clicking the settings icon attempted to navigate to `terminal_settings` instead of `settings/terminal`, which crashed the app.
+
+### 2. Terminal Setup UX Overhaul
+*   **Environment Initialization**: Revised the container startup sequence (`init.sh` and `setup.sh`). The environment now completely initializes (e.g. running `apt update`) in the background, prints the MOTD with the `idesetup` hint, and pauses (`Press any key to continue...`) before gracefully transitioning into an interactive bash prompt (`root@localhost:/#`).
+*   **Premature Exit Bug**: Fixed a bug where passing a bash command to automatically CD into the project directory caused the outer shell to exit immediately after execution. Native directory resolution now uses the `MOBILEIDE_PROJECT_DIR` environment variable to ensure the interactive session persists.
+
 ## [2026-06-13] Settings Panel Enhancements
 
 Implemented crucial terminal, editor, build, and LSP configurations to complete the Settings screen.

@@ -155,7 +155,7 @@ class TerminalService : Service() {
             NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("MobileIDE Terminal")
                 .setContentText("Terminal läuft im Hintergrund")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_code)
                 .setContentIntent(mainPendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
