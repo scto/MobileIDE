@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.wuxianggujun.tinaide.core.apkbuilder"
+    namespace = "com.scto.mobile.ide.core.apkbuilder"
     compileSdk = 34
 
     defaultConfig {
