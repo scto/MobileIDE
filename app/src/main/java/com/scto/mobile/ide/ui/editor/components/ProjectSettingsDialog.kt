@@ -5,13 +5,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ProjectSettingsDialog(projectPath: String, onDismiss: () -> Unit) {
@@ -20,7 +20,7 @@ fun ProjectSettingsDialog(projectPath: String, onDismiss: () -> Unit) {
     var versionName by remember { mutableStateOf("1.0") }
     var versionCode by remember { mutableStateOf("1") }
     var isLoading by remember { mutableStateOf(true) }
-    
+
     val scope = rememberCoroutineScope()
 
     val propertiesFile = File(projectPath, "gradle.properties")
@@ -102,10 +102,8 @@ fun ProjectSettingsDialog(projectPath: String, onDismiss: () -> Unit) {
                         props.setProperty("APP_PACKAGE_NAME", packageName)
                         props.setProperty("APP_VERSION_NAME", versionName)
                         props.setProperty("APP_VERSION_CODE", versionCode)
-                        
-                        FileOutputStream(propertiesFile).use { 
-                            props.store(it, "MobileIDE Project Properties") 
-                        }
+
+                        FileOutputStream(propertiesFile).use { props.store(it, "MobileIDE Project Properties") }
 
                         // Save app name
                         if (stringsFile.exists()) {
@@ -115,15 +113,17 @@ fun ProjectSettingsDialog(projectPath: String, onDismiss: () -> Unit) {
                                 content = content.replace(regex, """<string name="app_name">$appName</string>""")
                             } else {
                                 // Basic fallback insertion before </resources>
-                                content = content.replace("</resources>", """    <string name="app_name">$appName</string>
-</resources>""")
+                                content =
+                                    content.replace(
+                                        "</resources>",
+                                        """    <string name="app_name">$appName</string>
+</resources>""",
+                                    )
                             }
                             stringsFile.writeText(content)
                         }
-                        
-                        withContext(Dispatchers.Main) {
-                            onDismiss()
-                        }
+
+                        withContext(Dispatchers.Main) { onDismiss() }
                     }
                 }
             ) {

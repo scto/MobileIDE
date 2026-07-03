@@ -18,6 +18,7 @@ import android.widget.EditText
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -28,10 +29,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -310,11 +310,13 @@ fun TerminalScreen(navController: NavController) {
                                     onClick = { SessionManager.switchTo(index) },
                                     modifier = Modifier.fillMaxHeight(),
                                 ) {
-                                    Row(modifier = Modifier
-                                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
-                                        .pointerInput(Unit) {
-                                            detectTapGestures(onLongPress = { showContextMenu = true })
-                                        }
+                                    Row(
+                                        modifier =
+                                            Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp).pointerInput(
+                                                Unit
+                                            ) {
+                                                detectTapGestures(onLongPress = { showContextMenu = true })
+                                            }
                                     ) {
                                         Text(
                                             text = session.title,
@@ -335,17 +337,17 @@ fun TerminalScreen(navController: NavController) {
                                                 tint = MaterialTheme.colorScheme.error,
                                             )
                                         }
-                                        
+
                                         DropdownMenu(
                                             expanded = showContextMenu,
-                                            onDismissRequest = { showContextMenu = false }
+                                            onDismissRequest = { showContextMenu = false },
                                         ) {
                                             DropdownMenuItem(
                                                 text = { Text("Close") },
                                                 onClick = {
                                                     showContextMenu = false
                                                     SessionManager.removeSession(session)
-                                                }
+                                                },
                                             )
                                             DropdownMenuItem(
                                                 text = { Text("Close others") },
@@ -353,7 +355,7 @@ fun TerminalScreen(navController: NavController) {
                                                     showContextMenu = false
                                                     val others = SessionManager.sessions.filter { it != session }
                                                     others.forEach { SessionManager.removeSession(it) }
-                                                }
+                                                },
                                             )
                                             DropdownMenuItem(
                                                 text = { Text("Close all") },
@@ -361,7 +363,7 @@ fun TerminalScreen(navController: NavController) {
                                                     showContextMenu = false
                                                     val all = SessionManager.sessions.toList()
                                                     all.forEach { SessionManager.removeSession(it) }
-                                                }
+                                                },
                                             )
                                         }
                                     }
