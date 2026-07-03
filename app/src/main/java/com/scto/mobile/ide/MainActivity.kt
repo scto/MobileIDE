@@ -181,6 +181,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
                                         logConfigRepository = logConfigRepository,
                                         logConfigState = logConfigState,
                                     )
+                                    com.scto.mobile.ide.ui.components.UpdateCheckerDialog(context = activityContext)
                                 }
                             }
                         }
