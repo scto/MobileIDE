@@ -5,7 +5,7 @@ shopt -s checkwinsize
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:$LOCAL/bin:$PATH
 export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
-export SYSROOT="/"
+export SYSROOT="/root"
 export HOME="/root"
 export PROJECTS="$MOBILEIDE_WORKSPACE"
 
@@ -146,6 +146,11 @@ echo -e "  \e[1;33mapt install\e[0m  : Install <package>"
 echo -e "\e[1;30m----------------------------------------\e[0m"
 echo ""
 
-if [ ! -f "/etc/mobileide-environment.properties" ]; then
+if [ ! -f "$SYSROOT/etc/mobileide-environment.properties" ]; then
     echo -e "\e[1;33mHint: Please run the '\e[1;32midesetup\e[1;33m' command to configure your Java & Android SDK build tools.\e[0m"
+else
+    # Automatically export the properties to the environment
+    set -a
+    source "$SYSROOT/etc/mobileide-environment.properties"
+    set +a
 fi

@@ -283,7 +283,11 @@ print_info "Installing package: '$pkg_name'"
 $aptm install "$pkg_name" -y
 print_info "JDK $jdk_version has been installed."
 
-jdk_dir="$SYSROOT/opt/openjdk"
+if command -v javac >/dev/null 2>&1; then
+    jdk_dir=$(dirname $(dirname $(readlink -f $(which javac))))
+else
+    jdk_dir="/usr/lib/jvm/java-${jdk_version}-openjdk-${arch}"
+fi
 
 print_info "Updating mobileide-environment.properties..."
 print_info "JAVA_HOME=$jdk_dir"
@@ -296,11 +300,11 @@ if [ ! -d $props_dir ]; then
 fi
 
 if [ ! -e $props ]; then
-    printf "JAVA_HOME=$jdk_dir" > $props
+    printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\n" > $props
     print_success "Properties file updated successfully!"
 else
     if is_yes "$props file already exists. Would you like to overwrite it?"; then
-        printf "JAVA_HOME=$jdk_dir" > $props
+        printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\n" > $props
         print_success "Properties file updated successfully!"
     else
         print_err "Manually edit $SYSROOT/etc/mobileide-environment.properties file and set JAVA_HOME and ANDROID_SDK_ROOT."
