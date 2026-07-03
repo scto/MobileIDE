@@ -9,15 +9,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 @Composable
 fun UpdateCheckerDialog(context: Context) {
@@ -41,7 +40,7 @@ fun UpdateCheckerDialog(context: Context) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
                     val json = JSONObject(response)
                     val tagName = json.getString("tag_name").removePrefix("v").substringBefore("-")
-                    
+
                     if (isNewerVersion(currentVersion, tagName)) {
                         latestVersion = tagName
                         releaseNotes = json.optString("body", "No release notes provided.")
@@ -69,24 +68,22 @@ fun UpdateCheckerDialog(context: Context) {
                         text = releaseNotes,
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 10,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(vertical = 4.dp),
                     )
                 }
             },
             confirmButton = {
-                Button(onClick = {
-                    hasUpdate = false
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
-                    context.startActivity(intent)
-                }) {
+                Button(
+                    onClick = {
+                        hasUpdate = false
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl))
+                        context.startActivity(intent)
+                    }
+                ) {
                     Text("Download")
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { hasUpdate = false }) {
-                    Text("Later")
-                }
-            }
+            dismissButton = { TextButton(onClick = { hasUpdate = false }) { Text("Later") } },
         )
     }
 }
