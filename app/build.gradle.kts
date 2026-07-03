@@ -347,6 +347,8 @@ dependencies {
     implementation(project(":core:apk-builder"))
     implementation(project(":core:tooling:tooling-api"))
     implementation(project(":core:tooling:tooling-impl"))
+    implementation(project(":core:commands"))
+    implementation(project(":core:lsp"))
     implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
