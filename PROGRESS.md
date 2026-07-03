@@ -4,6 +4,14 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 
 ---
 
+## [2026-07-03]
+### Terminal Stability & UX Fixes
+*   **Foreground Notification Icon Crash**: Resolved a runtime crash (`Unable to start service`) in `TerminalService` caused by passing an Adaptive Icon to the Notification Builder on Android 8.0+. Replaced `R.mipmap.ic_launcher` with `R.drawable.ic_code`.
+*   **Terminal Settings Navigation Fix**: Fixed a crash thrown by the Jetpack Compose Navigation component when trying to open terminal settings by correcting the hardcoded route string `terminal_settings` to `settings/terminal`.
+*   **Terminal Initialization & Setup Flow**: Redesigned the container setup (`setup.sh` & `init.sh`) to natively resolve project paths using `MOBILEIDE_PROJECT_DIR` instead of nested bash execution commands. This prevents premature exit bugs and allows the startup script to pause gracefully after rendering the `idesetup` MOTD before dropping into the interactive shell.
+
+---
+
 ## [2026-07-01]
 ### Theme Switching Fix
 *   **Global Light/Dark Mode Sync**: Fixed an issue where the app (especially Android Views like `CodeEditorView` and `TerminalView`) remained dark when switching to the Light design. Synchronized `AppCompatDelegate` with Compose's `ThemeState` inside `MainActivity` to ensure the Activity configuration correctly resets to `uiMode = night=no`, allowing system color schemes and view backgrounds to correctly resolve to light variants.

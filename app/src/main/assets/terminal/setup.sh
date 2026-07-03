@@ -215,7 +215,7 @@ chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
 info "Node.js APT hook installed"
 
 if [ $# -gt 0 ]; then
-    sh $@
+    sh $LOCAL/bin/sandbox "$@"
 else
     clear
     sh $LOCAL/bin/sandbox

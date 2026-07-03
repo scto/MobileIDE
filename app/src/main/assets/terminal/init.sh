@@ -114,7 +114,7 @@ if [[ -f /initrc ]]; then
 fi
 
 # shellcheck disable=SC2164
-cd "$WKDIR" || cd $HOME
+cd "$MOBILEIDE_PROJECT_DIR" || cd $HOME
 
 # Configure History
 export HISTFILE="$HOME/.bash_history"
@@ -154,3 +154,7 @@ else
     source "$SYSROOT/etc/mobileide-environment.properties"
     set +a
 fi
+
+echo ""
+echo -e "\e[1;32mPress any key to continue...\e[0m"
+read -n 1 -s -r
