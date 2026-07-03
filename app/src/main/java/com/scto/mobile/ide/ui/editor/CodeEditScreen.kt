@@ -103,6 +103,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var isMoreMenuExpanded by remember { mutableStateOf(false) }
+    var showProjectSettingsDialog by remember { mutableStateOf(false) }
     val workspacePath = WorkspaceManager.getWorkspacePath(context)
     var projectPath by remember { mutableStateOf(File(workspacePath, folderName).absolutePath) }
     val currentFolderName = remember(projectPath) { File(projectPath).name }
@@ -481,6 +482,13 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                             onClick = {
                                                 isMoreMenuExpanded = false
                                                 navController.safeNavigate("js_interface_doc")
+                                            },
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Project Settings") },
+                                            onClick = {
+                                                isMoreMenuExpanded = false
+                                                showProjectSettingsDialog = true
                                             },
                                         )
 
@@ -1264,6 +1272,13 @@ fun FileManagerDrawer(
                 }
             },
             dismissButton = { TextButton(onClick = { showNewFolderDialog = false }) { Text(actionCancelText) } },
+        )
+    }
+
+    if (showProjectSettingsDialog) {
+        com.scto.mobile.ide.ui.editor.components.ProjectSettingsDialog(
+            projectPath = projectPath,
+            onDismiss = { showProjectSettingsDialog = false }
         )
     }
 
