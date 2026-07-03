@@ -10,7 +10,8 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 *   **Terminal Settings Navigation Fix**: Fixed a crash thrown by the Jetpack Compose Navigation component when trying to open terminal settings by correcting the hardcoded route string `terminal_settings` to `settings/terminal`.
 *   **Terminal Initialization & Setup Flow**: Redesigned the container setup (`setup.sh` & `init.sh`) to natively resolve project paths using `MOBILEIDE_PROJECT_DIR` instead of nested bash execution commands. This prevents premature exit bugs and allows the startup script to pause gracefully after rendering the `idesetup` MOTD before dropping into the interactive shell.
 *   **`.bashrc` Environment Consistency**: Implemented `.bashrc` autogeneration in `setup.sh` so that nested shells source `bash-completion` and properties natively.
-*   **Gradle Home Export**: Modified `idesetup` to automatically insert `GRADLE_USER_HOME=$HOME/.gradle` into `mobileide-environment.properties`.
+*   **Gradle Home Export**: Modified `idesetup` to automatically insert `GRADLE_USER_HOME=$HOME/.gradle` and `AAPT2_HOME=/.mobileide` into `mobileide-environment.properties`.
+*   **AAPT2 Template Override**: Configured the project extraction logic in `NewProjectScreen.kt` to append `android.aapt2FromMavenOverride=/.mobileide/aapt2` to the `gradle.properties` file of newly created projects, ensuring they use the correct native AAPT2 binaries.
 
 ---
 
