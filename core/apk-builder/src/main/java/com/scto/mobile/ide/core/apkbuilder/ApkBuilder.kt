@@ -12,6 +12,11 @@ class ApkBuilder(private val context: Context) {
 
     companion object {
         private const val TAG = "ApkBuilder"
+        
+        fun shouldSkipTemplateLibEntry(entryName: String, replacementLibraryNames: Set<String>): Boolean {
+            val fileName = entryName.substringAfterLast('/')
+            return replacementLibraryNames.contains(fileName)
+        }
     }
 
     sealed class BuildProgress {
