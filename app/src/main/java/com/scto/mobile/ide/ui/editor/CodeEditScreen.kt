@@ -1854,26 +1854,32 @@ private suspend fun handleRunApk(
 ) {
     val success = viewModel.saveAllModifiedFiles(context, snackbarHostState)
     if (success) {
-        val apkPaths =
-            listOf(
-                "app/build/outputs/apk/debug/app-debug.apk",
-                "app/build/outputs/apk/release/app-release.apk",
-                "app/build/outputs/apk/release/app-release-unsigned.apk",
-                "build/outputs/apk/debug/app-debug.apk",
-            )
-        var foundApk: File? = null
-        for (path in apkPaths) {
-            val file = File(projectPath, path)
-            if (file.exists() && file.isFile) {
-                foundApk = file
-                break
+        snackbarHostState.showSnackbar("Building APK via Gradle... Please wait.")
+        
+        val builder = com.scto.mobile.ide.core.apkbuilder.ApkBuilder(context)
+        val result = builder.build(java.io.File(projectPath), "Debug") { progress ->
+            when (progress) {
+                is com.scto.mobile.ide.core.apkbuilder.ApkBuilder.BuildProgress.Error -> {
+                    // Error logging
+                }
+                is com.scto.mobile.ide.core.apkbuilder.ApkBuilder.BuildProgress.Step -> {
+                    // Step logging
+                }
+                is com.scto.mobile.ide.core.apkbuilder.ApkBuilder.BuildProgress.Success -> {
+                    // Success logging
+                }
             }
         }
-
-        if (foundApk != null) {
-            ApkInstaller.install(context, foundApk)
-        } else {
-            snackbarHostState.showSnackbar("No built APK found. Please run Gradle build in the Terminal tab first.")
+        
+        result.onSuccess { apkFile ->
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                snackbarHostState.showSnackbar("Build successful! Installing...")
+                ApkInstaller.install(context, apkFile)
+            }
+        }.onFailure { e ->
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                snackbarHostState.showSnackbar("Build Failed: ${e.message}")
+            }
         }
     }
 }
