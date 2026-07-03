@@ -697,7 +697,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     if (showProjectSettingsDialog) {
         com.scto.mobile.ide.ui.editor.components.ProjectSettingsDialog(
             projectPath = projectPath,
-            onDismiss = { showProjectSettingsDialog = false }
+            onDismiss = { showProjectSettingsDialog = false },
         )
     }
 
