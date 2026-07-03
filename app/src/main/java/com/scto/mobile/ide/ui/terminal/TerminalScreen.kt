@@ -28,6 +28,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.*
@@ -300,13 +303,19 @@ fun TerminalScreen(navController: NavController) {
                             },
                         ) {
                             SessionManager.sessions.forEachIndexed { index, session ->
+                                var showContextMenu by remember { mutableStateOf(false) }
                                 val isSelected = SessionManager.currentSessionIndex == index
                                 Tab(
                                     selected = isSelected,
                                     onClick = { SessionManager.switchTo(index) },
                                     modifier = Modifier.fillMaxHeight(),
                                 ) {
-                                    Row(modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp)) {
+                                    Row(modifier = Modifier
+                                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(onLongPress = { showContextMenu = true })
+                                        }
+                                    ) {
                                         Text(
                                             text = session.title,
                                             style = MaterialTheme.typography.labelMedium,
@@ -324,6 +333,35 @@ fun TerminalScreen(navController: NavController) {
                                                         SessionManager.removeSession(session)
                                                     },
                                                 tint = MaterialTheme.colorScheme.error,
+                                            )
+                                        }
+                                        
+                                        DropdownMenu(
+                                            expanded = showContextMenu,
+                                            onDismissRequest = { showContextMenu = false }
+                                        ) {
+                                            DropdownMenuItem(
+                                                text = { Text("Close") },
+                                                onClick = {
+                                                    showContextMenu = false
+                                                    SessionManager.removeSession(session)
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text("Close others") },
+                                                onClick = {
+                                                    showContextMenu = false
+                                                    val others = SessionManager.sessions.filter { it != session }
+                                                    others.forEach { SessionManager.removeSession(it) }
+                                                }
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text("Close all") },
+                                                onClick = {
+                                                    showContextMenu = false
+                                                    val all = SessionManager.sessions.toList()
+                                                    all.forEach { SessionManager.removeSession(it) }
+                                                }
                                             )
                                         }
                                     }
@@ -347,6 +385,17 @@ fun TerminalScreen(navController: NavController) {
                             contentDescription = stringResource(R.string.terminal_new_session),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(24.dp),
+                        )
+                    }
+                    Box(
+                        modifier = Modifier.size(45.dp).clickable { navController.navigate("terminal_settings") },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Terminal Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
