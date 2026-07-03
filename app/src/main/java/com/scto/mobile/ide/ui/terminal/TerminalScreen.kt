@@ -186,7 +186,10 @@ fun TerminalScreen(navController: NavController) {
                     context = context,
                     onStatusChanged = { status ->
                         downloadLabel = status
-                        com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "prepareEnvironment status: $status")
+                        com.scto.mobile.ide.core.utils.LogCatcher.i(
+                            "TerminalScreen",
+                            "prepareEnvironment status: $status",
+                        )
                     },
                     onProgress = { downloaded, total ->
                         downloadedBytes = downloaded
@@ -215,7 +218,12 @@ fun TerminalScreen(navController: NavController) {
     if (setupError != null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.ErrorOutline, contentDescription = "Error", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
+                Icon(
+                    Icons.Default.ErrorOutline,
+                    contentDescription = "Error",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(48.dp),
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("Setup fehlgeschlagen", style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(8.dp))
