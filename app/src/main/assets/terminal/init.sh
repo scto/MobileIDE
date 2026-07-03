@@ -7,7 +7,7 @@ export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
 export SYSROOT="/"
 export HOME="/root"
-export PROJECTS="/storage/emulated/0/MobileIDEProjects"
+export PROJECTS="$MOBILEIDE_WORKSPACE"
 
 source "$LOCAL/bin/utils"
 
