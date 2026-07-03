@@ -132,7 +132,11 @@ object SetupWorker {
                     Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
                 } catch (e: Exception) {
                     LogCatcher.e("SetupWorker", "Rootfs download failed.", e)
+                    throw IllegalStateException("RootFS Download fehlgeschlagen. Bitte Internetverbindung prüfen.", e)
                 }
+            }
+            if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
+                throw IllegalStateException("RootFS Datei fehlt nach dem Download.")
             }
 
             // 4. Extract rootfs is deferred to setup.sh inside the terminal session

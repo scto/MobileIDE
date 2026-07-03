@@ -172,40 +172,59 @@ fun TerminalScreen(navController: NavController) {
         )
     }
 
+    var setupError by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
         com.scto.mobile.ide.core.utils.LogCatcher.i(
             "TerminalScreen",
             "LaunchedEffect: initializing terminal environment...",
         )
         if (application == null) application = context.applicationContext as Application
-        withContext(Dispatchers.IO) {
-            SetupWorker.prepareEnvironment(
-                context = context,
-                onStatusChanged = { status ->
-                    downloadLabel = status
-                    com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "prepareEnvironment status: $status")
-                },
-                onProgress = { downloaded, total ->
-                    downloadedBytes = downloaded
-                    totalBytes = total
-                },
-            )
-        }
-        com.scto.mobile.ide.core.utils.LogCatcher.i(
-            "TerminalScreen",
-            "prepareEnvironment complete. environment is ready.",
-        )
-        isEnvironmentReady = true
-        if (SessionManager.sessions.isEmpty()) {
+        try {
+            withContext(Dispatchers.IO) {
+                SetupWorker.prepareEnvironment(
+                    context = context,
+                    onStatusChanged = { status ->
+                        downloadLabel = status
+                        com.scto.mobile.ide.core.utils.LogCatcher.i("TerminalScreen", "prepareEnvironment status: $status")
+                    },
+                    onProgress = { downloaded, total ->
+                        downloadedBytes = downloaded
+                        totalBytes = total
+                    },
+                )
+            }
             com.scto.mobile.ide.core.utils.LogCatcher.i(
                 "TerminalScreen",
-                "No active terminal sessions. Adding new session.",
+                "prepareEnvironment complete. environment is ready.",
             )
-            SessionManager.addNewSession(context)
+            isEnvironmentReady = true
+            if (SessionManager.sessions.isEmpty()) {
+                com.scto.mobile.ide.core.utils.LogCatcher.i(
+                    "TerminalScreen",
+                    "No active terminal sessions. Adding new session.",
+                )
+                SessionManager.addNewSession(context)
+            }
+        } catch (e: Exception) {
+            setupError = e.message ?: "Ein unbekannter Fehler ist aufgetreten."
+            com.scto.mobile.ide.core.utils.LogCatcher.e("TerminalScreen", "Setup failed", e)
         }
     }
 
-    if (!isEnvironmentReady) {
+    if (setupError != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.ErrorOutline, contentDescription = "Error", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Setup fehlgeschlagen", style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(setupError!!, color = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { setupError = null }) { Text("Erneut versuchen") }
+            }
+        }
+    } else if (!isEnvironmentReady) {
         DownloadProgressScreen(
             label = downloadLabel.ifBlank { "Vorbereitung…" },
             downloaded = downloadedBytes,
