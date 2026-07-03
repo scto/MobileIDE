@@ -121,11 +121,13 @@ export HISTFILE="$HOME/.bash_history"
 export HISTSIZE=10000
 export HISTFILESIZE=20000
 shopt -s histappend
-PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+PROMPT_COMMAND="history -a; history -n; $PROMPT_COMMAND"
 
-# Enable arrow up/down history prefix search
+# Enable arrow up/down history prefix search (Normal & Application cursor modes)
 bind '"\e[A": history-search-backward' 2>/dev/null
 bind '"\e[B": history-search-forward' 2>/dev/null
+bind '"\eOA": history-search-backward' 2>/dev/null
+bind '"\eOB": history-search-forward' 2>/dev/null
 
 # Load bash completion
 if [ -f /etc/profile.d/bash_completion.sh ]; then
