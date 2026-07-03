@@ -694,6 +694,13 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
             )
         }
     }
+    if (showProjectSettingsDialog) {
+        com.scto.mobile.ide.ui.editor.components.ProjectSettingsDialog(
+            projectPath = projectPath,
+            onDismiss = { showProjectSettingsDialog = false }
+        )
+    }
+
     // 1. 新建对话框
     if (showCreateDialog) {
         var nameInput by remember { mutableStateOf("") }
@@ -1272,13 +1279,6 @@ fun FileManagerDrawer(
                 }
             },
             dismissButton = { TextButton(onClick = { showNewFolderDialog = false }) { Text(actionCancelText) } },
-        )
-    }
-
-    if (showProjectSettingsDialog) {
-        com.scto.mobile.ide.ui.editor.components.ProjectSettingsDialog(
-            projectPath = projectPath,
-            onDismiss = { showProjectSettingsDialog = false },
         )
     }
 
