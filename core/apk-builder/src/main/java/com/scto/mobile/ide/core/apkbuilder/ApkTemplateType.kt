@@ -1,4 +1,4 @@
-package com.wuxianggujun.tinaide.core.apkbuilder
+package com.scto.mobile.ide.core.apkbuilder
 
 enum class ApkTemplateType(val templateFileName: String) {
     NATIVE_ACTIVITY("template-native-activity.apk"),

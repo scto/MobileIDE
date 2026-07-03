@@ -1,7 +1,7 @@
-package com.wuxianggujun.tinaide.core.i18n
+package com.scto.mobile.ide.core.i18n
 
 import android.content.Context
-import com.wuxianggujun.tinaide.core.apkbuilder.R
+import com.scto.mobile.ide.core.apkbuilder.R
 
 object Strings {
     val apk_builder_terminal_executable_missing = R.string.apk_builder_terminal_executable_missing

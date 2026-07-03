@@ -1,8 +1,8 @@
-package com.wuxianggujun.tinaide.core.apkbuilder
+package com.scto.mobile.ide.core.apkbuilder
 
 import android.content.Context
-import com.wuxianggujun.tinaide.core.i18n.Strings
-import com.wuxianggujun.tinaide.core.i18n.strOr
+import com.scto.mobile.ide.core.i18n.Strings
+import com.scto.mobile.ide.core.i18n.strOr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

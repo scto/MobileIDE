@@ -1,4 +1,4 @@
-package com.wuxianggujun.tinaide.core.apkbuilder
+package com.scto.mobile.ide.core.apkbuilder
 
 import com.google.common.truth.Truth.assertThat
 import java.io.File

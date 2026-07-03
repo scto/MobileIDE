@@ -1,4 +1,4 @@
-package com.wuxianggujun.tinaide.core.apkbuilder
+package com.scto.mobile.ide.core.apkbuilder
 
 sealed interface ApkSigningConfig {
     data object Debug : ApkSigningConfig
