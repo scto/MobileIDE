@@ -113,8 +113,13 @@ if [[ -f /initrc ]]; then
     source /initrc
 fi
 
-# shellcheck disable=SC2164
-cd "$WKDIR" || cd $HOME
+if [ -n "$WKDIR" ] && [ -d "$WKDIR" ]; then
+    cd "$WKDIR"
+elif [ -n "$MOBILEIDE_PROJECT_DIR" ] && [ -d "$MOBILEIDE_PROJECT_DIR" ]; then
+    cd "$MOBILEIDE_PROJECT_DIR"
+else
+    cd "$HOME"
+fi
 
 # Configure History
 export HISTFILE="$HOME/.bash_history"
