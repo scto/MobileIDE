@@ -11,6 +11,8 @@ This file tracks the features, bug fixes, and improvements implemented by AI cod
 ### 2. Terminal Setup UX Overhaul
 *   **Environment Initialization**: Revised the container startup sequence (`init.sh` and `setup.sh`). The environment now completely initializes (e.g. running `apt update`) in the background, prints the MOTD with the `idesetup` hint, and pauses (`Press any key to continue...`) before gracefully transitioning into an interactive bash prompt (`root@localhost:/#`).
 *   **Premature Exit Bug**: Fixed a bug where passing a bash command to automatically CD into the project directory caused the outer shell to exit immediately after execution. Native directory resolution now uses the `MOBILEIDE_PROJECT_DIR` environment variable to ensure the interactive session persists.
+*   **`.bashrc` Autogeneration**: `setup.sh` now generates a `.bashrc` file in the container's `/root` directory. This ensures that manually spawning nested `bash` instances still automatically sources `mobileide-environment.properties` and enables `bash-completion`.
+*   **Gradle Workspace Configuration**: Updated `idesetup` to automatically export `GRADLE_USER_HOME=$HOME/.gradle` into the environment properties alongside `JAVA_HOME`.
 
 ## [2026-06-13] Settings Panel Enhancements
 
