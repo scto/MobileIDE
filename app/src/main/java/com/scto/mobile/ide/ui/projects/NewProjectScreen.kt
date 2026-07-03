@@ -460,7 +460,7 @@ private fun extractTemplate(
 
                         val jniPackageName = packageName.replace(".", "_")
                         content = content.replace("\$jniPackageName", jniPackageName)
-                        
+
                         if (targetFile.name == "gradle.properties") {
                             content += "\nandroid.aapt2FromMavenOverride=/.mobileide/aapt2\n"
                         }
