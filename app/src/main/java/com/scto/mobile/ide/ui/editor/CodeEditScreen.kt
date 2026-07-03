@@ -1278,7 +1278,7 @@ fun FileManagerDrawer(
     if (showProjectSettingsDialog) {
         com.scto.mobile.ide.ui.editor.components.ProjectSettingsDialog(
             projectPath = projectPath,
-            onDismiss = { showProjectSettingsDialog = false }
+            onDismiss = { showProjectSettingsDialog = false },
         )
     }
 
