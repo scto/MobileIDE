@@ -95,10 +95,17 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 	}
 fi
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+# Enable colorful output
+if [ -x /usr/bin/dircolors ]; then
+    eval "$(dircolors -b)"
+fi
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+
+alias ls='ls --color=always'
+alias grep='grep --color=always'
+alias egrep='egrep --color=always'
+alias fgrep='fgrep --color=always'
 alias pkg='apt'
 
 if [[ -f /initrc ]]; then
@@ -108,6 +115,13 @@ fi
 
 # shellcheck disable=SC2164
 cd "$WKDIR" || cd $HOME
+
+# Configure History
+export HISTFILE="$HOME/.bash_history"
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+shopt -s histappend
+PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 # Enable arrow up/down history prefix search
 bind '"\e[A": history-search-backward' 2>/dev/null
