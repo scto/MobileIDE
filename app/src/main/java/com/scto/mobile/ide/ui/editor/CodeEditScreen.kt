@@ -1743,7 +1743,7 @@ private suspend fun performBuild(
         val gradlewFile = File(projectPath, "gradlew")
         val compileCmd =
             if (gradlewFile.exists()) {
-                "${javaHomeExport}cd $projectPath && ./gradlew assembleDebug"
+                "${javaHomeExport}cd $projectPath && bash ./gradlew assembleDebug"
             } else {
                 "${javaHomeExport}cd $projectPath && gradle assembleDebug"
             }
@@ -1878,7 +1878,7 @@ private suspend fun handleRunApk(
                         }
                     val javaHomeExport =
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
-                    val compileCmd = "${javaHomeExport}cd $projectPath && ./gradlew assembleDebug"
+                    val compileCmd = "${javaHomeExport}cd $projectPath && bash ./gradlew assembleDebug"
                     val cmd =
                         com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(
                             context,
