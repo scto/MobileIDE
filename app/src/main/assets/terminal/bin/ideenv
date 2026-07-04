@@ -1,33 +1,176 @@
 #!/bin/bash
 set -eu
 
+Color_Off='\033[0m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Blue='\033[0;34m'
+Yellow='\033[0;33m'
+
+PROPS="${SYSROOT:-/}/etc/mobileide-environment.properties"
+
 print_help() {
-	echo "Utility command to show/edit MobileIDE Environment Variables"
-	echo "Usage: ideenv [options]"
+	echo -e "${Blue}Utility command to manage MobileIDE Environment Variables${Color_Off}"
+	echo "Usage: ideenv [command|options]"
 	echo ""
-	echo "	-s 	Show the environment variables"
-	echo "	-e	Edit the environment variables"
+	echo "Commands:"
+	echo "  set KEY=VALUE   Set or update an environment variable"
+	echo "  get KEY         Get the value of a specific variable"
+	echo "  reset           Reset the properties file (deletes it)"
+	echo ""
+	echo "Options:"
+	echo "  -s, --show      Show the environment variables (default behavior)"
+	echo "  -e, --edit      Edit the environment variables manually in nano"
+	echo "  --export        Format output for shell eval (e.g. eval \$(ideenv --export))"
+	echo "  -h, --help      Show this help"
 	echo ""
 }
 
+show_props() {
+    if [ ! -f "$PROPS" ]; then
+        echo -e "${Yellow}Properties file does not exist yet. Use idesetup or 'ideenv set' to create one.${Color_Off}"
+        exit 0
+    fi
+    echo -e "${Blue}--- MobileIDE Environment Variables ---${Color_Off}"
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        # Ignore comments and empty lines
+        [[ $key =~ ^#.*$ ]] || [[ -z $key ]] && continue
+        echo -e "${Green}${key}${Color_Off} = ${value}"
+    done < "$PROPS"
+    echo -e "${Blue}---------------------------------------${Color_Off}"
+}
 
-PROPS=$SYSROOT/etc/mobileide-environment.properties
+export_props() {
+    if [ -f "$PROPS" ]; then
+        while IFS='=' read -r key value || [ -n "$key" ]; do
+            [[ $key =~ ^#.*$ ]] || [[ -z $key ]] && continue
+            echo "export ${key}=\"${value}\""
+        done < "$PROPS"
+    fi
+}
+
+set_prop() {
+    local kv="$1"
+    if [[ "$kv" != *"="* ]]; then
+        echo -e "${Red}Invalid format. Use: ideenv set KEY=VALUE${Color_Off}"
+        exit 1
+    fi
+    local key="${kv%%=*}"
+    local value="${kv#*=}"
+
+    if [ -z "$key" ] || [ -z "$value" ]; then
+        echo -e "${Red}Invalid format. Use: ideenv set KEY=VALUE${Color_Off}"
+        exit 1
+    fi
+
+    # Basic path validation (warning only)
+    if [[ "$value" == /* ]] && [ ! -e "$value" ]; then
+        echo -e "${Yellow}Warning: The path '$value' does not seem to exist on disk.${Color_Off}"
+    fi
+
+    # Create dir if not exists
+    mkdir -p "$(dirname "$PROPS")"
+
+    if [ ! -f "$PROPS" ]; then
+        touch "$PROPS"
+    fi
+
+    # If key exists, replace it. Otherwise append.
+    if grep -q "^${key}=" "$PROPS"; then
+        # Use awk to safely replace just the first occurrence or specific key without regex injection issues
+        awk -v k="$key" -v v="$value" 'BEGIN{FS=OFS="="} $1==k {$0=k "=" v} 1' "$PROPS" > "${PROPS}.tmp" && mv "${PROPS}.tmp" "$PROPS"
+    else
+        echo "${key}=${value}" >> "$PROPS"
+    fi
+    echo -e "${Green}Set ${key} = ${value}${Color_Off}"
+}
+
+get_prop() {
+    local key="$1"
+    if [ ! -f "$PROPS" ]; then
+        exit 1
+    fi
+    local val
+    val=$(grep "^${key}=" "$PROPS" | cut -d'=' -f2- || true)
+    if [ -n "$val" ]; then
+        echo "$val"
+    else
+        exit 1
+    fi
+}
+
+# No arguments -> show
+if [ $# -eq 0 ]; then
+    show_props
+    exit 0
+fi
+
+# Parse commands
+case "$1" in
+    set)
+        if [ $# -lt 2 ]; then
+            echo -e "${Red}Missing argument. Use: ideenv set KEY=VALUE${Color_Off}"
+            exit 1
+        fi
+        set_prop "$2"
+        exit 0
+        ;;
+    get)
+        if [ $# -lt 2 ]; then
+            echo -e "${Red}Missing argument. Use: ideenv get KEY${Color_Off}"
+            exit 1
+        fi
+        get_prop "$2"
+        exit 0
+        ;;
+    reset)
+        if [ -f "$PROPS" ]; then
+            # Prompt user
+            echo -n "Are you sure you want to reset (delete) the properties file? [y/N]: "
+            read -r ans
+            if [[ "$ans" =~ ^[Yy]$ ]]; then
+                rm -f "$PROPS"
+                echo -e "${Green}Properties file deleted.${Color_Off}"
+            else
+                echo "Aborted."
+            fi
+        else
+            echo "Properties file does not exist."
+        fi
+        exit 0
+        ;;
+esac
+
+# Parse options for flags
+for arg in "$@"; do
+    case "$arg" in
+        --show) show_props; exit 0 ;;
+        --edit) nano "$PROPS"; exit 0 ;;
+        --export) export_props; exit 0 ;;
+        --help) print_help; exit 0 ;;
+    esac
+done
+
 while getopts ":she" option; do
-	case $option in
-		s) ## Simply print the contents of the file
-		   if [ ! -f "$PROPS" ]; then
-		      echo "Properties file does not exist."
-		      exit 1
-		   fi
-		   cat $PROPS
-		   echo ""
-		   exit;;
-		h) ## Show the help
-		   print_help
-		   exit;;
-		e) ## Open the file in nano editor
-		   echo "Opening $PROPS file with nano editor..."
-		   nano $PROPS
-		   exit;;
-	esac
+    case $option in
+        s)
+            show_props
+            exit 0
+            ;;
+        e)
+            echo "Opening $PROPS file with nano editor..."
+            mkdir -p "$(dirname "$PROPS")"
+            nano "$PROPS"
+            exit 0
+            ;;
+        h)
+            print_help
+            exit 0
+            ;;
+        \?)
+            echo -e "${Red}Invalid option or command: -$OPTARG${Color_Off}"
+            print_help
+            exit 1
+            ;;
+    esac
 done
