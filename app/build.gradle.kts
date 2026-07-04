@@ -314,7 +314,7 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit.ssh.apache
     implementation(libs.org.eclipse.jgit.ssh.apache)
     //noinspection UseTomlInstead
-    implementation("org.slf4j:slf4j-simple:2.0.17")
+    implementation("org.slf4j:slf4j-simple:2.0.18")
 
     // Add terminal dependencies
     implementation(project(":core:main"))
