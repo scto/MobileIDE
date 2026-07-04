@@ -30,7 +30,12 @@ fun getLspBinaryPaths(id: String): List<String> {
         "bash" -> listOf("usr/bin/bash-language-server", "usr/local/bin/bash-language-server")
         "xml" -> listOf("root/.lsp/lemminx/server.jar")
         "java" -> listOf("usr/bin/jdtls", "usr/local/bin/jdtls", "opt/jdtls/bin/jdtls")
-        "kotlin" -> listOf("usr/bin/kotlin-language-server", "usr/local/bin/kotlin-language-server", "opt/kotlin-language-server/bin/kotlin-language-server")
+        "kotlin" ->
+            listOf(
+                "usr/bin/kotlin-language-server",
+                "usr/local/bin/kotlin-language-server",
+                "opt/kotlin-language-server/bin/kotlin-language-server",
+            )
         else -> emptyList()
     }
 }
