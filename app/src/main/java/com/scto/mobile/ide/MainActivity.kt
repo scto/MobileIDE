@@ -133,58 +133,14 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
             java.io.File(testExtDir, "extension.apk").createNewFile()
         }
 
-        // Setup Java LSP extension
-        val javaLspDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.java_lsp")
-        if (!javaLspDir.exists()) {
-            javaLspDir.mkdirs()
-            val manifestJson =
-                """
-                {
-                  "id": "com.scto.mobile.ide.java_lsp",
-                  "name": "Java Language Support (JDTLS)",
-                  "mainClass": "com.rk.extension.languages.JavaLspExtension",
-                  "version": "1.0.0",
-                  "description": "Provides Java language intelligence utilizing Eclipse JDTLS and OpenJDK 17.",
-                  "author": {
-                    "displayName": "MobileIDE"
-                  },
-                  "minAppVersion": 1,
-                  "repository": "https://github.com/example/java-lsp",
-                  "license": "GPLv3"
-                }
-                """
-                    .trimIndent()
-            java.io.File(javaLspDir, "manifest.json").writeText(manifestJson)
-            java.io.File(javaLspDir, "extension.apk").createNewFile()
+        // Install plugins bundled in assets/bundled_plugins/ (e.g. java_lsp, kotlin_lsp)
+        // These are installed once on first run and updated when the asset version is newer.
+        lifecycleScope.launch(Dispatchers.IO) {
+            com.scto.mobile.ide.core.utils.BundledPluginLoader.install(application)
+            extensionManager.indexLocalExtensions()
+            extensionManager.loadAllExtensions()
         }
 
-        // Setup Kotlin LSP extension
-        val kotlinLspDir =
-            java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.kotlin_lsp")
-        if (!kotlinLspDir.exists()) {
-            kotlinLspDir.mkdirs()
-            val manifestJson =
-                """
-                {
-                  "id": "com.scto.mobile.ide.kotlin_lsp",
-                  "name": "Kotlin Language Support",
-                  "mainClass": "com.rk.extension.languages.KotlinLspExtension",
-                  "version": "1.0.0",
-                  "description": "Provides Kotlin language intelligence.",
-                  "author": {
-                    "displayName": "MobileIDE"
-                  },
-                  "minAppVersion": 1,
-                  "repository": "https://github.com/example/kotlin-lsp",
-                  "license": "GPLv3"
-                }
-                """
-                    .trimIndent()
-            java.io.File(kotlinLspDir, "manifest.json").writeText(manifestJson)
-            java.io.File(kotlinLspDir, "extension.apk").createNewFile()
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) { extensionManager.loadAllExtensions() }
 
         com.rk.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
