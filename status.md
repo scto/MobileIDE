@@ -12,6 +12,7 @@ This file tracks the features, bug fixes, and improvements implemented by AI cod
     *   **Java**: Eclipse JDT Language Server (`jdtls`), resolved natively inside Termux.
     *   **Bash**: `bash-language-server` via npm.
     *   **XML**: Eclipse LemMinX XML Language Server via Java jar execution.
+*   **LSP Installer Scripts & Settings Clean-up**: Removed obsolete language server scripts (`css`, `html`, `json`, `typescript`, `python`, `eslint`, `emmet`, `markdown`) from `app/src/main/assets/terminal/lsp` and added native installer scripts for `java.sh` and `kotlin.sh`. Updated the container binary checking logic in `LspSettingsScreen.kt` to dynamically map only these four core languages (Java, Kotlin, Bash, XML).
 
 ### 2. Sandbox CLI & Version Selection Upgrades
 *   **Dynamic SDK Version Selection**: Overhauled `idesetup` (in both `MobileIDE` and `mobileide-tools`) to download the `manifest.json` early, parse it using `jq`, and present the user with a dynamic selection menu of all available SDK version layers (such as `37.0.0`) on startup.
