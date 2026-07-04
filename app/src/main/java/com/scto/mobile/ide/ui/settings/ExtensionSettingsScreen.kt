@@ -1,13 +1,18 @@
 package com.scto.mobile.ide.ui.settings
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,8 +21,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.rk.extension.InstallResult
 import com.rk.extension.LocalExtension
 import com.rk.extension.extensionManager
+import java.io.File
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,12 +35,86 @@ fun ExtensionSettingsScreen(navController: NavController) {
     var extensions by remember { mutableStateOf<List<LocalExtension>>(emptyList()) }
     var showRestartDialog by remember { mutableStateOf(false) }
     var selectedExtensionForInfo by remember { mutableStateOf<LocalExtension?>(null) }
+    var targetExtensionIdForUpdate by remember { mutableStateOf<String?>(null) }
 
     fun refresh() {
         extensions = extensionManager.localExtensions.values.toList()
     }
 
     LaunchedEffect(Unit) { refresh() }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            scope.launch {
+                try {
+                    val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
+                    context.contentResolver.openInputStream(selectedUri)?.use { input ->
+                        tempFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    val res = extensionManager.installExtensionFromZip(tempFile)
+                    tempFile.delete()
+                    if (res is InstallResult.Success) {
+                        Toast.makeText(context, "Extension installed successfully", Toast.LENGTH_SHORT).show()
+                        refresh()
+                        showRestartDialog = true
+                    } else {
+                        val errMsg = when (res) {
+                            is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
+                            is InstallResult.Error -> "Error: ${res.error}"
+                            else -> "Unknown error"
+                        }
+                        Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Failed to copy/install: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    val updatePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            val extId = targetExtensionIdForUpdate ?: return@let
+            scope.launch {
+                try {
+                    val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
+                    context.contentResolver.openInputStream(selectedUri)?.use { input ->
+                        tempFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    val res = extensionManager.installExtensionFromZip(tempFile)
+                    tempFile.delete()
+                    if (res is InstallResult.Success) {
+                        if (res.extension.manifest.id == extId) {
+                            Toast.makeText(context, "Extension updated successfully", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Extension installed successfully, but ID did not match update target.", Toast.LENGTH_LONG).show()
+                        }
+                        refresh()
+                        showRestartDialog = true
+                    } else {
+                        val errMsg = when (res) {
+                            is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
+                            is InstallResult.Error -> "Error: ${res.error}"
+                            else -> "Unknown error"
+                        }
+                        Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Failed to update: ${e.message}", Toast.LENGTH_LONG).show()
+                } finally {
+                    targetExtensionIdForUpdate = null
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -44,6 +125,11 @@ fun ExtensionSettingsScreen(navController: NavController) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
+                actions = {
+                    IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
+                        Icon(Icons.Default.Add, "Install Extension")
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -109,6 +195,19 @@ fun ExtensionSettingsScreen(navController: NavController) {
                                     Icon(Icons.Default.Info, contentDescription = "Info")
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text("Details")
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                TextButton(
+                                    onClick = {
+                                        targetExtensionIdForUpdate = extension.id
+                                        updatePickerLauncher.launch("*/*")
+                                    }
+                                ) {
+                                    Icon(Icons.Default.Refresh, contentDescription = "Update")
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Update")
                                 }
 
                                 Spacer(modifier = Modifier.width(8.dp))
