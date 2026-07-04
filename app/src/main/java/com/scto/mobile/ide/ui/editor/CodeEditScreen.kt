@@ -1665,11 +1665,17 @@ private suspend fun performBuild(
 
         // 1. Check OpenJDK installation
         val isJdk17Installed =
-            File(sandboxDir, "usr/lib/jvm/java-17-openjdk/bin/java").exists() ||
-                File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
+            File(sandboxDir, "usr/lib/jvm").let { jvm ->
+                jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                    it.name.startsWith("java-17-openjdk") && File(it, "bin/java").exists()
+                } ?: false)
+            }
         val isJdk21Installed =
-            File(sandboxDir, "usr/lib/jvm/java-21-openjdk/bin/java").exists() ||
-                File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
+            File(sandboxDir, "usr/lib/jvm").let { jvm ->
+                jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                    it.name.startsWith("java-21-openjdk") && File(it, "bin/java").exists()
+                } ?: false)
+            }
 
         // 2. Check Gradle installation
         val isGradleInstalled = File(sandboxDir, "usr/bin/gradle").exists()
@@ -1730,12 +1736,17 @@ private suspend fun performBuild(
 
         // Determine JAVA_HOME inside PRoot container
         val javaHomeInContainer =
-            when {
-                File(sandboxDir, "usr/lib/jvm/java-21-openjdk").exists() -> "/usr/lib/jvm/java-21-openjdk"
-                File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64").exists() -> "/usr/lib/jvm/java-21-openjdk-amd64"
-                File(sandboxDir, "usr/lib/jvm/java-17-openjdk").exists() -> "/usr/lib/jvm/java-17-openjdk"
-                File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64").exists() -> "/usr/lib/jvm/java-17-openjdk-amd64"
-                else -> ""
+            File(sandboxDir, "usr/lib/jvm").let { jvm ->
+                if (jvm.exists() && jvm.isDirectory) {
+                    val dirs = jvm.listFiles()
+                    val java21 = dirs?.find { it.name.startsWith("java-21-openjdk") && File(it, "bin/java").exists() }
+                    val java17 = dirs?.find { it.name.startsWith("java-17-openjdk") && File(it, "bin/java").exists() }
+                    when {
+                        java21 != null -> "/usr/lib/jvm/${java21.name}"
+                        java17 != null -> "/usr/lib/jvm/${java17.name}"
+                        else -> ""
+                    }
+                } else ""
             }
 
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
@@ -1865,16 +1876,17 @@ private suspend fun handleRunApk(
                     val prefixDir = context.filesDir.parentFile!!
                     val sandboxDir = java.io.File(prefixDir, "local/sandbox")
                     val javaHomeInContainer =
-                        when {
-                            java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk").exists() ->
-                                "/usr/lib/jvm/java-21-openjdk"
-                            java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64").exists() ->
-                                "/usr/lib/jvm/java-21-openjdk-amd64"
-                            java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk").exists() ->
-                                "/usr/lib/jvm/java-17-openjdk"
-                            java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64").exists() ->
-                                "/usr/lib/jvm/java-17-openjdk-amd64"
-                            else -> ""
+                        java.io.File(sandboxDir, "usr/lib/jvm").let { jvm ->
+                            if (jvm.exists() && jvm.isDirectory) {
+                                val dirs = jvm.listFiles()
+                                val java21 = dirs?.find { it.name.startsWith("java-21-openjdk") && java.io.File(it, "bin/java").exists() }
+                                val java17 = dirs?.find { it.name.startsWith("java-17-openjdk") && java.io.File(it, "bin/java").exists() }
+                                when {
+                                    java21 != null -> "/usr/lib/jvm/${java21.name}"
+                                    java17 != null -> "/usr/lib/jvm/${java17.name}"
+                                    else -> ""
+                                }
+                            } else ""
                         }
                     val javaHomeExport =
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
