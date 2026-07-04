@@ -28,15 +28,9 @@ data class LspItem(val id: String, val name: String, val scriptName: String, var
 fun getLspBinaryPaths(id: String): List<String> {
     return when (id) {
         "bash" -> listOf("usr/bin/bash-language-server")
-        "css" -> listOf("usr/bin/css-languageserver")
-        "emmet" -> listOf("usr/bin/emmet-language-server")
-        "eslint" -> listOf("usr/bin/vscode-eslint-language-server")
-        "html" -> listOf("usr/bin/html-languageserver")
-        "json" -> listOf("usr/bin/json-languageserver")
-        "markdown" -> listOf("usr/bin/markdown-languageserver")
-        "python" -> listOf("usr/bin/pyright")
-        "typescript" -> listOf("usr/bin/typescript-language-server", "usr/local/bin/typescript-language-server")
         "xml" -> listOf("root/.lsp/lemminx/server.jar")
+        "java" -> listOf("usr/bin/jdtls")
+        "kotlin" -> listOf("usr/bin/kotlin-language-server")
         else -> emptyList()
     }
 }
