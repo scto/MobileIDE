@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.bash_lsp",
+  "name": "Bash Language Support",
+  "mainClass": "com.rk.extension.languages.BashLspExtension",
+  "version": "1.0.0",
+  "description": "Provides Bash language intelligence using bash-language-server.",
+  "author": {
+    "displayName": "MobileIDE"
+  },
+  "repository": "https://github.com/scto/MobileIDE",
+  "license": "GPLv3",
+  "tags": ["lsp", "bash"]
+}
