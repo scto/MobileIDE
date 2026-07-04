@@ -141,7 +141,6 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
             extensionManager.loadAllExtensions()
         }
 
-
         com.rk.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
                 com.scto.mobile.ide.exec.pendingCommand =

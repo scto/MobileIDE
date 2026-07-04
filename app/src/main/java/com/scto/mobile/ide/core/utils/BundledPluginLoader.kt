@@ -9,17 +9,16 @@ import java.io.File
 /**
  * Installs plugins bundled in assets/bundled_plugins/ into the local extension directory.
  *
- * Each bundled plugin only ships a manifest.json (no separate APK), because its main class
- * is compiled directly into the host app APK via `implementation(project(...))`.
+ * Each bundled plugin only ships a manifest.json (no separate APK), because its main class is compiled directly into
+ * the host app APK via `implementation(project(...))`.
  *
  * On first run (or when a plugin directory doesn't exist yet) we:
- *  1. Copy the manifest.json from assets
- *  2. Create a symlink called "extension.apk" pointing to the app's own APK, so the
- *     extension loader's PathClassLoader can find the already-compiled classes via the
- *     parent class-loader delegation chain.
+ * 1. Copy the manifest.json from assets
+ * 2. Create a symlink called "extension.apk" pointing to the app's own APK, so the extension loader's PathClassLoader
+ *    can find the already-compiled classes via the parent class-loader delegation chain.
  *
- * If an existing bundled plugin's manifest version is LOWER than the one in assets, the
- * plugin directory is deleted and recreated so the manifest is refreshed.
+ * If an existing bundled plugin's manifest version is LOWER than the one in assets, the plugin directory is deleted and
+ * recreated so the manifest is refreshed.
  */
 object BundledPluginLoader {
 
@@ -41,10 +40,8 @@ object BundledPluginLoader {
                 val extDir = File(extensionsRoot, pluginId)
 
                 // Read bundled manifest version
-                val bundledManifestText = assetManager
-                    .open("$ASSETS_DIR/$pluginId/manifest.json")
-                    .bufferedReader()
-                    .readText()
+                val bundledManifestText =
+                    assetManager.open("$ASSETS_DIR/$pluginId/manifest.json").bufferedReader().readText()
 
                 val bundledVersion = parseVersion(bundledManifestText)
 
@@ -95,14 +92,16 @@ object BundledPluginLoader {
         }
     }
 
-    private fun File.isSymbolicLink(): Boolean = try {
-        val stat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Os.lstat(absolutePath)
-        } else null
-        stat != null
-    } catch (e: Exception) {
-        false
-    }
+    private fun File.isSymbolicLink(): Boolean =
+        try {
+            val stat =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Os.lstat(absolutePath)
+                } else null
+            stat != null
+        } catch (e: Exception) {
+            false
+        }
 
     /** Parses "version" field from a raw JSON string (no full JSON parser dependency). */
     private fun parseVersion(json: String): String {
