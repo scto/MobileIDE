@@ -47,11 +47,17 @@ fun BuildSettingsScreen(navController: NavController) {
             fun getDistroFile(path: String) = File(distroDir, path)
 
             isJdk17Installed =
-                getDistroFile("usr/lib/jvm/java-17-openjdk/bin/java").exists() ||
-                    getDistroFile("usr/lib/jvm/java-17-openjdk-amd64/bin/java").exists()
+                getDistroFile("usr/lib/jvm").let { jvm ->
+                    jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                        it.name.startsWith("java-17-openjdk") && File(it, "bin/java").exists()
+                    } ?: false)
+                }
             isJdk21Installed =
-                getDistroFile("usr/lib/jvm/java-21-openjdk/bin/java").exists() ||
-                    getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
+                getDistroFile("usr/lib/jvm").let { jvm ->
+                    jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                        it.name.startsWith("java-21-openjdk") && File(it, "bin/java").exists()
+                    } ?: false)
+                }
             isGradleInstalled = getDistroFile("usr/bin/gradle").exists()
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
             val distroSdk = getDistroFile("root/android-sdk")
