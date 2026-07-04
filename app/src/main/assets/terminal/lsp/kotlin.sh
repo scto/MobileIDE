@@ -3,8 +3,8 @@ set -e
 source "$LOCAL/bin/utils"
 
 info 'Preparing...'
-apt update && apt upgrade -y
-apt install -y curl unzip default-jdk
+apt-get update && apt-get upgrade -y
+apt-get install -y curl unzip default-jdk
 
 install() {
   info 'Installing Kotlin language server...'

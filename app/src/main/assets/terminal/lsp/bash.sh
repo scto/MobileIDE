@@ -4,7 +4,7 @@ source "$LOCAL/bin/utils"
 
 
 info 'Preparing...'
-apt update && apt upgrade -y
+apt-get update && apt-get upgrade -y
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -15,7 +15,7 @@ install() {
   npm install -g --prefix /usr bash-language-server
 
   info 'Installing ShellCheck...'
-  apt install -y shellcheck
+  apt-get install -y shellcheck
 
   info 'Bash language server installed successfully.'
   exit 0
