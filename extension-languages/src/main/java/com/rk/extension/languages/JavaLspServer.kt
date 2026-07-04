@@ -13,7 +13,7 @@ class JavaLspServer : ScriptedLspServer() {
     override val supportedExtensions = listOf("java")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "install_java_lsp.sh")
+    override val installScript = File(localBinDir(), "lsp/java.sh")
     override val installId = "java_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {
