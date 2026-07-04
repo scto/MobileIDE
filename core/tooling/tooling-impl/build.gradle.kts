@@ -49,4 +49,9 @@ dependencies {
     
     // Coroutines
     implementation(libs.kotlinx.coroutines)
+
+    // Lifecycle – ViewModel + Compose integration
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
 }
