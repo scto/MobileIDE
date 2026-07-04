@@ -68,4 +68,4 @@ include(":core:extension")
 include(":core:lsp")
 include(":core:commands")
 
-include(":extension-kotlin-lsp")
+include(":extension-languages")

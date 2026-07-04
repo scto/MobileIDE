@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rk.extension.kotlin_lsp"
+    namespace = "com.rk.extension.languages"
     compileSdk = 34
 
     defaultConfig {
