@@ -12,6 +12,7 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 *   **Dynamic SDK Version Setup**: Refactored `idesetup` to pull `manifest.json` early, parse it using `jq`, and prompt the user with a dynamic selection menu containing version layers like `37.0.0` based on the host architecture.
 *   **Smart Environment CLI (`ideenv`)**: Replaced the baseline properties text editor `ideenv` with a smart environment controller supporting key settings (`set KEY=VALUE`), lookups (`get KEY`), session exports (`eval $(ideenv --export)`), and path verification warnings.
 *   **LSP Installer Scripts & Settings Clean-up**: Purged all deprecated LSP installer scripts from `app/src/main/assets/terminal/lsp` and created new scripts for `java.sh` and `kotlin.sh`. Refactored `LspSettingsScreen.kt`'s path checker to target only the four supported servers (Java, Kotlin, Bash, XML).
+*   **Successful AARCH64 Build**: Enabled the Maven AAPT2 override in `gradle.properties` to fix AARCH64 compilation issues and compiled a fresh `MobileIDE-0.0.1-DEBUG-debug.apk`.
 
 ## [2026-07-03]
 ### Terminal Stability & UX Fixes
