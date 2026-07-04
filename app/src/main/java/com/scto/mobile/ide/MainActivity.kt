@@ -99,16 +99,19 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         TextMateInitializer.initialize(this)
         AppLanguageManager.initialize(this)
 
-        com.rk.lsp.ScriptedLspServer.terminalLauncher = { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
-            com.scto.mobile.ide.exec.pendingCommand = com.scto.mobile.ide.exec.TerminalCommand(
-                exe = "bash",
-                args = (listOf(scriptFile.absolutePath) + flags).toTypedArray(),
-                id = "lsp_installer_${scriptFile.name}",
-                workingDir = scriptFile.parentFile?.absolutePath
-            )
-            // Note: Since this requires navigating to the terminal screen, ideally we would broadcast an event or navigate via NavController.
-            // As a simple delegate, we just set the pending command which will be run when the terminal opens.
-        }
+        com.rk.lsp.ScriptedLspServer.terminalLauncher =
+            { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
+                com.scto.mobile.ide.exec.pendingCommand =
+                    com.scto.mobile.ide.exec.TerminalCommand(
+                        exe = "bash",
+                        args = (listOf(scriptFile.absolutePath) + flags).toTypedArray(),
+                        id = "lsp_installer_${scriptFile.name}",
+                        workingDir = scriptFile.parentFile?.absolutePath,
+                    )
+                // Note: Since this requires navigating to the terminal screen, ideally we would broadcast an event or
+                // navigate via NavController.
+                // As a simple delegate, we just set the pending command which will be run when the terminal opens.
+            }
 
         setContent {
             val activityContext = this@MainActivity
