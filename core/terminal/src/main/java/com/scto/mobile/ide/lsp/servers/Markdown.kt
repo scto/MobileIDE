@@ -1,0 +1,38 @@
+package com.scto.mobile.ide.lsp.servers
+
+import android.content.Context
+import com.scto.mobile.ide.exec.NpmUtils
+import com.scto.mobile.ide.exec.isTerminalInstalled
+import com.scto.mobile.ide.file.BuiltinFileType
+import com.scto.mobile.ide.file.child
+import com.scto.mobile.ide.file.localBinDir
+import com.scto.mobile.ide.file.sandboxDir
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ScriptedLspServer
+
+object Markdown : ScriptedLspServer() {
+    override val id: String = "markdown"
+    override val languageName: String = "Markdown"
+    override val serverName = "vscode-markdown-language-server"
+    override val supportedExtensions = BuiltinFileType.MARKDOWN.extensions
+    override val icon = BuiltinFileType.MARKDOWN.icon
+
+    override val installScript = localBinDir().child("lsp/markdown")
+    override val installId = "Markdown language server"
+
+    override suspend fun isInstalled(context: Context): Boolean {
+        if (!isTerminalInstalled()) {
+            return false
+        }
+
+        return sandboxDir().child("/usr/bin/$serverName").exists()
+    }
+
+    override suspend fun isUpdatable(context: Context): Boolean {
+        return NpmUtils.hasUpdate("vscode-langservers-extracted")
+    }
+
+    override fun getConnectionConfig(): LspConnectionConfig {
+        return LspConnectionConfig.Process(arrayOf("/usr/bin/node", "/usr/bin/$serverName", "--stdio"))
+    }
+}
