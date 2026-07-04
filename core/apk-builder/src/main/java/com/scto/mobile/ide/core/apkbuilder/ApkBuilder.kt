@@ -28,6 +28,7 @@ class ApkBuilder(private val context: Context) {
     suspend fun build(
         projectDir: File,
         buildType: String = "Debug", // "Debug" or "Release"
+        configureProcessBuilder: ((ProcessBuilder) -> Unit)? = null,
         onProgress: (BuildProgress) -> Unit = {}
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
@@ -42,13 +43,18 @@ class ApkBuilder(private val context: Context) {
             onProgress(BuildProgress.Step("Starting Gradle build ($buildType)...", 0.1f))
 
             val task = "assemble$buildType"
-            val pb = ProcessBuilder("bash", "./gradlew", task)
+            val pb = ProcessBuilder()
             pb.directory(projectDir)
             pb.redirectErrorStream(true) // merge stderr and stdout
 
-            val javaHome = "/data/data/com.termux/files/usr/lib/jvm/java-17-openjdk"
-            if (File(javaHome).exists()) {
-                pb.environment()["JAVA_HOME"] = javaHome
+            if (configureProcessBuilder != null) {
+                configureProcessBuilder(pb)
+            } else {
+                pb.command("bash", "./gradlew", task)
+                val javaHome = "/data/data/com.termux/files/usr/lib/jvm/java-17-openjdk"
+                if (File(javaHome).exists()) {
+                    pb.environment()["JAVA_HOME"] = javaHome
+                }
             }
             
             val process = pb.start()

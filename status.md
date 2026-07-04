@@ -12,6 +12,7 @@ This file tracks the features, bug fixes, and improvements implemented by AI cod
     *   **Java**: Eclipse JDT Language Server (`jdtls`), resolved natively inside Termux.
     *   **Bash**: `bash-language-server` via npm.
     *   **XML**: Eclipse LemMinX XML Language Server via Java jar execution.
+*   **Decoupled APK Builder PRoot integration**: Modified `ApkBuilder.kt` to accept an optional `configureProcessBuilder` lambda to allow `:app` to wrap the host process builder inside the sandbox container. Updated `CodeEditScreen.kt`'s `handleRunApk` to pass the PRoot command, resolving the `Cannot run program "bash"` crash when building and running projects via the UI play button.
 *   **LSP Installer Scripts & Settings Clean-up**: Removed obsolete language server scripts (`css`, `html`, `json`, `typescript`, `python`, `eslint`, `emmet`, `markdown`) from `app/src/main/assets/terminal/lsp` and added native installer scripts for `java.sh` and `kotlin.sh`. Updated the container binary checking logic in `LspSettingsScreen.kt` to dynamically map only these four core languages (Java, Kotlin, Bash, XML).
 
 ### 2. Sandbox CLI & Version Selection Upgrades
