@@ -17,17 +17,17 @@ class JavaLspServer : ScriptedLspServer() {
     override val installId = "java_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {
-        return File("/data/data/com.termux/files/usr/bin/jdtls").exists() || File(localBinDir(), "jdtls/bin/jdtls").exists()
+        val prefixDir = context.filesDir.parentFile!!
+        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+        val distroDir = File(prefixDir, "local/$distroName")
+        return File(distroDir, "usr/bin/jdtls").exists() || 
+               File(distroDir, "usr/local/bin/jdtls").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false
 
     override fun getConnectionConfig(): LspConnectionConfig {
-        val jdtls = if (File("/data/data/com.termux/files/usr/bin/jdtls").exists()) {
-            "/data/data/com.termux/files/usr/bin/jdtls"
-        } else {
-            File(localBinDir(), "jdtls/bin/jdtls").absolutePath
-        }
-        return LspConnectionConfig.Process(arrayOf("bash", "-c", jdtls))
+        return LspConnectionConfig.Process(arrayOf("jdtls"))
     }
 }

@@ -17,18 +17,17 @@ class BashLspServer : ScriptedLspServer() {
     override val installId = "bash_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {
-        return File("/data/data/com.termux/files/usr/bin/bash-language-server").exists() || 
-               File("/data/data/com.termux/files/usr/local/bin/bash-language-server").exists()
+        val prefixDir = context.filesDir.parentFile!!
+        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+        val distroDir = File(prefixDir, "local/$distroName")
+        return File(distroDir, "usr/bin/bash-language-server").exists() || 
+               File(distroDir, "usr/local/bin/bash-language-server").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false
 
     override fun getConnectionConfig(): LspConnectionConfig {
-        val bin = if (File("/data/data/com.termux/files/usr/bin/bash-language-server").exists()) {
-            "/data/data/com.termux/files/usr/bin/bash-language-server"
-        } else {
-            "bash-language-server"
-        }
-        return LspConnectionConfig.Process(arrayOf("bash", "-c", "$bin start"))
+        return LspConnectionConfig.Process(arrayOf("bash-language-server", "start"))
     }
 }

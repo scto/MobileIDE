@@ -13,20 +13,21 @@ class KotlinLspServer : ScriptedLspServer() {
     override val supportedExtensions = listOf("kt", "kts")
     override val icon: Any? = null
     
-    // The script that will install the server when the user clicks 'Install'
     override val installScript = File(localBinDir(), "lsp/kotlin.sh")
     override val installId = "kotlin_lsp_installer"
 
-    // Check if the binary exists
     override suspend fun isInstalled(context: Context): Boolean {
-        return File(localBinDir(), "kotlin-language-server/bin/kotlin-language-server").exists()
+        val prefixDir = context.filesDir.parentFile!!
+        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+        val distroDir = File(prefixDir, "local/$distroName")
+        return File(distroDir, "usr/bin/kotlin-language-server").exists() || 
+               File(distroDir, "usr/local/bin/kotlin-language-server").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false
 
-    // How the editor will start the LSP process in the background
     override fun getConnectionConfig(): LspConnectionConfig {
-        val executable = File(localBinDir(), "kotlin-language-server/bin/kotlin-language-server").absolutePath
-        return LspConnectionConfig.Process(arrayOf("bash", "-c", executable))
+        return LspConnectionConfig.Process(arrayOf("kotlin-language-server"))
     }
 }

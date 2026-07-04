@@ -17,13 +17,16 @@ class XmlLspServer : ScriptedLspServer() {
     override val installId = "xml_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {
-        return File(localBinDir(), "lemminx/lemminx.jar").exists()
+        val prefixDir = context.filesDir.parentFile!!
+        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+        val distroDir = File(prefixDir, "local/$distroName")
+        return File(distroDir, "root/.lsp/lemminx/server.jar").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false
 
     override fun getConnectionConfig(): LspConnectionConfig {
-        val jar = File(localBinDir(), "lemminx/lemminx.jar").absolutePath
-        return LspConnectionConfig.Process(arrayOf("java", "-jar", jar))
+        return LspConnectionConfig.Process(arrayOf("java", "-jar", "/root/.lsp/lemminx/server.jar"))
     }
 }
