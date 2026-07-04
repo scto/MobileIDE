@@ -227,18 +227,24 @@ if is_yes "Do you want to install openssh?"; then
     fi
 fi
 
-if [ ! command -v $aptm &> /dev/null ]; then
-    print_err "'$aptm' command not found. Try installing 'termux-tools' and 'apt'."
+if [ "$aptm" = "apt" ]; then
+    apt_exec="apt-get"
+else
+    apt_exec="$aptm"
+fi
+
+if [ ! command -v $apt_exec &> /dev/null ]; then
+    print_err "'$apt_exec' command not found. Try installing 'termux-tools' and '$apt_exec'."
     exit 1
 fi
 
 # Update repositories and packages
 print_info "Update packages..."
-$aptm update && $aptm upgrade -y
+$apt_exec update && $apt_exec upgrade -y
 
 # Install required packages
 print_info "Installing required packages.."
-$aptm install $apts -y
+$apt_exec install $apts -y
 print_success "Packages installed"
 echo ""
 
@@ -316,7 +322,7 @@ else
     pkg_name="openjdk-$jdk_version-jdk"
 fi
 print_info "Installing package: '$pkg_name'"
-$aptm install "$pkg_name" -y
+$apt_exec install "$pkg_name" -y
 print_info "JDK $jdk_version has been installed."
 
 if command -v javac >/dev/null 2>&1; then
