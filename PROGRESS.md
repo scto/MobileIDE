@@ -7,6 +7,7 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 ## [2026-07-04]
 ### Language Server Extensions & Sandbox CLI Overhaul
 *   **Renamed and Expanded Language Extension**: Migrated `:extension-kotlin-lsp` to `:extension-languages` and packaged support for Kotlin, Java, Bash, and XML language servers into a single library extension.
+*   **APK Builder Play Button Crash Fix**: Fixed a `Cannot run program "bash"` crash when running projects via the UI play button by refactoring `ApkBuilder.kt` to accept a `configureProcessBuilder` lambda, and using `DistroManager.buildProotCommand` in `CodeEditScreen.kt` to run the compile task inside the sandboxed container environment.
 *   **Command Registration Infrastructure**: Introduced `CommandManager` to allow dynamic extensions to safely register and execute custom IDE Commands.
 *   **Scripted LSP Terminal Execution**: Introduced a `terminalLauncher` delegate into `ScriptedLspServer` and implemented the host terminal routing inside `MainActivity` to allow LSPs to trigger their installer scripts in the interactive terminal.
 *   **Dynamic SDK Version Setup**: Refactored `idesetup` to pull `manifest.json` early, parse it using `jq`, and prompt the user with a dynamic selection menu containing version layers like `37.0.0` based on the host architecture.
