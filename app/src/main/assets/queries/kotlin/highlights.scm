@@ -203,8 +203,9 @@
 	(unsigned_literal)
 ] @number
 
+; should be highlighted the same as booleans
 [
-	(null_literal) ; should be highlighted the same as booleans
+	(null_literal)
 	(boolean_literal)
 ] @boolean
 
