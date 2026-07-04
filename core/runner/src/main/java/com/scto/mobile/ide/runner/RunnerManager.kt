@@ -2,7 +2,6 @@ package com.scto.mobile.ide.runner
 
 import android.app.Activity
 import android.content.Context
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateListOf
 import com.scto.mobile.ide.extension.api.XedExtensionPoint
 import com.scto.mobile.ide.file.FileObject
@@ -11,6 +10,7 @@ import com.scto.mobile.ide.runner.runners.web.html.HtmlRunner
 import com.scto.mobile.ide.runner.runners.web.markdown.MarkdownRunner
 import com.scto.mobile.ide.settings.Preference
 import com.scto.mobile.ide.utils.errorDialog
+import kotlinx.coroutines.launch
 
 abstract class Runner {
     abstract val id: String
@@ -86,17 +86,18 @@ object RunnerManager {
         if (availableRunners.size == 1) {
             availableRunners[0].run(activity, fileObject)
         } else {
-            val options = availableRunners.map { runner ->
-                object : RunnableOption {
-                    override val label: String = runner.label
-                    override fun getIcon(context: Context): Icon? = runner.getIcon(context)
-                    override fun run(activity: Activity) {
-                        com.scto.mobile.ide.DefaultScope.launch {
-                            runner.run(activity, fileObject)
+            val options =
+                availableRunners.map { runner ->
+                    object : RunnableOption {
+                        override val label: String = runner.label
+
+                        override fun getIcon(context: Context): Icon? = runner.getIcon(context)
+
+                        override fun run(activity: Activity) {
+                            com.scto.mobile.ide.DefaultScope.launch { runner.run(activity, fileObject) }
                         }
                     }
                 }
-            }
             onMultipleRunners.invoke(options)
         }
     }

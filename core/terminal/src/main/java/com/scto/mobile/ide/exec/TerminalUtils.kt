@@ -41,7 +41,11 @@ fun setupAssetFile(fileName: String) {
         parentFile?.mkdir()
         if (exists().not()) {
             createFileIfNot()
-            writeText(com.scto.mobile.ide.utils.application!!.assets.open("terminal/$fileName.sh").bufferedReader().use { it.readText() })
+            writeText(
+                com.scto.mobile.ide.utils.application!!.assets.open("terminal/$fileName.sh").bufferedReader().use {
+                    it.readText()
+                }
+            )
         }
     }
 }

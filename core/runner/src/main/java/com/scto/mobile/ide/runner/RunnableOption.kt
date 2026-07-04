@@ -6,6 +6,8 @@ import com.scto.mobile.ide.icons.Icon
 
 interface RunnableOption {
     val label: String
+
     fun getIcon(context: Context): Icon?
+
     fun run(activity: Activity)
 }

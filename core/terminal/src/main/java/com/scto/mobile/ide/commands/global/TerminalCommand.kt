@@ -6,11 +6,11 @@ import com.scto.mobile.ide.activities.terminal.Terminal
 import com.scto.mobile.ide.commands.ActionContext
 import com.scto.mobile.ide.commands.GlobalCommand
 import com.scto.mobile.ide.commands.KeyCombination
+import com.scto.mobile.ide.feature.FeatureRegistry
 import com.scto.mobile.ide.icons.Icon
 import com.scto.mobile.ide.resources.drawables
 import com.scto.mobile.ide.resources.getString
 import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.feature.FeatureRegistry
 
 class TerminalCommand : GlobalCommand() {
     override val id: String = "global.terminal"
@@ -19,8 +19,7 @@ class TerminalCommand : GlobalCommand() {
 
     override fun action(actionContext: ActionContext) {
         val activity = actionContext.currentActivity
-        val intent =
-            Intent(activity, Terminal::class.java)
+        val intent = Intent(activity, Terminal::class.java)
         activity.startActivity(intent)
     }
 

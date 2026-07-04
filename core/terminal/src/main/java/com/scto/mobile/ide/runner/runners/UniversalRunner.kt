@@ -7,6 +7,7 @@ import android.os.Environment
 import com.scto.mobile.ide.DefaultScope
 import com.scto.mobile.ide.exec.TerminalCommand
 import com.scto.mobile.ide.exec.launchTerminal
+import com.scto.mobile.ide.exec.setupAssetFile
 import com.scto.mobile.ide.file.FileObject
 import com.scto.mobile.ide.file.FileWrapper
 import com.scto.mobile.ide.file.child
@@ -16,7 +17,6 @@ import com.scto.mobile.ide.resources.drawables
 import com.scto.mobile.ide.resources.getString
 import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.runner.Runner
-import com.scto.mobile.ide.exec.setupAssetFile
 import com.scto.mobile.ide.utils.dialogRes
 import kotlinx.coroutines.launch
 

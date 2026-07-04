@@ -43,9 +43,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.scto.mobile.ide.terminal.ROOTFS_ARM
-import com.scto.mobile.ide.terminal.ROOTFS_ARM64
-import com.scto.mobile.ide.terminal.ROOTFS_X64
 import com.scto.mobile.ide.exec.isTerminalInstalled
 import com.scto.mobile.ide.file.child
 import com.scto.mobile.ide.file.localBinDir
@@ -53,6 +50,9 @@ import com.scto.mobile.ide.file.sandboxDir
 import com.scto.mobile.ide.resources.getString
 import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.terminal.NEXT_STAGE
+import com.scto.mobile.ide.terminal.ROOTFS_ARM
+import com.scto.mobile.ide.terminal.ROOTFS_ARM64
+import com.scto.mobile.ide.terminal.ROOTFS_X64
 import com.scto.mobile.ide.terminal.SessionService
 import com.scto.mobile.ide.terminal.TerminalBackEnd
 import com.scto.mobile.ide.terminal.TerminalScreen

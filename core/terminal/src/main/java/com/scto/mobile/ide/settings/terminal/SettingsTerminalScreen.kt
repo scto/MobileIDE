@@ -5,10 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -36,6 +33,7 @@ import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
 import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
+import com.scto.mobile.ide.feature.FeatureRegistry
 import com.scto.mobile.ide.file.child
 import com.scto.mobile.ide.file.createFileIfNot
 import com.scto.mobile.ide.file.localBinDir
@@ -46,7 +44,6 @@ import com.scto.mobile.ide.file.toFileObject
 import com.scto.mobile.ide.resources.getString
 import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.settings.Settings
-import com.scto.mobile.ide.feature.FeatureRegistry
 import com.scto.mobile.ide.terminal.terminalView
 import com.scto.mobile.ide.utils.LoadingPopup
 import com.scto.mobile.ide.utils.dialogRes
@@ -54,14 +51,14 @@ import com.scto.mobile.ide.utils.dpToPx
 import com.scto.mobile.ide.utils.getTempDir
 import com.scto.mobile.ide.utils.toast
 import com.termux.terminal.TerminalEmulator
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Runtime.getRuntime
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.lang.Runtime.getRuntime
 
 enum class TerminalCursorStyle(val value: String, val stringRes: Int) {
     BLOCK("block", strings.block),
@@ -106,24 +103,27 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
             if (showSeccompDialog) {
                 var tempSeccompMode by remember { mutableStateOf(seccompMode) }
                 AlertDialog(
-                    onDismissRequest = {
-                        showSeccompDialog = false
-                    },
+                    onDismissRequest = { showSeccompDialog = false },
                     title = { Text("SECCOMP") },
                     text = {
                         Column {
                             listOf(
-                                "unspecified" to strings.seccomp_unspecified,
-                                "no" to strings.seccomp_no_seccomp,
-                                "yes" to strings.seccomp_seccomp
-                            ).forEach { (mode, stringRes) ->
-                                PreferenceTemplate(
-                                    modifier =
-                                        Modifier.clip(MaterialTheme.shapes.large).clickable { tempSeccompMode = mode },
-                                    title = { Text(stringResource(stringRes)) },
-                                    startWidget = { RadioButton(selected = tempSeccompMode == mode, onClick = null) },
+                                    "unspecified" to strings.seccomp_unspecified,
+                                    "no" to strings.seccomp_no_seccomp,
+                                    "yes" to strings.seccomp_seccomp,
                                 )
-                            }
+                                .forEach { (mode, stringRes) ->
+                                    PreferenceTemplate(
+                                        modifier =
+                                            Modifier.clip(MaterialTheme.shapes.large).clickable {
+                                                tempSeccompMode = mode
+                                            },
+                                        title = { Text(stringResource(stringRes)) },
+                                        startWidget = {
+                                            RadioButton(selected = tempSeccompMode == mode, onClick = null)
+                                        },
+                                    )
+                                }
                         }
                     },
                     confirmButton = {
@@ -138,13 +138,7 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                         }
                     },
                     dismissButton = {
-                        TextButton(
-                            onClick = {
-                                showSeccompDialog = false
-                            }
-                        ) {
-                            Text(stringResource(strings.cancel))
-                        }
+                        TextButton(onClick = { showSeccompDialog = false }) { Text(stringResource(strings.cancel)) }
                     },
                 )
             }
