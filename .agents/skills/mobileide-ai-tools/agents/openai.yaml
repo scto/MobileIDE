@@ -1,0 +1,4 @@
+interface:
+  display_name: "MobileIDE AI Tools"
+  short_description: "Develop MobileIDE AI tools, channels, BYOK, streaming, and callbacks"
+  default_prompt: "Use MobileIDE AI Tools to design or inspect this AI tool/channel modification."

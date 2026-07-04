@@ -1,0 +1,4 @@
+interface:
+  display_name: "MobileIDE Architecture Navigation"
+  short_description: "Locate MobileIDE module boundaries, entry points, multi-process initialization, and code ownership"
+  default_prompt: "Use MobileIDE Architecture Navigation to determine which module this change should be placed in, and list the essential files to read and potential risks."
