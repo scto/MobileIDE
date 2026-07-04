@@ -2,6 +2,21 @@
 
 This file tracks the features, bug fixes, and improvements implemented by AI coding assistants.
 
+## [2026-07-04] Extension Framework & CLI Enhancements
+
+### 1. Extension Framework & Dynamic LSP Registries
+*   **Command Registration API**: Fully implemented `CommandManager.kt` inside `:core:commands`, enabling dynamic extensions to register, unregister, and execute IDE commands with UI integration.
+*   **Decoupled Terminal Launcher for LSP**: Fixed the `ScriptedLspServer` terminal execution `TODO` by introducing a `terminalLauncher` delegate. Hooked this delegate up inside `MainActivity` to execute LSP installer scripts directly within the MobileIDE terminal via `TerminalCommand`.
+*   **Languages Extension Module (`:extension-languages`)**: Created a unified Kotlin/Java library module replacing the previous single Kotlin LSP extension stub. It registers four major language servers upon load:
+    *   **Kotlin**: Custom Edge server wrapper.
+    *   **Java**: Eclipse JDT Language Server (`jdtls`), resolved natively inside Termux.
+    *   **Bash**: `bash-language-server` via npm.
+    *   **XML**: Eclipse LemMinX XML Language Server via Java jar execution.
+
+### 2. Sandbox CLI & Version Selection Upgrades
+*   **Dynamic SDK Version Selection**: Overhauled `idesetup` (in both `MobileIDE` and `mobileide-tools`) to download the `manifest.json` early, parse it using `jq`, and present the user with a dynamic selection menu of all available SDK version layers (such as `37.0.0`) on startup.
+*   **Interactive CLI environment manager (`ideenv`)**: Completely rewrote the `ideenv` script to transition it from a raw file editor into a smart CLI utility. Added support for `set KEY=VALUE` (with directory and path warnings), `get KEY` (for scripting), `reset` (with confirmation), and `eval $(ideenv --export)` to inject variables immediately into the running terminal session without a restart.
+
 ## [2026-07-03] Terminal Stability & Initialization Flow
 
 ### 1. Terminal Startup Fixes
