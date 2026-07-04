@@ -1,68 +1,70 @@
 ---
-name: tina-build-release
-description: TinaIDE 构建、Gradle、ABI、CI、发布、签名和 R8 排障指南。用于处理 assemble/compile 失败、APK 构建、版本号、GitHub Actions、toolchain assets 校验或 Release 混淆问题。
+name: mobileide-build-release
+description: MobileIDE build, Gradle, ABI, CI, release, signing, and R8 troubleshooting guide. Used for handling assemble/compile failures, APK builds, version numbers, GitHub Actions, toolchain asset verification, or Release obfuscation issues.
 ---
 
-# TinaIDE 构建与发布
+# MobileIDE Build and Release
 
-## 先读文件
+## Read the files first
 
-- `gradle/wrapper/gradle-wrapper.properties`：Gradle Wrapper 版本，当前指向 Gradle 9.6.0。
-- `settings.gradle.kts`：`includeBuild("build-logic")`、模块和外部 tree-sitter 替换。
-- `build.gradle.kts`：根插件、ktlint 配置。
-- `gradle/libs.versions.toml`：AGP、Kotlin、AGP `legacy-kapt` 插件、Compose BOM 和依赖版本。
-- `app/build.gradle.kts`：ABI flavor、Release、签名、R8 配置。
-- `build-logic/convention/src/main/kotlin/**`：ABI 聚合、版本、mapping、Tree-sitter、toolchain assets 校验等约定插件。
-- `.github/workflows/**`：dev、PR、release 构建矩阵。
-- `version.properties`、`keystore.properties.example`、`docs/proguard-rules-reference.md`。
+- `gradle/wrapper/gradle-wrapper.properties`: Gradle Wrapper version, currently pointing to Gradle 9.6.0.
+- `settings.gradle.kts`: `includeBuild("build-logic")`, module and external tree-sitter replacement.
+- `build.gradle.kts`: Root plugin, ktlint configuration.
+- `gradle/libs.versions.toml`: AGP, Kotlin, AGP `legacy-kapt` plugin, Compose BOM, and dependency versions.
+- `app/build.gradle.kts`: ABI flavor, Release, signing, R8 configuration.
+- `build-logic/convention/src/main/kotlin/**`: ABI aggregation, versioning, mapping, Tree-sitter, toolchain assets verification, and other convention plugins.
+- `.github/workflows/**`: dev, PR, and release build matrices.
+- `version.properties`, `keystore.properties.example`, `docs/proguard-rules-reference.md`.
 
-## 常用命令
+## Commonly Used Commands
 
 ```powershell
 ./gradlew :app:compileArm64DebugKotlin --console=plain
 ./gradlew :app:assembleArm64Debug --console=plain
-./gradlew -Ptina.devAbi=x86_64 :app:assembleX86_64Debug --console=plain
+./gradlew -Pmobileide.devAbi=x86_64 :app:assembleX86_64Debug --console=plain
 ./gradlew :app:assembleDebugAllAbi --console=plain
 ./gradlew :app:assembleArm64Release --console=plain
 ./gradlew ktlintCheck --console=plain
+
 ```
 
-- Windows 辅助脚本存在：`tools/build-apk.ps1`。
-- `tools/build-apk.ps1 -Universal` 会临时写 `app/build.gradle.kts`，执行前必须确认影响。
+- The Windows helper script exists: `tools/build-apk.ps1`.
+- `tools/build-apk.ps1 -Universal` will temporarily write `app/build.gradle.kts`; you must confirm the impact before execution.
 
-## 项目事实
+````
 
-- 依赖版本集中在 `gradle/libs.versions.toml`；不要在模块中散落硬编码版本。
-- `app` flavor 是 `arm64` 与 `x86_64`，本地默认 `tina.devAbi=arm64`。
-- 全 ABI 用 `:app:assembleDebugAllAbi`、`:app:assembleReleaseAllAbi` 或 `-Ptina.allAbi=true`。
-- Release 默认启用 `isMinifyEnabled = true` 与 `isShrinkResources = true`。
-- Release 签名读取 `keystore.properties`；真实 keystore 和密码不能提交。
-- 非 tag 的 release assemble/bundle/install 可能自动递增 `version.properties`。
-- tag 发布要求 `v*` 去掉 `v` 后等于 `versionName`。
-- Release 构建会备份 R8 mapping；mapping 文件仅由公开构建逻辑做本地归档。
-- CI 使用 JDK 17、CMake 3.22.1、tree-sitter-cli 0.22.1，并 recursive checkout submodules。
+## Project Facts
+- Dependency versions are centralized in `gradle/libs.versions.toml`; avoid scattering hard-coded versions throughout modules.
+- `app` flavors are `arm64` and `x86_64`, with the local default being `mobileide.devAbi=arm64`.
+- Use `:app:assembleDebugAllAbi`, `:app:assembleReleaseAllAbi`, or `-Pmobileide.allAbi=true` for all ABIs.
+- Releases are enabled by default with `isMinifyEnabled = true` and `isShrinkResources = true`.
+- Release signing reads `keystore.properties`; the actual keystore and password cannot be submitted.
+- Non-tagged releases may auto-increment `version.properties` during `assemble/bundle/install`.
+- Tag releases require `v*` to be equal to `versionName` after removing the `v`.
+- Release builds back up R8 mappings; mapping files are only archived locally by the public build logic.
+- CI uses JDK 17, CMake 3.22.1, tree-sitter-cli 0.22.1, and recursively checks out submodules.
 
-## 复用入口
+## Reusable Entry Points
 
-- ABI 聚合：`TinaAndroidAppAbiAggregationPlugin`。
-- 版本递增：`TinaAndroidAppVersioningPlugin`。
-- mapping 备份：`TinaAndroidAppMappingPlugin`。
-- Tree-sitter registry 和 ktlint 任务衔接：`TinaAndroidAppTreeSitterPlugin`。
-- toolchain assets 完整性：`verifyTinaToolchainAssets` 相关 build-logic。
-- 库模块 `consumer-rules.pro` 自动注册：`TinaAndroidLibraryPlugin`。
+- ABI aggregation: `MobileAndroidAppAbiAggregationPlugin`.
+- Version increment: `MobileAndroidAppVersioningPlugin`.
+- Mapping backup: `MobileAndroidAppMappingPlugin`.
+- Tree-sitter registry and ktlint task integration: `MobileAndroidAppTreeSitterPlugin`.
+- Toolchain asset integrity: `verifyMobileToolchainAssets` related build logic.
+- Automatic registration of library modules `consumer-rules.pro`: `MobileAndroidLibraryPlugin`.
 
-## 禁止事项
+## Prohibited Practices
 
-- 不要重复注册 `assembleDebugAllAbi` 或重新实现版本递增。
-- 不要把 `syncTreeSitterQueries` 挂到常规 build；它是手动联网任务。
-- 不要把 Gradle build 产物重定向到 `LOCALAPPDATA/TinaIDE/gradle-out/**`。
-- 不要读取、打印或提交真实 `keystore.properties`、keystore、CI secrets。
-- 新增第三方库必须评估 R8 keep 规则，优先写在引入依赖模块的 `consumer-rules.pro`。
-- 不要恢复或复制 `docs/workflows/receive-release.yml` 到 `.github/workflows/`；该私有仓库 `repository_dispatch` 发布链路已废弃。
+- Do not duplicate `assembleDebugAllAbi` or reimplement version incrementing.
+- Do not attach `syncTreeSitterQueries` to a regular build; it is a manual network task.
+- Do not redirect Gradle build artifacts to `LOCALAPPDATA/MobileIDE/gradle-out/**`.
+- Do not read, print, or commit actual `keystore.properties`, keystore, or CI secrets.
+- Adding third-party libraries must evaluate R8 keep rules, preferably written in the `consumer-rules.pro` of the importing module.
+- Do not restore or copy `docs/workflows/receive-release.yml` to `.github/workflows/`; the release chain for this private repository `repository_dispatch` is deprecated.
 
-## 验证
+## Verification
 
-- 文档或脚本变更至少检查 `git diff -- AGENTS.md .agents tools build-logic app/build.gradle.kts`。
-- 构建逻辑变更先跑最小目标：`:app:compileArm64DebugKotlin`。
-- ABI 或 packaging 变更跑对应 assemble。
-- R8/Release 变更需要用户明确接受版本/mapping 副作用后再跑目标 release assemble，并检查 keep 规则是否在正确模块。
+- For documentation or script changes, at least check `git diff -- AGENTS.md .agents tools build-logic app/build.gradle.kts`.
+- For build logic changes, run the smallest target first: `:app:compileArm64DebugKotlin`.
+- For ABI or packaging changes, run the corresponding assemble.
+- For R8/Release changes, ensure the user explicitly accepts the version/mapping side effects before running the target release assemble, and check that keep-alive rules are in the correct module.
