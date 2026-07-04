@@ -159,7 +159,8 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         }
 
         // Setup Kotlin LSP extension
-        val kotlinLspDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.kotlin_lsp")
+        val kotlinLspDir =
+            java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.kotlin_lsp")
         if (!kotlinLspDir.exists()) {
             kotlinLspDir.mkdirs()
             val manifestJson =
