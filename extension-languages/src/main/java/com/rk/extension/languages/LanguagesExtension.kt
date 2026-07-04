@@ -13,8 +13,6 @@ class LanguagesExtension(context: ExtensionContext) : ExtensionAPI(context) {
 
     override fun onExtensionLoaded() {
         // Register all language servers supported by this extension
-        LspRegistry.registerServer(KotlinLspServer())
-        LspRegistry.registerServer(JavaLspServer())
         LspRegistry.registerServer(BashLspServer())
         LspRegistry.registerServer(XmlLspServer())
     }

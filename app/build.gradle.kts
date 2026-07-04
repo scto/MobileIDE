@@ -350,6 +350,7 @@ dependencies {
     implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
     implementation(project(":core:extension"))
+    implementation(project(":extension-languages"))
     implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
