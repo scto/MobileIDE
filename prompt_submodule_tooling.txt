@@ -1,0 +1,33 @@
+Instruction for Tooling Submodule Generation in GitHub Repository: ://github.com
+Target Environment: Android (minSdk 26, targetSdk 35) & Termux/proot Ubuntu (Java 17 / Gradle 8.11.2)
+Scope: IPC via Unix Domain Sockets & Jetpack Compose Live Terminal UI
+Path Constraints: Workspace paths are inside the system '$PROJECTS' directory. Shared socket at '/tmp/mobileide_tooling.sock'.
+
+Generate the following architecture under /tooling-api/ and /tooling-impl/:
+
+1. ARCHITECTURE INTERFACES (/tooling-api/)
+   - Create `GradleToolingManager` interface:
+     * `fun fetchAvailableTasks(projectPath: String): Flow<Resource<List<String>>>`
+     * `fun executeTasks(projectPath: String, tasks: List<String>): Flow<GradleLogEvent>`
+   - Define sealed class `GradleLogEvent`:
+     * `Progress(val timestamp: Long, val message: String)`
+     * `Output(val timestamp: Long, val logLevel: String, val text: String)`
+     * `Result(val isSuccess: Boolean, val message: String)`
+   - Define generic sealed class `Resource<out T>` (Loading, Success, Error).
+
+2. LINUX SERVER WORKER (/tooling-impl/src/main/java/.../server/)
+   - Create `GradleModelReader`: Uses Eclipse Buildship `org.gradle.tooling.model.GradleProject` to recursively extract all available Gradle task paths (e.g., ':app:assembleDebug') from a given project directory.
+   - Create `GradleServerWorker`: Uses `GradleConnector` connected to the target project. Captures StandardOutput and StandardError streams via a custom pipe, prefixing lines with 'LOG|INFO|' or 'LOG|ERROR|'. Uses `ProgressListener` to catch task status changes and format them as 'PROGRESS|<message>'.
+   - Create `GradleIpcServer`: Opens a local Unix Domain Socket listener at '/tmp/mobileide_tooling.sock'. Reads lines: 'GET_TASKS|<path>' (responds with 'TASKS_LIST|task1,task2') and 'EXECUTE_TASKS|<path>|t1,t2' (runs GradleServerWorker and streams log lines continuously into the socket, ending with 'RESULT|SUCCESS' or 'RESULT|ERROR').
+
+3. ANDROID SOCKET CLIENT (/tooling-impl/src/main/java/.../client/)
+   - Create `SocketToolingClient` connecting to the local Unix Domain Socket file. Reads the incoming stream using a non-blocking coroutine loop.
+   - Performance Backpressure/Buffering: Implement a chunking mechanism using `.chunked(30)` or a time-windowed buffer (e.g., 50ms) on the text flow before processing, preventing UI thread starvation during heavy compiler log bursts. Map raw text lines into `GradleLogEvent` objects.
+
+4. JETPACK COMPOSE UI & VIEWMODEL (/tooling-impl/src/main/java/.../ui/)
+   - Create `GradleViewModel`: Exposes `logLines: StateFlow<List<LogDisplayItem>>` and `isBuilding: StateFlow<Boolean>`. Implements `onPlayClicked(projectPath, selectedTasks)` to trigger the client log stream.
+   - Create `GradleTaskManagerScreen`: Displays a `LazyColumn` containing rows with a Material 3 `Checkbox` and the task name. Include a Top App Bar with a Title ("Tasks") and a `PlayArrow` IconButton. Disable the button if `isBuilding` is true or selection is empty.
+   - Implement `ModalBottomSheet` displaying `GradleLogBottomSheetContent`: Renders a dark-themed terminal (Background `#121212`, Monospace font). Format entries exactly as: '[LineNumber] - [Timestamp] [[LogLevel (Red for ERROR, Yellow for WARN, Green for INFO)]] [Output Message]'. Use stable keys for the LazyColumn and add an automated `LaunchedEffect(logLines.size)` to animate scroll smoothly to the last item.
+
+Register `:tooling-api` and `:tooling-impl` in the root 'settings.gradle.kts' and make 'impl' depend on 'api'. Generate all code files completely.
+
