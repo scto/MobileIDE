@@ -13,7 +13,7 @@ class XmlLspServer : ScriptedLspServer() {
     override val supportedExtensions = listOf("xml")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "install_xml_lsp.sh")
+    override val installScript = File(localBinDir(), "lsp/xml.sh")
     override val installId = "xml_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {

@@ -14,7 +14,7 @@ class KotlinLspServer : ScriptedLspServer() {
     override val icon: Any? = null
     
     // The script that will install the server when the user clicks 'Install'
-    override val installScript = File(localBinDir(), "install_kotlin_lsp.sh")
+    override val installScript = File(localBinDir(), "lsp/kotlin.sh")
     override val installId = "kotlin_lsp_installer"
 
     // Check if the binary exists

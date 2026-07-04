@@ -13,7 +13,7 @@ class BashLspServer : ScriptedLspServer() {
     override val supportedExtensions = listOf("sh", "bash")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "install_bash_lsp.sh")
+    override val installScript = File(localBinDir(), "lsp/bash.sh")
     override val installId = "bash_lsp_installer"
 
     override suspend fun isInstalled(context: Context): Boolean {
