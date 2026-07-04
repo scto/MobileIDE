@@ -21,4 +21,12 @@ abstract class ExtensionAPI(protected val context: ExtensionContext) : Applicati
     abstract fun onUninstalled()
 
     @Composable open fun SettingsContent() {}
+
+    override fun onActivityCreated(activity: android.app.Activity, savedInstanceState: android.os.Bundle?) {}
+    override fun onActivityStarted(activity: android.app.Activity) {}
+    override fun onActivityResumed(activity: android.app.Activity) {}
+    override fun onActivityPaused(activity: android.app.Activity) {}
+    override fun onActivityStopped(activity: android.app.Activity) {}
+    override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle) {}
+    override fun onActivityDestroyed(activity: android.app.Activity) {}
 }
