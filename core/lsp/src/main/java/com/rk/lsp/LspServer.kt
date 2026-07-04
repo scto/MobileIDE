@@ -22,7 +22,11 @@ abstract class ScriptedLspServer : LspServer() {
     override fun update(activity: Activity) = launchInstaller(activity, "--update")
 
     protected fun launchInstaller(activity: Activity, vararg flags: String) {
-        // TODO: Implement Terminal launcher in MobileIDE
+        terminalLauncher?.invoke(activity, installScript, flags.toList())
+    }
+
+    companion object {
+        var terminalLauncher: ((Activity, File, List<String>) -> Unit)? = null
     }
 }
 

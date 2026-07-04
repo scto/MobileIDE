@@ -131,6 +131,13 @@ download_comp() {
     # Extract the Android SDK URL
     print_info "Extracting URL for $nm from manifest..."
     url=$(jq -r "${jq_query}" $downloaded_manifest)
+    
+    if [ "$url" = "null" ] || [ -z "$url" ]; then
+        print_warn "URL for $nm not found in manifest. Skipping..."
+        echo ""
+        return
+    fi
+    
     print_success "Found URL: $url"
     echo ""
 
@@ -262,11 +269,17 @@ echo ""
 # Install the Android SDK
 download_comp "Android SDK" ".android_sdk" $install_dir "android-sdk"
 
-# Install build tools
-download_comp "Android SDK Build Tools" ".build_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-build-tools"
+BASE_VERSION="_34_0_4"
 
-# Install platform tools
-download_comp "Android SDK Platform Tools" ".platform_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-platform-tools"
+# Always install base versions (34.0.4)
+download_comp "Android SDK Build Tools (Base 34.0.4)" ".build_tools | .${arch} | .${BASE_VERSION}" "$install_dir/android-sdk" "android-sdk-build-tools-base"
+download_comp "Android SDK Platform Tools (Base 34.0.4)" ".platform_tools | .${arch} | .${BASE_VERSION}" "$install_dir/android-sdk" "android-sdk-platform-tools-base"
+
+# If the selected version is different, install it over the base versions
+if [ "$sdk_version" != "$BASE_VERSION" ]; then
+    download_comp "Android SDK Build Tools ($sdkver_org)" ".build_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-build-tools"
+    download_comp "Android SDK Platform Tools ($sdkver_org)" ".platform_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-platform-tools"
+fi
 
 if [ "$with_cmdline" = true ]; then
     # Install the Command Line tools

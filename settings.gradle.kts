@@ -67,3 +67,5 @@ include(":core:tooling:tooling-impl")
 include(":core:extension")
 include(":core:lsp")
 include(":core:commands")
+
+include(":extension-kotlin-lsp")
