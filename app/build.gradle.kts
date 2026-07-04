@@ -349,6 +349,7 @@ dependencies {
     implementation(project(":core:tooling:tooling-impl"))
     implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
+    implementation(project(":core:extension"))
     implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
