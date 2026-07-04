@@ -153,7 +153,9 @@ fun MainScreen(
         composable("settings/terminal") { TerminalSettingsScreen(navController = navController) }
         composable("settings/build") { BuildSettingsScreen(navController = navController) }
         composable("settings/lsp") { LspSettingsScreen(navController = navController) }
-        composable("settings/extensions") { com.scto.mobile.ide.ui.settings.ExtensionSettingsScreen(navController = navController) }
+        composable("settings/extensions") {
+            com.scto.mobile.ide.ui.settings.ExtensionSettingsScreen(navController = navController)
+        }
         composable("settings/theme") {
             ThemeSettingsScreen(
                 navController = navController,
