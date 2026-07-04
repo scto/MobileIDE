@@ -44,6 +44,12 @@ import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.rk.extension.extensionManager
+import com.rk.extension.manager.ExtensionManager
+import com.rk.extension.loader.loadAllExtensions
 
 class MainActivity : androidx.appcompat.app.AppCompatActivity() {
     val fileManager = com.scto.mobile.ide.files.FileManager(this)
@@ -98,6 +104,36 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         // Initialize base components
         TextMateInitializer.initialize(this)
         AppLanguageManager.initialize(this)
+
+        // Initialize Extension Manager and load extensions
+        extensionManager = ExtensionManager(application)
+        
+        // Setup a dummy extension for user testing
+        val testExtDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.rk.test_extension")
+        if (!testExtDir.exists()) {
+            testExtDir.mkdirs()
+            val manifestJson = """
+                {
+                  "id": "com.rk.test_extension",
+                  "name": "Test Extension",
+                  "mainClass": "com.rk.test.TestExtension",
+                  "version": "1.0.0",
+                  "description": "This is a test extension to verify that the ExtensionSettingsScreen displays, toggles, and uninstalls local extensions correctly.",
+                  "author": {
+                    "displayName": "Developer"
+                  },
+                  "minAppVersion": 1,
+                  "repository": "https://github.com/example/test-extension",
+                  "license": "GPLv3"
+                }
+            """.trimIndent()
+            java.io.File(testExtDir, "manifest.json").writeText(manifestJson)
+            java.io.File(testExtDir, "extension.apk").createNewFile()
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            extensionManager.loadAllExtensions()
+        }
 
         com.rk.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->

@@ -374,6 +374,14 @@ fun SettingsScreen(
                     onClick = { navController.navigate("settings/lsp") },
                 )
             }
+            item(key = "extension_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Extension,
+                    title = "Extensions",
+                    subtitle = "Manage installed plugins and extensions",
+                    onClick = { navController.navigate("settings/extensions") },
+                )
+            }
             item {
                 Text(
                     text = stringResource(R.string.settings_general),
