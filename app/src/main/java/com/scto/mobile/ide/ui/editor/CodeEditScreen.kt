@@ -1864,19 +1864,29 @@ private suspend fun handleRunApk(
                 configureProcessBuilder = { pb ->
                     val prefixDir = context.filesDir.parentFile!!
                     val sandboxDir = java.io.File(prefixDir, "local/sandbox")
-                    val javaHomeInContainer = when {
-                        java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk").exists() -> "/usr/lib/jvm/java-21-openjdk"
-                        java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64").exists() -> "/usr/lib/jvm/java-21-openjdk-amd64"
-                        java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk").exists() -> "/usr/lib/jvm/java-17-openjdk"
-                        java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64").exists() -> "/usr/lib/jvm/java-17-openjdk-amd64"
-                        else -> ""
-                    }
-                    val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
+                    val javaHomeInContainer =
+                        when {
+                            java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk").exists() ->
+                                "/usr/lib/jvm/java-21-openjdk"
+                            java.io.File(sandboxDir, "usr/lib/jvm/java-21-openjdk-amd64").exists() ->
+                                "/usr/lib/jvm/java-21-openjdk-amd64"
+                            java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk").exists() ->
+                                "/usr/lib/jvm/java-17-openjdk"
+                            java.io.File(sandboxDir, "usr/lib/jvm/java-17-openjdk-amd64").exists() ->
+                                "/usr/lib/jvm/java-17-openjdk-amd64"
+                            else -> ""
+                        }
+                    val javaHomeExport =
+                        if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
                     val compileCmd = "${javaHomeExport}cd $projectPath && ./gradlew assembleDebug"
-                    val cmd = com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+                    val cmd =
+                        com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(
+                            context,
+                            arrayOf("sh", "-c", compileCmd),
+                        )
                     pb.command(cmd)
                     pb.environment().putAll(com.scto.mobile.ide.ui.terminal.DistroManager.getProotEnv(context))
-                }
+                },
             ) { progress ->
                 when (progress) {
                     is com.scto.mobile.ide.core.apkbuilder.ApkBuilder.BuildProgress.Error -> {
