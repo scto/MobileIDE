@@ -206,8 +206,6 @@ if [ "$jdk_version" == "21" ]; then
     fi
 fi
 
-sdk_version="_${sdkver_org//'.'/'_'}"
-
 apts="$apt_curl jq tar"
 if [ "$aptm" = "apt" ]; then
     apts+=" xz-utils"
@@ -225,25 +223,6 @@ if is_yes "Do you want to install openssh?"; then
     apts+=" openssh"
 fi
 
-echo "------------------------------------------"
-echo "Installation directory    : ${install_dir}"
-echo "SDK version               : ${sdkver_org}"
-echo "JDK version               : ${jdk_version}"
-echo "With command line tools   : ${with_cmdline}"
-echo "Extra packages            : ${apts}"
-echo "CPU architecture          : ${arch}"
-echo "------------------------------------------"
-
-if ! is_yes "Confirm configuration" ; then
-    print_err "Aborting..."
-    exit 1
-fi
-
-if [ ! -f $install_dir ]; then
-    print_info "Installation directory does not exist. Creating directory..."
-    mkdir -p $install_dir
-fi
-
 if [ ! command -v $aptm &> /dev/null ]; then
     print_err "'$aptm' command not found. Try installing 'termux-tools' and 'apt'."
     exit 1
@@ -259,12 +238,52 @@ $aptm install $apts -y
 print_success "Packages installed"
 echo ""
 
+if [ ! -f $install_dir ]; then
+    print_info "Installation directory does not exist. Creating directory..."
+    mkdir -p $install_dir
+fi
+
 # Download the manifest.json file
 print_info "Downloading manifest file..."
 downloaded_manifest="$install_dir/manifest.json"
-curl -L -o $downloaded_manifest $manifest
+curl -s -L -o $downloaded_manifest $manifest
 print_success "Manifest file downloaded"
 echo ""
+
+print_info "Available Android SDK Versions:"
+# Parse keys from the manifest for the current architecture
+versions=($(jq -r ".build_tools.${arch} | keys[]" $downloaded_manifest | sort -r))
+for i in "${!versions[@]}"; do
+    v="${versions[$i]}"
+    v="${v#_}"
+    v="${v//_/.}"
+    echo "  [$i] $v"
+done
+
+echo ""
+read -p "Select the Android SDK version to install (0-$((${#versions[@]}-1))) [0]: " sel
+if [ -z "$sel" ]; then
+    sel=0
+fi
+selected_raw="${versions[$sel]}"
+selected_clean="${selected_raw#_}"
+sdkver_org="${selected_clean//_/.}"
+sdk_version="${selected_raw}"
+echo ""
+
+echo "------------------------------------------"
+echo "Installation directory    : ${install_dir}"
+echo "SDK version               : ${sdkver_org}"
+echo "JDK version               : ${jdk_version}"
+echo "With command line tools   : ${with_cmdline}"
+echo "Extra packages            : ${apts}"
+echo "CPU architecture          : ${arch}"
+echo "------------------------------------------"
+
+if ! is_yes "Confirm configuration" ; then
+    print_err "Aborting..."
+    exit 1
+fi
 
 # Install the Android SDK
 download_comp "Android SDK" ".android_sdk" $install_dir "android-sdk"
