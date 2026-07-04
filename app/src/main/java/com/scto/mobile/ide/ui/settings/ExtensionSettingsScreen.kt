@@ -43,78 +43,79 @@ fun ExtensionSettingsScreen(navController: NavController) {
 
     LaunchedEffect(Unit) { refresh() }
 
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            scope.launch {
-                try {
-                    val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
-                    context.contentResolver.openInputStream(selectedUri)?.use { input ->
-                        tempFile.outputStream().use { output ->
-                            input.copyTo(output)
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                scope.launch {
+                    try {
+                        val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
+                        context.contentResolver.openInputStream(selectedUri)?.use { input ->
+                            tempFile.outputStream().use { output -> input.copyTo(output) }
                         }
-                    }
-                    val res = extensionManager.installExtensionFromZip(tempFile)
-                    tempFile.delete()
-                    if (res is InstallResult.Success) {
-                        Toast.makeText(context, "Extension installed successfully", Toast.LENGTH_SHORT).show()
-                        refresh()
-                        showRestartDialog = true
-                    } else {
-                        val errMsg = when (res) {
-                            is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
-                            is InstallResult.Error -> "Error: ${res.error}"
-                            else -> "Unknown error"
-                        }
-                        Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Failed to copy/install: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    val updatePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            val extId = targetExtensionIdForUpdate ?: return@let
-            scope.launch {
-                try {
-                    val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
-                    context.contentResolver.openInputStream(selectedUri)?.use { input ->
-                        tempFile.outputStream().use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                    val res = extensionManager.installExtensionFromZip(tempFile)
-                    tempFile.delete()
-                    if (res is InstallResult.Success) {
-                        if (res.extension.manifest.id == extId) {
-                            Toast.makeText(context, "Extension updated successfully", Toast.LENGTH_SHORT).show()
+                        val res = extensionManager.installExtensionFromZip(tempFile)
+                        tempFile.delete()
+                        if (res is InstallResult.Success) {
+                            Toast.makeText(context, "Extension installed successfully", Toast.LENGTH_SHORT).show()
+                            refresh()
+                            showRestartDialog = true
                         } else {
-                            Toast.makeText(context, "Extension installed successfully, but ID did not match update target.", Toast.LENGTH_LONG).show()
+                            val errMsg =
+                                when (res) {
+                                    is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
+                                    is InstallResult.Error -> "Error: ${res.error}"
+                                    else -> "Unknown error"
+                                }
+                            Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
                         }
-                        refresh()
-                        showRestartDialog = true
-                    } else {
-                        val errMsg = when (res) {
-                            is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
-                            is InstallResult.Error -> "Error: ${res.error}"
-                            else -> "Unknown error"
-                        }
-                        Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to copy/install: ${e.message}", Toast.LENGTH_LONG).show()
                     }
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Failed to update: ${e.message}", Toast.LENGTH_LONG).show()
-                } finally {
-                    targetExtensionIdForUpdate = null
                 }
             }
         }
-    }
+
+    val updatePickerLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { selectedUri ->
+                val extId = targetExtensionIdForUpdate ?: return@let
+                scope.launch {
+                    try {
+                        val tempFile = File(context.cacheDir, "temp_extension.tinaplug")
+                        context.contentResolver.openInputStream(selectedUri)?.use { input ->
+                            tempFile.outputStream().use { output -> input.copyTo(output) }
+                        }
+                        val res = extensionManager.installExtensionFromZip(tempFile)
+                        tempFile.delete()
+                        if (res is InstallResult.Success) {
+                            if (res.extension.manifest.id == extId) {
+                                Toast.makeText(context, "Extension updated successfully", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(
+                                        context,
+                                        "Extension installed successfully, but ID did not match update target.",
+                                        Toast.LENGTH_LONG,
+                                    )
+                                    .show()
+                            }
+                            refresh()
+                            showRestartDialog = true
+                        } else {
+                            val errMsg =
+                                when (res) {
+                                    is InstallResult.ValidationFailed -> "Validation failed: ${res.error?.message}"
+                                    is InstallResult.Error -> "Error: ${res.error}"
+                                    else -> "Unknown error"
+                                }
+                            Toast.makeText(context, errMsg, Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to update: ${e.message}", Toast.LENGTH_LONG).show()
+                    } finally {
+                        targetExtensionIdForUpdate = null
+                    }
+                }
+            }
+        }
 
     Scaffold(
         topBar = {
@@ -129,7 +130,7 @@ fun ExtensionSettingsScreen(navController: NavController) {
                     IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
                         Icon(Icons.Default.Add, "Install Extension")
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
