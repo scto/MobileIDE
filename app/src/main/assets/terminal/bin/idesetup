@@ -322,7 +322,16 @@ print_info "JDK $jdk_version has been installed."
 if command -v javac >/dev/null 2>&1; then
     jdk_dir=$(dirname $(dirname $(readlink -f $(which javac))))
 else
-    jdk_dir="/usr/lib/jvm/java-${jdk_version}-openjdk-${arch}"
+    jdk_dir=""
+    for d in /usr/lib/jvm/java-${jdk_version}-openjdk*; do
+        if [ -d "$d" ]; then
+            jdk_dir="$d"
+            break
+        fi
+    done
+    if [ -z "$jdk_dir" ]; then
+        jdk_dir="/usr/lib/jvm/java-${jdk_version}-openjdk-${arch}"
+    fi
 fi
 
 print_info "Updating mobileide-environment.properties..."
