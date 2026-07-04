@@ -9,6 +9,7 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 *   **Renamed and Expanded Language Extension**: Migrated `:extension-kotlin-lsp` to `:extension-languages` and packaged support for Kotlin, Java, Bash, and XML language servers into a single library extension.
 *   **Ubuntu Kotlin LSP Installation Support**: Updated `kotlin.sh` to fetch the Kotlin language server directly from GitHub release ZIP and extract it to `/opt/kotlin-language-server` with a symlink, bypassing missing APT packages.
 *   **LSP Extensions Aligned with Container Paths**: Overhauled the four LSP extensions to check for installed binaries and execute processes using container paths (`usr/bin`, `usr/local/bin`, `root/.lsp`).
+*   **Terminal initCommand Forwarding**: Fixed session initialization in `DistroManager.kt` to append the `initCommand` parameter to the session arguments, enabling automated LSP installers.
 *   **idesetup JDK Path Fix**: Enabled dynamic glob-based resolution of OpenJDK installation directory inside `idesetup` to fix broken `JAVA_HOME` paths in environment properties.
 *   **Dynamic JDK detection for ARM64/non-x86**: Updated `CodeEditScreen.kt` and `BuildSettingsScreen.kt` to search for JDK installations starting with `java-17-openjdk` and `java-21-openjdk` under `usr/lib/jvm` dynamically, resolving build blockages on ARM64 devices.
 *   **noexec Storage Bypass for Gradle**: Replaced `./gradlew` execution with `bash ./gradlew` inside `CodeEditScreen.kt` to resolve Permission Denied errors when building on shared storage.
