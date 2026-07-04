@@ -4,6 +4,14 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 
 ---
 
+## [2026-07-04]
+### Language Server Extensions & Sandbox CLI Overhaul
+*   **Renamed and Expanded Language Extension**: Migrated `:extension-kotlin-lsp` to `:extension-languages` and packaged support for Kotlin, Java, Bash, and XML language servers into a single library extension.
+*   **Command Registration Infrastructure**: Introduced `CommandManager` to allow dynamic extensions to safely register and execute custom IDE Commands.
+*   **Scripted LSP Terminal Execution**: Introduced a `terminalLauncher` delegate into `ScriptedLspServer` and implemented the host terminal routing inside `MainActivity` to allow LSPs to trigger their installer scripts in the interactive terminal.
+*   **Dynamic SDK Version Setup**: Refactored `idesetup` to pull `manifest.json` early, parse it using `jq`, and prompt the user with a dynamic selection menu containing version layers like `37.0.0` based on the host architecture.
+*   **Smart Environment CLI (`ideenv`)**: Replaced the baseline properties text editor `ideenv` with a smart environment controller supporting key settings (`set KEY=VALUE`), lookups (`get KEY`), session exports (`eval $(ideenv --export)`), and path verification warnings.
+
 ## [2026-07-03]
 ### Terminal Stability & UX Fixes
 *   **Foreground Notification Icon Crash**: Resolved a runtime crash (`Unable to start service`) in `TerminalService` caused by passing an Adaptive Icon to the Notification Builder on Android 8.0+. Replaced `R.mipmap.ic_launcher` with `R.drawable.ic_code`.
