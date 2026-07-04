@@ -27,10 +27,10 @@ data class LspItem(val id: String, val name: String, val scriptName: String, var
 
 fun getLspBinaryPaths(id: String): List<String> {
     return when (id) {
-        "bash" -> listOf("usr/bin/bash-language-server")
+        "bash" -> listOf("usr/bin/bash-language-server", "usr/local/bin/bash-language-server")
         "xml" -> listOf("root/.lsp/lemminx/server.jar")
-        "java" -> listOf("usr/bin/jdtls")
-        "kotlin" -> listOf("usr/bin/kotlin-language-server", "usr/local/bin/kotlin-language-server")
+        "java" -> listOf("usr/bin/jdtls", "usr/local/bin/jdtls", "opt/jdtls/bin/jdtls")
+        "kotlin" -> listOf("usr/bin/kotlin-language-server", "usr/local/bin/kotlin-language-server", "opt/kotlin-language-server/bin/kotlin-language-server")
         else -> emptyList()
     }
 }

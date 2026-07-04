@@ -22,7 +22,8 @@ class JavaLspServer : ScriptedLspServer() {
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
         val distroDir = File(prefixDir, "local/$distroName")
         return File(distroDir, "usr/bin/jdtls").exists() || 
-               File(distroDir, "usr/local/bin/jdtls").exists()
+               File(distroDir, "usr/local/bin/jdtls").exists() ||
+               File(distroDir, "opt/jdtls/bin/jdtls").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false

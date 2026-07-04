@@ -22,7 +22,8 @@ class KotlinLspServer : ScriptedLspServer() {
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
         val distroDir = File(prefixDir, "local/$distroName")
         return File(distroDir, "usr/bin/kotlin-language-server").exists() || 
-               File(distroDir, "usr/local/bin/kotlin-language-server").exists()
+               File(distroDir, "usr/local/bin/kotlin-language-server").exists() ||
+               File(distroDir, "opt/kotlin-language-server/bin/kotlin-language-server").exists()
     }
 
     override suspend fun isUpdatable(context: Context): Boolean = false
