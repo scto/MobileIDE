@@ -220,7 +220,11 @@ fi
 
 # Ask the user whether 'openssh' should be installed as well
 if is_yes "Do you want to install openssh?"; then
-    apts+=" openssh"
+    if [ "$aptm" = "apt" ]; then
+        apts+=" openssh-client openssh-server"
+    else
+        apts+=" openssh"
+    fi
 fi
 
 if [ ! command -v $aptm &> /dev/null ]; then
