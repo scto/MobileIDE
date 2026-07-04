@@ -71,3 +71,7 @@ include(":core:lsp")
 include(":core:commands")
 
 include(":extension-languages")
+
+// Standalone installable plugin packages
+include(":plugins:java-lsp")
+include(":plugins:kotlin-lsp")

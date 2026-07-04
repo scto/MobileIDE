@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.kotlin_lsp",
+  "name": "Kotlin Language Support",
+  "mainClass": "com.scto.mobile.ide.plugin.kotlin.KotlinLspExtension",
+  "version": "1.0.0",
+  "description": "Provides Kotlin language intelligence using kotlin-language-server.",
+  "author": {
+    "displayName": "MobileIDE"
+  },
+  "repository": "https://github.com/scto/MobileIDE",
+  "license": "GPLv3",
+  "tags": ["lsp", "kotlin"]
+}
