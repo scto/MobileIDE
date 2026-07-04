@@ -1,4 +1,4 @@
-package com.rk.extension.kotlin_lsp
+package com.rk.extension.languages
 
 import android.content.Context
 import com.rk.lsp.LspConnectionConfig
