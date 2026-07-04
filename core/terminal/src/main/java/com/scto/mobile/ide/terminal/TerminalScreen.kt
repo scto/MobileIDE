@@ -92,9 +92,9 @@ import com.scto.mobile.ide.utils.toast
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalView
-import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.util.Properties
+import kotlinx.coroutines.launch
 
 var terminalView = WeakReference<TerminalView?>(null)
 var virtualKeysView = WeakReference<VirtualKeysView?>(null)

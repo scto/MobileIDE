@@ -1,18 +1,18 @@
 package com.scto.mobile.ide.runner
 
 import android.app.Application
+import com.scto.mobile.ide.activities.settings.SettingsRoutes
 import com.scto.mobile.ide.commands.CommandProvider
 import com.scto.mobile.ide.commands.editor.RunCommand
-import com.scto.mobile.ide.feature.Feature
-import com.scto.mobile.ide.feature.SettingsRegistry
-import com.scto.mobile.ide.feature.SettingsCategory
-import com.scto.mobile.ide.feature.SettingsRoute
-import com.scto.mobile.ide.activities.settings.SettingsRoutes
 import com.scto.mobile.ide.components.DialogRegistry
+import com.scto.mobile.ide.feature.Feature
+import com.scto.mobile.ide.feature.SettingsCategory
+import com.scto.mobile.ide.feature.SettingsRegistry
+import com.scto.mobile.ide.feature.SettingsRoute
 import com.scto.mobile.ide.resources.drawables
 import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.runners.RunnerSettings
 import com.scto.mobile.ide.settings.runners.HtmlRunnerSettings
+import com.scto.mobile.ide.settings.runners.RunnerSettings
 
 class RunnerFeature : Feature {
     override fun init(application: Application) {
@@ -28,7 +28,7 @@ class RunnerFeature : Feature {
                 labelRes = strings.runners,
                 descriptionRes = strings.runners_desc,
                 iconRes = drawables.run,
-                route = SettingsRoutes.Runners.route
+                route = SettingsRoutes.Runners.route,
             )
         )
 
@@ -38,11 +38,7 @@ class RunnerFeature : Feature {
                 RunnerSettings(navController = navController)
             }
         )
-        SettingsRegistry.registerRoute(
-            SettingsRoute(SettingsRoutes.HtmlRunner.route) {
-                HtmlRunnerSettings()
-            }
-        )
+        SettingsRegistry.registerRoute(SettingsRoute(SettingsRoutes.HtmlRunner.route) { HtmlRunnerSettings() })
 
         // Register Run command
         val runCommand = RunCommand()

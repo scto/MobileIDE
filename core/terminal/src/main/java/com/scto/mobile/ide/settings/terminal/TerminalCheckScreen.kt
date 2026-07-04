@@ -66,10 +66,11 @@ fun TerminalCheckScreen() {
 
             val success =
                 try {
-                    val result = check.run { log ->
-                        // Append log to the current check's logs
-                        checks[i] = checks[i].copy(logs = checks[i].logs + log)
-                    }
+                    val result =
+                        check.run { log ->
+                            // Append log to the current check's logs
+                            checks[i] = checks[i].copy(logs = checks[i].logs + log)
+                        }
 
                     result
                 } catch (e: Exception) {
@@ -88,9 +89,7 @@ fun TerminalCheckScreen() {
                 icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = null) },
                 text = stringResource(strings.samsung_proot_warning),
                 warning = true,
-                onClick = {
-                    context.openUrl("https://github.com/Xed-Editor/Xed-Editor/issues/639")
-                },
+                onClick = { context.openUrl("https://github.com/Xed-Editor/Xed-Editor/issues/639") },
             )
         }
 

@@ -23,11 +23,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
+    kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 }
 
 dependencies {
@@ -35,10 +31,10 @@ dependencies {
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
     implementation(project(":core:runner"))
-    
+
     // Editor dependency for ExtraKeys code editor settings
     implementation(project(":editor"))
-    
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.utilcode)
@@ -47,7 +43,7 @@ dependencies {
     implementation("androidx.browser:browser:1.8.0")
     implementation(libs.gson)
     implementation(libs.semver)
-    
+
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)
     implementation(libs.ui.graphics)

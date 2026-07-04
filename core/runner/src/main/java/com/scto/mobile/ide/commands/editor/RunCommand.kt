@@ -12,10 +12,10 @@ import com.scto.mobile.ide.resources.drawables
 import com.scto.mobile.ide.resources.getString
 import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.runner.RunnerManager
+import com.scto.mobile.ide.runner.RunnerUI
 import com.scto.mobile.ide.settings.Settings
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
-import com.scto.mobile.ide.runner.RunnerUI
 
 @OptIn(DelicateCoroutinesApi::class)
 class RunCommand : EditorCommand() {

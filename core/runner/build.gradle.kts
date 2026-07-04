@@ -23,22 +23,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
+    kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 }
 
 dependencies {
     implementation(project(":core:main"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
-    
+
     // Editor dependencies for code runner settings and markdown rendering
     implementation(project(":editor"))
     implementation(project(":editor-lsp"))
-    
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.utilcode)
@@ -46,7 +42,7 @@ dependencies {
     implementation(libs.nanohttpd)
     implementation("androidx.browser:browser:1.8.0")
     implementation(libs.gson)
-    
+
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)
     implementation(libs.ui.graphics)
