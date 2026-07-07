@@ -20,6 +20,7 @@ package com.scto.mobile.ide.ui.editor.aicoding
 
 import android.app.Application
 import android.content.Context
+import android.util.JsonWriter
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -290,30 +291,34 @@ class AICodingViewModel(application: Application) : AndroidViewModel(application
     private fun saveSessions() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val jsonArray = JSONArray()
-                for (session in sessions) {
-                    val sessionObj = JSONObject()
-                    sessionObj.put("id", session.id)
-                    sessionObj.put("title", session.title)
-                    sessionObj.put("timestamp", session.timestamp)
+                sessionsFile.bufferedWriter().use { fileWriter ->
+                    JsonWriter(fileWriter).use { writer ->
+                        writer.beginArray()
+                        for (session in sessions) {
+                            writer.beginObject()
+                            writer.name("id").value(session.id)
+                            writer.name("title").value(session.title)
+                            writer.name("timestamp").value(session.timestamp)
 
-                    val msgsArray = JSONArray()
-                    for (msg in session.messages) {
-                        val msgObj = JSONObject()
-                        msgObj.put("role", msg.role)
-                        msgObj.put("content", msg.content)
-                        if (msg.reasoningContent != null) {
-                            msgObj.put("reasoningContent", msg.reasoningContent)
+                            writer.name("messages")
+                            writer.beginArray()
+                            for (msg in session.messages) {
+                                writer.beginObject()
+                                writer.name("role").value(msg.role)
+                                writer.name("content").value(msg.content)
+                                if (msg.reasoningContent != null) {
+                                    writer.name("reasoningContent").value(msg.reasoningContent)
+                                }
+                                writer.name("isError").value(msg.isError)
+                                writer.name("id").value(msg.id)
+                                writer.endObject()
+                            }
+                            writer.endArray()
+                            writer.endObject()
                         }
-                        msgObj.put("isError", msg.isError)
-                        msgObj.put("id", msg.id)
-                        msgsArray.put(msgObj)
+                        writer.endArray()
                     }
-                    sessionObj.put("messages", msgsArray)
-                    jsonArray.put(sessionObj)
                 }
-
-                FileWriter(sessionsFile).use { it.write(jsonArray.toString()) }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
