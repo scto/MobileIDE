@@ -139,7 +139,10 @@ rm "$TMP_DIR"/sandbox.tar.gz
 touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 
 info "Installing Git and Gradle inside Ubuntu container..."
-sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle bash-completion"
+sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle gradle-completion bash-completion"
+
+info "Creating user scto inside Ubuntu container..."
+sh $LOCAL/bin/sandbox "id -u scto >/dev/null 2>&1 || (useradd -m -s /bin/bash scto && usermod -aG sudo,adm,dialout,audio,video scto && mkdir -p /etc/sudoers.d && echo 'scto ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/scto && chmod 0440 /etc/sudoers.d/scto)"
 
 info "Installing Node.js APT hook…"
 

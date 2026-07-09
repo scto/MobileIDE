@@ -20,7 +20,7 @@ dependencies {
     implementation(project(":core:tooling:tooling-api"))
 
     // Gradle Tooling API (Eclipse Buildship) — JVM only
-    implementation("org.gradle:gradle-tooling-api:8.11.2")
+    implementation("org.gradle:gradle-tooling-api:8.11")
 
     // SLF4J (required by Gradle Tooling API)
     runtimeOnly("org.slf4j:slf4j-simple:2.0.13")

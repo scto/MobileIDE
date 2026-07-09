@@ -114,7 +114,7 @@ if [[ -f /initrc ]]; then
 fi
 
 # shellcheck disable=SC2164
-cd "$MOBILEIDE_PROJECT_DIR" || cd $HOME
+cd "$MOBILEIDE_PROJECT_DIR" || cd "$MOBILEIDE_WORKSPACE" || cd $HOME
 
 # Configure History
 export HISTFILE="$HOME/.bash_history"

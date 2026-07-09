@@ -3,9 +3,9 @@ package com.rk.lsp
 import java.io.File
 
 
-fun localBinDir(): File = File("/data/data/com.scto.mobile.ide/files/usr/bin")
-fun sandboxDir(): File = File("/data/data/com.scto.mobile.ide/files/home")
-fun sandboxHomeDir(): File = File("/data/data/com.scto.mobile.ide/files/home")
+fun localBinDir(): File = File("/data/data/com.scto.mobile.ide/local/bin")
+fun sandboxDir(): File = File("/data/data/com.scto.mobile.ide/local/sandbox")
+fun sandboxHomeDir(): File = File("/data/data/com.scto.mobile.ide/local/home")
 
 fun File.child(name: String): File = File(this, name)
 fun File.getExtension(): String = name.substringAfterLast('.', "")

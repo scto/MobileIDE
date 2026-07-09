@@ -30,6 +30,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -56,6 +58,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -104,6 +107,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val context = LocalContext.current
     var isMoreMenuExpanded by remember { mutableStateOf(false) }
     var showProjectSettingsDialog by remember { mutableStateOf(false) }
+    var showCommandPaletteDialog by remember { mutableStateOf(false) }
     val workspacePath = WorkspaceManager.getWorkspacePath(context)
     var projectPath by remember { mutableStateOf(File(workspacePath, folderName).absolutePath) }
     val currentFolderName = remember(projectPath) { File(projectPath).name }
@@ -485,6 +489,13 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                             },
                                         )
                                         DropdownMenuItem(
+                                            text = { Text("Commands") },
+                                            onClick = {
+                                                isMoreMenuExpanded = false
+                                                showCommandPaletteDialog = true
+                                            },
+                                        )
+                                        DropdownMenuItem(
                                             text = { Text("Project Settings") },
                                             onClick = {
                                                 isMoreMenuExpanded = false
@@ -700,6 +711,12 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
             onDismiss = { showProjectSettingsDialog = false },
         )
     }
+    if (showCommandPaletteDialog) {
+        CommandPaletteDialog(
+            onDismissRequest = { showCommandPaletteDialog = false },
+            viewModel = viewModel,
+        )
+    }
 
     // 1. 新建对话框
     if (showCreateDialog) {
@@ -837,6 +854,41 @@ fun EditCode(
     val closeOthersText = stringResource(R.string.editor_close_others)
     val closeAllText = stringResource(R.string.editor_close_all)
     val historyContentDescription = stringResource(R.string.content_desc_history)
+
+    var promptedServers by remember { mutableStateOf(setOf<String>()) }
+
+    LaunchedEffect(currentIndex, currentFiles) {
+        val activeTab = currentFiles.getOrNull(currentIndex)
+        if (activeTab != null) {
+            val file = activeTab.file
+            if (file.isFile) {
+                val server = com.rk.lsp.LspRegistry.extensionServers.find { it.isSupported(file) }
+                if (server != null && !promptedServers.contains(server.id)) {
+                    val isInstalled = withContext(Dispatchers.IO) {
+                        try {
+                            server.isInstalled(context)
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
+                    if (!isInstalled) {
+                        promptedServers = promptedServers + server.id
+                        val result = snackbarHostState.showSnackbar(
+                            message = "${server.serverName} ist nicht installiert.",
+                            actionLabel = "Installieren",
+                            duration = SnackbarDuration.Long
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            val activity = context as? android.app.Activity
+                            if (activity != null) {
+                                server.install(activity)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     val pagerState =
         rememberPagerState(
@@ -1934,4 +1986,115 @@ private suspend fun handleRunApk(
                 }
             }
     }
+}
+
+@Composable
+fun CommandPaletteDialog(
+    onDismissRequest: () -> Unit,
+    viewModel: EditorViewModel,
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    
+    val allCommands = remember {
+        (com.rk.commands.CommandManager.getCommands() + 
+         com.scto.mobile.ide.core.commands.MobileIDECommandManager.getAllCommands()).distinctBy { it.id }
+    }
+    
+    val filteredCommands = remember(searchQuery, allCommands) {
+        if (searchQuery.isBlank()) {
+            allCommands
+        } else {
+            allCommands.filter {
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                it.description.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(
+                text = "Command Palette",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Befehl suchen...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Close, "Löschen")
+                            }
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                if (filteredCommands.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Keine Befehle gefunden",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredCommands) { cmd ->
+                            Card(
+                                onClick = {
+                                    scope.launch {
+                                        try {
+                                            val cmdContext = com.scto.mobile.ide.core.commands.MobileIDECommandContext(viewModel)
+                                            cmd.execute(cmdContext)
+                                        } catch (e: Exception) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                    onDismissRequest()
+                                },
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = cmd.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (cmd.description.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = cmd.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Schließen")
+            }
+        }
+    )
 }

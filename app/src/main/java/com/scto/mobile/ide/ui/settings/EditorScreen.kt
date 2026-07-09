@@ -17,6 +17,11 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Memory
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel? = null) {
@@ -146,6 +151,40 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
                 autoCloseBrackets = autoCloseBrackets,
                 onAutoCloseBracketsChange = { autoCloseBrackets = it },
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                onClick = { navController.navigate("settings/lsp") },
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Memory,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.settings_lsp_servers_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = stringResource(R.string.settings_lsp_summary),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                    )
+                }
+            }
         }
     }
 }

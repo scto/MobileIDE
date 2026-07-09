@@ -366,14 +366,6 @@ fun SettingsScreen(
                 )
             }
 
-            item(key = "lsp_settings") {
-                SimpleSettingsCard(
-                    icon = Icons.Outlined.Memory,
-                    title = stringResource(R.string.settings_lsp_servers_title),
-                    subtitle = stringResource(R.string.settings_lsp_summary),
-                    onClick = { navController.navigate("settings/lsp") },
-                )
-            }
             item(key = "extension_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Extension,

@@ -139,6 +139,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
             com.scto.mobile.ide.core.utils.BundledPluginLoader.install(application)
             extensionManager.indexLocalExtensions()
             extensionManager.loadAllExtensions()
+            com.rk.lsp.LspRegistry.loadExternalServers(applicationContext)
         }
 
         com.rk.lsp.ScriptedLspServer.terminalLauncher =
