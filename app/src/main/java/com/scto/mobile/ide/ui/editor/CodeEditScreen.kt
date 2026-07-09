@@ -712,10 +712,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         )
     }
     if (showCommandPaletteDialog) {
-        CommandPaletteDialog(
-            onDismissRequest = { showCommandPaletteDialog = false },
-            viewModel = viewModel,
-        )
+        CommandPaletteDialog(onDismissRequest = { showCommandPaletteDialog = false }, viewModel = viewModel)
     }
 
     // 1. 新建对话框
@@ -864,20 +861,22 @@ fun EditCode(
             if (file.isFile) {
                 val server = com.rk.lsp.LspRegistry.extensionServers.find { it.isSupported(file) }
                 if (server != null && !promptedServers.contains(server.id)) {
-                    val isInstalled = withContext(Dispatchers.IO) {
-                        try {
-                            server.isInstalled(context)
-                        } catch (e: Exception) {
-                            false
+                    val isInstalled =
+                        withContext(Dispatchers.IO) {
+                            try {
+                                server.isInstalled(context)
+                            } catch (e: Exception) {
+                                false
+                            }
                         }
-                    }
                     if (!isInstalled) {
                         promptedServers = promptedServers + server.id
-                        val result = snackbarHostState.showSnackbar(
-                            message = "${server.serverName} ist nicht installiert.",
-                            actionLabel = "Installieren",
-                            duration = SnackbarDuration.Long
-                        )
+                        val result =
+                            snackbarHostState.showSnackbar(
+                                message = "${server.serverName} ist nicht installiert.",
+                                actionLabel = "Installieren",
+                                duration = SnackbarDuration.Long,
+                            )
                         if (result == SnackbarResult.ActionPerformed) {
                             val activity = context as? android.app.Activity
                             if (activity != null) {
@@ -1989,29 +1988,28 @@ private suspend fun handleRunApk(
 }
 
 @Composable
-fun CommandPaletteDialog(
-    onDismissRequest: () -> Unit,
-    viewModel: EditorViewModel,
-) {
+fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    
+
     val allCommands = remember {
-        (com.rk.commands.CommandManager.getCommands() + 
-         com.scto.mobile.ide.core.commands.MobileIDECommandManager.getAllCommands()).distinctBy { it.id }
+        (com.rk.commands.CommandManager.getCommands() +
+                com.scto.mobile.ide.core.commands.MobileIDECommandManager.getAllCommands())
+            .distinctBy { it.id }
     }
-    
-    val filteredCommands = remember(searchQuery, allCommands) {
-        if (searchQuery.isBlank()) {
-            allCommands
-        } else {
-            allCommands.filter {
-                it.title.contains(searchQuery, ignoreCase = true) ||
-                it.description.contains(searchQuery, ignoreCase = true)
+
+    val filteredCommands =
+        remember(searchQuery, allCommands) {
+            if (searchQuery.isBlank()) {
+                allCommands
+            } else {
+                allCommands.filter {
+                    it.title.contains(searchQuery, ignoreCase = true) ||
+                        it.description.contains(searchQuery, ignoreCase = true)
+                }
             }
         }
-    }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -2019,7 +2017,7 @@ fun CommandPaletteDialog(
             Text(
                 text = "Command Palette",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
         },
         text = {
@@ -2032,34 +2030,27 @@ fun CommandPaletteDialog(
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Close, "Löschen")
-                            }
+                            IconButton(onClick = { searchQuery = "" }) { Icon(Icons.Default.Close, "Löschen") }
                         }
-                    }
+                    },
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 if (filteredCommands.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize().weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Keine Befehle gefunden",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                        Text(text = "Keine Befehle gefunden", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth().weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(filteredCommands) { cmd ->
                             Card(
                                 onClick = {
                                     scope.launch {
                                         try {
-                                            val cmdContext = com.scto.mobile.ide.core.commands.MobileIDECommandContext(viewModel)
+                                            val cmdContext =
+                                                com.scto.mobile.ide.core.commands.MobileIDECommandContext(viewModel)
                                             cmd.execute(cmdContext)
                                         } catch (e: Exception) {
                                             e.printStackTrace()
@@ -2067,21 +2058,22 @@ fun CommandPaletteDialog(
                                     }
                                     onDismissRequest()
                                 },
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                                modifier = Modifier.fillMaxWidth()
+                                colors =
+                                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                modifier = Modifier.fillMaxWidth(),
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = cmd.title,
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
                                     )
                                     if (cmd.description.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
                                             text = cmd.description,
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
                                 }
@@ -2091,10 +2083,6 @@ fun CommandPaletteDialog(
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("Schließen")
-            }
-        }
+        confirmButton = { TextButton(onClick = onDismissRequest) { Text("Schließen") } },
     )
 }

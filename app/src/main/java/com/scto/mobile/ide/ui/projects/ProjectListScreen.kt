@@ -20,6 +20,7 @@ package com.scto.mobile.ide.ui.projects
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
@@ -63,7 +64,6 @@ import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.terminal.SetupWorker
-import android.widget.Toast
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -546,7 +546,11 @@ fun ProjectListScreen(navController: NavController) {
             AlertDialog(
                 onDismissRequest = { showResetTerminalDialog = false },
                 title = { Text("Terminal zurücksetzen") },
-                text = { Text("Möchtest du das Terminal wirklich zurücksetzen? Alle installierten Container-Pakete und Einstellungen gehen verloren.") },
+                text = {
+                    Text(
+                        "Möchtest du das Terminal wirklich zurücksetzen? Alle installierten Container-Pakete und Einstellungen gehen verloren."
+                    )
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -559,11 +563,7 @@ fun ProjectListScreen(navController: NavController) {
                         Text("Zurücksetzen")
                     }
                 },
-                dismissButton = {
-                    TextButton(onClick = { showResetTerminalDialog = false }) {
-                        Text("Abbrechen")
-                    }
-                },
+                dismissButton = { TextButton(onClick = { showResetTerminalDialog = false }) { Text("Abbrechen") } },
             )
         }
     }
