@@ -249,10 +249,11 @@ fun TerminalScreen(navController: NavController) {
     val currentSession = SessionManager.currentSession
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
     val sessions = SessionManager.sessions
-    val terminalPagerState = rememberPagerState(
-        initialPage = SessionManager.currentSessionIndex.coerceIn(0, maxOf(0, sessions.size - 1)),
-        pageCount = { sessions.size }
-    )
+    val terminalPagerState =
+        rememberPagerState(
+            initialPage = SessionManager.currentSessionIndex.coerceIn(0, maxOf(0, sessions.size - 1)),
+            pageCount = { sessions.size },
+        )
 
     LaunchedEffect(terminalPagerState.currentPage) {
         if (sessions.isNotEmpty() && terminalPagerState.currentPage in sessions.indices) {
@@ -261,7 +262,11 @@ fun TerminalScreen(navController: NavController) {
     }
 
     LaunchedEffect(SessionManager.currentSessionIndex) {
-        if (sessions.isNotEmpty() && SessionManager.currentSessionIndex in sessions.indices && terminalPagerState.currentPage != SessionManager.currentSessionIndex) {
+        if (
+            sessions.isNotEmpty() &&
+                SessionManager.currentSessionIndex in sessions.indices &&
+                terminalPagerState.currentPage != SessionManager.currentSessionIndex
+        ) {
             terminalPagerState.animateScrollToPage(SessionManager.currentSessionIndex)
         }
     }
@@ -513,13 +518,13 @@ fun TerminalScreen(navController: NavController) {
             HorizontalPager(
                 state = terminalPagerState,
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
-                userScrollEnabled = true
+                userScrollEnabled = true,
             ) { page ->
                 val wrapper = sessions.getOrNull(page)
                 if (wrapper != null) {
                     Box(
-                        modifier = Modifier.fillMaxSize()
-                            .background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
+                        modifier =
+                            Modifier.fillMaxSize().background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
                     ) {
                         AndroidView(
                             modifier = Modifier.fillMaxSize(),

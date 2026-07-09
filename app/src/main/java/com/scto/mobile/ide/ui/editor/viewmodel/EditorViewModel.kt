@@ -1372,114 +1372,124 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             if (!realFile.exists()) realFile.writeText(state.content)
 
             if (!addedLspDefinitions.contains(fileExtension)) {
-                val matchingServer = (com.rk.lsp.LspRegistry.extensionServers + com.rk.lsp.LspRegistry.externalServers)
-                    .find { it.isSupported(realFile) }
-                
-                val def = if (matchingServer != null && kotlinx.coroutines.runBlocking { matchingServer.isInstalled(context) }) {
-                    val lspSettingsPrefs = context.getSharedPreferences("MobileIDE_Lsp_Settings", Context.MODE_PRIVATE)
-                    val isEnabled = lspSettingsPrefs.getBoolean("lsp_enabled_${matchingServer.id}", true)
-                    if (isEnabled) {
-                        val config = matchingServer.getConnectionConfig()
-                        if (config is com.rk.lsp.LspConnectionConfig.Process) {
-                            CustomLanguageServerDefinition(
-                                ext = fileExtension,
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(context, config.command.toList())
-                                }
-                            )
+                val matchingServer =
+                    (com.rk.lsp.LspRegistry.extensionServers + com.rk.lsp.LspRegistry.externalServers).find {
+                        it.isSupported(realFile)
+                    }
+
+                val def =
+                    if (
+                        matchingServer != null && kotlinx.coroutines.runBlocking { matchingServer.isInstalled(context) }
+                    ) {
+                        val lspSettingsPrefs =
+                            context.getSharedPreferences("MobileIDE_Lsp_Settings", Context.MODE_PRIVATE)
+                        val isEnabled = lspSettingsPrefs.getBoolean("lsp_enabled_${matchingServer.id}", true)
+                        if (isEnabled) {
+                            val config = matchingServer.getConnectionConfig()
+                            if (config is com.rk.lsp.LspConnectionConfig.Process) {
+                                CustomLanguageServerDefinition(
+                                    ext = fileExtension,
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(context, config.command.toList())
+                                    },
+                                )
+                            } else {
+                                null
+                            }
                         } else {
                             null
                         }
                     } else {
                         null
                     }
-                } else {
-                    null
-                } ?: when (fileExtension) {
-                        "html",
-                        "htm" ->
-                            CustomLanguageServerDefinition(
-                                ext = "html",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("vscode-html-language-server", "--stdio"),
-                                    )
-                                },
-                            )
-                        "css" ->
-                            CustomLanguageServerDefinition(
-                                ext = "css",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("vscode-css-language-server", "--stdio"),
-                                    )
-                                },
-                            )
-                        "js",
-                        "javascript",
-                        "ts",
-                        "typescript",
-                        "tsx" ->
-                            CustomLanguageServerDefinition(
-                                ext = "js",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("typescript-language-server", "--stdio"),
-                                    )
-                                },
-                            )
-                        "php" ->
-                            CustomLanguageServerDefinition(
-                                ext = "php",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(context, listOf("intelephense", "--stdio"))
-                                },
-                            )
-                        "c",
-                        "h",
-                        "cpp",
-                        "hpp" ->
-                            CustomLanguageServerDefinition(
-                                ext = fileExtension,
-                                serverConnectProvider = { ProotStreamConnectionProvider(context, listOf("clangd")) },
-                            )
-                        "glsl",
-                        "vert",
-                        "frag" ->
-                            CustomLanguageServerDefinition(
-                                ext = fileExtension,
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(context, listOf("glsl-language-server", "--stdio"))
-                                },
-                            )
-                        "json" ->
-                            CustomLanguageServerDefinition(
-                                ext = "json",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(
-                                        context,
-                                        listOf("vscode-json-language-server", "--stdio"),
-                                    )
-                                },
-                            )
-                        "java" ->
-                            CustomLanguageServerDefinition(
-                                ext = "java",
-                                serverConnectProvider = { ProotStreamConnectionProvider(context, listOf("jdtls")) },
-                            )
-                        "kt",
-                        "kotlin" ->
-                            CustomLanguageServerDefinition(
-                                ext = "kt",
-                                serverConnectProvider = {
-                                    ProotStreamConnectionProvider(context, listOf("kotlin-language-server"))
-                                },
-                            )
-                        else -> null
-                    }
+                        ?: when (fileExtension) {
+                            "html",
+                            "htm" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "html",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(
+                                            context,
+                                            listOf("vscode-html-language-server", "--stdio"),
+                                        )
+                                    },
+                                )
+                            "css" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "css",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(
+                                            context,
+                                            listOf("vscode-css-language-server", "--stdio"),
+                                        )
+                                    },
+                                )
+                            "js",
+                            "javascript",
+                            "ts",
+                            "typescript",
+                            "tsx" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "js",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(
+                                            context,
+                                            listOf("typescript-language-server", "--stdio"),
+                                        )
+                                    },
+                                )
+                            "php" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "php",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(context, listOf("intelephense", "--stdio"))
+                                    },
+                                )
+                            "c",
+                            "h",
+                            "cpp",
+                            "hpp" ->
+                                CustomLanguageServerDefinition(
+                                    ext = fileExtension,
+                                    serverConnectProvider = { ProotStreamConnectionProvider(context, listOf("clangd")) },
+                                )
+                            "glsl",
+                            "vert",
+                            "frag" ->
+                                CustomLanguageServerDefinition(
+                                    ext = fileExtension,
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(
+                                            context,
+                                            listOf("glsl-language-server", "--stdio"),
+                                        )
+                                    },
+                                )
+                            "json" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "json",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(
+                                            context,
+                                            listOf("vscode-json-language-server", "--stdio"),
+                                        )
+                                    },
+                                )
+                            "java" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "java",
+                                    serverConnectProvider = { ProotStreamConnectionProvider(context, listOf("jdtls")) },
+                                )
+                            "kt",
+                            "kotlin" ->
+                                CustomLanguageServerDefinition(
+                                    ext = "kt",
+                                    serverConnectProvider = {
+                                        ProotStreamConnectionProvider(context, listOf("kotlin-language-server"))
+                                    },
+                                )
+                            else -> null
+                        }
                 if (def != null) {
                     project.addServerDefinition(def)
                     addedLspDefinitions.add(fileExtension)
