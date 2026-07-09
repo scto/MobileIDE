@@ -248,6 +248,23 @@ fun TerminalScreen(navController: NavController) {
 
     val currentSession = SessionManager.currentSession
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
+    val sessions = SessionManager.sessions
+    val terminalPagerState = rememberPagerState(
+        initialPage = SessionManager.currentSessionIndex.coerceIn(0, maxOf(0, sessions.size - 1)),
+        pageCount = { sessions.size }
+    )
+
+    LaunchedEffect(terminalPagerState.currentPage) {
+        if (sessions.isNotEmpty() && terminalPagerState.currentPage in sessions.indices) {
+            SessionManager.switchTo(terminalPagerState.currentPage)
+        }
+    }
+
+    LaunchedEffect(SessionManager.currentSessionIndex) {
+        if (sessions.isNotEmpty() && SessionManager.currentSessionIndex in sessions.indices && terminalPagerState.currentPage != SessionManager.currentSessionIndex) {
+            terminalPagerState.animateScrollToPage(SessionManager.currentSessionIndex)
+        }
+    }
 
     val buttonTextColor = if (isSystemDark) android.graphics.Color.WHITE else android.graphics.Color.BLACK
     val buttonBgColor = if (isSystemDark) 0xFF21222C.toInt() else 0xFFE0E0E0.toInt()
@@ -493,87 +510,85 @@ fun TerminalScreen(navController: NavController) {
         },
     ) { innerPadding ->
         if (currentSession != null) {
-            Box(
-                modifier =
-                    Modifier.fillMaxSize()
-                        .padding(innerPadding)
-                        .background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
-            ) {
-                AndroidView(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = { ctx ->
-                        TerminalView(ctx, null).apply {
-                            terminalViewRef = WeakReference(this)
-                            val fontSizePx =
-                                (com.rk.settings.Settings.terminal_font_size *
-                                        ctx.resources.displayMetrics.scaledDensity)
-                                    .toInt()
-                            setTextSize(fontSizePx)
-                            setTypeface(TerminalFontManager.getTypeface(ctx))
-                            keepScreenOn = true
-                            isFocusable = true
-                            isFocusableInTouchMode = true
-                            attachSession(currentSession)
-                            val client =
-                                TerminalBackEnd(this, ctx) { finishedSession ->
-                                    val wrapper = SessionManager.sessions.find { it.session == finishedSession }
-                                    if (wrapper != null) {
-                                        SessionManager.removeSession(wrapper)
+            HorizontalPager(
+                state = terminalPagerState,
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                userScrollEnabled = true
+            ) { page ->
+                val wrapper = sessions.getOrNull(page)
+                if (wrapper != null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                            .background(Color(TerminalConfig.getBackgroundColor(isSystemDark)))
+                    ) {
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize(),
+                            factory = { ctx ->
+                                TerminalView(ctx, null).apply {
+                                    if (page == SessionManager.currentSessionIndex) {
+                                        terminalViewRef = WeakReference(this)
                                     }
-                                }
-                            setTerminalViewClient(client)
-                            currentSession.updateTerminalSessionClient(client)
+                                    val fontSizePx =
+                                        (com.rk.settings.Settings.terminal_font_size *
+                                                ctx.resources.displayMetrics.scaledDensity)
+                                            .toInt()
+                                    setTextSize(fontSizePx)
+                                    setTypeface(TerminalFontManager.getTypeface(ctx))
+                                    keepScreenOn = true
+                                    isFocusable = true
+                                    isFocusableInTouchMode = true
+                                    attachSession(wrapper.session)
+                                    val client =
+                                        TerminalBackEnd(this, ctx) { finishedSession ->
+                                            val w = SessionManager.sessions.find { it.session == finishedSession }
+                                            if (w != null) {
+                                                SessionManager.removeSession(w)
+                                            }
+                                        }
+                                    setTerminalViewClient(client)
+                                    wrapper.session.updateTerminalSessionClient(client)
 
-                            val props = java.util.Properties()
-                            try {
-                                val scheme = com.rk.settings.Settings.terminal_colorscheme
-                                ctx.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
-                                    props.load(input)
-                                }
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                            com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
-                            mEmulator?.mColors?.reset()
-                        }
-                    },
-                    update = { view ->
-                        view.setTypeface(TerminalFontManager.getTypeface(context))
-                        val fontSizePx =
-                            (com.rk.settings.Settings.terminal_font_size *
-                                    context.resources.displayMetrics.scaledDensity)
-                                .toInt()
-                        view.setTextSize(fontSizePx)
-                        view.setBackgroundColor(TerminalConfig.getBackgroundColor(isSystemDark))
-
-                        val props = java.util.Properties()
-                        try {
-                            val scheme = com.rk.settings.Settings.terminal_colorscheme
-                            context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
-                                props.load(input)
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
-                        view.mEmulator?.mColors?.reset()
-                        view.onScreenUpdated()
-
-                        if (view.currentSession != currentSession) {
-                            view.attachSession(currentSession)
-                            val client =
-                                TerminalBackEnd(view, context) { finishedSession ->
-                                    val wrapper = SessionManager.sessions.find { it.session == finishedSession }
-                                    if (wrapper != null) {
-                                        SessionManager.removeSession(wrapper)
+                                    val props = java.util.Properties()
+                                    try {
+                                        val scheme = com.rk.settings.Settings.terminal_colorscheme
+                                        ctx.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
+                                            props.load(input)
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
                                     }
+                                    com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
+                                    mEmulator?.mColors?.reset()
                                 }
-                            view.setTerminalViewClient(client)
-                            currentSession.updateTerminalSessionClient(client)
-                            view.onScreenUpdated()
-                        }
-                    },
-                )
+                            },
+                            update = { view ->
+                                if (page == SessionManager.currentSessionIndex) {
+                                    terminalViewRef = WeakReference(view)
+                                }
+                                view.setTypeface(TerminalFontManager.getTypeface(context))
+                                val fontSizePx =
+                                    (com.rk.settings.Settings.terminal_font_size *
+                                            context.resources.displayMetrics.scaledDensity)
+                                        .toInt()
+                                view.setTextSize(fontSizePx)
+                                view.setBackgroundColor(TerminalConfig.getBackgroundColor(isSystemDark))
+
+                                val props = java.util.Properties()
+                                try {
+                                    val scheme = com.rk.settings.Settings.terminal_colorscheme
+                                    context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
+                                        props.load(input)
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                                com.termux.terminal.TerminalColors.COLOR_SCHEME.updateWith(props)
+                                view.mEmulator?.mColors?.reset()
+                                view.onScreenUpdated()
+                            },
+                        )
+                    }
+                }
             }
         }
     }

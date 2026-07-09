@@ -1,6 +1,6 @@
 set -e
 
-source "$LOCAL/bin/utils"
+source "$(dirname "$0")/../utils"
 
 
 info 'Preparing...'

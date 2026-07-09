@@ -49,6 +49,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://repo.gradle.org/gradle/libs-releases") }
     }
 }
 
@@ -66,6 +67,7 @@ include(":core:runner")
 include(":core:apk-builder")
 include(":core:tooling:tooling-api")
 include(":core:tooling:tooling-impl")
+include(":core:tooling:tooling-server")
 include(":core:extension")
 include(":core:lsp")
 include(":core:commands")

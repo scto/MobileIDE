@@ -1372,9 +1372,30 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             if (!realFile.exists()) realFile.writeText(state.content)
 
             if (!addedLspDefinitions.contains(fileExtension)) {
-                // 🔥 修复报错: 使用具名参数调用
-                val def =
-                    when (fileExtension) {
+                val matchingServer = (com.rk.lsp.LspRegistry.extensionServers + com.rk.lsp.LspRegistry.externalServers)
+                    .find { it.isSupported(realFile) }
+                
+                val def = if (matchingServer != null && kotlinx.coroutines.runBlocking { matchingServer.isInstalled(context) }) {
+                    val lspSettingsPrefs = context.getSharedPreferences("MobileIDE_Lsp_Settings", Context.MODE_PRIVATE)
+                    val isEnabled = lspSettingsPrefs.getBoolean("lsp_enabled_${matchingServer.id}", true)
+                    if (isEnabled) {
+                        val config = matchingServer.getConnectionConfig()
+                        if (config is com.rk.lsp.LspConnectionConfig.Process) {
+                            CustomLanguageServerDefinition(
+                                ext = fileExtension,
+                                serverConnectProvider = {
+                                    ProotStreamConnectionProvider(context, config.command.toList())
+                                }
+                            )
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                } else {
+                    null
+                } ?: when (fileExtension) {
                         "html",
                         "htm" ->
                             CustomLanguageServerDefinition(

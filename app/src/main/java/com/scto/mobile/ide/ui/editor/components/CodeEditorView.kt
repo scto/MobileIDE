@@ -136,8 +136,24 @@ fun CodeEditorView(
                     showCommandDialog = true
                 }
             }
+        val formatProvider =
+            object : EditorTextActionWindow.ExtraButtonProvider {
+                override fun getIconResource(): Int = R.drawable.ic_code // 使用 Code 图标
+
+                override fun getContentDescription(): String = "Format"
+
+                override fun shouldShowButton(editor: CodeEditor): Boolean = true
+
+                override fun onButtonClick(editor: CodeEditor) {
+                    viewModel.formatCode()
+                }
+            }
         textActionWindow.addExtraButtonProvider(provider)
-        onDispose { textActionWindow.removeExtraButtonProvider(provider) }
+        textActionWindow.addExtraButtonProvider(formatProvider)
+        onDispose {
+            textActionWindow.removeExtraButtonProvider(provider)
+            textActionWindow.removeExtraButtonProvider(formatProvider)
+        }
     }
 
     // 初始化 TextMate

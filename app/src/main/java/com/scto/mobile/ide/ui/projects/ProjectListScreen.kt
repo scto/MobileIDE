@@ -62,6 +62,8 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.utils.WorkspaceManager
 import com.scto.mobile.ide.safeNavigate
+import com.scto.mobile.ide.ui.terminal.SetupWorker
+import android.widget.Toast
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -111,6 +113,7 @@ fun ProjectListScreen(navController: NavController) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
     var projectToDelete by remember { mutableStateOf<String?>(null) }
+    var showResetTerminalDialog by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val snackbarHostState = remember { SnackbarHostState() }
@@ -353,6 +356,12 @@ fun ProjectListScreen(navController: NavController) {
                                     }
                                 }
                             }
+                            IconButton(onClick = { navController.safeNavigate("terminal") }) {
+                                Icon(Icons.Default.Terminal, "Terminal")
+                            }
+                            IconButton(onClick = { showResetTerminalDialog = true }) {
+                                Icon(Icons.Default.Refresh, "Terminal zurücksetzen")
+                            }
                             IconButton(onClick = { navController.safeNavigate("settings") }) {
                                 Icon(Icons.Default.Settings, stringResource(R.string.action_settings))
                             }
@@ -530,6 +539,31 @@ fun ProjectListScreen(navController: NavController) {
                     }
                 },
                 dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(cancelText) } },
+            )
+        }
+
+        if (showResetTerminalDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetTerminalDialog = false },
+                title = { Text("Terminal zurücksetzen") },
+                text = { Text("Möchtest du das Terminal wirklich zurücksetzen? Alle installierten Container-Pakete und Einstellungen gehen verloren.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            SetupWorker.resetTerminal(context)
+                            showResetTerminalDialog = false
+                            Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    ) {
+                        Text("Zurücksetzen")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetTerminalDialog = false }) {
+                        Text("Abbrechen")
+                    }
+                },
             )
         }
     }

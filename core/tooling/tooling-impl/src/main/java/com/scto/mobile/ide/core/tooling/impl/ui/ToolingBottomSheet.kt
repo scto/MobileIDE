@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.scto.mobile.ide.core.tooling.api.GradleTask
+import com.scto.mobile.ide.core.tooling.impl.GradleTask
 import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
 import com.scto.mobile.ide.core.tooling.api.ToolingLogEntry
 import com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl
