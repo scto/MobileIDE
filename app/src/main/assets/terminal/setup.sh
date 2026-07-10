@@ -159,8 +159,6 @@ sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
   fi
 )"
 
-info "Creating user scto inside Ubuntu container..."
-sh $LOCAL/bin/sandbox "id -u scto >/dev/null 2>&1 || (useradd -m -s /bin/bash scto && usermod -aG sudo,adm,dialout,audio,video scto && mkdir -p /etc/sudoers.d && echo 'scto ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/scto && chmod 0440 /etc/sudoers.d/scto)"
 
 info "Installing Node.js APT hook…"
 

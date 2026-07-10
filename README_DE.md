@@ -11,12 +11,33 @@ MobileIDE ist eine native Android-Entwicklungsumgebung (IDE) für die App-Entwic
 
 Dies ist ein experimentelles Entwicklungsprojekt; seine Kernarchitektur und Codelogik wurden in Zusammenarbeit mit mehreren KI-Modellen (Claude, Gemini, DeepSeek) erstellt.
 
- ## Screenshots
+## Screenshots
 
-<div align="center">
-<img src="https://github.com/user-attachments/assets/2eac6ea4-25a1-4a02-b814-2925ffb2092e" width="45%" />
-<img src="https://github.com/user-attachments/assets/7999b42a-af56-4aea-b705-920e7e168844" width="45%" />
-</div>
+### Dark Mode
+<p align="center">
+  <img src="Screens/Dark/Screenshot_20260701-152211.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152427.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152446.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152510.png" width="24%" />
+</p>
+<p align="center">
+  <img src="Screens/Dark/Screenshot_20260701-152521.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152614.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152717.png" width="24%" />
+</p>
+
+### Light Mode
+<p align="center">
+  <img src="Screens/Light/Screenshot_20260701-152935.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-152952.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153009.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153020.png" width="24%" />
+</p>
+<p align="center">
+  <img src="Screens/Light/Screenshot_20260701-153051.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153109.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153200.png" width="24%" />
+</p>
 
 ## Projektstruktur
 
@@ -42,19 +63,26 @@ Das Projekt wurde in eine hochgradig modulare Struktur mit folgenden Kernmodulen
 
 ## Funktionen
 
-* **Syntaxhervorhebung**: Duale Highlight-Architektur mit Unterstützung für **TextMate** (robuste Stile für HTML, CSS, JavaScript, JSON usw.) und **TreeSitter** (leistungsstarke semantische Analyse für Kotlin, Java, CPP, JSON, Log und XML).
+- [x] **Syntaxhervorhebung**: Duale Highlight-Architektur mit Unterstützung für **TextMate** (robuste Stile für HTML, CSS, JavaScript, JSON usw.) und **TreeSitter** (leistungsstarke semantische Analyse für Kotlin, Java, CPP, JSON, Log und XML).
+- [x] **Editor-Engine-Auswahl**: Eintrag in den Einstellungen, der es Benutzern ermöglicht, flexibel zwischen der klassischen TextMate-Engine und der TreeSitter (LSP)-Engine zu wechseln, inklusive automatischem Fallback-Schutz.
+- [x] **Optionale Protokollierung**: Integriertes LogCatcher-Subsystem mit einem Schalter in den Einstellungen zum Aktivieren oder Deaktivieren ausführlicher Debug-Protokolle für Compiler- und Editor-Vorgänge.
+- [x] **Projektmanagement**: Voller Dateisystemzugriff zur Erstellung und Verwaltung von Webprojekten mit mehreren Dateien.
+- [x] **Echtzeitvorschau**: Integrierte WebView-Vorschauumgebung mit Unterstützung für JavaScript-Interaktionstests.
+- [x] **Moderne Benutzeroberfläche**: Vollständig in Kotlin und Jetpack Compose geschrieben, mit Unterstützung für dynamische Designs.
+- [x] **Git-Integration**: Integrierte Git-Versionskontrolle mit einer visuellen Commit-Historie, unterstützt Klonen, Commit, Push, Pull und Branch-Verwaltung. Ignoriert automatisch sensible Dateien und Build-Artefakte.
+- [x] **Integriertes Terminal & Sandbox**: PRoot-basierte Linux-Containerumgebung zur Ausführung von Skripten und Einrichtung von Compiler-Tools direkt auf dem Gerät.
+- [x] **Eigener APK-Builder**: AAPT2/D8-Kompilierungs-Infrastruktur zum lokalen Erstellen und Ausführen von Android-Projekten.
+- [x] **Smart Environment CLI (`ideenv`)**: Kommandozeilen-Hilfstool zur dynamischen Verwaltung von Pfaden, JDKs, SDKs und Build-Variablen.
 
-* **Editor-Engine-Auswahl**: Eintrag in den Einstellungen, der es Benutzern ermöglicht, flexibel zwischen der klassischen TextMate-Engine und der TreeSitter (LSP)-Engine zu wechseln, inklusive automatischem Fallback-Schutz.
+## TODO
 
-* **Optionale Protokollierung**: Integriertes LogCatcher-Subsystem mit einem Schalter in den Einstellungen zum Aktivieren oder Deaktivieren ausführlicher Debug-Protokolle für Compiler- und Editor-Vorgänge.
-
-* **Projektmanagement**: Voller Dateisystemzugriff zur Erstellung und Verwaltung von Webprojekten mit mehreren Dateien.
-
-* **Echtzeitvorschau**: Integrierte WebView-Vorschauumgebung mit Unterstützung für JavaScript-Interaktionstests.
-
-* **Moderne Benutzeroberfläche**: Vollständig in Kotlin und Jetpack Compose geschrieben, mit Unterstützung für dynamische Designs.
-
-* **Git-Integration**: Integrierte Git-Versionskontrolle mit einer visuellen Commit-Historie, unterstützt Klonen, Commit, Push, Pull und Branch-Verwaltung. Ignoriert automatisch sensible Dateien und Build-Artefakte.
+- [ ] **Interaktiver visueller Debugger**: Integration einer LLDB- / JDWP-Debugger-Schnittstelle zum Echtzeit-Debugging von C++ und Java-Code.
+- [ ] **LSP-Diagnose-Overlays**: Anzeige von Compiler-Fehlern und -Warnungen mit Wellenlinien direkt im Code-Editor.
+- [ ] **Visueller Layout-Vorschau-Modus**: Interaktive geteilte Ansicht für Compose- und XML-Layout-Vorschauen.
+- [ ] **Gradle-Sync & Dependency-Downloader**: Dynamisches Herunterladen und Cachen von Remote-Abhängigkeiten aus Maven Central / Google Maven innerhalb der App.
+- [ ] **Grafischer Keystore-Assistent**: Schritt-für-Schritt-Schlüsselgenerator und visueller Manager für Signierungskonfigurationen.
+- [ ] **Git-Konfliktlösungstool**: Interaktive Diff-Ansicht und Merge-Tool für Git-Konflikte.
+- [ ] **Plugin-Marktplatz**: Schnittstelle zum Durchsuchen, Herunterladen und Installieren von Language-Server-Erweiterungen oder Plugins von Drittanbietern.
 
  ## Diskussion
 

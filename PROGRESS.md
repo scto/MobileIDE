@@ -4,6 +4,11 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 
 ---
 
+## [2026-07-10]
+### Sandbox Setup & Extraction Fixes
+*   **Removed scto User Creation**: Removed `scto` user and group creation inside the sandboxed container from `setup.sh` to keep environment setup clean.
+*   **Fixed idesetup Extraction Permission Errors**: Added `--no-same-owner --no-same-permissions` to `tar` command in `idesetup` to fix extraction failures on existing directories.
+
 ## [2026-07-04]
 ### Language Server Extensions & Sandbox CLI Overhaul
 *   **Renamed and Expanded Language Extension**: Migrated `:extension-kotlin-lsp` to `:extension-languages` and packaged support for Kotlin, Java, Bash, and XML language servers into a single library extension.
