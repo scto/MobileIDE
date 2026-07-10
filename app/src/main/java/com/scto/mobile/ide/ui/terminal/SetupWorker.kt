@@ -73,6 +73,7 @@ object SetupWorker {
     ) {
         withContext(Dispatchers.IO) {
             LogCatcher.i("SetupWorker", "prepareEnvironment starting...")
+            logTerminalSetup(context)
             onStatusChanged?.invoke("Umgebung wird vorbereitet...")
             val distroName = getDistroName(context)
             val filesDir = context.filesDir
@@ -173,6 +174,72 @@ object SetupWorker {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun logTerminalSetup(context: Context) {
+        try {
+            val distroName = getDistroName(context)
+            val filesDir = context.filesDir
+            val prefixDir = filesDir.parentFile!!
+            val distroDir = File(prefixDir, "local/$distroName")
+            val binDir = File(prefixDir, "local/bin")
+            val libDir = File(prefixDir, "local/lib")
+            val nativeLibDir = context.applicationInfo.nativeLibraryDir
+
+            val closeBehavior = com.rk.settings.Settings.terminal_close_behavior
+            val fontSize = com.rk.settings.Settings.terminal_font_size
+            val colorScheme = com.rk.settings.Settings.terminal_colorscheme
+            val extraKeys = TerminalConfig.VIRTUAL_KEYS_JSON
+
+            val prootFile = File(binDir, "proot")
+            val tallocFile = File(libDir, "libtalloc.so.2")
+            val initFile = File(binDir, "init")
+            val setupFile = File(binDir, "setup")
+            val sandboxFile = File(binDir, "sandbox")
+            val utilsFile = File(binDir, "utils")
+            val idesetupFile = File(binDir, "idesetup")
+            val envProps = File(distroDir, "root/etc/mobileide-environment.properties")
+
+            val sb = java.lang.StringBuilder()
+            sb.append("\n=== TERMINAL SETUP ENVIRONMENT LOG ===\n")
+            sb.append("OS Version: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})\n")
+            sb.append("CPU ABI: ${android.os.Build.SUPPORTED_ABIS.joinToString(", ")}\n")
+            sb.append("Distro Name: $distroName\n")
+            sb.append("Files Directory: ${filesDir.absolutePath}\n")
+            sb.append("Prefix Directory: ${prefixDir.absolutePath}\n")
+            sb.append("Distro Directory: ${distroDir.absolutePath} (exists: ${distroDir.exists()})\n")
+            sb.append("Bin Directory: ${binDir.absolutePath}\n")
+            sb.append("Lib Directory: ${libDir.absolutePath}\n")
+            sb.append("Native Lib Directory: $nativeLibDir\n")
+            sb.append("\n--- Settings ---\n")
+            sb.append("Close Behavior: $closeBehavior\n")
+            sb.append("Font Size: $fontSize\n")
+            sb.append("Color Scheme: $colorScheme\n")
+            sb.append("Extra Keys Config: $extraKeys\n")
+            sb.append("\n--- Component Status ---\n")
+            sb.append("proot exists: ${prootFile.exists()} (executable: ${prootFile.canExecute()})\n")
+            sb.append("libtalloc exists: ${tallocFile.exists()}\n")
+            sb.append("init exists: ${initFile.exists()} (executable: ${initFile.canExecute()})\n")
+            sb.append("setup exists: ${setupFile.exists()} (executable: ${setupFile.canExecute()})\n")
+            sb.append("sandbox exists: ${sandboxFile.exists()} (executable: ${sandboxFile.canExecute()})\n")
+            sb.append("utils exists: ${utilsFile.exists()} (executable: ${utilsFile.canExecute()})\n")
+            sb.append("idesetup exists: ${idesetupFile.exists()} (executable: ${idesetupFile.canExecute()})\n")
+            if (envProps.exists()) {
+                sb.append("mobileide-environment.properties exists: true\n")
+                try {
+                    sb.append("mobileide-environment.properties content:\n${envProps.readText()}\n")
+                } catch (e: Exception) {
+                    sb.append("Failed to read mobileide-environment.properties: ${e.message}\n")
+                }
+            } else {
+                sb.append("mobileide-environment.properties exists: false\n")
+            }
+            sb.append("======================================\n")
+
+            LogCatcher.i("SetupWorker", sb.toString())
+        } catch (e: Exception) {
+            LogCatcher.e("SetupWorker", "Error generating terminal setup log", e)
         }
     }
 }

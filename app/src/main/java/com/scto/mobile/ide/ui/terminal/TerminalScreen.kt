@@ -183,6 +183,7 @@ fun TerminalScreen(navController: NavController) {
             "TerminalScreen",
             "LaunchedEffect: initializing terminal environment...",
         )
+        SetupWorker.logTerminalSetup(context)
         if (application == null) application = context.applicationContext as Application
         try {
             withContext(Dispatchers.IO) {
