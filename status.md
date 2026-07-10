@@ -2,6 +2,12 @@
 
 This file tracks the features, bug fixes, and improvements implemented by AI coding assistants.
 
+## [2026-07-10] Sandbox Setup Permissions & User Cleanup
+
+### 1. Terminal Sandbox Setup Overhaul
+*   **Removed scto User Creation**: Cleaned up `app/src/main/assets/terminal/setup.sh` by removing the automated creation of the `scto` user and its associated group mappings (`sudo`, `adm`, `dialout`, `audio`, `video`) inside the Ubuntu container environment.
+*   **Resolved idesetup Extraction Failures**: Resolved `Cannot mkdir: No such file or directory` errors during Android SDK extraction (such as on path `android-sdk/platforms/android-33/data/res/values-mcc311-mnc180-sr/strings.xml`). Added `--no-same-owner` and `--no-same-permissions` to the `tar` command in `idesetup` to prevent the extraction process from failing due to chown or chmod permission/ownership errors on existing directories in bind-mounted host filesystems.
+
 ## [2026-07-04] Extension Framework & CLI Enhancements
 
 ### 1. Extension Framework & Dynamic LSP Registries

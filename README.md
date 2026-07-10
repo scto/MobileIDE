@@ -13,10 +13,31 @@ This is an experimental engineering project; its core architecture and code logi
 
 ## Screenshots
 
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/2eac6ea4-25a1-4a02-b814-2925ffb2092e" width="45%" />
-  <img src="https://github.com/user-attachments/assets/7999b42a-af56-4aea-b705-920e7e168844" width="45%" />
-</div>
+### Dark Mode
+<p align="center">
+  <img src="Screens/Dark/Screenshot_20260701-152211.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152427.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152446.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152510.png" width="24%" />
+</p>
+<p align="center">
+  <img src="Screens/Dark/Screenshot_20260701-152521.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152614.png" width="24%" />
+  <img src="Screens/Dark/Screenshot_20260701-152717.png" width="24%" />
+</p>
+
+### Light Mode
+<p align="center">
+  <img src="Screens/Light/Screenshot_20260701-152935.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-152952.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153009.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153020.png" width="24%" />
+</p>
+<p align="center">
+  <img src="Screens/Light/Screenshot_20260701-153051.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153109.png" width="24%" />
+  <img src="Screens/Light/Screenshot_20260701-153200.png" width="24%" />
+</p>
 
 ## Project Structure
 
@@ -43,13 +64,27 @@ The project has been refactored into a highly modular system consisting of the f
 
 ## Features
 
-*   **Syntax Highlighting**: Dual-engine architecture supporting both **TextMate** (providing robust styling for HTML, CSS, JavaScript, JSON, etc.) and **TreeSitter** (offering high-performance semantic parsing for Kotlin, Java, CPP, JSON, Log, and XML).
-*   **Editor Engine Selection**: Preferences entry allowing users to switch between the classic TextMate engine and the TreeSitter (LSP) engine on the fly, with automatic fail-safe fallback.
-*   **Optional Logging**: Built-in LogCatcher subsystem with a toggle in settings to enable or disable verbose debugging logs for compiler and editor operations.
-*   **Project Management**: Full file system access permissions, supporting the creation and management of multi-file Web projects.
-*   **Real-time Preview**: Integrated WebView preview environment supporting JavaScript interaction testing.
-*   **Modern UI**: Written 100% in Kotlin and Jetpack Compose, supporting dynamic themes.
-*   **Git Integration**: Built-in Git version control with a visual commit history graph, supporting Clone, Commit, Push, Pull, and Branch management. Automatically ignores sensitive files and build artifacts.
+- [x] **Syntax Highlighting**: Dual-engine architecture supporting both **TextMate** (providing robust styling for HTML, CSS, JavaScript, JSON, etc.) and **TreeSitter** (offering high-performance semantic parsing for Kotlin, Java, CPP, JSON, Log, and XML).
+- [x] **Editor Engine Selection**: Preferences entry allowing users to switch between the classic TextMate engine and the TreeSitter (LSP) engine on the fly, with automatic fail-safe fallback.
+- [x] **Optional Logging**: Built-in LogCatcher subsystem with a toggle in settings to enable or disable verbose debugging logs for compiler and editor operations.
+- [x] **Project Management**: Full file system access permissions, supporting the creation and management of multi-file Web projects.
+- [x] **Real-time Preview**: Integrated WebView preview environment supporting JavaScript interaction testing.
+- [x] **Modern UI**: Written 100% in Kotlin and Jetpack Compose, supporting dynamic themes.
+- [x] **Git Integration**: Built-in Git version control with a visual commit history graph, supporting Clone, Commit, Push, Pull, and Branch management. Automatically ignores sensitive files and build artifacts.
+- [x] **Embedded Terminal & Sandbox**: PRoot-based Linux container environment enabling on-device script execution and compiler tooling setup.
+- [x] **Custom APK Builder**: AAPT2/D8 compiling infrastructure to compile and run Android projects locally.
+- [x] **Smart Environment CLI (`ideenv`)**: Command-line helper to manage paths, JDKs, SDKs, and build variables on the fly.
+
+## TODO
+
+- [ ] **Interactive Visual Debugger**: Integrate LLDB / JDWP debugger interface for real-time debugging of C++ and Java code.
+- [ ] **LSP Diagnostics Overlays**: Render compile-time errors and warning squiggles directly inside the code editor.
+- [ ] **Visual Layout Previewer**: Interactive split-screen Compose and XML layout preview.
+- [ ] **Gradle Sync and Dependency Downloader**: Fetch and cache remote dependencies from Maven Central / Google Maven dynamically inside the app.
+- [ ] **GUI Keystore Wizard**: Step-by-step key generator and visual signing configuration manager.
+- [ ] **Git Conflict Resolution Tool**: Interactive diff view and merge tool for Git conflicts.
+- [ ] **Plugin Market**: Interface to browse, download, and install third-party language server extensions or plugins.
+
 
 ## Discussion
 

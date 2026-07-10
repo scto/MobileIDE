@@ -97,7 +97,7 @@ download_and_extract() {
 
     # Extract the downloaded archive
     print_info "Extracting downloaded archive..."
-    tar xvJf $dest
+    tar --no-same-owner --no-same-permissions -xvJf $dest
     print_info "Extracted successfully"
 
     echo ""
