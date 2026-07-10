@@ -141,6 +141,24 @@ touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 info "Installing Git and Gradle inside Ubuntu container..."
 sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle gradle-completion bash-completion"
 
+info "Configuring build tools environment automatically..."
+sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
+  jdk_dir=\"\"
+  if command -v javac >/dev/null 2>&1; then
+      jdk_dir=\$(dirname \$(dirname \$(readlink -f \$(which javac))))
+  else
+      for d in /usr/lib/jvm/java-17-openjdk*; do
+          if [ -d \"\$d\" ]; then
+              jdk_dir=\"\$d\"
+              break
+          fi
+      done
+  fi
+  if [ -n \"\$jdk_dir\" ]; then
+      printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=\\\$HOME/android-sdk\nGRADLE_USER_HOME=\\\$HOME/.gradle\nAAPT2_HOME=/.mobileide\n\" > /root/etc/mobileide-environment.properties
+  fi
+)"
+
 info "Creating user scto inside Ubuntu container..."
 sh $LOCAL/bin/sandbox "id -u scto >/dev/null 2>&1 || (useradd -m -s /bin/bash scto && usermod -aG sudo,adm,dialout,audio,video scto && mkdir -p /etc/sudoers.d && echo 'scto ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/scto && chmod 0440 /etc/sudoers.d/scto)"
 
