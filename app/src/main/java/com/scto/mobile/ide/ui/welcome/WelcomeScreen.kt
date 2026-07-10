@@ -32,6 +32,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
@@ -182,6 +183,12 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !postNotificationsGranted) {
+            requestPostNotificationsPermission()
+        }
     }
 
     CompositionLocalProvider(LocalContentColor provides contentColor) {
@@ -373,6 +380,14 @@ private fun PermissionsContent(
             stringResource(R.string.welcome_permission_battery_optimization_description),
             batteryOptimizationIgnored,
             onRequestBatteryOptimizationIgnore,
+        )
+        Spacer(Modifier.height(8.dp))
+        PermissionCard(
+            Icons.Default.Apps,
+            "Installierte Pakete abfragen",
+            "Ermöglicht der App, installierte Compiler-Tools und IDE-Komponenten auf dem Gerät zu finden.",
+            true,
+            {},
         )
     }
 }

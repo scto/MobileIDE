@@ -97,9 +97,18 @@ object FilePermission {
                 okRes = strings.ok,
                 onOk = {
                     if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
-                        val intent = Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                        intent.data = "package:${activity.packageName}".toUri()
-                        activity.startActivity(intent)
+                        try {
+                            val intent = Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                            intent.data = "package:${activity.packageName}".toUri()
+                            activity.startActivity(intent)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                                activity.startActivity(intent)
+                            } catch (e2: Exception) {
+                                e2.printStackTrace()
+                            }
+                        }
                     } else {
                         // below 11
                         // Request permissions

@@ -249,6 +249,11 @@ fun TerminalScreen(navController: NavController) {
     val currentSession = SessionManager.currentSession
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
     val sessions = SessionManager.sessions
+    LaunchedEffect(sessions.size) {
+        if (sessions.isEmpty() && com.rk.settings.Settings.terminal_close_behavior == "exit_app") {
+            navController.popBackStack()
+        }
+    }
     val terminalPagerState =
         rememberPagerState(
             initialPage = SessionManager.currentSessionIndex.coerceIn(0, maxOf(0, sessions.size - 1)),
