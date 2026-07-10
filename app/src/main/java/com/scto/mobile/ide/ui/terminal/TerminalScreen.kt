@@ -427,7 +427,10 @@ fun TerminalScreen(navController: NavController) {
             }
         },
         bottomBar = {
-            Surface(color = Color(buttonBgColor), modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding()) {
+            Surface(
+                color = Color(buttonBgColor),
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding(),
+            ) {
                 val pagerState = rememberPagerState(pageCount = { 2 })
                 HorizontalPager(state = pagerState, modifier = Modifier.height(75.dp), userScrollEnabled = true) { page
                     ->
