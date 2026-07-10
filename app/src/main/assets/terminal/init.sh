@@ -156,5 +156,7 @@ else
 fi
 
 echo ""
-echo -e "\e[1;32mPress any key to continue...\e[0m"
-read -n 1 -s -r
+if [ -t 0 ]; then
+    echo -e "\e[1;32mPress any key to continue...\e[0m"
+    read -n 1 -s -r
+fi
