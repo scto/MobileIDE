@@ -7,6 +7,7 @@ export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
 export ROOT="/root"
 export HOME="/home"
+export EXTERNAL_STORAGE="/sdcard"
 
 source "$LOCAL/bin/utils"
 
