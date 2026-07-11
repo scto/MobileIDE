@@ -1,6 +1,7 @@
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/share/bin:/usr/share/sbin:/usr/local/bin:/usr/local/sbin:/system/bin:/system/xbin
 export ROOT=/root
 export HOME=/home
+export EXTERNAL_STORAGE=/sdcard
 
 if [ ! -s /etc/resolv.conf ]; then
     echo "nameserver 8.8.8.8" > /etc/resolv.conf
