@@ -234,8 +234,9 @@ chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
 info "Node.js APT hook installed"
 
 info "Configuring bashrc..."
-mkdir -p "${EXT_HOME:-$SANDBOX_DIR/root}"
-cat > "${EXT_HOME:-$SANDBOX_DIR/root}/.bashrc" << 'EOF'
+
+write_bashrc() {
+    cat > "$1" << 'EOF'
 # Load bash completion
 if [ -f /etc/profile.d/bash_completion.sh ]; then
     . /etc/profile.d/bash_completion.sh
@@ -250,10 +251,16 @@ if [ -f "/etc/mobileide-environment.properties" ]; then
     set +a
 fi
 EOF
+}
 
 if [ -n "$EXT_HOME" ]; then
+    mkdir -p "$EXT_HOME"
+    write_bashrc "$EXT_HOME/.bashrc"
+fi
+
+if [ -z "$EXT_HOME" ] || [ ! "$EXT_HOME" -ef "$SANDBOX_DIR/root" ]; then
     mkdir -p "$SANDBOX_DIR/root"
-    cp "$EXT_HOME/.bashrc" "$SANDBOX_DIR/root/.bashrc"
+    write_bashrc "$SANDBOX_DIR/root/.bashrc"
 fi
 
 if [ $# -gt 0 ]; then
