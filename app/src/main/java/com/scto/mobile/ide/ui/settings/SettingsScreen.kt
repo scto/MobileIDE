@@ -65,12 +65,12 @@ import com.scto.mobile.ide.core.utils.AppLanguageOption
 import com.scto.mobile.ide.core.utils.LogConfigState
 import com.scto.mobile.ide.core.utils.ThemeState
 import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.files.sandboxHomeDir
 import com.scto.mobile.ide.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.terminal.DistroManager
 import com.scto.mobile.ide.ui.welcome.themeColors
-import com.scto.mobile.ide.files.sandboxHomeDir
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
@@ -213,24 +213,18 @@ fun SettingsScreen(
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
 
             isBuildTools35Installed =
-                File(hostSdk, "build-tools/35.0.0").exists() ||
-                    File(distroSdk, "build-tools/35.0.0").exists()
+                File(hostSdk, "build-tools/35.0.0").exists() || File(distroSdk, "build-tools/35.0.0").exists()
             isBuildTools36Installed =
-                File(hostSdk, "build-tools/36.0.0").exists() ||
-                    File(distroSdk, "build-tools/36.0.0").exists()
+                File(hostSdk, "build-tools/36.0.0").exists() || File(distroSdk, "build-tools/36.0.0").exists()
 
             isPlatform34Installed =
-                File(hostSdk, "platforms/android-34").exists() ||
-                    File(distroSdk, "platforms/android-34").exists()
+                File(hostSdk, "platforms/android-34").exists() || File(distroSdk, "platforms/android-34").exists()
             isPlatform35Installed =
-                File(hostSdk, "platforms/android-35").exists() ||
-                    File(distroSdk, "platforms/android-35").exists()
+                File(hostSdk, "platforms/android-35").exists() || File(distroSdk, "platforms/android-35").exists()
 
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
             isNdkInstalled =
-                File(hostSdk, "ndk").exists() ||
-                    File(distroSdk, "ndk").exists() ||
-                    File(hostSdk, "ndk-bundle").exists()
+                File(hostSdk, "ndk").exists() || File(distroSdk, "ndk").exists() || File(hostSdk, "ndk-bundle").exists()
 
             isBaseUtilsInstalled = getDistroFile("usr/bin/make").exists()
 
