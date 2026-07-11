@@ -67,11 +67,16 @@ download_and_extract() {
     # Destination path for downloading the file
     dest=$4
 
-    if [ ! -d $dir ]; then
-        mkdir -p $dir
+    if [ -L "$dir" ]; then
+        local_target=$(readlink -f "$dir" || readlink "$dir")
+        mkdir -p "$local_target"
     fi
 
-    cd $dir
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+
+    cd "$dir" || { print_err "Failed to change directory to $dir"; exit 1; }
 
     do_download=true
     if [ -f $dest ]; then
