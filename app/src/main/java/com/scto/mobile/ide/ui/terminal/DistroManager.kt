@@ -77,18 +77,21 @@ object DistroManager {
         args.add("${rootHome.absolutePath}:/root")
 
         args.add("-b")
+        args.add("${rootHome.absolutePath}:/home")
+
+        args.add("-b")
         args.add(context.filesDir.absolutePath)
         args.add("-r")
         args.add(distroDir.absolutePath)
 
         args.add("-w")
-        args.add("/root")
+        args.add("/home")
 
         args.add("/usr/bin/env")
         args.add("-i")
-        args.add("HOME=/root")
-        args.add("NODE_PATH=/root/lsp/node_modules")
-        args.add("PATH=/root/lsp/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+        args.add("HOME=/home")
+        args.add("NODE_PATH=/home/lsp/node_modules")
+        args.add("PATH=/home/lsp/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
         args.add("LANG=C.UTF-8")
         args.add("TERM=xterm-256color")
@@ -173,7 +176,7 @@ object DistroManager {
         val env =
             mutableListOf(
                 "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
-                "HOME=/root",
+                "HOME=/home",
                 "TERM=xterm-256color",
                 "LANG=C.UTF-8",
                 "PREFIX=${prefixDir.absolutePath}",

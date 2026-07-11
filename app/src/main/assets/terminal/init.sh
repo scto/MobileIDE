@@ -5,8 +5,8 @@ shopt -s checkwinsize
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:$LOCAL/bin:$PATH
 export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
-export SYSROOT="/root"
-export HOME="/root"
+export ROOT="/root"
+export HOME="/home"
 export PROJECTS="$MOBILEIDE_WORKSPACE"
 
 source "$LOCAL/bin/utils"
@@ -114,7 +114,7 @@ if [[ -f /initrc ]]; then
 fi
 
 # shellcheck disable=SC2164
-cd "$MOBILEIDE_PROJECT_DIR" || cd "$MOBILEIDE_WORKSPACE" || cd $HOME
+cd "$HOME"
 
 # Configure History
 export HISTFILE="$HOME/.bash_history"
@@ -146,12 +146,12 @@ echo -e "  \e[1;33mapt install\e[0m  : Install <package>"
 echo -e "\e[1;30m----------------------------------------\e[0m"
 echo ""
 
-if [ ! -f "$SYSROOT/etc/mobileide-environment.properties" ]; then
+if [ ! -f "$ROOT/etc/mobileide-environment.properties" ]; then
     echo -e "\e[1;33mHint: Please run the '\e[1;32midesetup\e[1;33m' command to configure your Java & Android SDK build tools.\e[0m"
 else
     # Automatically export the properties to the environment
     set -a
-    source "$SYSROOT/etc/mobileide-environment.properties"
+    source "$ROOT/etc/mobileide-environment.properties"
     set +a
 fi
 

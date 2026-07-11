@@ -70,6 +70,7 @@ import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import com.scto.mobile.ide.ui.terminal.DistroManager
 import com.scto.mobile.ide.ui.welcome.themeColors
+import com.scto.mobile.ide.files.sandboxHomeDir
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
@@ -207,27 +208,28 @@ fun SettingsScreen(
             isGradleInstalled = getDistroFile("usr/bin/gradle").exists()
 
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
-            val distroSdk = getDistroFile("root/android-sdk")
+            val distroHome = sandboxHomeDir(context)
+            val distroSdk = File(distroHome, "android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
 
             isBuildTools35Installed =
                 File(hostSdk, "build-tools/35.0.0").exists() ||
-                    getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
+                    File(distroSdk, "build-tools/35.0.0").exists()
             isBuildTools36Installed =
                 File(hostSdk, "build-tools/36.0.0").exists() ||
-                    getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
+                    File(distroSdk, "build-tools/36.0.0").exists()
 
             isPlatform34Installed =
                 File(hostSdk, "platforms/android-34").exists() ||
-                    getDistroFile("root/android-sdk/platforms/android-34").exists()
+                    File(distroSdk, "platforms/android-34").exists()
             isPlatform35Installed =
                 File(hostSdk, "platforms/android-35").exists() ||
-                    getDistroFile("root/android-sdk/platforms/android-35").exists()
+                    File(distroSdk, "platforms/android-35").exists()
 
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
             isNdkInstalled =
                 File(hostSdk, "ndk").exists() ||
-                    getDistroFile("root/android-sdk/ndk").exists() ||
+                    File(distroSdk, "ndk").exists() ||
                     File(hostSdk, "ndk-bundle").exists()
 
             isBaseUtilsInstalled = getDistroFile("usr/bin/make").exists()
@@ -1813,7 +1815,7 @@ fun BuildSettingsItem(
                             onInstall = {
                                 onInstall(
                                     "Android SDK",
-                                    "mkdir -p /root/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk && rm /tmp/sdk.zip",
+                                    "mkdir -p \$HOME/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d \$HOME/android-sdk && rm /tmp/sdk.zip",
                                 )
                             },
                         )
@@ -1832,7 +1834,7 @@ fun BuildSettingsItem(
                                         onClick = {
                                             onInstall(
                                                 "Build-Tools v35",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;35.0.0\"",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;35.0.0\"",
                                             )
                                         },
                                         enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
@@ -1843,7 +1845,7 @@ fun BuildSettingsItem(
                                         onClick = {
                                             onInstall(
                                                 "Build-Tools v36",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;36.0.0-rc1\"",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;36.0.0-rc1\"",
                                             )
                                         },
                                         enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
@@ -1868,7 +1870,7 @@ fun BuildSettingsItem(
                                         onClick = {
                                             onInstall(
                                                 "Platform API 34",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-34\"",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"platforms;android-34\"",
                                             )
                                         },
                                         enabled = isAndroidSdkInstalled && !isPlatform34Installed,
@@ -1879,7 +1881,7 @@ fun BuildSettingsItem(
                                         onClick = {
                                             onInstall(
                                                 "Platform API 35",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-35\"",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"platforms;android-35\"",
                                             )
                                         },
                                         enabled = isAndroidSdkInstalled && !isPlatform35Installed,
@@ -1909,7 +1911,7 @@ fun BuildSettingsItem(
                                         onClick = {
                                             onInstall(
                                                 "NDK",
-                                                "yes | /root/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=/root/android-sdk \"ndk-bundle\"",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"ndk-bundle\"",
                                             )
                                         },
                                         enabled = isAndroidSdkInstalled && !isNdkInstalled,

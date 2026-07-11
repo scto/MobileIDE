@@ -343,7 +343,7 @@ fi
 print_info "Updating mobileide-environment.properties..."
 print_info "JAVA_HOME=$jdk_dir"
 echo ""
-props_dir="$SYSROOT/etc"
+props_dir="$ROOT/etc"
 props="$props_dir/mobileide-environment.properties"
 
 if [ ! -d $props_dir ]; then
@@ -358,7 +358,7 @@ else
         printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\nGRADLE_USER_HOME=\$HOME/.gradle\nAAPT2_HOME=/.mobileide\n" > $props
         print_success "Properties file updated successfully!"
     else
-        print_err "Manually edit $SYSROOT/etc/mobileide-environment.properties file and set JAVA_HOME, ANDROID_SDK_ROOT, GRADLE_USER_HOME and AAPT2_HOME."
+        print_err "Manually edit $ROOT/etc/mobileide-environment.properties file and set JAVA_HOME, ANDROID_SDK_ROOT, GRADLE_USER_HOME and AAPT2_HOME."
     fi
 fi
 

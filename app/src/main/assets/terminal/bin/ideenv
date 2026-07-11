@@ -7,7 +7,7 @@ Green='\033[0;32m'
 Blue='\033[0;34m'
 Yellow='\033[0;33m'
 
-PROPS="${SYSROOT:-/}/etc/mobileide-environment.properties"
+PROPS="${ROOT:-/}/etc/mobileide-environment.properties"
 
 print_help() {
 	echo -e "${Blue}Utility command to manage MobileIDE Environment Variables${Color_Off}"
