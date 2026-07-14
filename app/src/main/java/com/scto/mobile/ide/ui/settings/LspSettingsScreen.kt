@@ -79,16 +79,17 @@ fun LspLogoBadge(languageName: String) {
 @Composable
 fun LspSettingsScreen(navController: NavController) {
     val context = LocalContext.current
-    val activity = remember(context) {
-        var ctx = context
-        while (ctx is android.content.ContextWrapper) {
-            if (ctx is Activity) {
-                return@remember ctx
+    val activity =
+        remember(context) {
+            var ctx = context
+            while (ctx is android.content.ContextWrapper) {
+                if (ctx is Activity) {
+                    return@remember ctx
+                }
+                ctx = ctx.baseContext
             }
-            ctx = ctx.baseContext
+            null
         }
-        null
-    }
     val coroutineScope = rememberCoroutineScope()
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var lspItems by remember { mutableStateOf<List<LspSettingsUiItem>>(emptyList()) }

@@ -44,7 +44,9 @@ fun TerminalSettingsScreen(navController: NavController) {
 
     LaunchedEffect(lspEnabled) { editorPrefs.edit { putBoolean("editor_lsp_enabled", lspEnabled) } }
     LaunchedEffect(fontSize) { com.scto.mide.term.settings.Settings.terminal_font_size = fontSize.toInt() }
-    LaunchedEffect(scrollbackLines) { com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
+    LaunchedEffect(scrollbackLines) {
+        com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt()
+    }
     LaunchedEffect(closeBehavior) { com.scto.mide.term.settings.Settings.terminal_close_behavior = closeBehavior }
     LaunchedEffect(colorscheme) { com.scto.mide.term.settings.Settings.terminal_colorscheme = colorscheme }
 
