@@ -35,8 +35,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rk.components.compose.utils.addIf
 import kotlinx.coroutines.awaitCancellation
+import com.rk.components.compose.utils.addIf
 
 @Composable
 fun PreferenceColumn(
@@ -45,16 +45,15 @@ fun PreferenceColumn(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     scrollState: ScrollState? = rememberScrollState(),
-    stretchEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    NestedScrollStretch(modifier = modifier, enabled = stretchEnabled) {
+    NestedScrollStretch(modifier = modifier) {
         Column(
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
             modifier =
                 Modifier.fillMaxHeight()
-                    .addIf(scrollState != null) { verticalScroll(scrollState!!) }
+                    .addIf(scrollState != null) { this.verticalScroll(scrollState!!) }
                     .padding(contentPadding)
                     .padding(top = 8.dp, bottom = 16.dp),
             content = content,
@@ -69,7 +68,6 @@ fun PreferenceLazyColumn(
     enabled: Boolean = true,
     isChild: Boolean = false,
     state: LazyListState = rememberLazyListState(),
-    stretchEnabled: Boolean = true,
     content: LazyListScope.() -> Unit,
 ) {
     if (!enabled) {
@@ -77,7 +75,7 @@ fun PreferenceLazyColumn(
             state.scroll(scrollPriority = MutatePriority.PreventUserInput) { awaitCancellation() }
         }
     }
-    NestedScrollStretch(modifier = modifier, enabled = stretchEnabled) {
+    NestedScrollStretch(modifier = modifier) {
         LazyColumn(
             modifier = Modifier.addIf(!isChild) { fillMaxHeight() },
             contentPadding = contentPadding,

@@ -1,9 +1,9 @@
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 val gitCommitHash: Provider<String> =
@@ -18,9 +18,9 @@ val gitCommitDate: Provider<String> =
 
 
 android {
-    namespace = "com.rk.terminal"
+    namespace = "com.scto.mide.term.core"
     android.buildFeatures.buildConfig = true
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -30,6 +30,10 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("String", "GIT_COMMIT_HASH", "\"${fullGitCommitHash.get()}\"")
+            buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"${gitCommitHash.get()}\"")
+            buildConfigField("String", "GIT_COMMIT_DATE", "\"${gitCommitDate.get()}\"")
+
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
@@ -37,6 +41,9 @@ android {
             )
         }
         debug{
+            buildConfigField("String", "GIT_COMMIT_HASH", "\"${fullGitCommitHash.get()}\"")
+            buildConfigField("String", "GIT_SHORT_COMMIT_HASH", "\"${gitCommitHash.get()}\"")
+            buildConfigField("String", "GIT_COMMIT_DATE", "\"${gitCommitDate.get()}\"")
         }
     }
 
@@ -45,10 +52,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     buildFeatures {
@@ -56,9 +61,7 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
 
 
 }

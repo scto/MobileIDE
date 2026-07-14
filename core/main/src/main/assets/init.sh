@@ -1,16 +1,89 @@
+set -e  # Exit immediately on Failure
+
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/share/bin:/usr/share/sbin:/usr/local/bin:/usr/local/sbin:/system/bin:/system/xbin
-export ROOT=/root
-export HOME=/home
-export EXTERNAL_STORAGE=/sdcard
+export HOME=/root
+
+resolve_runtime_hostname() {
+    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
+        printf '%s' "$TERMIX_GUEST_HOSTNAME"
+        return 0
+    fi
+
+    if command -v hostname >/dev/null 2>&1; then
+        runtime_name=$(hostname 2>/dev/null || true)
+        if [ -n "$runtime_name" ]; then
+            printf '%s' "$runtime_name"
+            return 0
+        fi
+    fi
+
+    if [ -r /etc/hostname ]; then
+        IFS= read -r file_name < /etc/hostname || true
+        if [ -n "$file_name" ]; then
+            printf '%s' "$file_name"
+            return 0
+        fi
+    fi
+
+    printf '%s' "alpine"
+}
+
+install_hostname_wrapper() {
+    wrapper_dir=/tmp/termix-runtime/bin
+    mkdir -p "$wrapper_dir"
+    cat > "$wrapper_dir/hostname" <<'EOF'
+#!/bin/sh
+resolve_name() {
+    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
+        printf '%s\n' "$TERMIX_GUEST_HOSTNAME"
+        return 0
+    fi
+
+    if [ -r /etc/hostname ]; then
+        IFS= read -r file_name < /etc/hostname || true
+        if [ -n "$file_name" ]; then
+            printf '%s\n' "$file_name"
+            return 0
+        fi
+    fi
+
+    printf '%s\n' "alpine"
+}
+
+case "$1" in
+    ""|-s|--short|-f|--fqdn)
+        resolve_name
+        ;;
+    *)
+        printf '%s\n' "hostname is managed from /etc/hostname in this session" >&2
+        exit 1
+        ;;
+esac
+EOF
+    chmod 755 "$wrapper_dir/hostname"
+    PATH="$wrapper_dir:$PATH"
+    export PATH
+}
+
+RUNTIME_HOSTNAME=$(resolve_runtime_hostname)
+export TERMIX_GUEST_HOSTNAME="$RUNTIME_HOSTNAME"
+export HOST="$RUNTIME_HOSTNAME"
+export HOSTNAME="$RUNTIME_HOSTNAME"
+install_hostname_wrapper
 
 if [ ! -s /etc/resolv.conf ]; then
     echo "nameserver 8.8.8.8" > /etc/resolv.conf
 fi
 
-export PS1="\[\e[38;5;46m\]\u\[\033[39m\]@reterm \[\033[39m\]\w \[\033[0m\]\\$ "
+# Set terminal title using OSC escape sequence
+# OSC 0 sets both icon name and window title
+printf '\033]0;%s\007' "$RUNTIME_HOSTNAME"
+
+# PS1 with terminal title update: \[\e]0;title\a\] sets title on each prompt
+export PS1="\[\e]0;\u@$RUNTIME_HOSTNAME:\w\a\]\[\e[38;5;46m\]\u\[\033[39m\]@$RUNTIME_HOSTNAME \[\033[39m\]\w \[\033[0m\]\\$ "
 # shellcheck disable=SC2034
 export PIP_BREAK_SYSTEM_PACKAGES=1
-required_packages="bash gcompat glib nano curl git ca-certificates"
+required_packages="bash gcompat glib nano"
 missing_packages=""
 for pkg in $required_packages; do
     if ! apk info -e $pkg >/dev/null 2>&1; then
@@ -33,58 +106,20 @@ if [[ ! -f /linkerconfig/ld.config.txt ]];then
     touch /linkerconfig/ld.config.txt
 fi
 
-# Setup bash history and colors in ~/.bashrc and ~/.profile
-if [ ! -f "$HOME/.bashrc" ]; then
-    cat << 'EOF' > "$HOME/.bashrc"
-# Enable color support of ls and also add handy aliases
-alias ls='ls --color=auto'
-alias dir='dir --color=auto'
-alias vdir='vdir --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-
-# Colored prompt
-export PS1='\[\e[38;5;46m\]\u\[\033[39m\]@reterm \[\033[39m\]\w \[\033[0m\]\$ '
-
-# Bash history settings
-export HISTFILE=$HOME/.bash_history
-export HISTSIZE=2000
-export HISTFILESIZE=5000
-export HISTCONTROL=ignoreboth
-shopt -s histappend
-EOF
-fi
-
-if [ ! -f "$HOME/.profile" ]; then
-    cat << 'EOF' > "$HOME/.profile"
-if [ -n "$BASH_VERSION" ]; then
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
-fi
-EOF
-fi
-
 if [ "$#" -eq 0 ]; then
     source /etc/profile
-    export PS1="\[\e[38;5;46m\]\u\[\033[39m\]@reterm \[\033[39m\]\w \[\033[0m\]\\$ "
+    install_hostname_wrapper
+    export HOST="$RUNTIME_HOSTNAME"
+    export HOSTNAME="$RUNTIME_HOSTNAME"
+    export PS1="\[\e]0;\u@$RUNTIME_HOSTNAME:\w\a\]\[\e[38;5;46m\]\u\[\033[39m\]@$RUNTIME_HOSTNAME \[\033[39m\]\w \[\033[0m\]\\$ "
     cd $HOME
-
-    echo -e "\e[32;1mWillkommen bei MobileIDE Terminal.\e[0m"
-    echo -e "\e[34mNutze den Paketmanager \e[32mapk\e[0m für diese Alpine-Distribution."
-    echo ""
-    echo ""
-    echo ""
-    echo -e "  \e[33mapk update && apk upgrade && apk add <paket>\e[0m"
-    echo ""
-
-    if [ -x /bin/bash ]; then
+    # Use shell from TERMIX_SHELL env var, fallback to bash > ash
+    if [ -n "$TERMIX_SHELL" ] && [ -x "$TERMIX_SHELL" ]; then
+        exec "$TERMIX_SHELL"
+    elif [ -x /bin/bash ]; then
         exec /bin/bash
-    elif [ -x /usr/bin/bash ]; then
-        exec /usr/bin/bash
     else
-        exec /bin/ash
+        /bin/ash
     fi
 else
     exec "$@"

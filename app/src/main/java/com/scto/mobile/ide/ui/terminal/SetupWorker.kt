@@ -187,9 +187,9 @@ object SetupWorker {
             val libDir = File(prefixDir, "local/lib")
             val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
-            val closeBehavior = com.rk.settings.Settings.terminal_close_behavior
-            val fontSize = com.rk.settings.Settings.terminal_font_size
-            val colorScheme = com.rk.settings.Settings.terminal_colorscheme
+            val closeBehavior = com.scto.mide.term.settings.Settings.terminal_close_behavior
+            val fontSize = com.scto.mide.term.settings.Settings.terminal_font_size
+            val colorScheme = com.scto.mide.term.settings.Settings.terminal_colorscheme
             val extraKeys = TerminalConfig.VIRTUAL_KEYS_JSON
 
             val prootFile = File(binDir, "proot")

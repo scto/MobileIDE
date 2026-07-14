@@ -2,15 +2,14 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ktfmt)
 }
 
 android {
     namespace = "org.robok.engine.core.components"
-    compileSdk = 37
-
+    compileSdk = 36
+    
     defaultConfig {
-        minSdk = 26
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -18,21 +17,26 @@ android {
         viewBinding = true
         compose = true
     }
-
+   
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
 dependencies {
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.material3)
     implementation(libs.material)
     implementation(libs.appcompat)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.material.icons.core)
-    // implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    
+    implementation(platform(libs.compose.bom))
+    implementation(libs.material3)
+    implementation(libs.material)
+    implementation(libs.ui)
+    implementation(libs.ui.graphics)
+    implementation(libs.activity.compose)
+    api(libs.androidx.material.icons.core)
 }

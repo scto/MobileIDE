@@ -35,18 +35,18 @@ fun TerminalSettingsScreen(navController: NavController) {
     val editorPrefs = remember { context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE) }
     var lspEnabled by remember { mutableStateOf(editorPrefs.getBoolean("editor_lsp_enabled", false)) }
 
-    var fontSize by remember { mutableFloatStateOf(com.rk.settings.Settings.terminal_font_size.toFloat()) }
+    var fontSize by remember { mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_font_size.toFloat()) }
     var scrollbackLines by remember {
-        mutableFloatStateOf(com.rk.settings.Settings.terminal_scrollback_lines.toFloat())
+        mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_scrollback_lines.toFloat())
     }
-    var closeBehavior by remember { mutableStateOf(com.rk.settings.Settings.terminal_close_behavior) }
-    var colorscheme by remember { mutableStateOf(com.rk.settings.Settings.terminal_colorscheme) }
+    var closeBehavior by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_close_behavior) }
+    var colorscheme by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_colorscheme) }
 
     LaunchedEffect(lspEnabled) { editorPrefs.edit { putBoolean("editor_lsp_enabled", lspEnabled) } }
-    LaunchedEffect(fontSize) { com.rk.settings.Settings.terminal_font_size = fontSize.toInt() }
-    LaunchedEffect(scrollbackLines) { com.rk.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
-    LaunchedEffect(closeBehavior) { com.rk.settings.Settings.terminal_close_behavior = closeBehavior }
-    LaunchedEffect(colorscheme) { com.rk.settings.Settings.terminal_colorscheme = colorscheme }
+    LaunchedEffect(fontSize) { com.scto.mide.term.settings.Settings.terminal_font_size = fontSize.toInt() }
+    LaunchedEffect(scrollbackLines) { com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
+    LaunchedEffect(closeBehavior) { com.scto.mide.term.settings.Settings.terminal_close_behavior = closeBehavior }
+    LaunchedEffect(colorscheme) { com.scto.mide.term.settings.Settings.terminal_colorscheme = colorscheme }
 
     Scaffold(
         topBar = {
