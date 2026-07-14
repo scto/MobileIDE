@@ -25,8 +25,8 @@ import android.os.Build
 import android.os.Environment
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.rk.resources.getString
-import com.rk.resources.strings
+import com.scto.mide.term.resources.getString
+import com.scto.mide.term.resources.strings
 import com.scto.mobile.ide.core.utils.toast
 import java.io.File
 

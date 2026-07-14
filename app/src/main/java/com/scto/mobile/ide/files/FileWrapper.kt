@@ -22,7 +22,7 @@ import android.content.Context
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
-import com.rk.resources.strings
+import com.scto.mide.term.resources.strings
 import com.scto.mobile.ide.core.utils.toast
 import java.io.File
 import java.io.FileInputStream

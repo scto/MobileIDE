@@ -36,7 +36,9 @@ fun BottomSpacer(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.navigationBarsPadding().imePadding())
         Spacer(
             modifier =
-                Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars).fillMaxWidth().pointerInput(Unit) {}
+                Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {}
         )
     }
 }

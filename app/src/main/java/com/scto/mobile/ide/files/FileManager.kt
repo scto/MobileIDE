@@ -29,7 +29,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
-import com.rk.resources.getString
+import com.scto.mide.term.resources.getString
 import com.scto.mobile.ide.core.utils.toast
 import com.scto.mobile.ide.utils.application
 import kotlinx.coroutines.CoroutineScope

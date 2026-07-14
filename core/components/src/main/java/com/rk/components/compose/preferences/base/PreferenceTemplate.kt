@@ -61,7 +61,9 @@ fun PreferenceTemplate(
                     .height(IntrinsicSize.Min)
                     .semantics(mergeDescendants = true) {}
                     .fillMaxWidth()
-                    .addIf(applyPaddings) { padding(horizontal = horizontalPadding, vertical = verticalPadding) },
+                    .addIf(applyPaddings) {
+                        padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                    },
         ) {
             startWidget?.let {
                 startWidget()

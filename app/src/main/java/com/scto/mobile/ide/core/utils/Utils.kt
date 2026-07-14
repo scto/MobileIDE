@@ -50,11 +50,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.core.net.toUri
 import com.blankj.utilcode.util.ThreadUtils
 import com.caverock.androidsvg.SVG
-import com.rk.resources.getQuantityString
-import com.rk.resources.getString
-import com.rk.resources.plurals
-import com.rk.resources.strings
-import com.rk.settings.Settings
+import com.scto.mide.term.resources.getQuantityString
+import com.scto.mide.term.resources.getString
+import com.scto.mide.term.resources.plurals
+import com.scto.mide.term.resources.strings
+import com.scto.mide.term.settings.Settings
 import com.scto.mobile.ide.files.BuiltinFileType
 import com.scto.mobile.ide.files.FileObject
 import com.scto.mobile.ide.utils.application

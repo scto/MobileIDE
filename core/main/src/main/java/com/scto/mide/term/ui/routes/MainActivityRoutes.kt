@@ -1,0 +1,6 @@
+package com.scto.mide.term.ui.routes
+
+sealed class MainActivityRoutes(val route: String) {
+    data object Settings : MainActivityRoutes("settings")
+    data object MainScreen : MainActivityRoutes("main")
+}

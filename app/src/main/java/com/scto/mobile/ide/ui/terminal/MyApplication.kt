@@ -19,8 +19,8 @@
 package com.scto.mobile.ide.ui.terminal
 
 import android.app.Application
-import com.rk.libcommons.application
-import com.rk.resources.Res
+import com.scto.mide.term.libcommons.application
+import com.scto.mide.term.resources.Res
 
 class MyApplication : Application() {
     override fun onCreate() {

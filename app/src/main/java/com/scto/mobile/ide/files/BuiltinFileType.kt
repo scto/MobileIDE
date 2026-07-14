@@ -18,9 +18,9 @@
 
 package com.scto.mobile.ide.files
 
-import com.rk.resources.drawables
-import com.rk.resources.getString
-import com.rk.resources.strings
+import com.scto.mide.term.resources.drawables
+import com.scto.mide.term.resources.getString
+import com.scto.mide.term.resources.strings
 import com.scto.mobile.ide.core.icons.Icon
 import com.scto.mobile.ide.core.icons.pack.currentIconPack
 
