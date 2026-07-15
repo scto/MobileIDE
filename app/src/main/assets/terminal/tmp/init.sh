@@ -5,8 +5,8 @@ export HOME=/root
 export DOTNET_GCHeapHardLimit=1C0000000
 
 resolve_runtime_hostname() {
-    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
-        printf '%s' "$TERMIX_GUEST_HOSTNAME"
+    if [ -n "$MOBILEIDE_GUEST_HOSTNAME" ]; then
+        printf '%s' "$MOBILEIDE_GUEST_HOSTNAME"
         return 0
     fi
 
@@ -30,13 +30,13 @@ resolve_runtime_hostname() {
 }
 
 install_hostname_wrapper() {
-    wrapper_dir=/tmp/termix-runtime/bin
+    wrapper_dir=/tmp/mobileide-runtime/bin
     mkdir -p "$wrapper_dir"
     cat > "$wrapper_dir/hostname" <<'EOF'
 #!/bin/sh
 resolve_name() {
-    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
-        printf '%s\n' "$TERMIX_GUEST_HOSTNAME"
+    if [ -n "$MOBILEIDE_GUEST_HOSTNAME" ]; then
+        printf '%s\n' "$MOBILEIDE_GUEST_HOSTNAME"
         return 0
     fi
 
@@ -67,7 +67,7 @@ EOF
 }
 
 RUNTIME_HOSTNAME=$(resolve_runtime_hostname)
-export TERMIX_GUEST_HOSTNAME="$RUNTIME_HOSTNAME"
+export MOBILEIDE_GUEST_HOSTNAME="$RUNTIME_HOSTNAME"
 export HOST="$RUNTIME_HOSTNAME"
 export HOSTNAME="$RUNTIME_HOSTNAME"
 install_hostname_wrapper
@@ -114,9 +114,9 @@ if [ "$#" -eq 0 ]; then
     export HOSTNAME="$RUNTIME_HOSTNAME"
     export PS1="\[\e]0;\u@$RUNTIME_HOSTNAME:\w\a\]\[\e[38;5;46m\]\u\[\033[39m\]@$RUNTIME_HOSTNAME \[\033[39m\]\w \[\033[0m\]\\$ "
     cd $HOME
-    # Use shell from TERMIX_SHELL env var, fallback to bash > ash
-    if [ -n "$TERMIX_SHELL" ] && [ -x "$TERMIX_SHELL" ]; then
-        exec "$TERMIX_SHELL"
+    # Use shell from MOBILEIDE_SHELL env var, fallback to bash > ash
+    if [ -n "$MOBILEIDE_SHELL" ] && [ -x "$MOBILEIDE_SHELL" ]; then
+        exec "$MOBILEIDE_SHELL"
     elif [ -x /bin/bash ]; then
         exec /bin/bash
     else

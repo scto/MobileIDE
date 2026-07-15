@@ -28,7 +28,6 @@ for sofile in "$PREFIX/files/"*.so.2; do
     [ ! -e "$dest" ] && cp "$sofile" "$dest"
 done
 
-
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
 
@@ -54,7 +53,21 @@ ARGS="$ARGS -b $PREFIX"
 ARGS="$ARGS -b $PREFIX/local/stat:/proc/stat"
 ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
 
+if [ -e "/proc/self/fd" ]; then
+  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+fi
 
+if [ -e "/proc/self/fd/0" ]; then
+  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
+fi
+
+if [ -e "/proc/self/fd/1" ]; then
+  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
+fi
+
+if [ -e "/proc/self/fd/2" ]; then
+  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
+fi
 
 ARGS="$ARGS -b $PREFIX"
 ARGS="$ARGS -b /sys"
@@ -71,6 +84,6 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-export TERMIX_GUEST_HOSTNAME="$GUEST_HOSTNAME"
+export MOBILEIDE_GUEST_HOSTNAME="$GUEST_HOSTNAME"
 
-exec "$LINKER" "$PREFIX/local/bin/proot" $ARGS env TERMIX_GUEST_HOSTNAME="$TERMIX_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init" "$@"
+exec "$LINKER" "$PREFIX/local/bin/proot" $ARGS env MOBILEIDE_GUEST_HOSTNAME="$MOBILEIDE_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init" "$@"

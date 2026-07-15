@@ -1,15 +1,15 @@
 #!/system/bin/sh
 set -e
 
-ARCH_DIR=$PREFIX/local/ubuntu
-ARCH_ROOTFS=$ARCH_DIR
-ARCH_READY_MARKER=$PREFIX/local/.termix-ubuntu-installed
+UBUNTU_DIR=$PREFIX/local/ubuntu
+UBUNTU_ROOTFS=$UBUNTU_DIR
+UBUNTU_READY_MARKER=$PREFIX/local/.mobileide-ubuntu-installed
 PROOT_BIN=$PREFIX/local/bin/proot
 LIB_DIR=$PREFIX/local/lib
 
 resolve_guest_hostname() {
-    if [ -r "$ARCH_ROOTFS/etc/hostname" ]; then
-        IFS= read -r guest_name < "$ARCH_ROOTFS/etc/hostname" || true
+    if [ -r "$UBUNTU_ROOTFS/etc/hostname" ]; then
+        IFS= read -r guest_name < "$UBUNTU_ROOTFS/etc/hostname" || true
         guest_name=${guest_name%%[[:space:]]*}
         if [ -n "$guest_name" ]; then
             printf '%s' "$guest_name"
@@ -20,14 +20,14 @@ resolve_guest_hostname() {
     printf '%s' "ubuntu"
 }
 
-TERMIX_HOST_TTY=$(tty 2>/dev/null || true)
-case "$TERMIX_HOST_TTY" in
+MOBILEIDE_HOST_TTY=$(tty 2>/dev/null || true)
+case "$MOBILEIDE_HOST_TTY" in
     ""|"not a tty"*)
-        TERMIX_HOST_TTY=
+        MOBILEIDE_HOST_TTY=
         ;;
 esac
 
-mkdir -p "$ARCH_DIR"
+mkdir -p "$UBUNTU_DIR"
 mkdir -p "$PREFIX/local/bin"
 mkdir -p "$LIB_DIR"
 
@@ -40,17 +40,17 @@ for sofile in "$PREFIX/files/"*.so.2; do
     [ ! -e "$dest" ] && cp "$sofile" "$dest"
 done
 
-if [ ! -f "$ARCH_READY_MARKER" ] || { [ ! -d "$ARCH_DIR/etc" ] && [ ! -d "$ARCH_DIR/root/etc" ]; }; then
-    echo "Ubuntu rootfs is not installed. Open Termix downloader to install Ubuntu."
+if [ ! -f "$UBUNTU_READY_MARKER" ] || { [ ! -d "$UBUNTU_DIR/etc" ] && [ ! -d "$UBUNTU_DIR/root/etc" ]; }; then
+    echo "Ubuntu rootfs is not installed. Open MobikeIDE downloader to install Ubuntu."
     exit 1
 fi
 
-if [ ! -d "$ARCH_DIR/etc" ] && [ -d "$ARCH_DIR/root/etc" ]; then
-    ARCH_ROOTFS=$ARCH_DIR/root
+if [ ! -d "$UBUNTU_DIR/etc" ] && [ -d "$UBUNTU_DIR/root/etc" ]; then
+    UBUNTU_ROOTFS=$UBUNTU_DIR/root
 fi
 
-if [ ! -d "$ARCH_ROOTFS/etc" ]; then
-    echo "Ubuntu rootfs extraction failed: missing '$ARCH_ROOTFS/etc'"
+if [ ! -d "$UBUNTU_ROOTFS/etc" ]; then
+    echo "Ubuntu rootfs extraction failed: missing '$UBUNTU_ROOTFS/etc'"
     exit 1
 fi
 
@@ -85,22 +85,22 @@ ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
 ARGS="$ARGS -b $PREFIX"
 ARGS="$ARGS -b /sys"
 
-if [ ! -d "$ARCH_ROOTFS/tmp" ]; then
- mkdir -p "$ARCH_ROOTFS/tmp"
- chmod 1777 "$ARCH_ROOTFS/tmp"
+if [ ! -d "$UBUNTU_ROOTFS/tmp" ]; then
+ mkdir -p "$UBUNTU_ROOTFS/tmp"
+ chmod 1777 "$UBUNTU_ROOTFS/tmp"
 fi
-ARGS="$ARGS -b $ARCH_ROOTFS/tmp:/dev/shm"
+ARGS="$ARGS -b $UBUNTU_ROOTFS/tmp:/dev/shm"
 
-ARGS="$ARGS -r $ARCH_ROOTFS"
+ARGS="$ARGS -r $UBUNTU_ROOTFS"
 ARGS="$ARGS -0"
 ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-export TERMIX_GUEST_HOSTNAME="$GUEST_HOSTNAME"
+export MOBILEIDE_GUEST_HOSTNAME="$GUEST_HOSTNAME"
 
-if [ -n "$TERMIX_HOST_TTY" ]; then
-    exec "$LINKER" "$PROOT_BIN" $ARGS env TERMIX_HOST_TTY="$TERMIX_HOST_TTY" TERMIX_GUEST_HOSTNAME="$TERMIX_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-ubuntu" "$@"
+if [ -n "$MOBILEIDE_HOST_TTY" ]; then
+    exec "$LINKER" "$PROOT_BIN" $ARGS env MOBILEIDE_HOST_TTY="$MOBILEIDE_HOST_TTY" MOBILEIDE_GUEST_HOSTNAME="$MOBILEIDE_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-ubuntu" "$@"
 fi
 
-exec "$LINKER" "$PROOT_BIN" $ARGS env TERMIX_GUEST_HOSTNAME="$TERMIX_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-ubuntu" "$@"
+exec "$LINKER" "$PROOT_BIN" $ARGS env MOBILEIDE_GUEST_HOSTNAME="$MOBILEIDE_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-ubuntu" "$@"

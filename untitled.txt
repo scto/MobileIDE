@@ -1,0 +1,11 @@
+
+app/src/main/java/com/scto/mobile/ide/App.kt
+app/src/main/java/com/scto/mobile/ide/core/icons/pack/IconPackManager.kt
+app/src/main/java/com/scto/mobile/ide/core/utils/dialogs.kt
+app/src/main/java/com/scto/mobile/ide/exec/ubuntuProcess.kt
+app/src/main/java/com/scto/mobile/ide/files/BuiltinFileType.kt
+app/src/main/java/com/scto/mobile/ide/ui/settings/SettingsScreen.kt
+app/src/main/java/com/scto/mobile/ide/ui/terminal/TerminalScreen.kt
+
+
+git rebase --continue

@@ -6,8 +6,8 @@ export HOME=/root
 export DOTNET_GCHeapHardLimit=1C0000000
 
 resolve_runtime_hostname() {
-    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
-        printf '%s' "$TERMIX_GUEST_HOSTNAME"
+    if [ -n "$MOBILEIDE_GUEST_HOSTNAME" ]; then
+        printf '%s' "$MOBILEIDE_GUEST_HOSTNAME"
         return 0
     fi
 
@@ -31,13 +31,13 @@ resolve_runtime_hostname() {
 }
 
 install_hostname_wrapper() {
-    wrapper_dir=/tmp/termix-runtime/bin
+    wrapper_dir=/tmp/mobileide-runtime/bin
     mkdir -p "$wrapper_dir"
     cat > "$wrapper_dir/hostname" <<'EOF'
 #!/bin/sh
 resolve_name() {
-    if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then
-        printf '%s\n' "$TERMIX_GUEST_HOSTNAME"
+    if [ -n "$MOBILEIDE_GUEST_HOSTNAME" ]; then
+        printf '%s\n' "$MOBILEIDE_GUEST_HOSTNAME"
         return 0
     fi
 
@@ -68,7 +68,7 @@ EOF
 }
 
 RUNTIME_HOSTNAME=$(resolve_runtime_hostname)
-export TERMIX_GUEST_HOSTNAME="$RUNTIME_HOSTNAME"
+export MOBILEIDE_GUEST_HOSTNAME="$RUNTIME_HOSTNAME"
 export HOST="$RUNTIME_HOSTNAME"
 export HOSTNAME="$RUNTIME_HOSTNAME"
 install_hostname_wrapper
@@ -84,7 +84,7 @@ if [ ! -s /etc/resolv.conf ]; then
 fi
 
 if [ -f /etc/locale.gen ] && [ ! -f /etc/locale-gen.done ]; then
-    echo "[Termix] Generating locales..."
+    echo "[MobikeIDE] Generating locales..."
     sed -i -E "s/^#\s*(en_US.UTF-8\s+UTF-8)/\1/" /etc/locale.gen || true
     locale-gen || true
     touch /etc/locale-gen.done
@@ -112,7 +112,7 @@ reattach_tty_streams() {
             ;;
     esac
 
-    if [ -n "$TERMIX_HOST_TTY" ] && [ -e "$TERMIX_HOST_TTY" ] && exec 0<>"$TERMIX_HOST_TTY" 1>&0 2>&0 && tty >/dev/null 2>&1; then
+    if [ -n "$MOBILEIDE_HOST_TTY" ] && [ -e "$MOBILEIDE_HOST_TTY" ] && exec 0<>"$MOBILEIDE_HOST_TTY" 1>&0 2>&0 && tty >/dev/null 2>&1; then
         return 0
     fi
 
@@ -127,11 +127,11 @@ fi
 launch_interactive_shell() {
     set +e
 
-    if [ -z "$TERMIX_SHELL" ]; then
-        TERMIX_SHELL=/bin/sh
+    if [ -z "$MOBILEIDE_SHELL" ]; then
+        MOBILEIDE_SHELL=/bin/sh
     fi
 
-    shell_name=$(basename "$TERMIX_SHELL")
+    shell_name=$(basename "$MOBILEIDE_SHELL")
 
     if [ "$shell_name" = "bash" ]; then
         if [ -z "$TERM" ] || [ "$TERM" = "dumb" ]; then
@@ -142,23 +142,23 @@ launch_interactive_shell() {
         export PS1="$ubuntu_bash_ps1"
     fi
 
-    if [ -n "$TERMIX_SHELL" ] && [ -x "$TERMIX_SHELL" ]; then
+    if [ -n "$MOBILEIDE_SHELL" ] && [ -x "$MOBILEIDE_SHELL" ]; then
         reattach_tty_streams || true
         case "$shell_name" in
             bash)
-                exec "$TERMIX_SHELL" -i
+                exec "$MOBILEIDE_SHELL" -i
                 ;;
             zsh|ksh)
-                exec "$TERMIX_SHELL" -il
+                exec "$MOBILEIDE_SHELL" -il
                 ;;
             sh|ash|dash)
-                exec "$TERMIX_SHELL" -i
+                exec "$MOBILEIDE_SHELL" -i
                 ;;
             *)
-                exec "$TERMIX_SHELL"
+                exec "$MOBILEIDE_SHELL"
                 ;;
         esac
-        echo "[Termix] Failed to exec TERMIX_SHELL=$TERMIX_SHELL, falling back..."
+        echo "[MobikeIDE] Failed to exec MOBILEIDE_SHELL=$MOBILEIDE_SHELL, falling back..."
     fi
 
     exec /bin/sh -i
