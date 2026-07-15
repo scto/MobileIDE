@@ -55,19 +55,42 @@ ARGS="$ARGS -b $PREFIX/local/stat:/proc/stat"
 ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
 
 if [ -e "/proc/self/fd" ]; then
-  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+  bind_fd=1
+  for fd in 0 1 2; do
+    if [ -e "/proc/self/fd/$fd" ]; then
+      target=$(readlink "/proc/self/fd/$fd" 2>/dev/null)
+      case "$target" in
+        pipe:*|socket:*) bind_fd=0 ;;
+      esac
+    fi
+  done
+  if [ "$bind_fd" -eq 1 ]; then
+    ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+  fi
 fi
 
 if [ -e "/proc/self/fd/0" ]; then
-  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
+  target=$(readlink "/proc/self/fd/0" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin" ;;
+  esac
 fi
 
 if [ -e "/proc/self/fd/1" ]; then
-  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
+  target=$(readlink "/proc/self/fd/1" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout" ;;
+  esac
 fi
 
 if [ -e "/proc/self/fd/2" ]; then
-  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
+  target=$(readlink "/proc/self/fd/2" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr" ;;
+  esac
 fi
 
 

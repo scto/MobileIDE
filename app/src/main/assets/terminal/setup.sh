@@ -28,7 +28,18 @@ ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $PRIVATE_DIR"
 
 if [ -e "/proc/self/fd" ]; then
-  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+  bind_fd=1
+  for fd in 0 1 2; do
+    if [ -e "/proc/self/fd/$fd" ]; then
+      target=$(readlink "/proc/self/fd/$fd" 2>/dev/null)
+      case "$target" in
+        pipe:*|socket:*) bind_fd=0 ;;
+      esac
+    fi
+  done
+  if [ "$bind_fd" -eq 1 ]; then
+    ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+  fi
 fi
 
 if [ -e "/proc/self/fd/0" ]; then
