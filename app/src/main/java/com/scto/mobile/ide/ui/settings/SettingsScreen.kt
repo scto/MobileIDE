@@ -189,8 +189,12 @@ fun SettingsScreen(
     var scrollbackLines by remember {
         mutableFloatStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_scrollback_lines.toFloat())
     }
-    var closeBehavior by remember { mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior) }
-    var colorscheme by remember { mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme) }
+    var closeBehavior by remember {
+        mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior)
+    }
+    var colorscheme by remember {
+        mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme)
+    }
 
     LaunchedEffect(terminalFontSize) {
         com.scto.mobile.ide.core.terminal.settings.Settings.terminal_font_size = terminalFontSize.toInt()
@@ -198,8 +202,12 @@ fun SettingsScreen(
     LaunchedEffect(scrollbackLines) {
         com.scto.mobile.ide.core.terminal.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt()
     }
-    LaunchedEffect(closeBehavior) { com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior = closeBehavior }
-    LaunchedEffect(colorscheme) { com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme = colorscheme }
+    LaunchedEffect(closeBehavior) {
+        com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior = closeBehavior
+    }
+    LaunchedEffect(colorscheme) {
+        com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme = colorscheme
+    }
 
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()

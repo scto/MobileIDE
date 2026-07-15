@@ -18,11 +18,11 @@
 
 package com.scto.mobile.ide.files
 
+import com.scto.mobile.ide.core.icons.Icon
+import com.scto.mobile.ide.core.icons.pack.currentIconPack
 import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.core.icons.Icon
-import com.scto.mobile.ide.core.icons.pack.currentIconPack
 
 private val java = drawables.baseline_android_24
 private val html = drawables.baseline_android_24
