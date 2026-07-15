@@ -36,8 +36,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.scto.mide.term.resources.getString
-import com.scto.mide.term.resources.strings
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

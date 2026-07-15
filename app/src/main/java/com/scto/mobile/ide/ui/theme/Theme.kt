@@ -755,8 +755,8 @@ fun AppTheme(themeState: ThemeState, content: @Composable () -> Unit) {
     }
 
     LaunchedEffect(animatedColorScheme, useDarkTheme) {
-        com.scto.mide.term.ui.theme.SharedThemeState.currentColorScheme.value = animatedColorScheme
-        com.scto.mide.term.ui.theme.SharedThemeState.isDark.value = useDarkTheme
+        com.scto.mobile.ide.core.terminal.ui.theme.SharedThemeState.currentColorScheme.value = animatedColorScheme
+        com.scto.mobile.ide.core.terminal.ui.theme.SharedThemeState.isDark.value = useDarkTheme
     }
 
     MaterialTheme(colorScheme = animatedColorScheme, typography = Typography, content = content)

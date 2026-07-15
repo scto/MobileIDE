@@ -20,7 +20,7 @@ package com.scto.mobile.ide.exec
 
 import android.annotation.SuppressLint
 import android.util.Log
-import com.scto.mide.term.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.BuildConfig
 import com.scto.mobile.ide.core.utils.getSourceDirOfPackage
 import com.scto.mobile.ide.core.utils.getTempDir

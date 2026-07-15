@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <provider
-            android:name="com.scto.mide.term.AlpineDocumentProvider"
+            android:name="com.scto.mobile.ide.core.terminal.AlpineDocumentProvider"
             android:authorities="${applicationId}.documents"
             android:exported="true"
             android:grantUriPermissions="true"

@@ -29,9 +29,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import com.scto.mide.term.resources.getString
-import com.scto.mide.term.resources.strings
-import com.scto.mide.term.settings.Settings
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.utils.dialogRes
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope

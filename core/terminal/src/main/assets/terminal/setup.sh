@@ -27,44 +27,7 @@ ARGS="$ARGS -b /dev/urandom:/dev/random"
 ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $PRIVATE_DIR"
 
-if [ -e "/proc/self/fd" ]; then
-  bind_fd=1
-  for fd in 0 1 2; do
-    if [ -e "/proc/self/fd/$fd" ]; then
-      target=$(readlink "/proc/self/fd/$fd" 2>/dev/null)
-      case "$target" in
-        pipe:*|socket:*) bind_fd=0 ;;
-      esac
-    fi
-  done
-  if [ "$bind_fd" -eq 1 ]; then
-    ARGS="$ARGS -b /proc/self/fd:/dev/fd"
-  fi
-fi
 
-if [ -e "/proc/self/fd/0" ]; then
-  target=$(readlink "/proc/self/fd/0" 2>/dev/null)
-  case "$target" in
-    pipe:*|socket:*) ;;
-    *) ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin" ;;
-  esac
-fi
-
-if [ -e "/proc/self/fd/1" ]; then
-  target=$(readlink "/proc/self/fd/1" 2>/dev/null)
-  case "$target" in
-    pipe:*|socket:*) ;;
-    *) ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout" ;;
-  esac
-fi
-
-if [ -e "/proc/self/fd/2" ]; then
-  target=$(readlink "/proc/self/fd/2" 2>/dev/null)
-  case "$target" in
-    pipe:*|socket:*) ;;
-    *) ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr" ;;
-  esac
-fi
 
 ARGS="$ARGS -b $PRIVATE_DIR"
 ARGS="$ARGS -b /sys"

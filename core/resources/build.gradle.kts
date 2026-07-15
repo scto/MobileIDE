@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mide.term.resources"
+    namespace = "com.scto.mobile.ide.core.terminal.resources"
     compileSdk = 36
 
     lint.disable += "MissingTranslation"

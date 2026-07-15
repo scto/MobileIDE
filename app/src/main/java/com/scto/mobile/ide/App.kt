@@ -1,13 +1,13 @@
 package com.scto.mobile.ide
 
 // import com.github.anrwatchdog.ANRWatchDog
-// import com.scto.mide.term.libcommons.application
+// import com.scto.mobile.ide.core.terminal.libcommons.application
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
-import com.scto.mide.term.crashhandler.CrashHandler
-import com.scto.mide.term.resources.Res
-import com.scto.mide.term.update.UpdateManager
+import com.scto.mobile.ide.core.terminal.crashhandler.CrashHandler
+import com.scto.mobile.ide.core.terminal.resources.Res
+import com.scto.mobile.ide.core.terminal.update.UpdateManager
 import com.scto.mobile.ide.core.icons.pack.IconPackManager
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
@@ -37,7 +37,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         application = this
-        com.scto.mide.term.libcommons.application = this
+        com.scto.mobile.ide.core.terminal.libcommons.application = this
         Res.application = this
         iconPackManager = IconPackManager(this)
 

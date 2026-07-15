@@ -22,9 +22,9 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.pm.PackageInfoCompat
-import com.scto.mide.term.resources.getString
-import com.scto.mide.term.resources.strings
-import com.scto.mide.term.settings.Settings
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.core.utils.dialogRes
 import com.scto.mobile.ide.files.child

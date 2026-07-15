@@ -49,11 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavController
-import com.scto.mide.term.libcommons.application
-import com.scto.mide.term.ui.screens.terminal.TerminalBackEnd
-import com.scto.mide.term.ui.screens.terminal.virtualkeys.VirtualKeysConstants
-import com.scto.mide.term.ui.screens.terminal.virtualkeys.VirtualKeysInfo
-import com.scto.mide.term.ui.screens.terminal.virtualkeys.VirtualKeysView
+import com.scto.mobile.ide.core.terminal.libcommons.application
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalBackEnd
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
 import com.termux.view.TerminalView
@@ -251,7 +251,7 @@ fun TerminalScreen(navController: NavController) {
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
     val sessions = SessionManager.sessions
     LaunchedEffect(sessions.size) {
-        if (sessions.isEmpty() && com.scto.mide.term.settings.Settings.terminal_close_behavior == "exit_app") {
+        if (sessions.isEmpty() && com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior == "exit_app") {
             navController.popBackStack()
         }
     }
@@ -543,7 +543,7 @@ fun TerminalScreen(navController: NavController) {
                                         terminalViewRef = WeakReference(this)
                                     }
                                     val fontSizePx =
-                                        (com.scto.mide.term.settings.Settings.terminal_font_size *
+                                        (com.scto.mobile.ide.core.terminal.settings.Settings.terminal_font_size *
                                                 ctx.resources.displayMetrics.scaledDensity)
                                             .toInt()
                                     setTextSize(fontSizePx)
@@ -564,7 +564,7 @@ fun TerminalScreen(navController: NavController) {
 
                                     val props = java.util.Properties()
                                     try {
-                                        val scheme = com.scto.mide.term.settings.Settings.terminal_colorscheme
+                                        val scheme = com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
                                         ctx.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
                                             props.load(input)
                                         }
@@ -581,7 +581,7 @@ fun TerminalScreen(navController: NavController) {
                                 }
                                 view.setTypeface(TerminalFontManager.getTypeface(context))
                                 val fontSizePx =
-                                    (com.scto.mide.term.settings.Settings.terminal_font_size *
+                                    (com.scto.mobile.ide.core.terminal.settings.Settings.terminal_font_size *
                                             context.resources.displayMetrics.scaledDensity)
                                         .toInt()
                                 view.setTextSize(fontSizePx)
@@ -589,7 +589,7 @@ fun TerminalScreen(navController: NavController) {
 
                                 val props = java.util.Properties()
                                 try {
-                                    val scheme = com.scto.mide.term.settings.Settings.terminal_colorscheme
+                                    val scheme = com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
                                     context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
                                         props.load(input)
                                     }

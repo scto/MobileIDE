@@ -97,7 +97,7 @@ object SessionManager {
             currentSessionIndex = (sessions.size - 1).coerceAtLeast(0)
         }
         if (sessions.isEmpty()) {
-            if (com.scto.mide.term.settings.Settings.terminal_close_behavior == "new_session") {
+            if (com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior == "new_session") {
                 val ctx = com.scto.mobile.ide.utils.application
                 if (ctx != null) {
                     addNewSession(ctx)

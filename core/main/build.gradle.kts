@@ -18,7 +18,7 @@ val gitCommitDate: Provider<String> =
 
 
 android {
-    namespace = "com.scto.mide.term.core"
+    namespace = "com.scto.mobile.ide.core.terminal.core"
     android.buildFeatures.buildConfig = true
     compileSdk = 36
 
