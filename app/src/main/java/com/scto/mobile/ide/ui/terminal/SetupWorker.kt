@@ -166,11 +166,8 @@ object SetupWorker {
                 throw IllegalStateException("RootFS Datei fehlt nach dem Download.")
             }
 
-            // 4. Extract rootfs is deferred to setup.sh inside the terminal session
-            LogCatcher.i("SetupWorker", "Deferring rootfs extraction to setup.sh inside the terminal session.")
-
-            // 5. Place proot + libs in local/bin and local/lib.
-            onStatusChanged?.invoke("Installation wird abgeschlossen...")
+            // 4. Place proot + libs in local/bin and local/lib.
+            onStatusChanged?.invoke("Basis-Komponenten werden vorbereitet...")
             binDir.mkdirs()
             libDir.mkdirs()
 
@@ -188,6 +185,120 @@ object SetupWorker {
                 prootSrc.copyTo(File(binDir, "proot"), overwrite = true)
                 File(binDir, "proot").setExecutable(true)
             }
+
+            // Copy terminal script assets to local/bin and make them executable
+            forceCopyAsset(context, "terminal/init-host.sh", File(binDir, "init-host"))
+            forceCopyAsset(context, "terminal/init.sh", File(binDir, "init"))
+            forceCopyAsset(context, "terminal/utils.sh", File(binDir, "utils"))
+            forceCopyAsset(context, "terminal/setup.sh", File(binDir, "setup"))
+            forceCopyAsset(context, "terminal/sandbox.sh", File(binDir, "sandbox"))
+            forceCopyAsset(context, "terminal/universal_runner.sh", File(binDir, "universal_runner"))
+            forceCopyAsset(context, "terminal/termux-x11.sh", File(binDir, "termux-x11"))
+            forceCopyAsset(context, "terminal/bin/ideenv", File(binDir, "ideenv"))
+            forceCopyAsset(context, "terminal/bin/idesetup", File(binDir, "idesetup"))
+
+            val lspDir = File(binDir, "lsp").apply { mkdirs() }
+            val lspAssets = context.assets.list("terminal/lsp") ?: emptyArray()
+            for (asset in lspAssets) {
+                forceCopyAsset(context, "terminal/lsp/$asset", File(lspDir, asset))
+                File(lspDir, asset).setExecutable(true)
+            }
+
+            File(binDir, "init-host").setExecutable(true)
+            File(binDir, "init").setExecutable(true)
+            File(binDir, "utils").setExecutable(true)
+            File(binDir, "setup").setExecutable(true)
+            File(binDir, "sandbox").setExecutable(true)
+            File(binDir, "universal_runner").setExecutable(true)
+            File(binDir, "termux-x11").setExecutable(true)
+            File(binDir, "ideenv").setExecutable(true)
+            File(binDir, "idesetup").setExecutable(true)
+
+            distroDir.mkdirs()
+            val sandboxLink = File(prefixDir, "local/sandbox")
+            var symlinkCreated = false
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                try {
+                    if (sandboxLink.exists() || java.nio.file.Files.isSymbolicLink(sandboxLink.toPath())) {
+                        sandboxLink.delete()
+                    }
+                    java.nio.file.Files.createSymbolicLink(sandboxLink.toPath(), distroDir.toPath())
+                    symlinkCreated = true
+                } catch (e: Exception) {
+                    LogCatcher.e("SetupWorker", "Failed to create sandbox symlink via Files", e)
+                }
+            }
+            if (!symlinkCreated) {
+                try {
+                    Runtime.getRuntime().exec(arrayOf("ln", "-snf", distroDir.absolutePath, sandboxLink.absolutePath)).waitFor()
+                } catch (ex: Exception) {
+                    LogCatcher.e("SetupWorker", "Fallback symlink creation failed", ex)
+                }
+            }
+
+            // Copy rootfs archive to the cache directory as sandbox.tar.gz
+            val sandboxTar = File(context.cacheDir, "sandbox.tar.gz")
+            if (rootfsTar.exists()) {
+                rootfsTar.copyTo(sandboxTar, overwrite = true)
+            }
+
+            // Execute setup.sh in the background to extract and install all tools
+            onStatusChanged?.invoke("Extraktion und Installation wird gestartet...")
+            val nativeLibDir = context.applicationInfo.nativeLibraryDir
+            val libProot = File(nativeLibDir, "libproot.so")
+            val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
+
+            val pb = ProcessBuilder("sh", File(binDir, "setup").absolutePath, "true")
+            val pbEnv = pb.environment()
+            pbEnv["PATH"] = "${System.getenv("PATH")}:/sbin:${binDir.absolutePath}"
+            pbEnv["HOME"] = "/home"
+            pbEnv["TERM"] = "xterm-256color"
+            pbEnv["LANG"] = "C.UTF-8"
+            pbEnv["PREFIX"] = prefixDir.absolutePath
+            pbEnv["LOCAL"] = "${prefixDir.absolutePath}/local"
+            pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
+            pbEnv["LINKER"] = if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
+            pbEnv["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
+            pbEnv["TMPDIR"] = context.cacheDir.absolutePath
+            pbEnv["PROOT"] = prootExec
+            pbEnv["PROOT_EXEC"] = prootExec
+            pbEnv["TMP_DIR"] = context.cacheDir.absolutePath
+            pbEnv["PRIVATE_DIR"] = context.filesDir.absolutePath
+            pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
+
+            if (File(nativeLibDir, "libproot-loader.so").exists()) {
+                pbEnv["PROOT_LOADER"] = "${nativeLibDir}/libproot-loader.so"
+            }
+            if (File(nativeLibDir, "libproot-loader32.so").exists()) {
+                pbEnv["PROOT_LOADER32"] = "${nativeLibDir}/libproot-loader32.so"
+            }
+
+            pb.redirectErrorStream(true)
+            val process = pb.start()
+
+            // Read setup.sh output line by line, strip ANSI color sequences, and update screen status
+            val ansiRegex = Regex("\u001B\\[[;\\d]*[a-zA-Z]")
+            process.inputStream.bufferedReader().use { reader ->
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
+                    if (cleanLine.isNotEmpty()) {
+                        LogCatcher.i("SetupWorker", "[setup.sh] $cleanLine")
+                        withContext(Dispatchers.Main) {
+                            onStatusChanged?.invoke(cleanLine)
+                        }
+                    }
+                }
+            }
+
+            val exitCode = process.waitFor()
+            if (exitCode != 0) {
+                throw IllegalStateException("Setup-Skript fehlgeschlagen mit Exit-Code $exitCode")
+            }
+
+            if (sandboxTar.exists()) {
+                sandboxTar.delete()
+            }
         }
     }
 
@@ -200,6 +311,17 @@ object SetupWorker {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private fun forceCopyAsset(context: Context, assetName: String, destFile: File) {
+        try {
+            destFile.parentFile?.mkdirs()
+            context.assets.open(assetName).use { input ->
+                FileOutputStream(destFile).use { output -> input.copyTo(output) }
+            }
+        } catch (e: Exception) {
+            LogCatcher.e("SetupWorker", "Failed to force copy asset $assetName", e)
         }
     }
 

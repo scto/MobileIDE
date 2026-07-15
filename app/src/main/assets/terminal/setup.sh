@@ -151,7 +151,7 @@ if [ -f "$LOCAL/setup_options.properties" ]; then
 fi
 
 # Build packages list
-packages="bash-completion"
+packages="bash-completion command-not-found sudo xkb-data libjemalloc-dev"
 if [ "$INSTALL_GIT" = "true" ]; then
     packages="$packages git"
 fi
@@ -168,6 +168,11 @@ fi
 
 info "Installing selected packages inside Ubuntu container: $packages..."
 sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"
+
+# Mark packages as ensured to prevent slow startup in init.sh
+mkdir -p "$SANDBOX_DIR/.cache"
+touch "$SANDBOX_DIR/.cache/.packages_ensured"
+sh $LOCAL/bin/sandbox "update-command-not-found" >/dev/null 2>&1 || true
 
 if [ "$INSTALL_GRADLE" != "none" ] && [ "$INSTALL_GRADLE" != "apt" ]; then
     info "Installing custom Gradle version $INSTALL_GRADLE..."
