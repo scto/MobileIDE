@@ -1,0 +1,184 @@
+Welcome to AndroidCodeStudio Terminal
+  - GitHub: https://github.com/AndroidCSOfficial/AndroidCSLite
+  - Issues: https://github.com/AndroidCSOfficial/AndroidCSLite/issues
+  - Telegram: https://t.me/AndroidCodeStudio
+[*] Installing: command-not-found sudo xkb-data wget box64 curl xz-utils ninja-build
+0% [Connecting to ports.ubuntu.com (2620:2d:4002:1::10a)]android_sdk_setup --install --ndk
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing InRelease
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing-updates InRelease
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing-security InRelease
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing-security InRelease
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing-updates InRelease
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing InRelease
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing InRelease
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing-updates InRelease
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing-security InRelease
+Err:3 http://ports.ubuntu.com/ubuntu-ports questing-security InRelease
+  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+Err:2 http://ports.ubuntu.com/ubuntu-ports questing-updates InRelease
+  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+Err:1 http://ports.ubuntu.com/ubuntu-ports questing InRelease
+  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable) Could not connect to ports.ubuntu.com:80 (91.189.91.104), connection timed out Could not connect to ports.ubuntu.com:80 (91.189.91.103), connection timed out Could not connect to ports.ubuntu.com:80 (91.189.91.102), connection timed out
+  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+50 packages can be upgraded. Run 'apt list --upgradable' to see them.
+Warning: Failed to fetch http://ports.ubuntu.com/ubuntu-ports/dists/questing/InRelease  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+Warning: Failed to fetch http://ports.ubuntu.com/ubuntu-ports/dists/questing-updates/InRelease  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+Warning: Failed to fetch http://ports.ubuntu.com/ubuntu-ports/dists/questing-security/InRelease  Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10c). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10b). - connect (101: Network is unreachable) Cannot initiate the connection to ports.ubuntu.com:80 (2620:2d:4002:1::10a). - connect (101: Network is unreachable)
+Warning: Some index files failed to download. They have been ignored, or old ones used instead.
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Waiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontendWaiting for cache lock: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 16523 (apt)
+Reading package lists... 0%                                           Installing:
+  box64              curl         sudo  xkb-data
+  command-not-found  ninja-build  wget  xz-utils
+
+Installing dependencies:
+  gcc-15-cross-base      libstdc++6-amd64-cross
+  libc6-amd64-cross      python3-commandnotfound
+  libcurl4t64            python3-gdbm
+  libgcc-s1-amd64-cross  python3.13-gdbm
+  libgdbm6t64
+
+Suggested packages:
+  snapd  gdbm-l10n  python3-gdbm-dbg
+
+Recommended packages:
+  bash-completion  sudo-rs
+
+Summary:
+  Upgrading: 0, Installing: 17, Removing: 0, Not Upgrading: 50
+  Download size: 9512 kB
+  Space needed: 39.9 MB / 14.5 GB available
+
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 sudo arm64 1.9.17p2-1ubuntu1.1
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 xkb-data all 2.42-1ubuntu1
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgdbm6t64 arm64 1.26-1
+Ign:4 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 python3.13-gdbm arm64 3.13.7-1ubuntu0.4
+Ign:5 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-gdbm arm64 3.13.5-1
+Ign:6 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-commandnotfound all 23.04.0
+Ign:7 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 command-not-found all 23.04.0
+Ign:8 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 wget arm64 1.25.0-2ubuntu3
+Ign:9 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1
+Ign:10 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 gcc-15-cross-base all 15.2.0-4ubuntu4cross1
+Ign:11 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgcc-s1-amd64-cross all 15.2.0-4ubuntu4cross1
+Ign:11 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgcc-s1-amd64-cross all 15.2.0-4ubuntu4cross1
+Ign:10 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 gcc-15-cross-base all 15.2.0-4ubuntu4cross1
+Ign:9 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1
+Ign:8 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 wget arm64 1.25.0-2ubuntu3
+Ign:7 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 command-not-found all 23.04.0
+Ign:6 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-commandnotfound all 23.04.0
+Ign:5 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-gdbm arm64 3.13.5-1
+Ign:4 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 python3.13-gdbm arm64 3.13.7-1ubuntu0.4
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgdbm6t64 arm64 1.26-1
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 xkb-data all 2.42-1ubuntu1
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 sudo arm64 1.9.17p2-1ubuntu1.1
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 sudo arm64 1.9.17p2-1ubuntu1.1
+Ign:2 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 xkb-data all 2.42-1ubuntu1
+Ign:3 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgdbm6t64 arm64 1.26-1
+Ign:4 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 python3.13-gdbm arm64 3.13.7-1ubuntu0.4
+Ign:5 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-gdbm arm64 3.13.5-1
+Ign:6 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-commandnotfound all 23.04.0
+Ign:7 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 command-not-found all 23.04.0
+Ign:8 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 wget arm64 1.25.0-2ubuntu3
+Ign:9 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1
+Ign:10 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 gcc-15-cross-base all 15.2.0-4ubuntu4cross1
+Ign:11 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgcc-s1-amd64-cross all 15.2.0-4ubuntu4cross1
+Err:11 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgcc-s1-amd64-cross all 15.2.0-4ubuntu4cross1
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:10 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 gcc-15-cross-base all 15.2.0-4ubuntu4cross1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:9 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1
+Err:8 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 wget arm64 1.25.0-2ubuntu3
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:7 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 command-not-found all 23.04.0
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:6 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-commandnotfound all 23.04.0
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:5 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 python3-gdbm arm64 3.13.5-1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:4 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 python3.13-gdbm arm64 3.13.7-1ubuntu0.4
+Err:3 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libgdbm6t64 arm64 1.26-1
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:2 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 xkb-data all 2.42-1ubuntu1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:1 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 sudo arm64 1.9.17p2-1ubuntu1.1
+Ign:12 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libc6-amd64-cross all 2.42-0ubuntu3cross1
+Ign:13 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libstdc++6-amd64-cross all 15.2.0-4ubuntu4cross1
+Err:9 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:14 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 box64 arm64 0.3.4+dfsg-1
+Ign:15 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 libcurl4t64 arm64 8.14.1-2ubuntu1.5
+Ign:16 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 curl arm64 8.14.1-2ubuntu1.5
+Ign:17 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 ninja-build arm64 1.12.1-1
+Err:4 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 python3.13-gdbm arm64 3.13.7-1ubuntu0.4
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:1 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 sudo arm64 1.9.17p2-1ubuntu1.1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:17 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 ninja-build arm64 1.12.1-1
+Ign:16 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 curl arm64 8.14.1-2ubuntu1.5
+Ign:15 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 libcurl4t64 arm64 8.14.1-2ubuntu1.5
+Ign:14 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 box64 arm64 0.3.4+dfsg-1
+Ign:13 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libstdc++6-amd64-cross all 15.2.0-4ubuntu4cross1
+Ign:12 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libc6-amd64-cross all 2.42-0ubuntu3cross1
+Ign:12 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libc6-amd64-cross all 2.42-0ubuntu3cross1
+Ign:13 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libstdc++6-amd64-cross all 15.2.0-4ubuntu4cross1
+Ign:14 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 box64 arm64 0.3.4+dfsg-1
+Ign:15 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 libcurl4t64 arm64 8.14.1-2ubuntu1.5
+Ign:16 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 curl arm64 8.14.1-2ubuntu1.5
+Ign:17 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 ninja-build arm64 1.12.1-1
+Err:17 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 ninja-build arm64 1.12.1-1
+  Temporary failure resolving 'ports.ubuntu.com'
+Ign:16 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 curl arm64 8.14.1-2ubuntu1.5
+Ign:15 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 libcurl4t64 arm64 8.14.1-2ubuntu1.5
+Err:14 http://ports.ubuntu.com/ubuntu-ports questing/universe arm64 box64 arm64 0.3.4+dfsg-1
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:13 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libstdc++6-amd64-cross all 15.2.0-4ubuntu4cross1
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:12 http://ports.ubuntu.com/ubuntu-ports questing/main arm64 libc6-amd64-cross all 2.42-0ubuntu3cross1
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:16 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 curl arm64 8.14.1-2ubuntu1.5
+  Temporary failure resolving 'ports.ubuntu.com'
+Err:15 http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 libcurl4t64 arm64 8.14.1-2ubuntu1.5
+  Temporary failure resolving 'ports.ubuntu.com'
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://ports.ubuntu.com/ubuntu-ports questing-updates/main arm64 xz-utils arm64 5.8.1-1ubuntu0.1, but failed
+Warning: Tried to start delayed item http://po

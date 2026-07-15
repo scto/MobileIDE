@@ -18,6 +18,12 @@
 
 package com.scto.mobile.ide.files
 
+<<<<<<< HEAD
+=======
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
+>>>>>>> d56be57 (refac: term)
 import com.scto.mobile.ide.core.icons.Icon
 import com.scto.mobile.ide.core.icons.pack.currentIconPack
 import com.scto.mobile.ide.core.terminal.resources.drawables
