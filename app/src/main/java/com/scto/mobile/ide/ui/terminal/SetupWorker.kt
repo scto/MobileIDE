@@ -230,7 +230,9 @@ object SetupWorker {
             }
             if (!symlinkCreated) {
                 try {
-                    Runtime.getRuntime().exec(arrayOf("ln", "-snf", distroDir.absolutePath, sandboxLink.absolutePath)).waitFor()
+                    Runtime.getRuntime()
+                        .exec(arrayOf("ln", "-snf", distroDir.absolutePath, sandboxLink.absolutePath))
+                        .waitFor()
                 } catch (ex: Exception) {
                     LogCatcher.e("SetupWorker", "Fallback symlink creation failed", ex)
                 }
@@ -257,7 +259,8 @@ object SetupWorker {
             pbEnv["PREFIX"] = prefixDir.absolutePath
             pbEnv["LOCAL"] = "${prefixDir.absolutePath}/local"
             pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
-            pbEnv["LINKER"] = if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
+            pbEnv["LINKER"] =
+                if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
             pbEnv["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
             pbEnv["TMPDIR"] = context.cacheDir.absolutePath
             pbEnv["PROOT"] = prootExec
@@ -284,9 +287,7 @@ object SetupWorker {
                     val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
                     if (cleanLine.isNotEmpty()) {
                         LogCatcher.i("SetupWorker", "[setup.sh] $cleanLine")
-                        withContext(Dispatchers.Main) {
-                            onStatusChanged?.invoke(cleanLine)
-                        }
+                        withContext(Dispatchers.Main) { onStatusChanged?.invoke(cleanLine) }
                     }
                 }
             }
