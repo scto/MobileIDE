@@ -39,13 +39,12 @@ fun launchTerminal(activity: Activity, terminalCommand: TerminalCommand) {
 fun setupAssetFile(fileName: String) {
     with(com.scto.mobile.ide.file.localBinDir().child(fileName)) {
         parentFile?.mkdir()
-        if (exists().not()) {
-            createFileIfNot()
-            writeText(
-                com.scto.mobile.ide.utils.application!!.assets.open("terminal/$fileName.sh").bufferedReader().use {
-                    it.readText()
-                }
-            )
-        }
+        createFileIfNot()
+        writeText(
+            com.scto.mobile.ide.utils.application!!.assets.open("terminal/$fileName.sh").bufferedReader().use {
+                it.readText()
+            }
+        )
+        setExecutable(true)
     }
 }

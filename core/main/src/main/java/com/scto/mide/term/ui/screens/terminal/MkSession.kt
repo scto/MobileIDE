@@ -49,26 +49,19 @@ object MkSession {
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
 
             val initFile: File = localBinDir().child("init-host")
-
-            if (initFile.exists().not()){
-                initFile.createFileIfNot()
-                initFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
-            }
-
+            initFile.createFileIfNot()
+            initFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
+            initFile.setExecutable(true)
 
             localBinDir().child("init").apply {
-                if (exists().not()){
-                    createFileIfNot()
-                    writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
-                }
+                createFileIfNot()
+                writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
             localBinDir().child("init-root").apply {
-                if (exists().not()){
-                    createFileIfNot()
-                    writeText(assets.open("init-root.sh").bufferedReader().use { it.readText() })
-                }
+                createFileIfNot()
+                writeText(assets.open("init-root.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
