@@ -26,26 +26,26 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
@@ -100,7 +100,9 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     var terminalConfigConfirmed by remember { mutableStateOf(false) }
 
     LaunchedEffect(pagerState.currentPage, retryTrigger, terminalConfigConfirmed) {
-        if (pagerState.currentPage == 3 && terminalConfigConfirmed && !terminalInstallSuccess && !isTerminalInstalling) {
+        if (
+            pagerState.currentPage == 3 && terminalConfigConfirmed && !terminalInstallSuccess && !isTerminalInstalling
+        ) {
             isTerminalInstalling = true
             terminalInstallError = null
             terminalInstallStatus = "Terminal-Umgebung wird vorbereitet..."
@@ -111,7 +113,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                     onProgress = { downloaded, total ->
                         terminalDownloadedBytes = downloaded
                         terminalTotalBytes = total
-                    }
+                    },
                 )
                 terminalInstallSuccess = true
                 terminalInstallStatus = "Installation abgeschlossen!"
@@ -332,7 +334,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                                         apply()
                                     }
                                     terminalConfigConfirmed = true
-                                }
+                                },
                             )
                     }
                 }
@@ -573,7 +575,7 @@ private fun TerminalSetupContent(
     isInstalling: Boolean,
     onRetry: () -> Unit,
     confirmed: Boolean,
-    onConfirm: (jdk: String, gradle: String, sdk: String, buildTools: String, cmdline: Boolean, git: Boolean) -> Unit
+    onConfirm: (jdk: String, gradle: String, sdk: String, buildTools: String, cmdline: Boolean, git: Boolean) -> Unit,
 ) {
     if (!confirmed) {
         Column(
@@ -601,14 +603,18 @@ private fun TerminalSetupContent(
             var installGitVal by remember { mutableStateOf(true) }
 
             // JDK Selection
-            Text("Java Development Kit (JDK):", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Java Development Kit (JDK):",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+            )
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("17" to "JDK 17", "21" to "JDK 21", "none" to "Kein").forEach { (value, label) ->
                     FilterChip(
                         selected = selectedJdk == value,
                         onClick = { selectedJdk = value },
-                        label = { Text(label) }
+                        label = { Text(label) },
                     )
                 }
             }
@@ -618,25 +624,30 @@ private fun TerminalSetupContent(
             Text("Gradle Build Tool:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("apt" to "Standard (APT)", "8.5" to "v8.5", "8.10" to "v8.10", "none" to "Kein").forEach { (value, label) ->
+                listOf("apt" to "Standard (APT)", "8.5" to "v8.5", "8.10" to "v8.10", "none" to "Kein").forEach {
+                    (value, label) ->
                     FilterChip(
                         selected = selectedGradle == value,
                         onClick = { selectedGradle = value },
-                        label = { Text(label) }
+                        label = { Text(label) },
                     )
                 }
             }
             Spacer(Modifier.height(16.dp))
 
             // Android SDK API
-            Text("Android SDK Platform (API):", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Android SDK Platform (API):",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+            )
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("35" to "API 35", "34" to "API 34", "none" to "Kein").forEach { (value, label) ->
                     FilterChip(
                         selected = selectedSdk == value,
                         onClick = { selectedSdk = value },
-                        label = { Text(label) }
+                        label = { Text(label) },
                     )
                 }
             }
@@ -644,14 +655,19 @@ private fun TerminalSetupContent(
 
             // Build Tools
             if (selectedSdk != "none") {
-                Text("Android SDK Build-Tools:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "Android SDK Build-Tools:",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleSmall,
+                )
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("35.0.0" to "v35.0.0", "34.0.0" to "v34.0.0", "36.0.0-rc1" to "v36.0.0-rc1").forEach { (value, label) ->
+                    listOf("35.0.0" to "v35.0.0", "34.0.0" to "v34.0.0", "36.0.0-rc1" to "v36.0.0-rc1").forEach {
+                        (value, label) ->
                         FilterChip(
                             selected = selectedBuildTools == value,
                             onClick = { selectedBuildTools = value },
-                            label = { Text(label) }
+                            label = { Text(label) },
                         )
                     }
                 }
@@ -676,9 +692,16 @@ private fun TerminalSetupContent(
 
             Button(
                 onClick = {
-                    onConfirm(selectedJdk, selectedGradle, selectedSdk, selectedBuildTools, installCmdline, installGitVal)
+                    onConfirm(
+                        selectedJdk,
+                        selectedGradle,
+                        selectedSdk,
+                        selectedBuildTools,
+                        installCmdline,
+                        installGitVal,
+                    )
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text("Bestätigen & Terminal einrichten")
             }
@@ -723,14 +746,14 @@ private fun TerminalSetupContent(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
                     tint = Color(0xFF4CAF50),
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp),
                 )
             } else if (error != null) {
                 Icon(
                     imageVector = Icons.Default.BatteryAlert,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(64.dp)
+                    modifier = Modifier.size(64.dp),
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
@@ -740,9 +763,7 @@ private fun TerminalSetupContent(
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = onRetry) {
-                    Text("Erneut versuchen")
-                }
+                Button(onClick = onRetry) { Text("Erneut versuchen") }
             }
 
             Spacer(Modifier.height(24.dp))

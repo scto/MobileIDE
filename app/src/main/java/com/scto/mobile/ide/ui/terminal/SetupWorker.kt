@@ -90,14 +90,17 @@ object SetupWorker {
 
             try {
                 optionsFile.parentFile?.mkdirs()
-                optionsFile.writeText("""
+                optionsFile.writeText(
+                    """
                     INSTALL_JDK="$jdk"
                     INSTALL_GRADLE="$gradle"
                     INSTALL_SDK="$sdk"
                     INSTALL_BUILD_TOOLS="$buildTools"
                     INSTALL_CMDLINE_TOOLS="${if (cmdline) "true" else "false"}"
                     INSTALL_GIT="${if (git) "true" else "false"}"
-                """.trimIndent())
+                """
+                        .trimIndent()
+                )
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "Failed to write setup_options.properties", e)
             }

@@ -183,15 +183,21 @@ fun SettingsScreen(
     var isTsLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isWebLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
 
-    var terminalFontSize by remember { mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_font_size.toFloat()) }
+    var terminalFontSize by remember {
+        mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_font_size.toFloat())
+    }
     var scrollbackLines by remember {
         mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_scrollback_lines.toFloat())
     }
     var closeBehavior by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_close_behavior) }
     var colorscheme by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_colorscheme) }
 
-    LaunchedEffect(terminalFontSize) { com.scto.mide.term.settings.Settings.terminal_font_size = terminalFontSize.toInt() }
-    LaunchedEffect(scrollbackLines) { com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
+    LaunchedEffect(terminalFontSize) {
+        com.scto.mide.term.settings.Settings.terminal_font_size = terminalFontSize.toInt()
+    }
+    LaunchedEffect(scrollbackLines) {
+        com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt()
+    }
     LaunchedEffect(closeBehavior) { com.scto.mide.term.settings.Settings.terminal_close_behavior = closeBehavior }
     LaunchedEffect(colorscheme) { com.scto.mide.term.settings.Settings.terminal_colorscheme = colorscheme }
 
@@ -387,7 +393,8 @@ fun SettingsScreen(
                                 },
                             )
                             isReinstalling = false
-                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
+                                .show()
                         }
                     },
                     lspEnabled = lspEnabled,
