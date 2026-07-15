@@ -74,6 +74,7 @@ import com.scto.mobile.ide.ui.welcome.themeColors
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 enum class AutoSaveOption(@StringRes val labelRes: Int, val interval: Long) {
@@ -172,8 +173,6 @@ fun SettingsScreen(
     var isJdk21Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isGradleInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isAndroidSdkInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isBuildTools35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isBuildTools36Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform34Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isCmakeInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -183,6 +182,18 @@ fun SettingsScreen(
     var isKotlinLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isTsLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isWebLsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
+
+    var terminalFontSize by remember { mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_font_size.toFloat()) }
+    var scrollbackLines by remember {
+        mutableFloatStateOf(com.scto.mide.term.settings.Settings.terminal_scrollback_lines.toFloat())
+    }
+    var closeBehavior by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_close_behavior) }
+    var colorscheme by remember { mutableStateOf(com.scto.mide.term.settings.Settings.terminal_colorscheme) }
+
+    LaunchedEffect(terminalFontSize) { com.scto.mide.term.settings.Settings.terminal_font_size = terminalFontSize.toInt() }
+    LaunchedEffect(scrollbackLines) { com.scto.mide.term.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt() }
+    LaunchedEffect(closeBehavior) { com.scto.mide.term.settings.Settings.terminal_close_behavior = closeBehavior }
+    LaunchedEffect(colorscheme) { com.scto.mide.term.settings.Settings.terminal_colorscheme = colorscheme }
 
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
@@ -211,11 +222,6 @@ fun SettingsScreen(
             val distroHome = sandboxHomeDir(context)
             val distroSdk = File(distroHome, "android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
-
-            isBuildTools35Installed =
-                File(hostSdk, "build-tools/35.0.0").exists() || File(distroSdk, "build-tools/35.0.0").exists()
-            isBuildTools36Installed =
-                File(hostSdk, "build-tools/36.0.0").exists() || File(distroSdk, "build-tools/36.0.0").exists()
 
             isPlatform34Installed =
                 File(hostSdk, "platforms/android-34").exists() || File(distroSdk, "platforms/android-34").exists()
@@ -345,11 +351,55 @@ fun SettingsScreen(
             }
 
             item(key = "terminal_settings") {
-                SimpleSettingsCard(
-                    icon = Icons.Outlined.Terminal,
-                    title = stringResource(R.string.settings_terminal_title),
-                    subtitle = stringResource(R.string.settings_terminal_summary, selectedDistro),
-                    onClick = { navController.navigate("settings/terminal") },
+                TerminalSettingsItem(
+                    selectedDistro = selectedDistro,
+                    onDistroSelected = { distro ->
+                        selectedDistro = distro
+                        generalPrefs.edit { putString("selected_distro", distro) }
+                        Toast.makeText(
+                                context,
+                                "Distribution auf $distro geändert. Bitte Terminal neu installieren.",
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
+                    },
+                    onReset = {
+                        com.scto.mobile.ide.ui.terminal.SetupWorker.resetTerminal(context)
+                        Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
+                    },
+                    isReinstalling = isReinstalling,
+                    reinstallDownloaded = reinstallDownloadedBytes,
+                    reinstallTotal = reinstallTotalBytes,
+                    reinstallStatus = reinstallStatus,
+                    onReinstall = {
+                        isReinstalling = true
+                        reinstallDownloadedBytes = 0L
+                        reinstallTotalBytes = -1L
+                        reinstallStatus = "Reinstallation wird gestartet..."
+                        Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            com.scto.mobile.ide.ui.terminal.SetupWorker.reinstallTerminal(
+                                context = context,
+                                onStatusChanged = { status -> reinstallStatus = status },
+                                onProgress = { downloaded, total ->
+                                    reinstallDownloadedBytes = downloaded
+                                    reinstallTotalBytes = total
+                                },
+                            )
+                            isReinstalling = false
+                            Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    lspEnabled = lspEnabled,
+                    onLspEnabledChange = { lspEnabled = it },
+                    fontSize = terminalFontSize,
+                    onFontSizeChange = { terminalFontSize = it },
+                    scrollbackLines = scrollbackLines,
+                    onScrollbackLinesChange = { scrollbackLines = it },
+                    closeBehavior = closeBehavior,
+                    onCloseBehaviorChange = { closeBehavior = it },
+                    colorscheme = colorscheme,
+                    onColorschemeChange = { colorscheme = it },
                 )
             }
 
@@ -1707,8 +1757,6 @@ fun BuildSettingsItem(
     isJdk17Installed: Boolean,
     isJdk21Installed: Boolean,
     isAndroidSdkInstalled: Boolean,
-    isBuildTools35Installed: Boolean,
-    isBuildTools36Installed: Boolean,
     isPlatform34Installed: Boolean,
     isPlatform35Installed: Boolean,
     isCmakeInstalled: Boolean,
@@ -1811,42 +1859,6 @@ fun BuildSettingsItem(
                                     "Android SDK",
                                     "mkdir -p \$HOME/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d \$HOME/android-sdk && rm /tmp/sdk.zip",
                                 )
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_tools),
-                            isInstalled = isBuildTools35Installed || isBuildTools36Installed,
-                            infoText =
-                                if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36"
-                                else if (isBuildTools35Installed) "v35"
-                                else if (isBuildTools36Installed) "v36" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Build-Tools v35",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;35.0.0\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
-                                    ) {
-                                        Text("v35")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Build-Tools v36",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;36.0.0-rc1\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
-                                    ) {
-                                        Text("v36")
-                                    }
-                                }
                             },
                         )
 

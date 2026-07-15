@@ -45,8 +45,8 @@ enum class TerminalEnvironmentOption(
         labelRes = strings.terminal_env_alpine,
         supportsRoot = true,
     ),
-    ARCH(
-        labelRes = strings.terminal_env_arch,
+    UBUNTU(
+        labelRes = strings.terminal_env_ubuntu,
         supportsRoot = true,
     ),
     ANDROID(
@@ -58,15 +58,15 @@ enum class TerminalEnvironmentOption(
 fun terminalEnvironmentFromWorkingMode(mode: Int): TerminalEnvironmentOption = when (mode) {
     WorkingMode.ALPINE,
     WorkingMode.ALPINE_ROOT -> TerminalEnvironmentOption.ALPINE
-    WorkingMode.ARCH,
-    WorkingMode.ARCH_ROOT -> TerminalEnvironmentOption.ARCH
+    WorkingMode.UBUNTU,
+    WorkingMode.UBUNTU_ROOT -> TerminalEnvironmentOption.UBUNTU
     WorkingMode.ANDROID -> TerminalEnvironmentOption.ANDROID
     else -> TerminalEnvironmentOption.ALPINE
 }
 
 fun workingModeIsRoot(mode: Int): Boolean = when (mode) {
     WorkingMode.ALPINE_ROOT,
-    WorkingMode.ARCH_ROOT -> true
+    WorkingMode.UBUNTU_ROOT -> true
     else -> false
 }
 
@@ -74,7 +74,7 @@ fun terminalEnvironmentToWorkingMode(environment: TerminalEnvironmentOption, run
     val normalizedRoot = runAsRoot && environment.supportsRoot
     return when (environment) {
         TerminalEnvironmentOption.ALPINE -> if (normalizedRoot) WorkingMode.ALPINE_ROOT else WorkingMode.ALPINE
-        TerminalEnvironmentOption.ARCH -> if (normalizedRoot) WorkingMode.ARCH_ROOT else WorkingMode.ARCH
+        TerminalEnvironmentOption.UBUNTU -> if (normalizedRoot) WorkingMode.UBUNTU_ROOT else WorkingMode.UBUNTU
         TerminalEnvironmentOption.ANDROID -> WorkingMode.ANDROID
     }
 }
@@ -83,7 +83,7 @@ fun terminalEnvironmentDescriptionRes(environment: TerminalEnvironmentOption, ru
     val normalizedRoot = runAsRoot && environment.supportsRoot
     return when (environment) {
         TerminalEnvironmentOption.ALPINE -> if (normalizedRoot) strings.alpine_root_desc else strings.alpine_desc
-        TerminalEnvironmentOption.ARCH -> if (normalizedRoot) strings.arch_root_desc else strings.arch_desc
+        TerminalEnvironmentOption.UBUNTU -> if (normalizedRoot) strings.ubuntu_root_desc else strings.ubuntu_desc
         TerminalEnvironmentOption.ANDROID -> strings.android_desc
     }
 }

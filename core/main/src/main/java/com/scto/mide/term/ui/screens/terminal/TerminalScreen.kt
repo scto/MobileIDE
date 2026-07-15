@@ -621,7 +621,7 @@ fun TerminalScreen(
 fun getSessionTextColor(workingMode: Int?): androidx.compose.ui.graphics.Color {
     return when (workingMode) {
         WorkingMode.ALPINE_ROOT -> androidx.compose.ui.graphics.Color(0xFFEF5350)
-        WorkingMode.ARCH_ROOT -> androidx.compose.ui.graphics.Color(0xFFEF5350)
+        WorkingMode.UBUNTU_ROOT -> androidx.compose.ui.graphics.Color(0xFFEF5350)
         WorkingMode.ANDROID -> androidx.compose.ui.graphics.Color(0xFFFFA726)
         else -> MaterialTheme.colorScheme.onSurface
     }

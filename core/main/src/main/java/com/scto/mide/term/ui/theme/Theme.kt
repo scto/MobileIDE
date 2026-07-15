@@ -101,47 +101,48 @@ private val DarkColorScheme =
 
 @Composable
 fun TermixTheme(
-    darkTheme: Boolean = when (Settings.default_night_mode) {
-        AppCompatDelegate.MODE_NIGHT_YES -> true
-        AppCompatDelegate.MODE_NIGHT_NO -> false
-        else -> isDarkMode(LocalContext.current)
-    },
+    darkTheme: Boolean = SharedThemeState.isDark.value,
     highContrastDarkTheme: Boolean = Settings.amoled,
     dynamicColor: Boolean = Settings.monet,
     terminalColorScheme: TerminalColorScheme = ColorSchemeManager.currentScheme.value,
     content: @Composable () -> Unit,
 ) {
-    val hasCustomScheme = ColorSchemeManager.hasCustomSchemeSelection()
-    val resolvedTerminalScheme = ColorSchemeManager.resolveSchemeForAppTheme(terminalColorScheme, darkTheme)
-    
-    val colorScheme = when {
-        // If user selected a custom terminal color scheme, use it (overrides Monet)
-        hasCustomScheme -> {
-            val baseScheme = ColorSchemeManager.generateMaterial3ColorScheme(resolvedTerminalScheme)
-            when {
-                highContrastDarkTheme && ColorSchemeManager.isSchemeDark(resolvedTerminalScheme) ->
-                    baseScheme.copy(background = Color.Black, surface = Color.Black)
-                else -> baseScheme
+    val sharedScheme = SharedThemeState.currentColorScheme.value
+    val colorScheme = if (sharedScheme != null) {
+        sharedScheme
+    } else {
+        val hasCustomScheme = ColorSchemeManager.hasCustomSchemeSelection()
+        val resolvedTerminalScheme = ColorSchemeManager.resolveSchemeForAppTheme(terminalColorScheme, darkTheme)
+        
+        when {
+            // If user selected a custom terminal color scheme, use it (overrides Monet)
+            hasCustomScheme -> {
+                val baseScheme = ColorSchemeManager.generateMaterial3ColorScheme(resolvedTerminalScheme)
+                when {
+                    highContrastDarkTheme && ColorSchemeManager.isSchemeDark(resolvedTerminalScheme) ->
+                        baseScheme.copy(background = Color.Black, surface = Color.Black)
+                    else -> baseScheme
+                }
             }
-        }
 
-        // Dynamic Monet colors (only if no custom scheme selected)
-        dynamicColor && supportsDynamicTheming() -> {
-            val context = LocalContext.current
-            when {
-                darkTheme && highContrastDarkTheme ->
-                    dynamicDarkColorScheme(context)
-                        .copy(background = Color.Black, surface = Color.Black)
-                darkTheme -> dynamicDarkColorScheme(context)
-                else -> dynamicLightColorScheme(context)
+            // Dynamic Monet colors (only if no custom scheme selected)
+            dynamicColor && supportsDynamicTheming() -> {
+                val context = LocalContext.current
+                when {
+                    darkTheme && highContrastDarkTheme ->
+                        dynamicDarkColorScheme(context)
+                            .copy(background = Color.Black, surface = Color.Black)
+                    darkTheme -> dynamicDarkColorScheme(context)
+                    else -> dynamicLightColorScheme(context)
+                }
             }
-        }
 
-        // Fallback to built-in color schemes
-        darkTheme && highContrastDarkTheme ->
-            DarkColorScheme.copy(background = Color.Black, surface = Color.Black)
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+            // Fallback to built-in color schemes
+            darkTheme && highContrastDarkTheme ->
+                DarkColorScheme.copy(background = Color.Black, surface = Color.Black)
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
+        }
     }
     
     val useDarkSystemBarIcons = colorScheme.background.luminance() > 0.5f

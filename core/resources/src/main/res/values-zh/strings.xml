@@ -7,7 +7,7 @@
     <string name="alpine_desc">Alpine Linux</string>
     <string name="android_desc">Termix Android Shell</string>
     <string name="terminal_env_alpine">Alpine</string>
-    <string name="terminal_env_arch">Arch</string>
+    <string name="terminal_env_ubuntu">Ubuntu</string>
     <string name="terminal_env_android">Android</string>
     <string name="terminal_env_root_toggle">以 Root 权限启动</string>
     <string name="terminal_env_root_toggle_desc">以真实 Root 权限启动 %1$s</string>
@@ -53,7 +53,7 @@
     <string name="cancel">取消</string>
     <string name="installing">安装中</string>
     <string name="downloading">下载中.. %1$d%%</string>
-    <string name="arch_installing_rootfs">正在准备 Arch 文件系统（首次运行可能需要几分钟）</string>
+    <string name="ubuntu_installing_rootfs">正在准备 Ubuntu 文件系统（首次运行可能需要几分钟）</string>
     <string name="download_panel_title">环境准备</string>
     <string name="overall_progress_title">下载进度</string>
     <string name="rootfs_progress_title">Rootfs 下载进度</string>

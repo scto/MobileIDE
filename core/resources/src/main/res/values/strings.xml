@@ -73,10 +73,10 @@
     <string name="wait">Please wait…</string>
     <string name="default_working_mode">Default Working mode</string>
     <string name="alpine_desc">Alpine Linux</string>
-    <string name="arch_desc">Arch Linux ARM (proot)</string>
+    <string name="ubuntu_desc">Ubuntu (proot)</string>
     <string name="android_desc">Termix Android shell</string>
     <string name="terminal_env_alpine">Alpine</string>
-    <string name="terminal_env_arch">Arch</string>
+    <string name="terminal_env_ubuntu">Ubuntu</string>
     <string name="terminal_env_android">Android</string>
     <string name="terminal_env_root_toggle">Start with root privileges</string>
     <string name="terminal_env_root_toggle_desc">Launch %1$s with real root privileges</string>
@@ -84,8 +84,8 @@
     <string name="terminal_env_android_root_unavailable_desc">Android shell starts without root mode in this environment</string>
     <string name="alpine_root">Alpine (Root)</string>
     <string name="alpine_root_desc">Alpine Linux with real root privileges</string>
-    <string name="arch_root">Arch (Root)</string>
-    <string name="arch_root_desc">Arch Linux ARM with real root privileges</string>
+    <string name="ubuntu_root">Ubuntu (Root)</string>
+    <string name="ubuntu_root_desc">Ubuntu with real root privileges</string>
     <string name="default_shell">Default Shell</string>
     <string name="shell_bash_desc">GNU Bourne-Again Shell (Recommended)</string>
     <string name="shell_ash_desc">Alpine default shell (lightweight)</string>
@@ -119,7 +119,7 @@
     <string name="hide_soft_keyboard">Hide soft Keyboard</string>
     <string name="hide_soft_keyboard_desc">Hide virtual keyboard if hardware keyboard is connected</string>
     <string name="session">Session</string>
-    <string name="arch_installing_rootfs">Preparing Arch filesystem (first run can take several minutes)</string>
+    <string name="ubuntu_installing_rootfs">Preparing Ubuntu filesystem (first run can take several minutes)</string>
     <string name="download_panel_title">Environment setup</string>
     <string name="overall_progress_title">Download progress</string>
     <string name="rootfs_progress_title">Rootfs download</string>

@@ -3,7 +3,7 @@ package com.scto.mide.term.ui.screens.terminal
 import android.os.Environment
 import androidx.compose.runtime.mutableStateOf
 import com.scto.mide.term.libcommons.application
-import com.scto.mide.term.libcommons.archDir
+import com.scto.mide.term.libcommons.ubuntuDir
 import com.scto.mide.term.libcommons.child
 import com.scto.mide.term.settings.Settings
 import com.scto.mide.term.model.WorkingMode
@@ -27,8 +27,8 @@ object Rootfs {
 
     private fun rootfsFileName(workingMode: Int): String {
         return when (workingMode) {
-            WorkingMode.ARCH,
-            WorkingMode.ARCH_ROOT -> "arch.tar.gz"
+            WorkingMode.UBUNTU,
+            WorkingMode.UBUNTU_ROOT -> "ubuntu.tar.gz"
             else -> "alpine.tar.gz"
         }
     }
@@ -45,10 +45,10 @@ object Rootfs {
             return false
         }
 
-        if (workingMode == WorkingMode.ARCH || workingMode == WorkingMode.ARCH_ROOT) {
-            val archBase = archDir()
-            val marker = archBase.parentFile!!.child(".termix-arch-installed")
-            val hasEtc = archBase.child("etc").exists() || archBase.child("root").child("etc").exists()
+        if (workingMode == WorkingMode.UBUNTU || workingMode == WorkingMode.UBUNTU_ROOT) {
+            val ubuntuBase = ubuntuDir()
+            val marker = ubuntuBase.parentFile!!.child(".termix-ubuntu-installed")
+            val hasEtc = ubuntuBase.child("etc").exists() || ubuntuBase.child("root").child("etc").exists()
             return marker.exists() && hasEtc
         }
 

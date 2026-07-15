@@ -1,11 +1,12 @@
 #!/system/bin/sh
 set -e
 
-ARCH_DIR=$PREFIX/local/arch
+ARCH_DIR=$PREFIX/local/ubuntu
 ARCH_ROOTFS=$ARCH_DIR
-ARCH_READY_MARKER=$PREFIX/local/.termix-arch-installed
+ARCH_READY_MARKER=$PREFIX/local/.termix-ubuntu-installed
 PROOT_BIN=$PREFIX/local/bin/proot
 LIB_DIR=$PREFIX/local/lib
+INIT_BIN=$PREFIX/local/bin/init-ubuntu
 
 resolve_guest_hostname() {
     if [ -r "$ARCH_ROOTFS/etc/hostname" ]; then
@@ -17,15 +18,8 @@ resolve_guest_hostname() {
         fi
     fi
 
-    printf '%s' "arch"
+    printf '%s' "ubuntu"
 }
-
-TERMIX_HOST_TTY=$(tty 2>/dev/null || true)
-case "$TERMIX_HOST_TTY" in
-    ""|"not a tty"*)
-        TERMIX_HOST_TTY=
-        ;;
-esac
 
 mkdir -p "$ARCH_DIR"
 mkdir -p "$PREFIX/local/bin"
@@ -33,7 +27,7 @@ mkdir -p "$LIB_DIR"
 
 [ ! -e "$PROOT_BIN" ] && cp "$PREFIX/files/proot" "$PROOT_BIN"
 chmod +x "$PROOT_BIN"
-chmod +x "$PREFIX/local/bin/init-arch" 2>/dev/null || true
+chmod +x "$INIT_BIN" 2>/dev/null || true
 
 for sofile in "$PREFIX/files/"*.so.2; do
     dest="$LIB_DIR/$(basename "$sofile")"
@@ -41,7 +35,7 @@ for sofile in "$PREFIX/files/"*.so.2; do
 done
 
 if [ ! -f "$ARCH_READY_MARKER" ] || { [ ! -d "$ARCH_DIR/etc" ] && [ ! -d "$ARCH_DIR/root/etc" ]; }; then
-    echo "Arch rootfs is not installed. Open Termix downloader to install Arch Linux."
+    echo "Ubuntu rootfs is not installed. Open Termix downloader to install Ubuntu."
     exit 1
 fi
 
@@ -50,7 +44,7 @@ if [ ! -d "$ARCH_DIR/etc" ] && [ -d "$ARCH_DIR/root/etc" ]; then
 fi
 
 if [ ! -d "$ARCH_ROOTFS/etc" ]; then
-    echo "Arch rootfs extraction failed: missing '$ARCH_ROOTFS/etc'"
+    echo "Ubuntu rootfs extraction failed: missing '$ARCH_ROOTFS/etc'"
     exit 1
 fi
 
@@ -75,30 +69,25 @@ ARGS="$ARGS -b /sdcard"
 ARGS="$ARGS -b /storage"
 ARGS="$ARGS -b /dev"
 ARGS="$ARGS -b /data"
+ARGS="$ARGS -b /sys"
 ARGS="$ARGS -b /dev/urandom:/dev/random"
 ARGS="$ARGS -b /proc"
-ARGS="$ARGS -b $PREFIX"
-ARGS="$ARGS -b $PREFIX/local/stat:/proc/stat"
-ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
 
 if [ -e "/proc/self/fd" ]; then
-  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
+ ARGS="$ARGS -b /proc/self/fd:/dev/fd"
 fi
 
 if [ -e "/proc/self/fd/0" ]; then
-  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
+ ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
 fi
 
 if [ -e "/proc/self/fd/1" ]; then
-  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
+ ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
 fi
 
 if [ -e "/proc/self/fd/2" ]; then
-  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
+ ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
 fi
-
-ARGS="$ARGS -b $PREFIX"
-ARGS="$ARGS -b /sys"
 
 if [ ! -d "$ARCH_ROOTFS/tmp" ]; then
  mkdir -p "$ARCH_ROOTFS/tmp"
@@ -113,9 +102,6 @@ ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
 export TERMIX_GUEST_HOSTNAME="$GUEST_HOSTNAME"
+export TERMIX_PROOT_ARGS="$ARGS"
 
-if [ -n "$TERMIX_HOST_TTY" ]; then
-    exec "$LINKER" "$PROOT_BIN" $ARGS env TERMIX_HOST_TTY="$TERMIX_HOST_TTY" TERMIX_GUEST_HOSTNAME="$TERMIX_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-arch" "$@"
-fi
-
-exec "$LINKER" "$PROOT_BIN" $ARGS env TERMIX_GUEST_HOSTNAME="$TERMIX_GUEST_HOSTNAME" sh "$PREFIX/local/bin/init-arch" "$@"
+exec su -p -c "mkdir -p $PROOT_TMP_DIR && export LD_LIBRARY_PATH=$LIB_DIR && export PROOT_TMP_DIR=$PROOT_TMP_DIR && export TERM=${TERM:-xterm-256color} && export LANG=C.UTF-8 && export HOME=/root && export TERMIX_GUEST_HOSTNAME='$GUEST_HOSTNAME' && export TERMIX_PROOT_ARGS='$ARGS' && if command -v unshare >/dev/null 2>&1; then exec unshare -u /system/bin/sh -c 'if command -v hostname >/dev/null 2>&1; then hostname \"$TERMIX_GUEST_HOSTNAME\" >/dev/null 2>&1 || true; fi; exec \"$PROOT_BIN\" $TERMIX_PROOT_ARGS sh \"$INIT_BIN\"'; else exec \"$PROOT_BIN\" $TERMIX_PROOT_ARGS sh \"$INIT_BIN\"; fi"

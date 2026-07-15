@@ -45,7 +45,6 @@ import com.scto.mobile.ide.ui.settings.BuildSettingsScreen
 import com.scto.mobile.ide.ui.settings.EditorScreen
 import com.scto.mobile.ide.ui.settings.LspSettingsScreen
 import com.scto.mobile.ide.ui.settings.SettingsScreen
-import com.scto.mobile.ide.ui.settings.TerminalSettingsScreen
 import com.scto.mobile.ide.ui.settings.ThemeSettingsScreen
 import com.scto.mobile.ide.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
@@ -150,7 +149,6 @@ fun MainScreen(
             )
         }
         composable("settings/editor") { EditorScreen(navController = navController, editorViewModel = mainViewModel) }
-        composable("settings/terminal") { TerminalSettingsScreen(navController = navController) }
         composable("settings/build") { BuildSettingsScreen(navController = navController) }
         composable("settings/lsp") { LspSettingsScreen(navController = navController) }
         composable("settings/extensions") {

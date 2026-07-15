@@ -54,7 +54,7 @@ fun Downloader(
 
     val installingStr = stringResource(strings.installing)
     val downloadingStr = stringResource(strings.downloading)
-    val archInstallingRootfsStr = stringResource(strings.arch_installing_rootfs)
+    val ubuntuInstallingRootfsStr = stringResource(strings.ubuntu_installing_rootfs)
     val downloadPanelTitle = stringResource(strings.download_panel_title)
     val installLogTitle = stringResource(strings.install_logs_title)
     val installLogWaiting = stringResource(strings.install_logs_waiting)
@@ -111,14 +111,14 @@ fun Downloader(
 
             val urls = abiMap[abi] ?: throw RuntimeException("Unsupported CPU ABI: $abi")
             val rootfsUrls = when (workingMode) {
-                WorkingMode.ARCH,
-                WorkingMode.ARCH_ROOT -> urls.arch ?: throw RuntimeException("Arch Linux is not supported for ABI: $abi")
+                WorkingMode.UBUNTU,
+                WorkingMode.UBUNTU_ROOT -> urls.ubuntu ?: throw RuntimeException("Ubuntu is not supported for ABI: $abi")
                 else -> listOf(urls.alpine)
             }
 
             val rootfsFileName = when (workingMode) {
-                WorkingMode.ARCH,
-                WorkingMode.ARCH_ROOT -> "arch.tar.gz"
+                WorkingMode.UBUNTU,
+                WorkingMode.UBUNTU_ROOT -> "ubuntu.tar.gz"
                 else -> "alpine.tar.gz"
             }
 
@@ -134,7 +134,7 @@ fun Downloader(
             setupEnvironment(
                 filesToDownload,
                 workingMode,
-                archInstallStatus = archInstallingRootfsStr,
+                ubuntuInstallStatus = ubuntuInstallingRootfsStr,
                 onProgress = { snapshot ->
                     activeFileName = snapshot.currentFileName
                     progress = snapshot.overallProgress
@@ -365,9 +365,9 @@ fun Downloader(
                                 }
                             }
 
-                            if (Settings.working_Mode == WorkingMode.ARCH || Settings.working_Mode == WorkingMode.ARCH_ROOT) {
+                            if (Settings.working_Mode == WorkingMode.UBUNTU || Settings.working_Mode == WorkingMode.UBUNTU_ROOT) {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(archInstallingRootfsStr, style = MaterialTheme.typography.bodySmall)
+                                Text(ubuntuInstallingRootfsStr, style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
@@ -392,7 +392,7 @@ private data class DownloadFile(
 private suspend fun setupEnvironment(
     filesToDownload: List<DownloadFile>,
     workingMode: Int,
-    archInstallStatus: String,
+    ubuntuInstallStatus: String,
     onProgress: (DownloadProgressSnapshot) -> Unit,
     onStatus: (String) -> Unit,
     onInstallLog: (String) -> Unit,
@@ -403,12 +403,12 @@ private suspend fun setupEnvironment(
         try {
             var completedFiles = 0
             val totalFiles = filesToDownload.size
-            val hasUsableArchRootfs = (workingMode == WorkingMode.ARCH || workingMode == WorkingMode.ARCH_ROOT) && hasExtractedArchRootfs()
+            val hasUsableUbuntuRootfs = (workingMode == WorkingMode.UBUNTU || workingMode == WorkingMode.UBUNTU_ROOT) && hasExtractedUbuntuRootfs()
 
             filesToDownload.forEach { file ->
                 val outputFile = file.outputFile.apply { parentFile?.mkdirs() }
                 val isRootfsFile = outputFile.name.endsWith(".tar.gz")
-                val skipArchRootfsDownload = hasUsableArchRootfs && outputFile.name == "arch.tar.gz"
+                val skipUbuntuRootfsDownload = hasUsableUbuntuRootfs && outputFile.name == "ubuntu.tar.gz"
                 var skippedDownload = false
                 var downloadedNow = false
 
@@ -416,10 +416,10 @@ private suspend fun setupEnvironment(
                     onStatus("Downloading ${outputFile.name}")
                 }
 
-                if (skipArchRootfsDownload) {
+                if (skipUbuntuRootfsDownload) {
                     skippedDownload = true
                     runOnUiThread {
-                        onInstallLog("Detected usable Arch rootfs; skipping arch.tar.gz download")
+                        onInstallLog("Detected usable Ubuntu rootfs; skipping ubuntu.tar.gz download")
                     }
                 } else {
                     if (outputFile.exists() && file.expectedSha256 != null && !outputFile.matchesSha256(file.expectedSha256)) {
@@ -510,7 +510,7 @@ private suspend fun setupEnvironment(
                         )
                     )
                     when {
-                        skippedDownload -> onInstallLog("Skipped ${outputFile.name} (existing Arch filesystem)")
+                        skippedDownload -> onInstallLog("Skipped ${outputFile.name} (existing Ubuntu filesystem)")
                         downloadedNow -> onInstallLog("Downloaded ${outputFile.name}")
                         else -> onInstallLog("Reused ${outputFile.name}")
                     }
@@ -520,10 +520,10 @@ private suspend fun setupEnvironment(
                 }
             }
 
-            if (workingMode == WorkingMode.ARCH || workingMode == WorkingMode.ARCH_ROOT) {
-                runOnUiThread { onStatus(archInstallStatus) }
-                runOnUiThread { onInstallLog("Starting Arch rootfs extraction") }
-                installArchRootfsIfNeeded { line ->
+            if (workingMode == WorkingMode.UBUNTU || workingMode == WorkingMode.UBUNTU_ROOT) {
+                runOnUiThread { onStatus(ubuntuInstallStatus) }
+                runOnUiThread { onInstallLog("Starting Ubuntu rootfs extraction") }
+                installUbuntuRootfsIfNeeded { line ->
                     runOnUiThread { onInstallLog(line) }
                 }
             }
@@ -541,26 +541,26 @@ private suspend fun setupEnvironment(
     }
 }
 
-private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
+private fun installUbuntuRootfsIfNeeded(onInstallLog: (String) -> Unit) {
     val localBase = localDir()
-    val archDir = File(localBase, "arch")
+    val ubuntuDir = File(localBase, "ubuntu")
     val markerFile = localBase.child(ARCH_READY_MARKER)
     val filesDir = application!!.filesDir
-    val rootfsArchive = filesDir.child("arch.tar.gz")
-    val hasEtc = archDir.child("etc").exists() || archDir.child("root").child("etc").exists()
+    val rootfsUbuntuive = filesDir.child("ubuntu.tar.gz")
+    val hasEtc = ubuntuDir.child("etc").exists() || ubuntuDir.child("root").child("etc").exists()
 
     if (hasEtc && !markerFile.exists()) {
-        normalizeArchResolvConf(archDir)
+        normalizeUbuntuResolvConf(ubuntuDir)
         markerFile.writeText("installed")
-        cleanupArchArchiveIfPresent(rootfsArchive, onInstallLog)
-        onInstallLog("Arch filesystem was already extracted; marker recreated")
+        cleanupUbuntuUbuntuiveIfPresent(rootfsUbuntuive, onInstallLog)
+        onInstallLog("Ubuntu filesystem was already extracted; marker recreated")
         return
     }
 
     if (markerFile.exists() && hasEtc) {
-        normalizeArchResolvConf(archDir)
-        cleanupArchArchiveIfPresent(rootfsArchive, onInstallLog)
-        onInstallLog("Arch filesystem already prepared")
+        normalizeUbuntuResolvConf(ubuntuDir)
+        cleanupUbuntuUbuntuiveIfPresent(rootfsUbuntuive, onInstallLog)
+        onInstallLog("Ubuntu filesystem already prepared")
         return
     }
 
@@ -568,27 +568,27 @@ private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
         markerFile.delete()
     }
 
-    if (archDir.exists() && archDir.listFiles().isNullOrEmpty().not()) {
-        onInstallLog("Detected invalid existing Arch rootfs; cleaning and reinstalling")
-        if (!archDir.deleteRecursively()) {
-            throw Exception("Arch setup aborted: existing rootfs cleanup failed.")
+    if (ubuntuDir.exists() && ubuntuDir.listFiles().isNullOrEmpty().not()) {
+        onInstallLog("Detected invalid existing Ubuntu rootfs; cleaning and reinstalling")
+        if (!ubuntuDir.deleteRecursively()) {
+            throw Exception("Ubuntu setup aborted: existing rootfs cleanup failed.")
         }
     }
 
     val prefix = filesDir.parentFile!!.absolutePath
     val linker = if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
     val prootBin = filesDir.child("proot")
-    val stagingDir = File(localBase, "arch.installing")
+    val stagingDir = File(localBase, "ubuntu.installing")
 
     if (!prootBin.exists()) {
-        throw Exception("Arch setup failed: missing proot binary")
+        throw Exception("Ubuntu setup failed: missing proot binary")
     }
 
-    if (!rootfsArchive.exists()) {
-        throw Exception("Arch setup failed: missing arch.tar.gz")
+    if (!rootfsUbuntuive.exists()) {
+        throw Exception("Ubuntu setup failed: missing ubuntu.tar.gz")
     }
 
-    val tempDir = App.getTempDir().child("arch-install")
+    val tempDir = App.getTempDir().child("ubuntu-install")
     if (!tempDir.exists()) {
         tempDir.mkdirs()
     }
@@ -601,7 +601,7 @@ private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
 
         val extractScript = """
             rm -rf "${stagingDir.absolutePath}" && mkdir -p "${stagingDir.absolutePath}" && \
-            tar -xvf "${rootfsArchive.absolutePath}" -C "${stagingDir.absolutePath}"
+            tar -xvf "${rootfsUbuntuive.absolutePath}" -C "${stagingDir.absolutePath}"
         """.trimIndent()
 
         val process = ProcessBuilder(
@@ -632,7 +632,7 @@ private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
 
         val output = StringBuilder()
         val running = process.start()
-        onInstallLog("Extracting arch.tar.gz into staging directory")
+        onInstallLog("Extracting ubuntu.tar.gz into staging directory")
         val outputCollector = Thread {
             running.inputStream.bufferedReader().useLines { lines ->
                 lines.forEach { line ->
@@ -649,35 +649,35 @@ private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
                 running.destroyForcibly()
             }
             outputCollector.join(1000)
-            throw Exception("Arch setup timed out during extraction after $ARCH_EXTRACT_TIMEOUT_MINUTES minutes")
+            throw Exception("Ubuntu setup timed out during extraction after $ARCH_EXTRACT_TIMEOUT_MINUTES minutes")
         }
 
         outputCollector.join(1000)
         val exitCode = running.exitValue()
         if (exitCode != 0) {
-            throw Exception("Arch setup failed during extraction: ${output.toString().trim()}")
+            throw Exception("Ubuntu setup failed during extraction: ${output.toString().trim()}")
         }
 
         val extracted = stagingDir.child("etc").exists() || stagingDir.child("root").child("etc").exists()
         if (!extracted) {
-            throw Exception("Arch setup failed: extracted rootfs has no /etc")
+            throw Exception("Ubuntu setup failed: extracted rootfs has no /etc")
         }
 
-        normalizeArchResolvConf(stagingDir)
+        normalizeUbuntuResolvConf(stagingDir)
 
-        if (archDir.exists()) {
-            archDir.deleteRecursively()
+        if (ubuntuDir.exists()) {
+            ubuntuDir.deleteRecursively()
         }
 
-        if (!stagingDir.renameTo(archDir)) {
-            throw Exception("Arch setup failed: cannot move staged rootfs into place")
+        if (!stagingDir.renameTo(ubuntuDir)) {
+            throw Exception("Ubuntu setup failed: cannot move staged rootfs into place")
         }
         movedIntoPlace = true
 
         markerFile.writeText("installed")
-        cleanupArchArchiveIfPresent(rootfsArchive, onInstallLog)
+        cleanupUbuntuUbuntuiveIfPresent(rootfsUbuntuive, onInstallLog)
 
-        onInstallLog("Arch rootfs ready")
+        onInstallLog("Ubuntu rootfs ready")
     } finally {
         if (!movedIntoPlace && stagingDir.exists()) {
             stagingDir.deleteRecursively()
@@ -688,22 +688,22 @@ private fun installArchRootfsIfNeeded(onInstallLog: (String) -> Unit) {
     }
 }
 
-private fun hasExtractedArchRootfs(): Boolean {
-    val archDir = File(localDir(), "arch")
-    return archDir.child("etc").exists() || archDir.child("root").child("etc").exists()
+private fun hasExtractedUbuntuRootfs(): Boolean {
+    val ubuntuDir = File(localDir(), "ubuntu")
+    return ubuntuDir.child("etc").exists() || ubuntuDir.child("root").child("etc").exists()
 }
 
-private fun cleanupArchArchiveIfPresent(rootfsArchive: File, onInstallLog: (String) -> Unit) {
-    if (rootfsArchive.exists()) {
-        if (rootfsArchive.delete()) {
-            onInstallLog("Removed arch.tar.gz to save space")
+private fun cleanupUbuntuUbuntuiveIfPresent(rootfsUbuntuive: File, onInstallLog: (String) -> Unit) {
+    if (rootfsUbuntuive.exists()) {
+        if (rootfsUbuntuive.delete()) {
+            onInstallLog("Removed ubuntu.tar.gz to save space")
         } else {
-            onInstallLog("Warning: failed to delete arch.tar.gz")
+            onInstallLog("Warning: failed to delete ubuntu.tar.gz")
         }
     }
 }
 
-private fun normalizeArchResolvConf(rootfsDir: File) {
+private fun normalizeUbuntuResolvConf(rootfsDir: File) {
     val etcDir = when {
         rootfsDir.child("etc").isDirectory -> rootfsDir.child("etc")
         rootfsDir.child("root").child("etc").isDirectory -> rootfsDir.child("root").child("etc")
@@ -799,7 +799,7 @@ private val abiMap = mapOf(
             sha256 = "eca2f07a87bd0ae4acb0547de867e43d08c176daa09ff9f59573e0a53c92011e"
         ),
         alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-minirootfs-3.21.0-x86_64.tar.gz",
-        arch = null
+        ubuntu = null
     ),
     "arm64-v8a" to AbiUrls(
         talloc = RuntimeAsset(
@@ -811,9 +811,8 @@ private val abiMap = mapOf(
             sha256 = "f25ac0a0258e18671c699154cdc88001fbd1cbe09df75c960a1ee8dad29d88ae"
         ),
         alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-minirootfs-3.21.0-aarch64.tar.gz",
-        arch = listOf(
-            "https://mirrors.dotsrc.org/archlinuxarm/os/ArchLinuxARM-aarch64-latest.tar.gz",
-            "https://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz"
+        ubuntu = listOf(
+            "https://github.com/Xed-Editor/Karbon-PackagesX/releases/download/ubuntu/ubuntu-base-24.04.3-base-arm64.tar.gz"
         )
     ),
     "armeabi-v7a" to AbiUrls(
@@ -826,9 +825,8 @@ private val abiMap = mapOf(
             sha256 = "2c1e1a6008aabedeb8f9404091e39624bdc21b0640ed846e12b141966a43dc72"
         ),
         alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/armhf/alpine-minirootfs-3.21.0-armhf.tar.gz",
-        arch = listOf(
-            "https://mirrors.dotsrc.org/archlinuxarm/os/ArchLinuxARM-armv7-latest.tar.gz",
-            "https://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
+        ubuntu = listOf(
+            "https://github.com/Xed-Editor/Karbon-PackagesX/releases/download/ubuntu/ubuntu-base-24.04.3-base-armhf.tar.gz"
         )
     )
 )
@@ -837,7 +835,7 @@ private data class AbiUrls(
     val talloc: RuntimeAsset,
     val proot: RuntimeAsset,
     val alpine: String,
-    val arch: List<String>?
+    val ubuntu: List<String>?
 )
 
 private data class RuntimeAsset(
@@ -846,7 +844,7 @@ private data class RuntimeAsset(
 )
 
 private const val ARCH_EXTRACT_TIMEOUT_MINUTES = 30L
-private const val ARCH_READY_MARKER = ".termix-arch-installed"
+private const val ARCH_READY_MARKER = ".termix-ubuntu-installed"
 private const val MAX_INSTALL_LOG_LINES = 220
 private const val NANOS_PER_SECOND = 1_000_000_000.0
 
@@ -863,8 +861,8 @@ private data class DownloadProgressSnapshot(
 )
 
 private fun modeLabel(workingMode: Int): String = when (workingMode) {
-    WorkingMode.ARCH -> "ARCH"
-    WorkingMode.ARCH_ROOT -> "ARCH ROOT"
+    WorkingMode.UBUNTU -> "ARCH"
+    WorkingMode.UBUNTU_ROOT -> "ARCH ROOT"
     WorkingMode.ALPINE_ROOT -> "ALPINE ROOT"
     else -> "ALPINE"
 }

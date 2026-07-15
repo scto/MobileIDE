@@ -18,6 +18,7 @@
 
 package com.scto.mobile.ide.ui.welcome
 
+import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -25,6 +26,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
@@ -38,6 +41,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,7 +70,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val themeState by themeViewModel.themeState.collectAsState()
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 4 })
 
     var storageGranted by remember { mutableStateOf(PermissionManager.hasRequiredPermissions(context)) }
     var installGranted by remember { mutableStateOf(PermissionManager.hasInstallPermission(context)) }
@@ -85,6 +89,40 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
         mutableIntStateOf(if (themeState.isCustomTheme) themeColors.size else themeState.selectedThemeIndex)
     }
     var isMonetEnabled by remember { mutableStateOf(themeState.isMonetEnabled) }
+
+    var terminalInstallStatus by remember { mutableStateOf("") }
+    var terminalDownloadedBytes by remember { mutableLongStateOf(0L) }
+    var terminalTotalBytes by remember { mutableLongStateOf(-1L) }
+    var terminalInstallSuccess by remember { mutableStateOf(false) }
+    var terminalInstallError by remember { mutableStateOf<String?>(null) }
+    var isTerminalInstalling by remember { mutableStateOf(false) }
+    var retryTrigger by remember { mutableIntStateOf(0) }
+    var terminalConfigConfirmed by remember { mutableStateOf(false) }
+
+    LaunchedEffect(pagerState.currentPage, retryTrigger, terminalConfigConfirmed) {
+        if (pagerState.currentPage == 3 && terminalConfigConfirmed && !terminalInstallSuccess && !isTerminalInstalling) {
+            isTerminalInstalling = true
+            terminalInstallError = null
+            terminalInstallStatus = "Terminal-Umgebung wird vorbereitet..."
+            try {
+                com.scto.mobile.ide.ui.terminal.SetupWorker.prepareEnvironment(
+                    context = context,
+                    onStatusChanged = { status -> terminalInstallStatus = status },
+                    onProgress = { downloaded, total ->
+                        terminalDownloadedBytes = downloaded
+                        terminalTotalBytes = total
+                    }
+                )
+                terminalInstallSuccess = true
+                terminalInstallStatus = "Installation abgeschlossen!"
+            } catch (e: Exception) {
+                terminalInstallError = e.localizedMessage ?: "Unbekannter Fehler"
+                terminalInstallStatus = "Fehler bei der Installation."
+            } finally {
+                isTerminalInstalling = false
+            }
+        }
+    }
 
     val systemDark = isSystemInDarkTheme()
     val isDarkTheme =
@@ -210,10 +248,11 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                 WelcomeBottomBar(
                     pagerState = pagerState,
                     activeColor = activeColor,
-                    isLastPage = pagerState.currentPage == 2,
+                    isLastPage = pagerState.currentPage == 3,
+                    nextEnabled = pagerState.currentPage < 3 || terminalInstallSuccess,
                     onBack = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } },
                     onNext = {
-                        if (pagerState.currentPage < 2) {
+                        if (pagerState.currentPage < 3) {
                             scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                         } else {
                             themeViewModel.saveThemeConfig(
@@ -269,6 +308,31 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                                     selectedThemeIndex = themeColors.size
                                     showColorPicker = true
                                 },
+                            )
+
+                        3 ->
+                            TerminalSetupContent(
+                                status = terminalInstallStatus,
+                                downloadedBytes = terminalDownloadedBytes,
+                                totalBytes = terminalTotalBytes,
+                                success = terminalInstallSuccess,
+                                error = terminalInstallError,
+                                isInstalling = isTerminalInstalling,
+                                onRetry = { retryTrigger++ },
+                                confirmed = terminalConfigConfirmed,
+                                onConfirm = { jdk, gradle, sdk, buildTools, cmdline, git ->
+                                    val prefs = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+                                    prefs.edit().apply {
+                                        putString("welcome_install_jdk_version", jdk)
+                                        putString("welcome_install_gradle_version", gradle)
+                                        putString("welcome_install_sdk_version", sdk)
+                                        putString("welcome_install_build_tools_version", buildTools)
+                                        putBoolean("welcome_install_cmdline_tools", cmdline)
+                                        putBoolean("welcome_install_git", git)
+                                        apply()
+                                    }
+                                    terminalConfigConfirmed = true
+                                }
                             )
                     }
                 }
@@ -494,6 +558,200 @@ private fun ThemeSetupContent(
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TerminalSetupContent(
+    status: String,
+    downloadedBytes: Long,
+    totalBytes: Long,
+    success: Boolean,
+    error: String?,
+    isInstalling: Boolean,
+    onRetry: () -> Unit,
+    confirmed: Boolean,
+    onConfirm: (jdk: String, gradle: String, sdk: String, buildTools: String, cmdline: Boolean, git: Boolean) -> Unit
+) {
+    if (!confirmed) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Text(
+                "Terminal-Einrichtung",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Wählen Sie die Versionen der Entwicklungswerkzeuge aus, die in Ihrer Terminal-Umgebung vorinstalliert werden sollen:",
+                style = MaterialTheme.typography.bodyMedium,
+                color = LocalContentColor.current.copy(alpha = 0.8f),
+            )
+            Spacer(Modifier.height(24.dp))
+
+            var selectedJdk by remember { mutableStateOf("17") }
+            var selectedGradle by remember { mutableStateOf("apt") }
+            var selectedSdk by remember { mutableStateOf("35") }
+            var selectedBuildTools by remember { mutableStateOf("35.0.0") }
+            var installCmdline by remember { mutableStateOf(true) }
+            var installGitVal by remember { mutableStateOf(true) }
+
+            // JDK Selection
+            Text("Java Development Kit (JDK):", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("17" to "JDK 17", "21" to "JDK 21", "none" to "Kein").forEach { (value, label) ->
+                    FilterChip(
+                        selected = selectedJdk == value,
+                        onClick = { selectedJdk = value },
+                        label = { Text(label) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+
+            // Gradle Selection
+            Text("Gradle Build Tool:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("apt" to "Standard (APT)", "8.5" to "v8.5", "8.10" to "v8.10", "none" to "Kein").forEach { (value, label) ->
+                    FilterChip(
+                        selected = selectedGradle == value,
+                        onClick = { selectedGradle = value },
+                        label = { Text(label) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+
+            // Android SDK API
+            Text("Android SDK Platform (API):", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("35" to "API 35", "34" to "API 34", "none" to "Kein").forEach { (value, label) ->
+                    FilterChip(
+                        selected = selectedSdk == value,
+                        onClick = { selectedSdk = value },
+                        label = { Text(label) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+
+            // Build Tools
+            if (selectedSdk != "none") {
+                Text("Android SDK Build-Tools:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("35.0.0" to "v35.0.0", "34.0.0" to "v34.0.0", "36.0.0-rc1" to "v36.0.0-rc1").forEach { (value, label) ->
+                        FilterChip(
+                            selected = selectedBuildTools == value,
+                            onClick = { selectedBuildTools = value },
+                            label = { Text(label) }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            // Command-line Tools switch
+            if (selectedSdk != "none") {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text("SDK Command-line Tools (sdkmanager)", modifier = Modifier.weight(1f))
+                    Switch(checked = installCmdline, onCheckedChange = { installCmdline = it })
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
+            // Git switch
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Git Versionierung", modifier = Modifier.weight(1f))
+                Switch(checked = installGitVal, onCheckedChange = { installGitVal = it })
+            }
+            Spacer(Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    onConfirm(selectedJdk, selectedGradle, selectedSdk, selectedBuildTools, installCmdline, installGitVal)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bestätigen & Terminal einrichten")
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                "Terminal-Einrichtung",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "Um eine vollwertige Linux-Terminalumgebung bereitzustellen, lädt MobileIDE die erforderlichen Linux-Systemkomponenten herunter und richtet sie ein.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                color = LocalContentColor.current.copy(alpha = 0.8f),
+            )
+            Spacer(Modifier.height(32.dp))
+
+            if (isInstalling || (totalBytes > 0 && !success && error == null)) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(16.dp))
+                if (totalBytes > 0) {
+                    val progress = downloadedBytes.toFloat() / totalBytes.toFloat()
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    val mb = 1024 * 1024
+                    Text(
+                        String.format("%.1f MB / %.1f MB", downloadedBytes.toFloat() / mb, totalBytes.toFloat() / mb),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            } else if (success) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier.size(64.dp)
+                )
+            } else if (error != null) {
+                Icon(
+                    imageVector = Icons.Default.BatteryAlert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = onRetry) {
+                    Text("Erneut versuchen")
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Text(
+                status,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = LocalContentColor.current.copy(alpha = 0.9f),
+            )
         }
     }
 }

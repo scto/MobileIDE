@@ -370,6 +370,7 @@ internal fun WelcomeBottomBar(
     onBack: () -> Unit,
     onNext: () -> Unit,
     isLastPage: Boolean,
+    nextEnabled: Boolean = true,
 ) {
     // Force navigation bar icon color to ensure visibility
     val iconColor = LocalContentColor.current
@@ -399,11 +400,11 @@ internal fun WelcomeBottomBar(
             }
         }
 
-        IconButton(onClick = onNext, modifier = Modifier.size(56.dp)) {
+        IconButton(onClick = onNext, enabled = nextEnabled, modifier = Modifier.size(56.dp)) {
             Icon(
                 imageVector = if (isLastPage) Icons.Default.Check else Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = stringResource(R.string.action_next),
-                tint = activeColor,
+                tint = if (nextEnabled) activeColor else iconColor.copy(alpha = 0.3f),
             )
         }
     }

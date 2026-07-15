@@ -4,7 +4,7 @@
     <string name="use_shizuku">تسجيل الدخول التلقائي إلى Shizuku</string>
     <string name="use_shizuku_desc">تنفيذ أمر rish تلقائيًا</string>
     <string name="terminal_env_alpine">Alpine</string>
-    <string name="terminal_env_arch">Arch</string>
+    <string name="terminal_env_ubuntu">Ubuntu</string>
     <string name="terminal_env_android">Android</string>
     <string name="terminal_env_root_toggle">بدء التشغيل بصلاحيات root</string>
     <string name="terminal_env_root_toggle_desc">تشغيل %1$s بصلاحيات root حقيقية</string>

@@ -2,6 +2,7 @@ set -e  # Exit immediately on Failure
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/share/bin:/usr/share/sbin:/usr/local/bin:/usr/local/sbin:/system/bin:/system/xbin
 export HOME=/root
+export DOTNET_GCHeapHardLimit=1C0000000
 
 resolve_runtime_hostname() {
     if [ -n "$TERMIX_GUEST_HOSTNAME" ]; then

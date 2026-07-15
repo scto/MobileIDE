@@ -14,7 +14,7 @@ import android.provider.DocumentsProvider
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.scto.mide.term.libcommons.alpineHomeDir
-import com.scto.mide.term.libcommons.archHomeDir
+import com.scto.mide.term.libcommons.ubuntuHomeDir
 import com.scto.mide.term.resources.getString
 import com.scto.mide.term.resources.strings
 import com.scto.mide.term.settings.Settings
@@ -270,8 +270,8 @@ class AlpineDocumentProvider : DocumentsProvider() {
 
         private fun getBaseDir(): File {
             return when (Settings.working_Mode) {
-                WorkingMode.ARCH,
-                WorkingMode.ARCH_ROOT -> archHomeDir()
+                WorkingMode.UBUNTU,
+                WorkingMode.UBUNTU_ROOT -> ubuntuHomeDir()
                 else -> alpineHomeDir()
             }
         }

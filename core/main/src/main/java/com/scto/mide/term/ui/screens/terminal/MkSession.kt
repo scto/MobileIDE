@@ -3,7 +3,7 @@ package com.scto.mide.term.ui.screens.terminal
 import android.os.Environment
 import com.scto.mide.term.libcommons.alpineDir
 import com.scto.mide.term.libcommons.alpineHomeDir
-import com.scto.mide.term.libcommons.archHomeDir
+import com.scto.mide.term.libcommons.ubuntuHomeDir
 import com.scto.mide.term.libcommons.application
 import com.scto.mide.term.libcommons.child
 import com.scto.mide.term.libcommons.createFileIfNot
@@ -42,8 +42,8 @@ object MkSession {
             )
 
             val defaultWorkingDir = when (workingMode) {
-                WorkingMode.ARCH,
-                WorkingMode.ARCH_ROOT -> archHomeDir().path
+                WorkingMode.UBUNTU,
+                WorkingMode.UBUNTU_ROOT -> ubuntuHomeDir().path
                 else -> alpineHomeDir().path
             }
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
@@ -72,21 +72,21 @@ object MkSession {
                 setExecutable(true)
             }
 
-            localBinDir().child("init-arch").apply {
+            localBinDir().child("init-ubuntu").apply {
                 createFileIfNot()
-                writeText(assets.open("init-arch.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("init-ubuntu.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
-            localBinDir().child("init-arch-host").apply {
+            localBinDir().child("init-ubuntu-host").apply {
                 createFileIfNot()
-                writeText(assets.open("init-arch-host.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("init-ubuntu-host.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
-            localBinDir().child("init-arch-root").apply {
+            localBinDir().child("init-ubuntu-root").apply {
                 createFileIfNot()
-                writeText(assets.open("init-arch-root.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("init-ubuntu-root.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
@@ -154,8 +154,8 @@ object MkSession {
                 args = when (workingMode) {
                     WorkingMode.ALPINE -> arrayOf("-c", initFile.absolutePath)
                     WorkingMode.ALPINE_ROOT -> arrayOf("-c", localBinDir().child("init-root").absolutePath)
-                    WorkingMode.ARCH -> arrayOf("-c", localBinDir().child("init-arch-host").absolutePath)
-                    WorkingMode.ARCH_ROOT -> arrayOf("-c", localBinDir().child("init-arch-root").absolutePath)
+                    WorkingMode.UBUNTU -> arrayOf("-c", localBinDir().child("init-ubuntu-host").absolutePath)
+                    WorkingMode.UBUNTU_ROOT -> arrayOf("-c", localBinDir().child("init-ubuntu-root").absolutePath)
                     else -> arrayOf()
                 }
                 "/system/bin/sh"

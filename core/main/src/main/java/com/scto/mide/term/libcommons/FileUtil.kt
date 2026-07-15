@@ -40,16 +40,16 @@ fun alpineHomeDir(): File{
     }
 }
 
-fun archDir(): File{
-    return localDir().child("arch").also {
+fun ubuntuDir(): File{
+    return localDir().child("ubuntu").also {
         if (!it.exists()) {
             it.mkdirs()
         }
     }
 }
 
-fun archHomeDir(): File{
-    return archDir().child("root").also {
+fun ubuntuHomeDir(): File{
+    return ubuntuDir().child("root").also {
         if (!it.exists()) {
             it.mkdirs()
         }

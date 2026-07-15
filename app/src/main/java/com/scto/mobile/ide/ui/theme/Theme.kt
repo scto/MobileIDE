@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.compose.runtime.LaunchedEffect
 import com.materialkolor.rememberDynamicColorScheme
 import com.scto.mobile.ide.core.utils.LogCatcher
 import com.scto.mobile.ide.core.utils.ThemeState
@@ -751,6 +752,11 @@ fun AppTheme(themeState: ThemeState, content: @Composable () -> Unit) {
             val window = (view.context as Activity).window
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
         }
+    }
+
+    LaunchedEffect(animatedColorScheme, useDarkTheme) {
+        com.scto.mide.term.ui.theme.SharedThemeState.currentColorScheme.value = animatedColorScheme
+        com.scto.mide.term.ui.theme.SharedThemeState.isDark.value = useDarkTheme
     }
 
     MaterialTheme(colorScheme = animatedColorScheme, typography = Typography, content = content)

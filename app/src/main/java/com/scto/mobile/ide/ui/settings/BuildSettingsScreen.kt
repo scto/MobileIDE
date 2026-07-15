@@ -32,8 +32,6 @@ fun BuildSettingsScreen(navController: NavController) {
     var isJdk21Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isGradleInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isAndroidSdkInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isBuildTools35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
-    var isBuildTools36Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform34Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isCmakeInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -64,12 +62,6 @@ fun BuildSettingsScreen(navController: NavController) {
             val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
             val distroSdk = getDistroFile("root/android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
-            isBuildTools35Installed =
-                File(hostSdk, "build-tools/35.0.0").exists() ||
-                    getDistroFile("root/android-sdk/build-tools/35.0.0").exists()
-            isBuildTools36Installed =
-                File(hostSdk, "build-tools/36.0.0").exists() ||
-                    getDistroFile("root/android-sdk/build-tools/36.0.0").exists()
             isPlatform34Installed =
                 File(hostSdk, "platforms/android-34").exists() ||
                     getDistroFile("root/android-sdk/platforms/android-34").exists()
@@ -157,8 +149,6 @@ fun BuildSettingsScreen(navController: NavController) {
                 isJdk17Installed = isJdk17Installed,
                 isJdk21Installed = isJdk21Installed,
                 isAndroidSdkInstalled = isAndroidSdkInstalled,
-                isBuildTools35Installed = isBuildTools35Installed,
-                isBuildTools36Installed = isBuildTools36Installed,
                 isPlatform34Installed = isPlatform34Installed,
                 isPlatform35Installed = isPlatform35Installed,
                 isCmakeInstalled = isCmakeInstalled,

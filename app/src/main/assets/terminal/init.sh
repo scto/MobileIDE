@@ -9,6 +9,7 @@ export ROOT="/root"
 export HOME="/home"
 export EXTERNAL_STORAGE="/sdcard"
 export PROJECTS="$MOBILEIDE_WORKSPACE"
+export DOTNET_GCHeapHardLimit=1C0000000
 
 source "$LOCAL/bin/utils"
 

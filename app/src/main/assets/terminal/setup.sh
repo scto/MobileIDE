@@ -138,8 +138,54 @@ rm "$TMP_DIR"/sandbox.tar.gz
 # DO NOT REMOVE THIS FILE JUST DON'T, TRUST ME
 touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 
-info "Installing Git and Gradle inside Ubuntu container..."
-sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git gradle gradle-completion bash-completion"
+# Read selected setup options if the file exists
+INSTALL_JDK="17"
+INSTALL_GRADLE="apt"
+INSTALL_SDK="35"
+INSTALL_BUILD_TOOLS="35.0.0"
+INSTALL_CMDLINE_TOOLS="true"
+INSTALL_GIT="true"
+
+if [ -f "$LOCAL/setup_options.properties" ]; then
+    . "$LOCAL/setup_options.properties"
+fi
+
+# Build packages list
+packages="bash-completion"
+if [ "$INSTALL_GIT" = "true" ]; then
+    packages="$packages git"
+fi
+
+if [ "$INSTALL_JDK" = "17" ]; then
+    packages="$packages openjdk-17-jdk"
+elif [ "$INSTALL_JDK" = "21" ]; then
+    packages="$packages openjdk-21-jdk"
+fi
+
+if [ "$INSTALL_GRADLE" = "apt" ]; then
+    packages="$packages gradle gradle-completion"
+fi
+
+info "Installing selected packages inside Ubuntu container: $packages..."
+sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"
+
+if [ "$INSTALL_GRADLE" != "none" ] && [ "$INSTALL_GRADLE" != "apt" ]; then
+    info "Installing custom Gradle version $INSTALL_GRADLE..."
+    sh $LOCAL/bin/sandbox "apt-get install -y wget unzip && wget -q https://services.gradle.org/distributions/gradle-${INSTALL_GRADLE}-bin.zip -O /tmp/gradle.zip && mkdir -p /opt/gradle && unzip -o -d /opt/gradle /tmp/gradle.zip && ln -sf /opt/gradle/gradle-${INSTALL_GRADLE}/bin/gradle /usr/bin/gradle && rm /tmp/gradle.zip"
+fi
+
+if [ "$INSTALL_SDK" != "none" ]; then
+    info "Installing Android SDK Platform $INSTALL_SDK and Build-Tools $INSTALL_BUILD_TOOLS..."
+    sh $LOCAL/bin/sandbox "apt-get install -y wget unzip"
+    
+    if [ "$INSTALL_CMDLINE_TOOLS" = "true" ]; then
+        info "Installing Command-line tools..."
+        sh $LOCAL/bin/sandbox "mkdir -p /root/android-sdk/cmdline-tools && wget -q -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk/cmdline-tools && rm /tmp/sdk.zip && mv /root/android-sdk/cmdline-tools/cmdline-tools /root/android-sdk/cmdline-tools/latest || true"
+        
+        info "Running sdkmanager to install platforms;android-$INSTALL_SDK and build-tools;$INSTALL_BUILD_TOOLS..."
+        sh $LOCAL/bin/sandbox "yes | /root/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-${INSTALL_SDK}\" \"build-tools;${INSTALL_BUILD_TOOLS}\""
+    fi
+fi
 
 info "Configuring build tools environment automatically..."
 sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
@@ -149,14 +195,20 @@ sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
   else
       for d in /usr/lib/jvm/java-17-openjdk*; do
           if [ -d \"\$d\" ]; then
-              jdk_dir=\"\$d\"
-              break
+               jdk_dir=\"\$d\"
+               break
           fi
       done
   fi
-  if [ -n \"\$jdk_dir\" ]; then
-      printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=\\\$HOME/android-sdk\nGRADLE_USER_HOME=\\\$HOME/.gradle\nAAPT2_HOME=/.mobileide\n\" > /root/etc/mobileide-environment.properties
+  if [ -z \"\$jdk_dir\" ]; then
+      for d in /usr/lib/jvm/java-21-openjdk*; do
+          if [ -d \"\$d\" ]; then
+               jdk_dir=\"\$d\"
+               break
+          fi
+      done
   fi
+  printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=/root/android-sdk\nGRADLE_USER_HOME=/root/.gradle\nAAPT2_HOME=/.mobileide\n\" > /root/etc/mobileide-environment.properties
 )"
 
 

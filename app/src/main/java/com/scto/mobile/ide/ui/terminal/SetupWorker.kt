@@ -79,6 +79,29 @@ object SetupWorker {
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
 
+            val optionsFile = File(prefixDir, "local/setup_options.properties")
+            val generalPrefs = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            val jdk = generalPrefs.getString("welcome_install_jdk_version", "17") ?: "17"
+            val gradle = generalPrefs.getString("welcome_install_gradle_version", "apt") ?: "apt"
+            val sdk = generalPrefs.getString("welcome_install_sdk_version", "35") ?: "35"
+            val buildTools = generalPrefs.getString("welcome_install_build_tools_version", "35.0.0") ?: "35.0.0"
+            val cmdline = generalPrefs.getBoolean("welcome_install_cmdline_tools", true)
+            val git = generalPrefs.getBoolean("welcome_install_git", true)
+
+            try {
+                optionsFile.parentFile?.mkdirs()
+                optionsFile.writeText("""
+                    INSTALL_JDK="$jdk"
+                    INSTALL_GRADLE="$gradle"
+                    INSTALL_SDK="$sdk"
+                    INSTALL_BUILD_TOOLS="$buildTools"
+                    INSTALL_CMDLINE_TOOLS="${if (cmdline) "true" else "false"}"
+                    INSTALL_GIT="${if (git) "true" else "false"}"
+                """.trimIndent())
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Failed to write setup_options.properties", e)
+            }
+
             val distroDir = File(prefixDir, "local/$distroName")
             val binDir = File(prefixDir, "local/bin")
             val libDir = File(prefixDir, "local/lib")
