@@ -33,15 +33,27 @@ if [ -e "/proc/self/fd" ]; then
 fi
 
 if [ -e "/proc/self/fd/0" ]; then
-  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
+  target=$(readlink "/proc/self/fd/0" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin" ;;
+  esac
 fi
 
 if [ -e "/proc/self/fd/1" ]; then
-  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
+  target=$(readlink "/proc/self/fd/1" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout" ;;
+  esac
 fi
 
 if [ -e "/proc/self/fd/2" ]; then
-  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
+  target=$(readlink "/proc/self/fd/2" 2>/dev/null)
+  case "$target" in
+    pipe:*|socket:*) ;;
+    *) ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr" ;;
+  esac
 fi
 
 
