@@ -67,7 +67,6 @@ if [ -e "/proc/self/fd/2" ]; then
   esac
 fi
 
-
 ARGS="$ARGS -b $PRIVATE_DIR"
 ARGS="$ARGS -b /sys"
 
@@ -91,4 +90,3 @@ if [ $# -gt 0 ]; then
 else
     $PROOT $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
 fi
-

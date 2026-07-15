@@ -1,25 +1,20 @@
+#!/bin/bash
 set -e
-
-source "$LOCAL/bin/utils"
-
-info 'Preparing...'
-apt update && apt upgrade -y
+source "$(dirname "$0")/../utils"
 
 install() {
   if ! command_exists node || ! command_exists npm; then
     install_nodejs
   fi
-
   info 'Installing Emmet language server...'
-  npm install -g --prefix /usr @olrtg/emmet-language-server
-
+  npm install -g --prefix /usr emmet-language-server
   info 'Emmet language server installed successfully.'
   exit 0
 }
 
 uninstall() {
   info 'Uninstalling Emmet language server...'
-  npm uninstall -g --prefix /usr @olrtg/emmet-language-server
+  npm uninstall -g --prefix /usr emmet-language-server
   info 'Emmet language server uninstalled successfully.'
   uninstall_nodejs
   exit 0
@@ -27,7 +22,7 @@ uninstall() {
 
 update() {
   info 'Updating Emmet language server...'
-  npm update -g --prefix /usr @olrtg/emmet-language-server
+  npm update -g --prefix /usr emmet-language-server
   info 'Emmet language server updated successfully.'
   exit 0
 }

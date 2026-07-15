@@ -8,6 +8,7 @@ export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
 export ROOT="/root"
 export HOME="/home"
 export EXTERNAL_STORAGE="/sdcard"
+export PROJECTS="$MOBILEIDE_WORKSPACE"
 export DOTNET_GCHeapHardLimit=1C0000000
 
 source "$LOCAL/bin/utils"
@@ -28,16 +29,14 @@ echo "$CONTAINER_TIMEZONE" > /etc/timezone
 # Reconfigure tzdata to apply without prompts
 DEBIAN_FRONTEND=noninteractive dpkg-reconfigure -f noninteractive tzdata >/dev/null 2>&1
 
-
 if [[ -f ~/.bashrc ]]; then
     # shellcheck disable=SC1090
     source ~/.bashrc
 fi
 
-
 ensure_packages_once() {
     local marker_file="/.cache/.packages_ensured"
-    local PACKAGES=("command-not-found" "sudo" "xkb-data" "libjemalloc-dev")
+    local PACKAGES=("command-not-found" "sudo" "xkb-data" "libjemalloc-dev" "bash-completion")
 
     # Exit early if already done
     [[ -f "$marker_file" ]] && return 0
@@ -79,7 +78,6 @@ ensure_packages_once() {
     update-command-not-found 2>/dev/null || true
 }
 
-
 ensure_packages_once
 unset -f ensure_packages_once
 
@@ -99,11 +97,17 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 	}
 fi
 
+# Enable colorful output
+if [ -x /usr/bin/dircolors ]; then
+    eval "$(dircolors -b)"
+fi
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+alias ls='ls --color=always'
+alias grep='grep --color=always'
+alias egrep='egrep --color=always'
+alias fgrep='fgrep --color=always'
 alias pkg='apt'
 
 if [[ -f /initrc ]]; then
@@ -113,3 +117,48 @@ fi
 
 # shellcheck disable=SC2164
 cd "$HOME"
+
+# Configure History
+export HISTFILE="$HOME/.bash_history"
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+shopt -s histappend
+PROMPT_COMMAND="history -a; history -n; $PROMPT_COMMAND"
+
+# Enable arrow up/down history prefix search (Normal & Application cursor modes)
+bind '"\e[A": history-search-backward' 2>/dev/null
+bind '"\e[B": history-search-forward' 2>/dev/null
+bind '"\eOA": history-search-backward' 2>/dev/null
+bind '"\eOB": history-search-forward' 2>/dev/null
+
+# Load bash completion
+if [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
+elif [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
+clear
+echo -e "\e[1;36mWelcome to \e[1;32mMobileIDE Terminal\e[0m"
+echo -e "\e[1;30m----------------------------------------\e[0m"
+echo -e "\e[1;34mPackage Manager (apt):\e[0m"
+echo -e "  \e[1;33mapt update\e[0m   : Update packages"
+echo -e "  \e[1;33mapt upgrade\e[0m  : Upgrade packages"
+echo -e "  \e[1;33mapt install\e[0m  : Install <package>"
+echo -e "\e[1;30m----------------------------------------\e[0m"
+echo ""
+
+if [ ! -f "$ROOT/etc/mobileide-environment.properties" ]; then
+    echo -e "\e[1;33mHint: Please run the '\e[1;32midesetup\e[1;33m' command to configure your Java & Android SDK build tools.\e[0m"
+else
+    # Automatically export the properties to the environment
+    set -a
+    source "$ROOT/etc/mobileide-environment.properties"
+    set +a
+fi
+
+echo ""
+if [ -t 0 ]; then
+    echo -e "\e[1;32mPress any key to continue...\e[0m"
+    read -n 1 -s -r
+fi
