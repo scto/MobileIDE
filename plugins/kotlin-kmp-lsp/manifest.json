@@ -1,0 +1,17 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "com.scto.mobile.ide.plugins.kotlin.kmplsp",
+  "name": "kmp-lsp",
+  "mainClass": "com.scto.mobile.ide.plugins.kotlin.kmplsp.Main",
+  "version": "0.1.2",
+  "description": "Extension that provides kmp-lsp",
+  "author": {
+    "displayName": "scto",
+	"github": "MobileIDE"
+  },
+  "license": "MIT",
+  "tags": ["kotlin", "java", "swift", "lsp", "kmp-lsp"],
+  "minAppVersion": 95,
+  "maxAppVersion": null,
+  "repository": "https://github.com/scto/MobileIDE/Pkugins/kotlin-kmp-lsp"
+}

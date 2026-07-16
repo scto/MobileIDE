@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.java.lsp",
+  "name": "Java Language Support (JDTLS)",
+  "mainClass": "com.scto.mobile.ide.plugin.java.JavaLspExtension",
+  "version": "1.0.0",
+  "description": "Provides Java language intelligence utilizing Eclipse JDTLS and OpenJDK 17.",
+  "author": {
+    "displayName": "MobileIDE"
+  },
+  "repository": "https://github.com/scto/MobileIDE",
+  "license": "GPLv3",
+  "tags": ["lsp", "java", "jdtls"]
+}

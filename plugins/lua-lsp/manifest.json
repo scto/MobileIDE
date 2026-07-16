@@ -1,0 +1,15 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "com.rk.lua",
+  "name": "Lua-LSP",
+  "mainClass": "com.rk.lua.Main",
+  "version": "1.0.2",
+  "description": "A fast lua lsp",
+  "author": {
+    "displayName": "RohitKushvaha01",
+    "github": "RohitKushvaha01"
+  },
+  "minAppVersion": 87,
+  "maxAppVersion": null,
+  "repository": "https://github.com/RohitKushvaha01/Lua-LSP"
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "com.rk.xededitor.json",
+  "name": "Json LSP",
+  "mainClass": "com.rk.xededitor.json.Main",
+  "version": "1.0.2",
+  "description": "JSON Language Server Protocol extension for Xed-Editor",
+  "author": {
+    "displayName": "Xed-Editor",
+    "github": "Xed-Editor"
+  },
+  "minAppVersion": 87,
+  "maxAppVersion": null,
+  "repository": "https://github.com/Xed-Editor/JSON-LSP"
+}
