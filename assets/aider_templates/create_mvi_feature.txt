@@ -1,9 +1,0 @@
-Erstelle das MVI-Skelett für das neue Feature: [FEATURE_NAME_HIER_EINTRAGEN]
-Pfad: feature/[FEATURE_NAME]/
-
-Aufgaben:
-1. Erstelle `[FeatureName]Contract.kt` mit `sealed interface ViewState`, `sealed interface Intent` und `sealed interface SideEffect`.
-2. Erstelle `[FeatureName]ViewModel.kt` als `@HiltViewModel`.
-3. Das ViewModel muss einen `@IoDispatcher` injiziert bekommen.
-4. Implementiere eine saubere Reducer-Funktion für die Intents.
-5. Halte dich an die Vorgaben aus conventions.md und aider_guardrails.md.
