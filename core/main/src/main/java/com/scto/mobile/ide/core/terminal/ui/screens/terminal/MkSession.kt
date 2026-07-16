@@ -48,38 +48,38 @@ object MkSession {
             }
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
 
-            val initFile: File = localBinDir().child("init-host")
+            val initFile: File = localBinDir().child("init-alpine-host")
             initFile.createFileIfNot()
-            initFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
+            initFile.writeText(assets.open("terminal/init-alpine-host.sh").bufferedReader().use { it.readText() })
             initFile.setExecutable(true)
 
-            localBinDir().child("init").apply {
+            localBinDir().child("init-alpine").apply {
                 createFileIfNot()
-                writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("terminal/init-alpine.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
-            localBinDir().child("init-root").apply {
+            localBinDir().child("init-alpine-root").apply {
                 createFileIfNot()
-                writeText(assets.open("init-root.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("terminal/init-alpine-root.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
             localBinDir().child("init-ubuntu").apply {
                 createFileIfNot()
-                writeText(assets.open("init-ubuntu.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("terminal/init-ubuntu.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
             localBinDir().child("init-ubuntu-host").apply {
                 createFileIfNot()
-                writeText(assets.open("init-ubuntu-host.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("terminal/init-ubuntu-host.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
             localBinDir().child("init-ubuntu-root").apply {
                 createFileIfNot()
-                writeText(assets.open("init-ubuntu-root.sh").bufferedReader().use { it.readText() })
+                writeText(assets.open("terminal/init-ubuntu-root.sh").bufferedReader().use { it.readText() })
                 setExecutable(true)
             }
 
@@ -146,7 +146,7 @@ object MkSession {
             val shell = if (pendingCommand == null) {
                 args = when (workingMode) {
                     WorkingMode.ALPINE -> arrayOf("-c", initFile.absolutePath)
-                    WorkingMode.ALPINE_ROOT -> arrayOf("-c", localBinDir().child("init-root").absolutePath)
+                    WorkingMode.ALPINE_ROOT -> arrayOf("-c", localBinDir().child("init-alpine-root").absolutePath)
                     WorkingMode.UBUNTU -> arrayOf("-c", localBinDir().child("init-ubuntu-host").absolutePath)
                     WorkingMode.UBUNTU_ROOT -> arrayOf("-c", localBinDir().child("init-ubuntu-root").absolutePath)
                     else -> arrayOf()

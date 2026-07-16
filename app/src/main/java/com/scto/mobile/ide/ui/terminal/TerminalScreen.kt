@@ -49,20 +49,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavController
-<<<<<<< HEAD
-=======
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalBackEnd
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
->>>>>>> d56be57 (refac: term)
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.terminal.libcommons.application
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalBackEnd
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
 import com.termux.view.TerminalView
 import java.lang.ref.WeakReference
@@ -187,7 +179,7 @@ fun TerminalScreen(navController: NavController) {
     var setupError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        com.scto.mobile.ide.core.utils.LogCatcher.i(
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i(
             "TerminalScreen",
             "LaunchedEffect: initializing terminal environment...",
         )
@@ -199,7 +191,7 @@ fun TerminalScreen(navController: NavController) {
                     context = context,
                     onStatusChanged = { status ->
                         downloadLabel = status
-                        com.scto.mobile.ide.core.utils.LogCatcher.i(
+                        com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                             "TerminalScreen",
                             "prepareEnvironment status: $status",
                         )
@@ -210,13 +202,13 @@ fun TerminalScreen(navController: NavController) {
                     },
                 )
             }
-            com.scto.mobile.ide.core.utils.LogCatcher.i(
+            com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                 "TerminalScreen",
                 "prepareEnvironment complete. environment is ready.",
             )
             isEnvironmentReady = true
             if (SessionManager.sessions.isEmpty()) {
-                com.scto.mobile.ide.core.utils.LogCatcher.i(
+                com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                     "TerminalScreen",
                     "No active terminal sessions. Adding new session.",
                 )
@@ -224,7 +216,7 @@ fun TerminalScreen(navController: NavController) {
             }
         } catch (e: Exception) {
             setupError = e.message ?: "Ein unbekannter Fehler ist aufgetreten."
-            com.scto.mobile.ide.core.utils.LogCatcher.e("TerminalScreen", "Setup failed", e)
+            com.scto.mobile.ide.core.common.utils.LogCatcher.e("TerminalScreen", "Setup failed", e)
         }
     }
 
@@ -259,14 +251,7 @@ fun TerminalScreen(navController: NavController) {
     var terminalViewRef by remember { mutableStateOf<WeakReference<TerminalView>?>(null) }
     val sessions = SessionManager.sessions
     LaunchedEffect(sessions.size) {
-<<<<<<< HEAD
-        if (
-            sessions.isEmpty() &&
-                com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior == "exit_app"
-        ) {
-=======
         if (sessions.isEmpty() && com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior == "exit_app") {
->>>>>>> d56be57 (refac: term)
             navController.popBackStack()
         }
     }
@@ -579,12 +564,7 @@ fun TerminalScreen(navController: NavController) {
 
                                     val props = java.util.Properties()
                                     try {
-<<<<<<< HEAD
-                                        val scheme =
-                                            com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
-=======
                                         val scheme = com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
->>>>>>> d56be57 (refac: term)
                                         ctx.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
                                             props.load(input)
                                         }
@@ -609,12 +589,7 @@ fun TerminalScreen(navController: NavController) {
 
                                 val props = java.util.Properties()
                                 try {
-<<<<<<< HEAD
-                                    val scheme =
-                                        com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
-=======
                                     val scheme = com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme
->>>>>>> d56be57 (refac: term)
                                     context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
                                         props.load(input)
                                     }

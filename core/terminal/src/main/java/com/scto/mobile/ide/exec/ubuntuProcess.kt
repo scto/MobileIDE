@@ -2,14 +2,14 @@ package com.scto.mobile.ide.exec
 
 import android.annotation.SuppressLint
 import android.util.Log
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.file.localDir
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.files.localDir
 import com.scto.mobile.ide.file.localLibDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.file.sandboxHomeDir
-import com.scto.mobile.ide.settings.Settings
-import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.utils.getSourceDirOfPackage
 import com.scto.mobile.ide.utils.getTempDir
 import com.scto.mobile.ide.xededitor.BuildConfig

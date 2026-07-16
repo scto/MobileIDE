@@ -3,10 +3,10 @@ package com.scto.mobile.ide.settings.editor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 
 @Composable
 fun TerminalFontScreen(modifier: Modifier = Modifier) {

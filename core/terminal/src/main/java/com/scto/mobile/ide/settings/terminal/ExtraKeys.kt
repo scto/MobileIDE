@@ -28,11 +28,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.scto.mobile.ide.components.ResetButton
 import com.scto.mobile.ide.editor.Editor
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.settings.Preference
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.tabs.editor.EditorNotice
 import com.scto.mobile.ide.utils.isSystemInDarkTheme
 import com.scto.mobile.ide.utils.openUrl

@@ -210,3 +210,8 @@ object FileIcons {
         }
     }
 }
+
+fun com.scto.mobile.ide.core.common.files.FileType.getResolvedIcon(): com.scto.mobile.ide.core.common.icons.Icon {
+    val iconPackFile = com.scto.mobile.ide.icons.pack.currentIconPack.value?.getIconFileForFileType(this)
+    return iconPackFile?.let { com.scto.mobile.ide.core.common.icons.Icon.SvgIcon(it) } ?: icon ?: com.scto.mobile.ide.core.common.icons.Icon.ResourceIcon(com.scto.mobile.ide.core.terminal.resources.drawables.baseline_android_24)
+}

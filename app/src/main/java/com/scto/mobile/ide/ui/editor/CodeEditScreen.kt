@@ -69,7 +69,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.build.ApkInstaller
-import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.files.FileTree
 import com.scto.mobile.ide.files.FileTreeConfig
 import com.scto.mobile.ide.files.SortBy
@@ -1707,9 +1707,9 @@ private suspend fun performBuild(
     onResult: (BuildResultState) -> Unit,
 ) {
     withContext(Dispatchers.IO) {
-        com.scto.mobile.ide.core.utils.LogCatcher.clearBuildLogs()
-        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
-        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Project Path: $projectPath")
+        com.scto.mobile.ide.core.common.utils.LogCatcher.clearBuildLogs()
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Project Path: $projectPath")
 
         val prefixDir = context.filesDir.parentFile!!
         val sandboxDir = File(prefixDir, "local/sandbox")
@@ -1775,14 +1775,14 @@ private suspend fun performBuild(
                 "Build failed! Missing required components:\n" +
                     missingComponents.joinToString("\n") { "  * $it" } +
                     "\n\nPlease install them from Settings -> Build Config."
-            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", errorDetails)
+            com.scto.mobile.ide.core.common.utils.LogCatcher.e("Build", errorDetails)
             onResult(BuildResultState.Finished("Build failed: missing components"))
             return@withContext
         }
 
         val saved = viewModel.saveAllModifiedFiles(context, snackbarHostState)
         if (!saved) {
-            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Failed to save modified files. Build aborted.")
+            com.scto.mobile.ide.core.common.utils.LogCatcher.e("Build", "Failed to save modified files. Build aborted.")
             onResult(BuildResultState.Finished("Failed to save files."))
             return@withContext
         }
@@ -1816,7 +1816,7 @@ private suspend fun performBuild(
         val cmd =
             com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
 
-        com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
 
         try {
             val processBuilder = ProcessBuilder(cmd)
@@ -1834,7 +1834,7 @@ private suspend fun performBuild(
                     localProperties.writeText(
                         "sdk.dir=${sdkDir.absolutePath.replace("\\", "\\\\").replace(":", "\\:")}\n"
                     )
-                    com.scto.mobile.ide.core.utils.LogCatcher.i(
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                         "Build",
                         "Created local.properties with sdk.dir=${sdkDir.absolutePath}",
                     )
@@ -1849,7 +1849,7 @@ private suspend fun performBuild(
             val jobInput = launch {
                 var line = inputReader.readLine()
                 while (line != null) {
-                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", line)
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", line)
                     line = inputReader.readLine()
                 }
             }
@@ -1857,7 +1857,7 @@ private suspend fun performBuild(
             val jobError = launch {
                 var line = errorReader.readLine()
                 while (line != null) {
-                    com.scto.mobile.ide.core.utils.LogCatcher.e("Build", line)
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.e("Build", line)
                     line = errorReader.readLine()
                 }
             }
@@ -1866,7 +1866,7 @@ private suspend fun performBuild(
             jobInput.join()
             jobError.join()
 
-            com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Build process finished with exit code: $exitCode")
+            com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Build process finished with exit code: $exitCode")
 
             if (exitCode == 0) {
                 val apkPaths =
@@ -1885,25 +1885,25 @@ private suspend fun performBuild(
                 }
 
                 if (foundApk != null) {
-                    com.scto.mobile.ide.core.utils.LogCatcher.i("Build", "Found built APK: ${foundApk.absolutePath}")
-                    com.scto.mobile.ide.core.utils.LogCatcher.i(
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Found built APK: ${foundApk.absolutePath}")
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                         "Build",
                         "Sign/Align verification via ApkAligner/ApkSigner is ready.",
                     )
                     onResult(BuildResultState.Finished("Build succeeded", foundApk.absolutePath))
                 } else {
-                    com.scto.mobile.ide.core.utils.LogCatcher.e(
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.e(
                         "Build",
                         "Build succeeded but no APK file was found in expected paths.",
                     )
                     onResult(BuildResultState.Finished("No built APK found."))
                 }
             } else {
-                com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Build failed with exit code $exitCode")
+                com.scto.mobile.ide.core.common.utils.LogCatcher.e("Build", "Build failed with exit code $exitCode")
                 onResult(BuildResultState.Finished("Build failed with exit code $exitCode"))
             }
         } catch (e: Exception) {
-            com.scto.mobile.ide.core.utils.LogCatcher.e("Build", "Exception during build execution", e)
+            com.scto.mobile.ide.core.common.utils.LogCatcher.e("Build", "Exception during build execution", e)
             onResult(BuildResultState.Finished("Error: ${e.message}"))
         }
     }
@@ -1995,7 +1995,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
 
     val allCommands = remember {
         (com.rk.commands.CommandManager.getCommands() +
-                com.scto.mobile.ide.core.commands.MobileIDECommandManager.getAllCommands())
+                com.scto.mobile.ide.core.common.commands.MobileIDECommandManager.getAllCommands())
             .distinctBy { it.id }
     }
 
@@ -2050,7 +2050,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
                                     scope.launch {
                                         try {
                                             val cmdContext =
-                                                com.scto.mobile.ide.core.commands.MobileIDECommandContext(viewModel)
+                                                com.scto.mobile.ide.core.common.commands.MobileIDECommandContext(viewModel)
                                             cmd.execute(cmdContext)
                                         } catch (e: Exception) {
                                             e.printStackTrace()

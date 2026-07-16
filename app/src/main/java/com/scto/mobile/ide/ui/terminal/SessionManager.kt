@@ -15,7 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
-import com.scto.mobile.ide.core.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 

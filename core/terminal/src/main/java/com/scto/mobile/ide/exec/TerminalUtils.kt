@@ -2,11 +2,11 @@ package com.scto.mobile.ide.exec
 
 import android.app.Activity
 import android.content.Intent
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.createFileIfNot
-import com.scto.mobile.ide.file.localDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.file.sandboxHomeDir
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.createFileIfNot
+import com.scto.mobile.ide.core.common.files.localDir
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -32,7 +32,7 @@ fun launchTerminal(activity: Activity, terminalCommand: TerminalCommand) {
         val intent = Intent().setClassName(activity, "com.scto.mobile.ide.activities.terminal.Terminal")
         activity.startActivity(intent)
     } catch (e: Exception) {
-        com.scto.mobile.ide.utils.toast("Terminal feature is not available in this build")
+        com.scto.mobile.ide.core.common.utils.toast("Terminal feature is not available in this build")
     }
 }
 

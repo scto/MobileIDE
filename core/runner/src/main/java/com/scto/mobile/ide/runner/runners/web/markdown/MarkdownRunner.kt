@@ -3,11 +3,11 @@ package com.scto.mobile.ide.runner.runners.web.markdown
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.runner.Runner
 import com.scto.mobile.ide.runner.runners.web.html.HtmlRunner
 import java.lang.ref.WeakReference

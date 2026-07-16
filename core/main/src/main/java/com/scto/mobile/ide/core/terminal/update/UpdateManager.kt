@@ -8,24 +8,14 @@ import java.io.File
 
 class UpdateManager {
     fun onUpdate(){
-        val initFile: File = localBinDir().child("init-host")
-        if(initFile.exists()){
-            initFile.delete()
-        }
-
-        if (initFile.exists().not()){
-            initFile.createFileIfNot()
-            initFile.writeText(application!!.assets.open("init-host.sh").bufferedReader().use { it.readText() })
-        }
-
-        val initFilex: File = localBinDir().child("init")
-        if(initFilex.exists()){
-            initFilex.delete()
-        }
-
-        if (initFilex.exists().not()){
-            initFilex.createFileIfNot()
-            initFilex.writeText(application!!.assets.open("init.sh").bufferedReader().use { it.readText() })
+        val scripts = listOf("init-alpine-host", "init-alpine", "init-alpine-root", "init-ubuntu-host", "init-ubuntu", "init-ubuntu-root")
+        for (script in scripts) {
+            val file = localBinDir().child(script)
+            if (file.exists()) {
+                file.delete()
+            }
+            file.createFileIfNot()
+            file.writeText(application!!.assets.open("terminal/$script.sh").bufferedReader().use { it.readText() })
         }
     }
 }

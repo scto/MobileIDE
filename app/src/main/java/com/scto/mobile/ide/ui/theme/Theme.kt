@@ -42,8 +42,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.materialkolor.rememberDynamicColorScheme
-import com.scto.mobile.ide.core.utils.LogCatcher
-import com.scto.mobile.ide.core.utils.ThemeState
+import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.ThemeState
 
 // ============================================================================
 // 1. 预设主题 (保留原样)

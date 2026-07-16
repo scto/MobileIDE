@@ -14,10 +14,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import com.scto.mobile.ide.activities.terminal.Terminal
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import kotlinx.coroutines.DelicateCoroutinesApi

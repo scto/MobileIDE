@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":core:main"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
+    implementation(project(":core:common"))
 
     // Editor dependencies for code runner settings and markdown rendering
     implementation(project(":editor"))

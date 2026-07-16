@@ -71,10 +71,10 @@ import com.scto.mobile.ide.activities.terminal.Terminal
 import com.scto.mobile.ide.animations.NavigationAnimationTransitions
 import com.scto.mobile.ide.editor.FontCache
 import com.scto.mobile.ide.exec.pendingCommand
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.settings.editor.DEFAULT_TERMINAL_FONT_PATH
 import com.scto.mobile.ide.settings.editor.TerminalFontScreen
 import com.scto.mobile.ide.settings.terminal.DEFAULT_TERMINAL_EXTRA_KEYS
@@ -88,7 +88,7 @@ import com.scto.mobile.ide.terminal.virtualkeys.VirtualKeysView
 import com.scto.mobile.ide.theme.LocalThemeHolder
 import com.scto.mobile.ide.theme.ThemeHolder
 import com.scto.mobile.ide.utils.dpToPx
-import com.scto.mobile.ide.utils.toast
+import com.scto.mobile.ide.core.common.utils.toast
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TextStyle
 import com.termux.view.TerminalView

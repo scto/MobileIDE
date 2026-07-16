@@ -20,14 +20,10 @@ package com.scto.mobile.ide.exec
 
 import android.annotation.SuppressLint
 import android.util.Log
-<<<<<<< HEAD
-=======
 import com.scto.mobile.ide.core.terminal.settings.Settings
->>>>>>> d56be57 (refac: term)
 import com.scto.mobile.ide.BuildConfig
-import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.utils.getSourceDirOfPackage
-import com.scto.mobile.ide.core.utils.getTempDir
+import com.scto.mobile.ide.core.common.utils.getSourceDirOfPackage
+import com.scto.mobile.ide.core.common.utils.getTempDir
 import com.scto.mobile.ide.files.child
 import com.scto.mobile.ide.files.localBinDir
 import com.scto.mobile.ide.files.localDir

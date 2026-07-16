@@ -8,16 +8,16 @@ import com.scto.mobile.ide.DefaultScope
 import com.scto.mobile.ide.exec.TerminalCommand
 import com.scto.mobile.ide.exec.launchTerminal
 import com.scto.mobile.ide.exec.setupAssetFile
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.file.FileWrapper
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.files.FileWrapper
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.runner.Runner
-import com.scto.mobile.ide.utils.dialogRes
+import com.scto.mobile.ide.core.common.utils.dialogRes
 import kotlinx.coroutines.launch
 
 object UniversalRunner : Runner() {

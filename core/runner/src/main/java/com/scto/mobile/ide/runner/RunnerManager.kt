@@ -3,13 +3,12 @@ package com.scto.mobile.ide.runner
 import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
-import com.scto.mobile.ide.extension.api.XedExtensionPoint
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.runner.runners.web.html.HtmlRunner
 import com.scto.mobile.ide.runner.runners.web.markdown.MarkdownRunner
-import com.scto.mobile.ide.settings.Preference
-import com.scto.mobile.ide.utils.errorDialog
+import com.scto.mobile.ide.core.terminal.settings.Preference
+import com.scto.mobile.ide.core.common.utils.errorDialog
 import kotlinx.coroutines.launch
 
 abstract class Runner {
@@ -46,14 +45,12 @@ object RunnerManager {
 
     val builtinRunners = listOf(HtmlRunner, MarkdownRunner)
 
-    @XedExtensionPoint
     fun registerRunner(runner: Runner) {
         if (!_extensionRunners.contains(runner)) {
             _extensionRunners.add(runner)
         }
     }
 
-    @XedExtensionPoint
     fun unregisterRunner(runner: Runner) {
         _extensionRunners.remove(runner)
     }

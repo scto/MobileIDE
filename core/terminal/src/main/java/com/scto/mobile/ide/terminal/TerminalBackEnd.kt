@@ -6,7 +6,7 @@ import android.view.MotionEvent
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.KeyboardUtils
 import com.scto.mobile.ide.activities.terminal.Terminal
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.settings.terminal.TerminalCursorStyle
 import com.scto.mobile.ide.terminal.virtualkeys.SpecialButton
 import com.termux.terminal.TerminalEmulator

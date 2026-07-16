@@ -12,7 +12,7 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 
 class TerminalService : Service() {
 

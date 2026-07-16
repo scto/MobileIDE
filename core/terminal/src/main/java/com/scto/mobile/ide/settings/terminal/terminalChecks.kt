@@ -10,12 +10,12 @@ import androidx.compose.ui.res.stringResource
 import com.scto.mobile.ide.exec.isTerminalInstalled
 import com.scto.mobile.ide.exec.readStderr
 import com.scto.mobile.ide.exec.ubuntuProcess
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.file.sandboxHomeDir
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localDir
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.utils.getTempDir
 import java.io.File
 

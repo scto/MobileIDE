@@ -1,12 +1,11 @@
 package com.scto.mobile.ide.runner.runners.web
 
 import android.content.Context
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
-import com.scto.mobile.ide.theme.amoled
-import com.scto.mobile.ide.utils.isDarkTheme
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.common.utils.isDarkTheme
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import java.net.URLConnection
@@ -67,7 +66,7 @@ class HttpServer(
             }
 
             val darkTheme = isDarkTheme(context)
-            val erudaTheme = if (amoled.value && darkTheme) "AMOLED" else if (darkTheme) "Dark" else "Light"
+            val erudaTheme = if (Settings.amoled && darkTheme) "AMOLED" else if (darkTheme) "Dark" else "Light"
             val erudaScript =
                 """
                 <!-- Injected code, this is not present in original code -->

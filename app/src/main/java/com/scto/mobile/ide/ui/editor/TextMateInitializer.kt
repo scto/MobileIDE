@@ -19,7 +19,7 @@
 package com.scto.mobile.ide.ui.editor
 
 import android.content.Context
-import com.scto.mobile.ide.core.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry

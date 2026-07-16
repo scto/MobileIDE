@@ -13,8 +13,8 @@ package com.scto.mobile.ide.ui.terminal
 import android.content.Context
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.stat
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.vmstat
-import com.scto.mobile.ide.core.utils.LogCatcher
-import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import java.io.File

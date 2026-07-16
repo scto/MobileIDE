@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
@@ -36,24 +37,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.scto.mobile.ide.activities.main.MainActivity
-import com.scto.mobile.ide.components.InfoBlock
-import com.scto.mobile.ide.components.SettingsItem
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.file.FileWrapper
-import com.scto.mobile.ide.icons.Error
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.icons.XedIcon
-import com.scto.mobile.ide.icons.XedIcons
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import android.widget.Toast
+import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
+import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
+import com.rk.components.compose.preferences.base.PreferenceGroup
+import com.rk.components.compose.preferences.base.PreferenceLayout
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R
 import com.scto.mobile.ide.runner.RunnerManager
 import com.scto.mobile.ide.runner.ShellBasedRunner
 import com.scto.mobile.ide.runner.ShellBasedRunners
-import com.scto.mobile.ide.utils.openDocs
-import com.scto.mobile.ide.utils.toast
+import com.scto.mobile.ide.core.common.utils.openDocs
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,10 +72,10 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
         nameError =
             when {
                 runnerName.isBlank() -> {
-                    strings.name_empty_err.getString()
+                    R.string.name_empty_err.getString()
                 }
                 !runnerName.matches("^[a-zA-Z0-9_-]+$".toRegex()) -> {
-                    strings.invalid_runner_name.getString()
+                    R.string.invalid_runner_name.getString()
                 }
                 else -> null
             }
@@ -100,7 +94,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
             if (regexFieldValue.text.isValidRegex()) {
                 null
             } else {
-                strings.invalid_regex.getString()
+                R.string.invalid_regex.getString()
             }
     }
 
@@ -119,7 +113,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
     }
 
     PreferenceLayout(
-        label = stringResource(strings.runners),
+        label = stringResource(R.string.runners),
         fab = {
             FloatingActionButton(
                 onClick = {
@@ -132,12 +126,11 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
         },
     ) {
         InfoBlock(
-            onClick = { context.openDocs("runners") },
             icon = { Icon(imageVector = Icons.Outlined.Info, contentDescription = null) },
-            text = stringResource(strings.info_runners),
+            text = stringResource(R.string.info_runners),
         )
 
-        PreferenceGroup(heading = stringResource(strings.built_in)) {
+        PreferenceGroup(heading = stringResource(R.string.built_in)) {
             RunnerManager.builtinRunners.forEach { runner ->
                 SettingsItem(
                     label = runner.label,
@@ -150,18 +143,12 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
         }
 
         if (RunnerManager.extensionRunners.isNotEmpty()) {
-            PreferenceGroup(heading = stringResource(strings.ext)) {
+            PreferenceGroup(heading = stringResource(R.string.ext)) {
                 RunnerManager.extensionRunners.forEach { runner ->
                     SettingsItem(
                         label = runner.label,
                         description = runner.description,
-                        startWidget = {
-                            XedIcon(
-                                icon = runner.getIcon(context) ?: Icon.ResourceIcon(drawableRes = drawables.run),
-                                contentDescription = null,
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
-                        },
+                        startWidget = null,
                         default = runner.isEnabled(),
                         sideEffect = { runner.setEnabled(it) },
                         onClick = runner.onConfigure,
@@ -170,12 +157,12 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
             }
         }
 
-        PreferenceGroup(heading = stringResource(strings.external)) {
+        PreferenceGroup(heading = stringResource(R.string.external)) {
             val scope = rememberCoroutineScope()
             if (isLoading) {
                 SettingsItem(
                     modifier = Modifier,
-                    label = stringResource(strings.loading),
+                    label = stringResource(R.string.loading),
                     default = false,
                     sideEffect = {},
                     showSwitch = false,
@@ -185,7 +172,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                 if (ShellBasedRunners.runners.isEmpty()) {
                     SettingsItem(
                         modifier = Modifier,
-                        label = stringResource(strings.no_runners),
+                        label = stringResource(R.string.no_runners),
                         default = false,
                         sideEffect = {},
                         showSwitch = false,
@@ -199,12 +186,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                             description = null,
                             default = runner.isEnabled(),
                             onClick = {
-                                MainActivity.instance?.let {
-                                    it.lifecycleScope.launch {
-                                        it.viewModel.editorManager.openFile(FileWrapper(runner.getScript()), null, true)
-                                        toast(strings.tab_opened)
-                                    }
-                                }
+                                Toast.makeText(context, R.string.tab_opened.getString(), Toast.LENGTH_SHORT).show()
                             },
                             sideEffect = { runner.setEnabled(it) },
                             endWidget = {
@@ -240,7 +222,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                     ) {
                                         Icon(
                                             imageVector = Icons.Outlined.Delete,
-                                            contentDescription = stringResource(strings.delete),
+                                            contentDescription = stringResource(R.string.delete),
                                         )
                                     }
                                 }
@@ -258,7 +240,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                     resetDialogState()
                 },
                 title = {
-                    Text(stringResource(if (isEditingExisting != null) strings.edit_runner else strings.new_runner))
+                    Text(stringResource(if (isEditingExisting != null) R.string.edit_runner else R.string.new_runner))
                 },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -268,7 +250,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                 runnerName = it
                                 validateName()
                             },
-                            label = { Text(stringResource(strings.runner_name)) },
+                            label = { Text(stringResource(R.string.runner_name)) },
                             modifier = Modifier.focusRequester(nameFocusRequester),
                             isError = nameError != null,
                             supportingText =
@@ -285,8 +267,8 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                 if (nameError != null) {
                                     {
                                         Icon(
-                                            XedIcons.Error,
-                                            stringResource(strings.error),
+                                            Icons.Default.Info,
+                                            stringResource(R.string.error),
                                             tint = MaterialTheme.colorScheme.error,
                                         )
                                     }
@@ -301,7 +283,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                 regexFieldValue = it
                                 validateRegex()
                             },
-                            label = { Text(stringResource(strings.runner_regex)) },
+                            label = { Text(stringResource(R.string.runner_regex)) },
                             modifier = Modifier.focusRequester(regexFocusRequester),
                             isError = regexError != null,
                             supportingText =
@@ -318,8 +300,8 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                 if (regexError != null) {
                                     {
                                         Icon(
-                                            XedIcons.Error,
-                                            stringResource(strings.error),
+                                            Icons.Default.Info,
+                                            stringResource(R.string.error),
                                             tint = MaterialTheme.colorScheme.error,
                                         )
                                     }
@@ -342,7 +324,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                             // Check for duplicate names only when creating new runner
                             if (isEditingExisting == null) {
                                 if (ShellBasedRunners.runners.any { it.label == runnerName }) {
-                                    nameError = strings.runner_name_exists.getString()
+                                    nameError = R.string.runner_name_exists.getString()
                                     return@TextButton
                                 }
                             }
@@ -360,7 +342,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                         showDialog = false
                                         resetDialogState()
                                     } else {
-                                        toast(strings.failed)
+                                        Toast.makeText(context, R.string.failed.getString(), Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
                                     // Update existing runner
@@ -379,13 +361,13 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                                         showDialog = false
                                         resetDialogState()
                                     } else {
-                                        toast(strings.failed)
+                                        Toast.makeText(context, R.string.failed.getString(), Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                         },
                     ) {
-                        Text(stringResource(if (isEditingExisting != null) strings.save else strings.create))
+                        Text(stringResource(if (isEditingExisting != null) R.string.save else R.string.create))
                     }
                 },
                 dismissButton = {
@@ -395,7 +377,7 @@ fun RunnerSettings(modifier: Modifier = Modifier, navController: NavController) 
                             resetDialogState()
                         }
                     ) {
-                        Text(stringResource(strings.cancel))
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             )

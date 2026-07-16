@@ -33,8 +33,8 @@ import com.scto.mobile.ide.components.InfoBlock
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
-import com.scto.mobile.ide.icons.LucideCircleQuestionMark
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.icons.LucideCircleQuestionMark
+import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.theme.greenStatus
 import com.scto.mobile.ide.utils.openUrl
 

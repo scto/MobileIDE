@@ -11,7 +11,7 @@
 package com.scto.mobile.ide.ui.terminal
 
 import android.content.Context
-import com.scto.mobile.ide.core.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers

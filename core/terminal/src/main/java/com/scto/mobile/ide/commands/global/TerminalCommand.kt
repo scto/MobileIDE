@@ -6,11 +6,11 @@ import com.scto.mobile.ide.activities.terminal.Terminal
 import com.scto.mobile.ide.commands.ActionContext
 import com.scto.mobile.ide.commands.GlobalCommand
 import com.scto.mobile.ide.commands.KeyCombination
-import com.scto.mobile.ide.feature.FeatureRegistry
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+// import com.scto.mobile.ide.feature.FeatureRegistry // REMOVED
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.strings
 
 class TerminalCommand : GlobalCommand() {
     override val id: String = "global.terminal"

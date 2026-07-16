@@ -318,6 +318,7 @@ dependencies {
 
     // Add terminal dependencies
     implementation(project(":core:main"))
+    implementation(project(":core:terminal"))
     implementation(libs.semver)
     implementation(libs.androidsvg)
 
@@ -350,6 +351,7 @@ dependencies {
     implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
     implementation(project(":core:extension"))
+    implementation(project(":core:common"))
     implementation(project(":extension-languages"))
     implementation(libs.timber)
     implementation(libs.language.textmate)

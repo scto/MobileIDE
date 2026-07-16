@@ -3,12 +3,12 @@ package com.scto.mobile.ide.lsp.servers
 import android.content.Context
 import com.scto.mobile.ide.exec.NpmUtils
 import com.scto.mobile.ide.exec.isTerminalInstalled
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.lsp.LspConnectionConfig
-import com.scto.mobile.ide.lsp.ScriptedLspServer
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.rk.lsp.LspConnectionConfig
+import com.rk.lsp.ScriptedLspServer
 
 object TypeScript : ScriptedLspServer() {
     override val id: String = "typescript"

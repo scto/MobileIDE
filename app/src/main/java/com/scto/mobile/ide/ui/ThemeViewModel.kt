@@ -25,9 +25,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.materialkolor.PaletteStyle
-import com.scto.mobile.ide.core.utils.LogCatcher // Import log utility
-import com.scto.mobile.ide.core.utils.ThemeDataStoreRepository
-import com.scto.mobile.ide.core.utils.ThemeState
+import com.scto.mobile.ide.core.common.utils.LogCatcher // Import log utility
+import com.scto.mobile.ide.core.common.utils.ThemeDataStoreRepository
+import com.scto.mobile.ide.core.common.utils.ThemeState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

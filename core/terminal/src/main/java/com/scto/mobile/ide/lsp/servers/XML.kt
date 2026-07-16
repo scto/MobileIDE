@@ -2,12 +2,12 @@ package com.scto.mobile.ide.lsp.servers
 
 import android.content.Context
 import com.scto.mobile.ide.exec.isTerminalInstalled
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.file.sandboxHomeDir
-import com.scto.mobile.ide.lsp.LspConnectionConfig
-import com.scto.mobile.ide.lsp.ScriptedLspServer
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.rk.lsp.LspConnectionConfig
+import com.rk.lsp.ScriptedLspServer
 import io.github.z4kn4fein.semver.toVersion
 import io.github.z4kn4fein.semver.toVersionOrNull
 

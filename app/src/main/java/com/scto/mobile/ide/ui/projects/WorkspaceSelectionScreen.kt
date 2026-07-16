@@ -33,9 +33,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.LogConfigRepository
-import com.scto.mobile.ide.core.utils.PermissionManager
-import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.LogConfigRepository
+import com.scto.mobile.ide.core.common.utils.PermissionManager
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import kotlinx.coroutines.launch
 

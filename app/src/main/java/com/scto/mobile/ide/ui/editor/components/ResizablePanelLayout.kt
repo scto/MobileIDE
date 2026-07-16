@@ -66,8 +66,8 @@ import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
 import com.scto.mobile.ide.core.tooling.impl.ui.BuildAndTasksPanel
 import com.scto.mobile.ide.core.tooling.impl.ui.ToolingLogPanel
-import com.scto.mobile.ide.core.utils.LogCatcher
-import com.scto.mobile.ide.core.utils.LogEntry
+import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogEntry
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import com.scto.mobile.ide.ui.editor.viewmodel.MediaEditorState
@@ -235,7 +235,7 @@ fun EditorPanelLayout(
                         PanelPage.IDE_LOG -> ToolingLogPanel(category = ToolingLogCategory.IDE_LOG)
                         PanelPage.BUILD_LOG -> {
                             val activeProject =
-                                com.scto.mobile.ide.core.utils.WorkspaceManager.getWorkspacePath(LocalContext.current)
+                                com.scto.mobile.ide.core.common.utils.WorkspaceManager.getWorkspacePath(LocalContext.current)
                             BuildAndTasksPanel(projectPath = activeProject)
                         }
                         PanelPage.LSP -> ToolingLogPanel(category = ToolingLogCategory.LSP)

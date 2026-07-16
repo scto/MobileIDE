@@ -30,9 +30,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.scto.mobile.ide.core.utils.LogConfigRepository
-import com.scto.mobile.ide.core.utils.LogConfigState
-import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.LogConfigRepository
+import com.scto.mobile.ide.core.common.utils.LogConfigState
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.editor.CodeEditScreen
 import com.scto.mobile.ide.ui.editor.doc.JsInterfaceDocScreen

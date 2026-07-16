@@ -13,10 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.scto.mobile.ide.components.AddDialogItem
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.strings
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.drawables
+import com.scto.mobile.ide.core.terminal.resources.strings
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,14 +39,7 @@ fun RunnerSheet() {
                 RunnerUI.runnersToShow.forEach { runner ->
                     val activity = LocalActivity.current
 
-                    AddDialogItem(
-                        icon = runner.getIcon(context) ?: Icon.ResourceIcon(drawableRes = drawables.run),
-                        title = runner.label,
-                    ) {
-                        activity?.let { runner.run(it) }
-                        RunnerUI.showRunnerDialog = false
-                        RunnerUI.runnersToShow = emptyList()
-                    }
+                    Text(text = runner.label, modifier = Modifier.fillMaxWidth().clickable { activity?.let { runner.run(it) }; RunnerUI.showRunnerDialog = false; RunnerUI.runnersToShow = emptyList() }.padding(16.dp))
                 }
             }
         }

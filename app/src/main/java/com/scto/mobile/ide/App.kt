@@ -5,17 +5,11 @@ package com.scto.mobile.ide
 import android.app.Application
 import android.os.Build
 import android.os.StrictMode
-<<<<<<< HEAD
-=======
 import com.scto.mobile.ide.core.terminal.crashhandler.CrashHandler
 import com.scto.mobile.ide.core.terminal.resources.Res
 import com.scto.mobile.ide.core.terminal.update.UpdateManager
->>>>>>> d56be57 (refac: term)
-import com.scto.mobile.ide.core.icons.pack.IconPackManager
-import com.scto.mobile.ide.core.terminal.crashhandler.CrashHandler
-import com.scto.mobile.ide.core.terminal.resources.Res
-import com.scto.mobile.ide.core.terminal.update.UpdateManager
-import com.scto.mobile.ide.core.utils.LogCatcher
+import com.scto.mobile.ide.core.common.icons.pack.IconPackManager
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.concurrent.Executors

@@ -1,12 +1,12 @@
 package com.scto.mobile.ide.terminal
 
 import com.scto.mobile.ide.exec.setupAssetFile
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.createFileIfNot
-import com.scto.mobile.ide.file.localBinDir
-import com.scto.mobile.ide.file.localDir
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.utils.application
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.createFileIfNot
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.files.localDir
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.terminal.libcommons.application
 
 fun setupTerminalFiles() {
     if (sandboxDir().exists().not() || localBinDir().exists().not()) return

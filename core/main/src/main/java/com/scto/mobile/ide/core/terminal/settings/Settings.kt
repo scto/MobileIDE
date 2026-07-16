@@ -186,6 +186,18 @@ object Settings {
     var terminal_colorscheme
         get() = Preference.getString(key = "terminal_colorscheme", default = "default")
         set(value) = Preference.setString(key = "terminal_colorscheme", value)
+
+    var http_server_port
+        get() = Preference.getInt(key = "http_server_port", default = 8080)
+        set(value) = Preference.setInt(key = "http_server_port", value)
+
+    var launch_in_browser
+        get() = Preference.getBoolean(key = "launch_in_browser", default = false)
+        set(value) = Preference.setBoolean(key = "launch_in_browser", value)
+
+    var inject_eruda
+        get() = Preference.getBoolean(key = "inject_eruda", default = false)
+        set(value) = Preference.setBoolean(key = "inject_eruda", value)
 }
 
 

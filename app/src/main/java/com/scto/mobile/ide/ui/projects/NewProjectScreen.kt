@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.DelicateCoroutinesApi

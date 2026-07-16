@@ -2,7 +2,7 @@ package com.scto.mobile.ide.runner
 
 import android.app.Activity
 import android.content.Context
-import com.scto.mobile.ide.icons.Icon
+import com.scto.mobile.ide.core.common.icons.Icon
 
 interface RunnableOption {
     val label: String

@@ -174,4 +174,31 @@
     <string name="permissions">Permissions</string>
     <string name="shortcut_switch_by_number">Quick Switch by Number</string>
     <string name="shortcut_switch_by_number_desc">Switch to session N with modifier + 1–9</string>
-</resources>
+    <string name="http_server_port">HTTP Server Port</string>
+    <string name="html_preview">HTML Preview</string>
+    <string name="launch_in_browser">Launch in Browser</string>
+    <string name="launch_in_browser_desc">Open the server address automatically in the external browser.</string>
+    <string name="inject_eruda">Inject Eruda</string>
+    <string name="inject_eruda_desc">Injects Eruda console into HTML for debugging.</string>
+    <string name="server_port">Server Port</string>
+    <string name="server_port_desc">Default HTTP server port</string>
+    <string name="invalid_port">Invalid Port</string>
+    <string name="name_empty_err">Name cannot be empty</string>
+    <string name="invalid_runner_name">Invalid runner name</string>
+    <string name="invalid_regex">Invalid regex pattern</string>
+    <string name="runners">Runners</string>
+    <string name="info_runners">Manage shell-based runners.</string>
+    <string name="built_in">Built-in</string>
+    <string name="ext">Extension</string>
+    <string name="external">External</string>
+    <string name="loading">Loading...</string>
+    <string name="no_runners">No runners found</string>
+    <string name="tab_opened">Opened</string>
+    <string name="edit_runner">Edit Runner</string>
+    <string name="new_runner">New Runner</string>
+    <string name="runner_name">Runner Name</string>
+    <string name="runner_regex">File Regex</string>
+    <string name="runner_name_exists">Runner with this name already exists</string>
+    <string name="save">Save</string>
+    <string name="create">Create</string>
+<string name="html_preview_desc">Preview HTML in a local web server.</string><string name="markdown_preview">Markdown Preview</string><string name="markdown_preview_desc">Preview Markdown files.</string><string name="http_server_port_error">Failed to start HTTP server. Port might be in use.</string><string name="http_server_at">Running at</string><string name="choose_runner">Choose Runner</string><string name="run">Run</string><string name="runs">Runs</string></resources>

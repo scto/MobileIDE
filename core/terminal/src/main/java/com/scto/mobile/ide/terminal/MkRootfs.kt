@@ -1,9 +1,9 @@
 package com.scto.mobile.ide.terminal
 
 import android.content.Context
-import com.scto.mobile.ide.file.child
-import com.scto.mobile.ide.file.sandboxDir
-import com.scto.mobile.ide.file.sandboxHomeDir
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.sandboxDir
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.utils.getTempDir
 import com.scto.mobile.ide.utils.isMainThread
 import java.io.File

@@ -42,7 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rk.extension.extensionManager
 import com.rk.extension.loader.loadAllExtensions
 import com.rk.extension.manager.ExtensionManager
-import com.scto.mobile.ide.core.utils.*
+import com.scto.mobile.ide.core.common.utils.*
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
@@ -136,7 +136,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         // Install plugins bundled in assets/bundled_plugins/ (e.g. java_lsp, kotlin_lsp)
         // These are installed once on first run and updated when the asset version is newer.
         lifecycleScope.launch(Dispatchers.IO) {
-            com.scto.mobile.ide.core.utils.BundledPluginLoader.install(application)
+            com.scto.mobile.ide.core.common.utils.BundledPluginLoader.install(application)
             extensionManager.indexLocalExtensions()
             extensionManager.loadAllExtensions()
             com.rk.lsp.LspRegistry.loadExternalServers(applicationContext)

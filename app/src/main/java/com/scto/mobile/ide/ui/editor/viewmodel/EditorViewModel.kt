@@ -33,9 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.BackupUtils
-import com.scto.mobile.ide.core.utils.LogCatcher
-import com.scto.mobile.ide.core.utils.PermissionManager
+import com.scto.mobile.ide.core.common.utils.BackupUtils
+import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.PermissionManager
 import com.scto.mobile.ide.lsp.ProotStreamConnectionProvider
 import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
@@ -1302,7 +1302,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 val original = editor.text.toString()
                 val formatted =
-                    com.scto.mobile.ide.core.utils.CodeFormatter.format(original, ext, editorConfig.tabWidth)
+                    com.scto.mobile.ide.core.common.utils.CodeFormatter.format(original, ext, editorConfig.tabWidth)
                 if (formatted != original) {
                     withContext(Dispatchers.Main) {
                         editor.setText(formatted)

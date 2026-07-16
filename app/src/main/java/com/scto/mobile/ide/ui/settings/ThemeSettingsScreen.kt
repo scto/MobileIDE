@@ -11,7 +11,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.utils.ThemeState
+import com.scto.mobile.ide.core.common.utils.ThemeState
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.welcome.themeColors
 
