@@ -1,0 +1,13 @@
+**/build/**
+output/**
+app/libs/sdk.jar
+
+*.iml
+.externalNativeBuild
+.cxx
+.idea
+.gradle
+.DS_Store
+build
+captures
+local.properties

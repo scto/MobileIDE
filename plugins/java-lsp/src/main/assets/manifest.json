@@ -1,5 +1,5 @@
 {
-  "id": "com.scto.mobile.ide.java_lsp",
+  "id": "com.scto.mobile.ide.java.lsp",
   "name": "Java Language Support (JDTLS)",
   "mainClass": "com.scto.mobile.ide.plugin.java.JavaLspExtension",
   "version": "1.0.0",
