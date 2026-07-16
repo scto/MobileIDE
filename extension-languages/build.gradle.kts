@@ -1,6 +1,9 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+//    alias(libs.plugins.kotlin.compose)
+//    alias(libs.plugins.ktfmt)
+//    alias(libs.plugins.aboutlibraries)
 }
 
 android {
@@ -10,13 +13,13 @@ android {
     defaultConfig {
         minSdk = 26
     }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    
+    kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 }
 
 dependencies {

@@ -15,8 +15,6 @@ val fullGitCommitHash: Provider<String> =
 val gitCommitDate: Provider<String> =
     providers.exec { commandLine("git", "show", "-s", "--format=%cI", "HEAD") }.standardOutput.asText.map { it.trim() }
 
-
-
 android {
     namespace = "com.scto.mobile.ide.core.terminal.core"
     android.buildFeatures.buildConfig = true
@@ -47,23 +45,17 @@ android {
         }
     }
 
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    
+    kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 
     buildFeatures {
         viewBinding = true
         compose = true
     }
-
-
-
-
 }
 
 dependencies {
