@@ -1,0 +1,8 @@
+{
+  "id": "NavigationDrawerActivity",
+  "name": "Navigation Drawer Activity",
+  "description": "A Jetpack Compose project pre-configured with a Modal Navigation Drawer for menu navigation.",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}

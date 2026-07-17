@@ -1,0 +1,8 @@
+{
+  "id": "BasicComposeActivity",
+  "name": "Basic Compose Activity",
+  "description": "A Jetpack Compose project with a basic interactive UI (Counter with Material 3 components).",
+  "agpVersion": "8.2.2",
+  "kotlinVersion": "1.9.22",
+  "gradleVersion": "8.5"
+}
