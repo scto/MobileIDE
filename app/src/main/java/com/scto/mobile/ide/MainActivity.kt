@@ -27,15 +27,27 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
@@ -50,6 +62,7 @@ import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
+import com.scto.mobile.ide.ui.terminal.SetupWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -215,32 +228,69 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
                                 mutableStateOf(!WelcomePreferences.isWelcomeCompleted(context))
                             }
 
-                            AnimatedContent(
-                                targetState = showWelcomeScreen,
-                                label = "ScreenTransition",
-                                transitionSpec = {
-                                    fadeIn(animationSpec = tween(durationMillis = 500)) togetherWith
-                                        fadeOut(animationSpec = tween(durationMillis = 500))
-                                },
-                            ) { isWelcomeTarget ->
-                                if (isWelcomeTarget) {
-                                    WelcomeScreen(
-                                        themeViewModel = themeViewModel,
-                                        onWelcomeFinished = {
-                                            // ✅ Core change 3: Mark as completed at the end of the welcome flow
-                                            WelcomePreferences.setWelcomeCompleted(context)
-                                            LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
-                                            showWelcomeScreen = false
-                                        },
-                                    )
-                                } else {
-                                    MainScreen(
-                                        navController = navController,
-                                        themeViewModel = themeViewModel,
-                                        logConfigRepository = logConfigRepository,
-                                        logConfigState = logConfigState,
-                                    )
-                                    com.scto.mobile.ide.ui.components.UpdateCheckerDialog(context = activityContext)
+                            val setupState by SetupWorker.setupState.collectAsState()
+
+                            LaunchedEffect(Unit) {
+                                SetupWorker.startSetupIfNeeded(context)
+                            }
+
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                AnimatedContent(
+                                    targetState = showWelcomeScreen,
+                                    label = "ScreenTransition",
+                                    transitionSpec = {
+                                        fadeIn(animationSpec = tween(durationMillis = 500)) togetherWith
+                                            fadeOut(animationSpec = tween(durationMillis = 500))
+                                    },
+                                ) { isWelcomeTarget ->
+                                    if (isWelcomeTarget) {
+                                        WelcomeScreen(
+                                            themeViewModel = themeViewModel,
+                                            onWelcomeFinished = {
+                                                // ✅ Core change 3: Mark as completed at the end of the welcome flow
+                                                WelcomePreferences.setWelcomeCompleted(context)
+                                                LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
+                                                showWelcomeScreen = false
+                                            },
+                                        )
+                                    } else {
+                                        MainScreen(
+                                            navController = navController,
+                                            themeViewModel = themeViewModel,
+                                            logConfigRepository = logConfigRepository,
+                                            logConfigState = logConfigState,
+                                        )
+                                        com.scto.mobile.ide.ui.components.UpdateCheckerDialog(context = activityContext)
+                                    }
+                                }
+                                
+                                if (setupState.isActive) {
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                            .navigationBarsPadding(),
+                                        elevation = CardDefaults.cardElevation(8.dp),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Text(
+                                                "Terminal Setup: ${setupState.status}", 
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                maxLines = 1
+                                            )
+                                            Spacer(Modifier.height(8.dp))
+                                            if (setupState.percentage >= 0f) {
+                                                LinearProgressIndicator(
+                                                    progress = { setupState.percentage },
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            } else {
+                                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

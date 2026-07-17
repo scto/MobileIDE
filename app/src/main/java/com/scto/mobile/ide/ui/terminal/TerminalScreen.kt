@@ -70,10 +70,7 @@ fun TerminalScreen(navController: NavController) {
     val context = LocalContext.current
     var isEnvironmentReady by remember { mutableStateOf(false) }
     val isSystemDark = isSystemInDarkTheme()
-    // Download progress state
-    var downloadLabel by remember { mutableStateOf("") }
-    var downloadedBytes by remember { mutableLongStateOf(0L) }
-    var totalBytes by remember { mutableLongStateOf(-1L) }
+    val setupState by SetupWorker.setupState.collectAsState()
 
     val prefs = remember { context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE) }
     val isFirstRun = remember { !prefs.getBoolean("first_run_distro_selected", false) }
@@ -178,46 +175,17 @@ fun TerminalScreen(navController: NavController) {
 
     var setupError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        com.scto.mobile.ide.core.common.utils.LogCatcher.i(
-            "TerminalScreen",
-            "LaunchedEffect: initializing terminal environment...",
-        )
-        SetupWorker.logTerminalSetup(context)
-        if (application == null) application = context.applicationContext as Application
-        try {
-            withContext(Dispatchers.IO) {
-                SetupWorker.prepareEnvironment(
-                    context = context,
-                    onStatusChanged = { status ->
-                        downloadLabel = status
-                        com.scto.mobile.ide.core.common.utils.LogCatcher.i(
-                            "TerminalScreen",
-                            "prepareEnvironment status: $status",
-                        )
-                    },
-                    onProgress = { downloaded, total ->
-                        downloadedBytes = downloaded
-                        totalBytes = total
-                    },
-                )
-            }
-            com.scto.mobile.ide.core.common.utils.LogCatcher.i(
-                "TerminalScreen",
-                "prepareEnvironment complete. environment is ready.",
-            )
+    LaunchedEffect(setupState) {
+        if (!setupState.isActive && setupState.isSuccess && !isEnvironmentReady) {
             isEnvironmentReady = true
             if (SessionManager.sessions.isEmpty()) {
-                com.scto.mobile.ide.core.common.utils.LogCatcher.i(
-                    "TerminalScreen",
-                    "No active terminal sessions. Adding new session.",
-                )
                 SessionManager.addNewSession(context)
             }
-        } catch (e: Exception) {
-            setupError = e.message ?: "Ein unbekannter Fehler ist aufgetreten."
-            com.scto.mobile.ide.core.common.utils.LogCatcher.e("TerminalScreen", "Setup failed", e)
         }
+    }
+    
+    LaunchedEffect(Unit) {
+        SetupWorker.startSetupIfNeeded(context)
     }
 
     if (setupError != null) {
@@ -238,12 +206,7 @@ fun TerminalScreen(navController: NavController) {
             }
         }
     } else if (!isEnvironmentReady) {
-        DownloadProgressScreen(
-            label = downloadLabel.ifBlank { "Vorbereitung…" },
-            downloaded = downloadedBytes,
-            total = totalBytes,
-            archDesc = remember { Downloader.archDescription() },
-        )
+        // Wait for background setup
         return
     }
 
@@ -608,96 +571,3 @@ fun TerminalScreen(navController: NavController) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Download progress composable
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun DownloadProgressScreen(label: String, downloaded: Long, total: Long, archDesc: String) {
-    val progressFraction =
-        when {
-            total > 0L -> (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-            else -> -1f // indeterminate
-        }
-
-    fun Long.toMb() = "%.1f MB".format(this / 1_048_576.0)
-
-    Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(0.85f).padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            // Terminal icon
-            Icon(
-                imageVector = Icons.Outlined.Terminal,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(56.dp),
-            )
-
-            Text(
-                text = "MobileIDE",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
-
-            // Progress bar
-            if (progressFraction >= 0f) {
-                LinearProgressIndicator(
-                    progress = { progressFraction },
-                    modifier = Modifier.fillMaxWidth().height(6.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-                Text(
-                    text = "${downloaded.toMb()} / ${total.toMb()}  (${(progressFraction * 100).toInt()} %)",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            } else {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().height(6.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
-
-            // Architecture chip
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Memory,
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = "Arch: $archDesc",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-    }
-}

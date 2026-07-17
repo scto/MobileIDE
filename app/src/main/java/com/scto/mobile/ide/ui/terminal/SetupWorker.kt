@@ -16,22 +16,59 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+data class SetupState(
+    val isActive: Boolean = false,
+    val status: String = "",
+    val downloadedBytes: Long = 0L,
+    val totalBytes: Long = -1L,
+    val isSuccess: Boolean = false,
+    val error: String? = null
+) {
+    val percentage: Float
+        get() = if (totalBytes > 0L) (downloadedBytes.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f) else -1f
+}
 
 object SetupWorker {
+    private val _setupState = MutableStateFlow(SetupState())
+    val setupState: StateFlow<SetupState> = _setupState.asStateFlow()
+    private var setupJob: Job? = null
+
     private fun getDistroName(context: Context): String {
         return context
             .getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
             .getString("selected_distro", "ubuntu") ?: "ubuntu"
     }
 
+    fun startSetupIfNeeded(context: Context) {
+        val filesDir = context.filesDir
+        val prefixDir = filesDir.parentFile!!
+        if (File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").exists()) return
+        if (_setupState.value.isActive) return
+        
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _setupState.value = SetupState(isActive = true, status = "Starte Setup...")
+                prepareEnvironment(context)
+                _setupState.value = SetupState(isActive = false, isSuccess = true)
+            } catch (e: Exception) {
+                _setupState.value = _setupState.value.copy(isActive = false, error = e.message)
+            }
+        }
+    }
+
     suspend fun reinstallTerminal(
-        context: Context,
-        onStatusChanged: ((String) -> Unit)? = null,
-        onProgress: Downloader.ProgressCallback? = null,
+        context: Context
     ) {
         withContext(Dispatchers.IO) {
             LogCatcher.i("SetupWorker", "reinstallTerminal starting...")
-            onStatusChanged?.invoke("Alte Installation wird gelöscht...")
+            _setupState.value = _setupState.value.copy(status = "Alte Installation wird gelöscht...", isActive = true)
             val list = ArrayList(SessionManager.sessions)
             list.forEach { SessionManager.removeSession(it) }
 
@@ -45,7 +82,8 @@ object SetupWorker {
             rootfsTar.delete()
             File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
 
-            prepareEnvironment(context, onStatusChanged = onStatusChanged, onProgress = onProgress)
+            prepareEnvironment(context)
+            _setupState.value = SetupState(isActive = false, isSuccess = true)
             SessionManager.addNewSession(context)
         }
     }
@@ -67,14 +105,12 @@ object SetupWorker {
      * @param onProgress optional progress callback forwarded to [Downloader].
      */
     suspend fun prepareEnvironment(
-        context: Context,
-        onStatusChanged: ((String) -> Unit)? = null,
-        onProgress: Downloader.ProgressCallback? = null,
+        context: Context
     ) {
         withContext(Dispatchers.IO) {
             LogCatcher.i("SetupWorker", "prepareEnvironment starting...")
             logTerminalSetup(context)
-            onStatusChanged?.invoke("Umgebung wird vorbereitet...")
+            _setupState.value = _setupState.value.copy(status = "Umgebung wird vorbereitet...")
             val distroName = getDistroName(context)
             val filesDir = context.filesDir
             val prefixDir = filesDir.parentFile!!
@@ -112,7 +148,7 @@ object SetupWorker {
             // 1. Setup proot binary (prefer local jniLib libproot.so, fallback to download)
             val prootDest = File(filesDir, "proot")
             if (!prootDest.exists() || prootDest.length() == 0L) {
-                onStatusChanged?.invoke("PRoot wird eingerichtet...")
+                _setupState.value = _setupState.value.copy(status = "PRoot wird eingerichtet...")
                 var success = false
 
                 // Try copying the native libproot.so (which is compiled as PIE, e_type: 3)
@@ -133,7 +169,9 @@ object SetupWorker {
                 if (!success) {
                     try {
                         LogCatcher.i("SetupWorker", "Downloading proot.")
-                        Downloader.downloadProot(context, onProgress = onProgress)
+                        Downloader.downloadProot(context, onProgress = { downloaded, total ->
+                            _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
+                        })
                     } catch (e: Exception) {
                         LogCatcher.e("SetupWorker", "Failed to download proot", e)
                     }
@@ -141,11 +179,13 @@ object SetupWorker {
             }
 
             // 2. Setup libtalloc (downloading from custom repo).
-            onStatusChanged?.invoke("Bibliotheken werden kopiert...")
+            _setupState.value = _setupState.value.copy(status = "Bibliotheken werden kopiert...")
             val tallocDest = File(filesDir, "libtalloc.so.2")
             try {
                 LogCatcher.i("SetupWorker", "Downloading libtalloc via Downloader.")
-                Downloader.downloadTalloc(context, onProgress = onProgress)
+                Downloader.downloadTalloc(context, onProgress = { downloaded, total ->
+                    _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
+                })
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "Failed to download libtalloc", e)
             }
@@ -153,10 +193,12 @@ object SetupWorker {
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
-                onStatusChanged?.invoke("Linux RootFS wird heruntergeladen...")
+                _setupState.value = _setupState.value.copy(status = "Linux RootFS wird heruntergeladen...")
                 try {
                     LogCatcher.i("SetupWorker", "Downloading rootfs archive.")
-                    Downloader.downloadRootFs(context, distro = distroName, onProgress = onProgress)
+                    Downloader.downloadRootFs(context, distro = distroName, onProgress = { downloaded, total ->
+                        _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
+                    })
                 } catch (e: Exception) {
                     LogCatcher.e("SetupWorker", "Rootfs download failed.", e)
                     throw IllegalStateException("RootFS Download fehlgeschlagen. Bitte Internetverbindung prüfen.", e)
@@ -167,7 +209,7 @@ object SetupWorker {
             }
 
             // 4. Place proot + libs in local/bin and local/lib.
-            onStatusChanged?.invoke("Basis-Komponenten werden vorbereitet...")
+            _setupState.value = _setupState.value.copy(status = "Basis-Komponenten werden vorbereitet...")
             binDir.mkdirs()
             libDir.mkdirs()
 
@@ -245,7 +287,7 @@ object SetupWorker {
             }
 
             // Execute setup.sh in the background to extract and install all tools
-            onStatusChanged?.invoke("Extraktion und Installation wird gestartet...")
+            _setupState.value = _setupState.value.copy(status = "Extraktion und Installation wird gestartet...")
             val nativeLibDir = context.applicationInfo.nativeLibraryDir
             val libProot = File(nativeLibDir, "libproot.so")
             val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
@@ -287,7 +329,9 @@ object SetupWorker {
                     val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
                     if (cleanLine.isNotEmpty()) {
                         LogCatcher.i("SetupWorker", "[setup.sh] $cleanLine")
-                        withContext(Dispatchers.Main) { onStatusChanged?.invoke(cleanLine) }
+                        withContext(Dispatchers.Main) { 
+                            _setupState.value = _setupState.value.copy(status = cleanLine)
+                        }
                     }
                 }
             }

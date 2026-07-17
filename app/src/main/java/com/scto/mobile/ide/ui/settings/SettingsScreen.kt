@@ -207,10 +207,10 @@ fun SettingsScreen(
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Download progress for reinstall
-    var reinstallDownloadedBytes by remember { mutableLongStateOf(0L) }
-    var reinstallTotalBytes by remember { mutableLongStateOf(-1L) }
-    var reinstallStatus by remember { mutableStateOf("") }
+    val setupState by com.scto.mobile.ide.ui.terminal.SetupWorker.setupState.collectAsState()
+    val reinstallDownloadedBytes = setupState.downloadedBytes
+    val reinstallTotalBytes = setupState.totalBytes
+    val reinstallStatus = setupState.status
     var isReinstalling by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshTrigger, selectedDistro) {
@@ -382,18 +382,10 @@ fun SettingsScreen(
                     reinstallStatus = reinstallStatus,
                     onReinstall = {
                         isReinstalling = true
-                        reinstallDownloadedBytes = 0L
-                        reinstallTotalBytes = -1L
-                        reinstallStatus = "Reinstallation wird gestartet..."
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
                             com.scto.mobile.ide.ui.terminal.SetupWorker.reinstallTerminal(
-                                context = context,
-                                onStatusChanged = { status -> reinstallStatus = status },
-                                onProgress = { downloaded, total ->
-                                    reinstallDownloadedBytes = downloaded
-                                    reinstallTotalBytes = total
-                                },
+                                context = context
                             )
                             isReinstalling = false
                             Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
