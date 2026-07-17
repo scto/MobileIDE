@@ -84,3 +84,9 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 ### Semantic Highlighting Engine Integration
 *   **TreeSitter Engine Integration**: Added `:language-treesitter` module with support for Java, Kotlin, XML, and Log file types.
 *   **Launcher Icon Assets**: Updated launcher icon resources across project configurations.
+
+## [2026-07-17] Navigation Utils & Logging Refactor
+- Added `NavigationUtils.safeNavigate` to centralize safe navigation handling.
+- Consolidated LogCatcher and related imports into `core.common.utils` package.
+- Updated all source files to use the new imports.
+- Updated documentation files accordingly.
