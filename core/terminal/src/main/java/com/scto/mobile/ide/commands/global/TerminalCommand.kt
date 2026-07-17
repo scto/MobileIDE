@@ -1,31 +1,30 @@
 package com.scto.mobile.ide.commands.global
 
 import android.content.Intent
-import android.view.KeyEvent
 import com.scto.mobile.ide.activities.terminal.Terminal
-import com.scto.mobile.ide.commands.ActionContext
-import com.scto.mobile.ide.commands.GlobalCommand
-import com.scto.mobile.ide.commands.KeyCombination
-// import com.scto.mobile.ide.feature.FeatureRegistry // REMOVED
+import com.rk.commands.BaseCommand
+import com.rk.commands.CommandContext
 import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
 
-class TerminalCommand : GlobalCommand() {
+class TerminalCommand : BaseCommand() {
     override val id: String = "global.terminal"
 
-    override fun getLabel(): String = strings.terminal.getString()
+    override val title: String
+        get() = strings.terminal.getString()
 
-    override fun action(actionContext: ActionContext) {
-        val activity = actionContext.currentActivity
-        val intent = Intent(activity, Terminal::class.java)
-        activity.startActivity(intent)
+    override val description: String
+        get() = strings.terminal.getString()
+
+    override val icon: Icon
+        get() = Icon.ResourceIcon(drawables.terminal)
+
+    override suspend fun execute(context: CommandContext) {
+        val intent = Intent(com.scto.mobile.ide.utils.application!!, Terminal::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        com.scto.mobile.ide.utils.application!!.startActivity(intent)
     }
-
-    override fun isSupported(): Boolean = FeatureRegistry.isEnabled("feature_terminal")
-
-    override fun getIcon(): Icon = Icon.ResourceIcon(drawables.terminal)
-
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_J, ctrl = true)
 }

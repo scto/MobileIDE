@@ -73,7 +73,7 @@ import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.files.FileTree
 import com.scto.mobile.ide.files.FileTreeConfig
 import com.scto.mobile.ide.files.SortBy
-import com.scto.mobile.ide.safeNavigate
+import com.scto.mobile.ide.core.common.utils.safeNavigate
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.colorToHex
 import com.scto.mobile.ide.ui.editor.aicoding.AICodingPanel
@@ -1995,7 +1995,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
 
     val allCommands = remember {
         (com.rk.commands.CommandManager.getCommands() +
-                com.scto.mobile.ide.core.common.commands.MobileIDECommandManager.getAllCommands())
+                com.scto.mobile.ide.commands.MobileIDECommandManager.getAllCommands())
             .distinctBy { it.id }
     }
 
@@ -2050,7 +2050,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
                                     scope.launch {
                                         try {
                                             val cmdContext =
-                                                com.scto.mobile.ide.core.common.commands.MobileIDECommandContext(viewModel)
+                                                com.scto.mobile.ide.commands.MobileIDECommandContext(viewModel)
                                             cmd.execute(cmdContext)
                                         } catch (e: Exception) {
                                             e.printStackTrace()

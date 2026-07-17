@@ -187,6 +187,30 @@ object Settings {
         get() = Preference.getString(key = "terminal_colorscheme", default = "default")
         set(value) = Preference.setString(key = "terminal_colorscheme", value)
 
+    var terminal_extra_keys: String
+        get() = Preference.getString(key = "terminal_extra_keys", default = "[[\"ESC\",\"/\",\"-\",\"HOME\",\"UP\",\"END\",\"PGUP\"],[\"TAB\",\"CTRL\",\"ALT\",\"LEFT\",\"DOWN\",\"RIGHT\",\"PGDN\"]]")
+        set(value) = Preference.setString(key = "terminal_extra_keys", value)
+
+    var terminal_cursor_style: String
+        get() = Preference.getString(key = "terminal_cursor_style", default = "BLOCK")
+        set(value) = Preference.setString(key = "terminal_cursor_style", value)
+
+    var terminate_sessions_on_exit: Boolean
+        get() = Preference.getBoolean(key = "terminate_sessions_on_exit", default = true)
+        set(value) = Preference.setBoolean(key = "terminate_sessions_on_exit", value)
+
+    var expose_home_dir: Boolean
+        get() = Preference.getBoolean(key = "expose_home_dir", default = false)
+        set(value) = Preference.setBoolean(key = "expose_home_dir", value)
+
+    var project_as_pwd: Boolean
+        get() = Preference.getBoolean(key = "project_as_pwd", default = true)
+        set(value) = Preference.setBoolean(key = "project_as_pwd", value)
+
+    var terminal_clipboard_keybindings: Boolean
+        get() = Preference.getBoolean(key = "terminal_clipboard_keybindings", default = true)
+        set(value) = Preference.setBoolean(key = "terminal_clipboard_keybindings", value)
+
     var http_server_port
         get() = Preference.getInt(key = "http_server_port", default = 8080)
         set(value) = Preference.setInt(key = "http_server_port", value)
@@ -194,6 +218,14 @@ object Settings {
     var launch_in_browser
         get() = Preference.getBoolean(key = "launch_in_browser", default = false)
         set(value) = Preference.setBoolean(key = "launch_in_browser", value)
+
+    var auto_close_tags: Boolean
+        get() = Preference.getBoolean(key = "auto_close_tags", default = true)
+        set(value) = Preference.setBoolean(key = "auto_close_tags", value)
+
+    var bullet_continuation: Boolean
+        get() = Preference.getBoolean(key = "bullet_continuation", default = true)
+        set(value) = Preference.setBoolean(key = "bullet_continuation", value)
 
     var inject_eruda
         get() = Preference.getBoolean(key = "inject_eruda", default = false)

@@ -18,6 +18,7 @@
 
 package com.scto.mobile.ide.icons
 
+import com.scto.mobile.ide.core.common.icons.Icon as CoreIcon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -38,13 +39,13 @@ import coil.decode.SvgDecoder
 
 @Composable
 fun MobileIDEIcon(
-    icon: Icon,
+    icon: CoreIcon,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     tint: Color = LocalContentColor.current,
 ) {
     when (icon) {
-        is Icon.ResourceIcon -> {
+        is CoreIcon.ResourceIcon -> {
             Icon(
                 painter = painterResource(icon.drawableRes),
                 contentDescription = contentDescription,
@@ -53,7 +54,7 @@ fun MobileIDEIcon(
             )
         }
 
-        is Icon.ExternalResourceIcon -> {
+        is CoreIcon.ExternalResourceIcon -> {
             val theme = LocalContext.current.theme
 
             Icon(
@@ -64,11 +65,11 @@ fun MobileIDEIcon(
             )
         }
 
-        is Icon.VectorIcon -> {
+        is CoreIcon.VectorIcon -> {
             Icon(imageVector = icon.vector, contentDescription = contentDescription, modifier = modifier, tint = tint)
         }
 
-        is Icon.SvgIcon -> {
+        is CoreIcon.SvgIcon -> {
             AsyncImage(
                 model = icon.file,
                 imageLoader = rememberSvgImageLoader(),
@@ -78,7 +79,7 @@ fun MobileIDEIcon(
             )
         }
 
-        is Icon.TextIcon -> {
+        is CoreIcon.TextIcon -> {
             val textSize =
                 when (icon.text.length) {
                     in 1..2 -> 14.sp

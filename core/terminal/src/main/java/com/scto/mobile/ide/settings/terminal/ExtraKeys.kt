@@ -1,44 +1,42 @@
 package com.scto.mobile.ide.settings.terminal
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.viewinterop.AndroidView
-import com.scto.mobile.ide.components.ResetButton
-import com.scto.mobile.ide.editor.Editor
-import com.scto.mobile.ide.core.common.files.BuiltinFileType
-import com.scto.mobile.ide.core.terminal.resources.drawables
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.settings.Preference
+import com.scto.mobile.ide.core.terminal.settings.Preference
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.tabs.editor.EditorNotice
-import com.scto.mobile.ide.utils.isSystemInDarkTheme
-import com.scto.mobile.ide.utils.openUrl
-import io.github.rosemoe.sora.event.ContentChangeEvent
-import java.lang.ref.WeakReference
-import kotlinx.coroutines.launch
+import com.scto.mobile.ide.core.common.utils.isSystemInDarkTheme
+import com.scto.mobile.ide.core.common.utils.openUrl
+import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
 
 const val DEFAULT_TERMINAL_EXTRA_KEYS =
     ("[" +
@@ -71,20 +69,13 @@ const val DEFAULT_TERMINAL_EXTRA_KEYS =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TerminalExtraKeys() {
-    val scope = rememberCoroutineScope()
-    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-    var editorRef = remember { WeakReference<Editor?>(null) }
+    DisposableEffect(Unit) { onDispose { keyboardController?.hide() } }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            keyboardController?.hide()
-            editorRef.get()?.release()
-            editorRef = WeakReference(null)
-        }
-    }
+    var extraKeysText by remember { mutableStateOf(Settings.terminal_extra_keys) }
 
     Scaffold(
         topBar = {
@@ -96,64 +87,44 @@ fun TerminalExtraKeys() {
                         }
                     },
                     title = { Text(stringResource(strings.change_extra_keys)) },
-                    actions = { ResetButton { resetFiles(editorRef.get()) } },
+                    actions = {
+                        IconButton(onClick = {
+                            Preference.removeKey("terminal_extra_keys")
+                            extraKeysText = DEFAULT_TERMINAL_EXTRA_KEYS
+                            Settings.terminal_extra_keys = DEFAULT_TERMINAL_EXTRA_KEYS
+                        }) {
+                            Icon(Icons.Default.Refresh, stringResource(strings.reset))
+                        }
+                    },
                 )
                 HorizontalDivider()
             }
         }
     ) { paddingValues ->
-        val selectionColors = LocalTextSelectionColors.current
-        val isDarkMode = isSystemInDarkTheme(context)
-        val colorScheme = MaterialTheme.colorScheme
-
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            EditorNotice(
+            InfoBlock(
                 text = stringResource(strings.see_termux_extra_keys),
-                actionButton = {
-                    IconButton(
-                        onClick = {
-                            val url = "https://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row"
-                            context.openUrl(url)
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(drawables.open_in_new),
-                            contentDescription = stringResource(strings.open),
-                        )
-                    }
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null
+                    )
                 },
+                modifier = Modifier.clickable {
+                    val url = "https://wiki.termux.com/wiki/Touch_Keyboard#Extra_Keys_Row"
+                    context.openUrl(url)
+                }
             )
 
-            AndroidView(
-                modifier = Modifier.fillMaxSize().imePadding(),
-                factory = { context ->
-                    Editor(context).apply {
-                        editorRef = WeakReference(this)
-
-                        setTextSize(10f)
-                        setText(Settings.terminal_extra_keys)
-                        isWordwrap = false
-
-                        subscribeAlways(ContentChangeEvent::class.java) {
-                            Settings.terminal_extra_keys = it.editor.text.toString()
-                        }
-
-                        setThemeColors(
-                            isDarkMode = isDarkMode,
-                            selectionColors = selectionColors,
-                            colorScheme = colorScheme,
-                        )
-
-                        scope.launch { configureLanguage(BuiltinFileType.JSON.textmateScope!!) }
-                    }
+            TextField(
+                value = extraKeysText,
+                onValueChange = {
+                    extraKeysText = it
+                    Settings.terminal_extra_keys = it
                 },
+                modifier = Modifier.fillMaxSize().imePadding(),
+                textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp)
             )
         }
     }
-}
-
-/** Reset order of commands and symbols to default */
-private fun resetFiles(editor: Editor?) {
-    Preference.removeKey("terminal_extra_keys")
-    editor?.setText(DEFAULT_TERMINAL_EXTRA_KEYS)
 }

@@ -41,7 +41,11 @@ class TerminalBackEnd : TerminalViewClient, TerminalSessionClient {
 
     override fun onTerminalCursorStateChange(state: Boolean) {}
 
-    // override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
+    override fun setTerminalShellPid(session: TerminalSession, pid: Int) {}
+
+    override fun getInputMode(): Int {
+        return Settings.input_mode
+    }
 
     override fun getTerminalCursorStyle(): Int {
         return when (Settings.terminal_cursor_style) {

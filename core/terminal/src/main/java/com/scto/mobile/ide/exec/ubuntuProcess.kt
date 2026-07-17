@@ -5,14 +5,14 @@ import android.util.Log
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.localBinDir
 import com.scto.mobile.ide.core.common.files.localDir
-import com.scto.mobile.ide.file.localLibDir
+import com.scto.mobile.ide.core.common.files.localLibDir
 import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.terminal.libcommons.application
-import com.scto.mobile.ide.utils.getSourceDirOfPackage
-import com.scto.mobile.ide.utils.getTempDir
-import com.scto.mobile.ide.xededitor.BuildConfig
+import com.scto.mobile.ide.core.common.utils.getSourceDirOfPackage
+import com.scto.mobile.ide.core.common.utils.getTempDir
+import com.scto.mobile.ide.core.terminal.core.BuildConfig
 import java.io.File
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -174,9 +174,10 @@ suspend fun ubuntuProcess(
                 env["PROOT_LOADER_32"] = loader32
             }
 
-            when (Settings.seccomp_mode) {
-                "yes" -> env["SECCOMP"] = "1"
-                "no" -> env["PROOT_NO_SECCOMP"] = "1"
+            if (Settings.seccomp) {
+                env["SECCOMP"] = "1"
+            } else {
+                env["PROOT_NO_SECCOMP"] = "1"
             }
         }
 

@@ -43,6 +43,8 @@ import com.rk.extension.extensionManager
 import com.rk.extension.loader.loadAllExtensions
 import com.rk.extension.manager.ExtensionManager
 import com.scto.mobile.ide.core.common.utils.*
+import com.scto.mobile.ide.utils.*
+import com.scto.mobile.ide.utils.LogCatcher
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
@@ -52,7 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : androidx.appcompat.app.AppCompatActivity() {
-    val fileManager = com.scto.mobile.ide.files.FileManager(this)
+    val fileManager = com.scto.mobile.ide.core.common.files.FileManager(this)
 
     companion object {
         private var activityRef = java.lang.ref.WeakReference<MainActivity?>(null)

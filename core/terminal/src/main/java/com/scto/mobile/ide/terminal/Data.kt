@@ -1,6 +1,6 @@
 package com.scto.mobile.ide.terminal
 
-import com.scto.mobile.ide.utils.origin
+import com.scto.mobile.ide.core.common.utils.origin
 
 // provide fake cpu stats
 val stat =

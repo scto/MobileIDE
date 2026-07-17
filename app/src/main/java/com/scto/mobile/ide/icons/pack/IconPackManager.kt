@@ -134,10 +134,7 @@ class IconPackManager(private val context: Application) {
         val packageManager = application!!.packageManager
         val currentVersionCode = PackageInfoCompat.getLongVersionCode(packageManager.getPackageInfo(packageName, 0))
         if (iconPackManifest.minAppVersion != null && iconPackManifest.minAppVersion.toLong() > currentVersionCode) {
-            var ctx: Context? = com.scto.mobile.ide.utils.currentActivity.get()
-            if (ctx == null) {
-                ctx = com.scto.mobile.ide.utils.application
-            }
+            val ctx = com.scto.mobile.ide.utils.currentActivity.get()
             dialogRes(
                 activity = ctx!!,
                 title = strings.warning.getString(),
@@ -167,10 +164,7 @@ class IconPackManager(private val context: Application) {
     internal fun validateIconPack(dir: File): IconPackManifest? {
         val iconPackJson = dir.resolve("manifest.json")
         if (!iconPackJson.exists()) {
-            var ctx: Context? = com.scto.mobile.ide.utils.currentActivity.get()
-            if (ctx == null) {
-                ctx = com.scto.mobile.ide.utils.application
-            }
+            val ctx = com.scto.mobile.ide.utils.currentActivity.get()
             dialogRes(
                 ctx!!,
                 strings.icon_pack_install_failed.getString(),
@@ -183,10 +177,7 @@ class IconPackManager(private val context: Application) {
         val iconPackManifest =
             runCatching { parseIconPackManifest(iconPackJson.readText()) }
                 .getOrElse { e ->
-                    var ctx: Context? = com.scto.mobile.ide.utils.currentActivity.get()
-                    if (ctx == null) {
-                        ctx = com.scto.mobile.ide.utils.application
-                    }
+                    val ctx = com.scto.mobile.ide.utils.currentActivity.get()
                     dialogRes(
                         ctx!!,
                         strings.icon_pack_install_failed.getString(),

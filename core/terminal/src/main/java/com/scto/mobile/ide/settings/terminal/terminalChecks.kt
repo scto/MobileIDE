@@ -16,7 +16,7 @@ import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.libcommons.application
-import com.scto.mobile.ide.utils.getTempDir
+import com.scto.mobile.ide.core.common.utils.getTempDir
 import java.io.File
 
 fun isAffectedSamsungDevice(): Boolean {

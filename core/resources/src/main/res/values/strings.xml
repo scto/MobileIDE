@@ -201,4 +201,28 @@
     <string name="runner_name_exists">Runner with this name already exists</string>
     <string name="save">Save</string>
     <string name="create">Create</string>
-<string name="html_preview_desc">Preview HTML in a local web server.</string><string name="markdown_preview">Markdown Preview</string><string name="markdown_preview_desc">Preview Markdown files.</string><string name="http_server_port_error">Failed to start HTTP server. Port might be in use.</string><string name="http_server_at">Running at</string><string name="choose_runner">Choose Runner</string><string name="run">Run</string><string name="runs">Runs</string></resources>
+<string name="html_preview_desc">Preview HTML in a local web server.</string><string name="markdown_preview">Markdown Preview</string><string name="markdown_preview_desc">Preview Markdown files.</string><string name="http_server_port_error">Failed to start HTTP server. Port might be in use.</string><string name="http_server_at">Running at</string><string name="choose_runner">Choose Runner</string><string name="run">Run</string><string name="runs">Runs</string>
+    <string name="terminal">Terminal</string>
+    <string name="invalid_terminal_extra_keys">Invalid terminal extra keys config</string>
+    <string name="add_session">Add Session</string>
+    <string name="app_name">MobileIDE</string>
+    <string name="exit">Exit</string>
+    <string name="release_wakelock">Release Wake Lock</string>
+    <string name="acquire_wakelock">Acquire Wake Lock</string>
+    <string name="sessions">Sessions</string>
+    <string name="reset">Reset</string>
+    <string name="terminal_health_desc">Run diagnostic checks on the terminal environment</string>
+    <string name="appearance">Appearance</string>
+    <string name="advanced">Advanced</string>
+    <string name="failsafe_mode">Failsafe Mode</string>
+    <string name="failsafe_mode_desc">Disable sandbox and run directly in host environment</string>
+    <string name="seccomp_desc">Enable seccomp sandboxing for the terminal process</string>
+    <string name="block">Block</string>
+    <string name="bar">Bar</string>
+    <string name="underline">Underline</string>
+    <string name="see_termux_extra_keys">See Termux extra keys documentation for layout configuration syntax.</string>
+    <string name="universal_runner">Universal Runner</string>
+    <string name="universal_runner_desc">Run Py, JS, TS, Java, Kotlin, Rust, C/C++ etc scripts in terminal</string>
+    <string name="non_native_filetype">This file is not stored in local space. Move it to project space to run.</string>
+    <string name="sdcard_filetype">Running files directly from SD Card might have permission restrictions. Continue?</string>
+</resources>

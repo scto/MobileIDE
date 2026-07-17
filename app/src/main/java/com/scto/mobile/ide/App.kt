@@ -8,8 +8,8 @@ import android.os.StrictMode
 import com.scto.mobile.ide.core.terminal.crashhandler.CrashHandler
 import com.scto.mobile.ide.core.terminal.resources.Res
 import com.scto.mobile.ide.core.terminal.update.UpdateManager
-import com.scto.mobile.ide.core.common.icons.pack.IconPackManager
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.icons.pack.IconPackManager
+import com.scto.mobile.ide.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.concurrent.Executors

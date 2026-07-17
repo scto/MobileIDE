@@ -21,9 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
-import com.scto.mobile.ide.DocumentProvider
-import com.scto.mobile.ide.activities.main.MainActivity
-import com.scto.mobile.ide.activities.settings.SettingsActivity
+import com.scto.mobile.ide.core.terminal.AlpineDocumentProvider
 import com.scto.mobile.ide.activities.settings.SettingsRoutes
 import com.scto.mobile.ide.activities.settings.settingsNavController
 import com.scto.mobile.ide.core.terminal.ui.components.NextScreenCard
@@ -37,19 +35,24 @@ import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.createFileIfNot
 import com.scto.mobile.ide.core.common.files.localBinDir
 import com.scto.mobile.ide.core.common.files.localDir
-import com.scto.mobile.ide.file.localLibDir
+import com.scto.mobile.ide.core.common.files.localLibDir
 import com.scto.mobile.ide.core.common.files.sandboxDir
-import com.scto.mobile.ide.file.toFileObject
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.files.FileManager
+import com.scto.mobile.ide.core.common.files.toFileObject
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.terminal.terminalView
-import com.scto.mobile.ide.utils.LoadingPopup
+import com.scto.mobile.ide.core.common.utils.LoadingPopup
 import com.scto.mobile.ide.core.common.utils.dialogRes
-import com.scto.mobile.ide.utils.dpToPx
-import com.scto.mobile.ide.utils.getTempDir
+import com.scto.mobile.ide.core.common.utils.dpToPx
+import com.scto.mobile.ide.core.common.utils.getTempDir
 import com.scto.mobile.ide.core.common.utils.toast
+import com.scto.mobile.ide.core.terminal.core.BuildConfig
 import com.termux.terminal.TerminalEmulator
+import android.content.Context
+import androidx.activity.ComponentActivity
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.Runtime.getRuntime
@@ -79,7 +82,7 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
         val activity = LocalActivity.current as? AppCompatActivity
 
         PreferenceGroup(heading = stringResource(strings.advanced)) {
-            if (FeatureRegistry.isEnabled("debug_mode")) {
+            if (BuildConfig.DEBUG) {
                 SettingsItem(
                     label = stringResource(strings.failsafe_mode),
                     description = stringResource(strings.failsafe_mode_desc),
@@ -88,65 +91,18 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 )
             }
 
-            var showSeccompDialog by remember { mutableStateOf(false) }
-            var seccompMode by remember { mutableStateOf(Settings.seccomp_mode) }
-
             SettingsItem(
                 label = "SECCOMP",
                 description = stringResource(strings.seccomp_desc),
-                default = false,
-                showSwitch = false,
-                onClick = { showSeccompDialog = true },
+                default = Settings.seccomp,
+                sideEffect = { Settings.seccomp = it },
             )
-
-            if (showSeccompDialog) {
-                var tempSeccompMode by remember { mutableStateOf(seccompMode) }
-                AlertDialog(
-                    onDismissRequest = { showSeccompDialog = false },
-                    title = { Text("SECCOMP") },
-                    text = {
-                        Column {
-                            listOf(
-                                    "unspecified" to strings.seccomp_unspecified,
-                                    "no" to strings.seccomp_no_seccomp,
-                                    "yes" to strings.seccomp_seccomp,
-                                )
-                                .forEach { (mode, stringRes) ->
-                                    PreferenceTemplate(
-                                        modifier =
-                                            Modifier.clip(MaterialTheme.shapes.large).clickable {
-                                                tempSeccompMode = mode
-                                            },
-                                        title = { Text(stringResource(stringRes)) },
-                                        startWidget = {
-                                            RadioButton(selected = tempSeccompMode == mode, onClick = null)
-                                        },
-                                    )
-                                }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showSeccompDialog = false
-                                Settings.seccomp_mode = tempSeccompMode
-                                seccompMode = tempSeccompMode
-                            }
-                        ) {
-                            Text(stringResource(strings.apply))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showSeccompDialog = false }) { Text(stringResource(strings.cancel)) }
-                    },
-                )
-            }
 
             NextScreenCard(
                 label = stringResource(strings.terminal_health),
                 description = stringResource(strings.terminal_health_desc),
                 navController = overrideNavController ?: settingsNavController.get(),
-                route = SettingsRoutes.TerminalCheck,
+                route = SettingsRoutes.TerminalCheck.route,
             )
         }
 
@@ -171,7 +127,7 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 label = stringResource(strings.manage_terminal_font),
                 description = stringResource(strings.manage_terminal_font),
                 navController = overrideNavController ?: settingsNavController.get(),
-                route = SettingsRoutes.TerminalFontScreen,
+                route = SettingsRoutes.TerminalFontScreen.route,
             )
 
             SettingsItem(
@@ -275,17 +231,12 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 showSwitch = false,
                 default = false,
                 sideEffect = {
-                    val fileManager =
-                        if (SettingsActivity.instance != null) {
-                            SettingsActivity.instance!!.fileManager
-                        } else {
-                            MainActivity.instance!!.fileManager
-                        }
+                    val fileManager = getHostFileManager(context)
 
-                    fileManager.createNewFile(
+                    fileManager?.createNewFile(
                         mimeType = "application/octet-stream",
                         title = "terminal-backup.tar.gz",
-                    ) { fileObject ->
+                    ) { fileObject: FileObject? ->
                         GlobalScope.launch(Dispatchers.IO) {
                             if (fileObject != null) {
                                 val targetFile = getTempDir().child("terminal-backup.tar.gz")
@@ -391,7 +342,7 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                 label = stringResource(strings.change_extra_keys),
                 description = stringResource(strings.change_extra_keys_desc),
                 navController = overrideNavController ?: settingsNavController.get(),
-                route = SettingsRoutes.TerminalExtraKeys,
+                route = SettingsRoutes.TerminalExtraKeys.route,
             )
 
             SettingsItem(
@@ -403,15 +354,14 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
 
             ValueSlider(
                 label = stringResource(strings.scrollback_buffer),
-                description = stringResource(strings.scrollback_buffer_desc),
                 min = TerminalEmulator.TERMINAL_TRANSCRIPT_ROWS_MIN,
                 max = TerminalEmulator.TERMINAL_TRANSCRIPT_ROWS_MAX,
-                default = Settings.terminal_scrollback_buffer,
-                useSteps = false,
-            ) {
-                Settings.terminal_scrollback_buffer = it
-                toast(strings.restart_required)
-            }
+                default = Settings.terminal_scrollback_lines,
+                onValueChanged = {
+                    Settings.terminal_scrollback_lines = it
+                    toast(strings.restart_required)
+                },
+            )
 
             SettingsItem(
                 label = stringResource(strings.terminate_all_sessions),
@@ -440,19 +390,41 @@ fun SettingsTerminalScreen(overrideNavController: NavController? = null) {
                             onCancel = {},
                             onOk = {
                                 Settings.expose_home_dir = true
-                                DocumentProvider.setDocumentProviderEnabled(context, true)
+                                AlpineDocumentProvider.setDocumentProviderEnabled(context, true)
                                 exposeHomeDirState = true
                             },
                         )
                     } else {
                         Settings.expose_home_dir = false
                         exposeHomeDirState = false
-                        DocumentProvider.setDocumentProviderEnabled(context, false)
+                        AlpineDocumentProvider.setDocumentProviderEnabled(context, false)
                     }
                 },
                 label = stringResource(strings.expose_saf),
                 description = stringResource(strings.expose_saf_desc),
             )
+        }
+    }
+}
+
+private fun getHostFileManager(context: Context): FileManager? {
+    var ctx = context
+    while (ctx is android.content.ContextWrapper) {
+        if (ctx is ComponentActivity) {
+            break
+        }
+        ctx = ctx.baseContext
+    }
+    return try {
+        val method = ctx.javaClass.getMethod("getFileManager")
+        method.invoke(ctx) as? FileManager
+    } catch (e: Exception) {
+        try {
+            val field = ctx.javaClass.getDeclaredField("fileManager")
+            field.isAccessible = true
+            field.get(ctx) as? FileManager
+        } catch (ex: Exception) {
+            null
         }
     }
 }

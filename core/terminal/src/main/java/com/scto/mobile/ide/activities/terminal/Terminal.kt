@@ -61,7 +61,7 @@ import com.scto.mobile.ide.terminal.getNextStage
 import com.scto.mobile.ide.terminal.terminalView
 import com.scto.mobile.ide.theme.XedTheme
 import com.scto.mobile.ide.core.common.utils.errorDialog
-import com.scto.mobile.ide.utils.getTempDir
+import com.scto.mobile.ide.core.common.utils.getTempDir
 import com.scto.mobile.ide.core.common.utils.toast
 import java.io.File
 import java.lang.ref.WeakReference

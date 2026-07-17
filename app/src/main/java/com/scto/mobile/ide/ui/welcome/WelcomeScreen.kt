@@ -58,6 +58,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.PermissionManager
+import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
@@ -88,15 +89,15 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     var selectedThemeIndex by remember {
         mutableIntStateOf(if (themeState.isCustomTheme) themeColors.size else themeState.selectedThemeIndex)
     }
-    var isMonetEnabled by remember { mutableStateOf(themeState.isMonetEnabled) }
+    var isMonetEnabled by remember { mutableStateOf<Boolean>(themeState.isMonetEnabled) }
 
     var terminalInstallStatus by remember { mutableStateOf("") }
-    var terminalDownloadedBytes by remember { mutableLongStateOf(0L) }
-    var terminalTotalBytes by remember { mutableLongStateOf(-1L) }
+    var terminalDownloadedBytes by remember { mutableStateOf(0L) }
+    var terminalTotalBytes by remember { mutableStateOf(-1L) }
     var terminalInstallSuccess by remember { mutableStateOf(false) }
     var terminalInstallError by remember { mutableStateOf<String?>(null) }
     var isTerminalInstalling by remember { mutableStateOf(false) }
-    var retryTrigger by remember { mutableIntStateOf(0) }
+    var retryTrigger by remember { mutableStateOf(0) }
     var terminalConfigConfirmed by remember { mutableStateOf(false) }
 
     LaunchedEffect(pagerState.currentPage, retryTrigger, terminalConfigConfirmed) {

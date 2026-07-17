@@ -29,14 +29,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scto.mobile.ide.components.InfoBlock
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
+import com.rk.components.compose.preferences.base.PreferenceGroup
+import com.rk.components.compose.preferences.base.PreferenceLayout
+import com.rk.components.compose.preferences.base.PreferenceTemplate
 import com.scto.mobile.ide.core.common.icons.LucideCircleQuestionMark
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.theme.greenStatus
-import com.scto.mobile.ide.utils.openUrl
+import com.scto.mobile.ide.core.common.utils.openUrl
 
 enum class CheckStatus {
     PENDING,
@@ -88,8 +87,7 @@ fun TerminalCheckScreen() {
             InfoBlock(
                 icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = null) },
                 text = stringResource(strings.samsung_proot_warning),
-                warning = true,
-                onClick = { context.openUrl("https://github.com/Xed-Editor/Xed-Editor/issues/639") },
+                modifier = Modifier.clickable { context.openUrl("https://github.com/Xed-Editor/Xed-Editor/issues/639") },
             )
         }
 
@@ -97,7 +95,6 @@ fun TerminalCheckScreen() {
             InfoBlock(
                 icon = { Icon(imageVector = Icons.Outlined.Warning, contentDescription = null) },
                 text = stringResource(strings.terminal_degraded_warning),
-                warning = true,
             )
         }
 
@@ -192,7 +189,7 @@ private fun StatusIcon(status: CheckStatus) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = stringResource(strings.success),
-                    tint = MaterialTheme.colorScheme.greenStatus,
+                    tint = androidx.compose.ui.graphics.Color(0xFF4CAF50),
                     modifier = Modifier.size(20.dp),
                 )
             }

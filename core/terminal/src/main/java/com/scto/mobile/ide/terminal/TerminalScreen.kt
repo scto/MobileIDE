@@ -1,6 +1,7 @@
 package com.scto.mobile.ide.terminal
 
 import android.graphics.Typeface
+import android.content.Context
 import android.view.KeyEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -68,14 +69,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.scto.mobile.ide.activities.settings.SettingsRoutes
 import com.scto.mobile.ide.activities.terminal.Terminal
-import com.scto.mobile.ide.animations.NavigationAnimationTransitions
-import com.scto.mobile.ide.editor.FontCache
+import com.scto.mobile.ide.core.terminal.ui.animations.NavigationAnimationTransitions
 import com.scto.mobile.ide.exec.pendingCommand
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.settings.editor.DEFAULT_TERMINAL_FONT_PATH
 import com.scto.mobile.ide.settings.editor.TerminalFontScreen
 import com.scto.mobile.ide.settings.terminal.DEFAULT_TERMINAL_EXTRA_KEYS
 import com.scto.mobile.ide.settings.terminal.SettingsTerminalScreen
@@ -85,9 +84,7 @@ import com.scto.mobile.ide.terminal.virtualkeys.VirtualKeysConstants
 import com.scto.mobile.ide.terminal.virtualkeys.VirtualKeysInfo
 import com.scto.mobile.ide.terminal.virtualkeys.VirtualKeysListener
 import com.scto.mobile.ide.terminal.virtualkeys.VirtualKeysView
-import com.scto.mobile.ide.theme.LocalThemeHolder
-import com.scto.mobile.ide.theme.ThemeHolder
-import com.scto.mobile.ide.utils.dpToPx
+import com.scto.mobile.ide.core.common.utils.dpToPx
 import com.scto.mobile.ide.core.common.utils.toast
 import com.termux.terminal.TerminalColors
 import com.termux.terminal.TextStyle
@@ -128,7 +125,6 @@ fun TerminalScreenInternal(modifier: Modifier = Modifier, terminalActivity: Term
     val isDarkMode = isSystemInDarkTheme()
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
-    val currentTheme = LocalThemeHolder.current
 
     DisposableEffect(Unit) { onDispose { keyboardController?.hide() } }
 
@@ -158,7 +154,7 @@ fun TerminalScreenInternal(modifier: Modifier = Modifier, terminalActivity: Term
                     }
                 ) { paddingValues ->
                     Column(modifier = Modifier.padding(paddingValues)) {
-                        TerminalView(isDarkMode, currentTheme, surfaceColor, onSurfaceColor, terminalActivity)
+                        TerminalView(isDarkMode, surfaceColor, onSurfaceColor, terminalActivity)
 
                         val pagerState = rememberPagerState(pageCount = { 2 })
                         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxWidth().height(75.dp)) { page ->
@@ -239,10 +235,22 @@ fun TerminalScreenInternal(modifier: Modifier = Modifier, terminalActivity: Term
     }
 }
 
+private fun getTerminalColors(context: Context): Properties {
+    val props = Properties()
+    try {
+        val scheme = Settings.terminal_colorscheme
+        context.assets.open("terminal/colorschemes/$scheme.properties").use { input ->
+            props.load(input)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return props
+}
+
 @Composable
 private fun ColumnScope.TerminalView(
     isDarkMode: Boolean,
-    currentTheme: ThemeHolder,
     surfaceColor: Int,
     onSurfaceColor: Int,
     terminalActivity: Terminal,
@@ -250,12 +258,7 @@ private fun ColumnScope.TerminalView(
     AndroidView(
         factory = { context ->
             TerminalView(context, null).apply {
-                val terminalColors =
-                    if (isDarkMode) {
-                        currentTheme.darkTerminalColors
-                    } else {
-                        currentTheme.lightTerminalColors
-                    }
+                val terminalColors = getTerminalColors(context)
                 applyTerminalColors(
                     surfaceColor = surfaceColor,
                     onSurfaceColor = onSurfaceColor,
@@ -297,16 +300,7 @@ private fun ColumnScope.TerminalView(
                 if (fontFile.exists()) {
                     setTypeface(Typeface.createFromFile(fontFile))
                 } else {
-                    val fontPath = Settings.terminal_font_path
-                    val font =
-                        if (fontPath.isNotEmpty()) {
-                            FontCache.getTypeface(context, fontPath, Settings.is_terminal_font_asset)
-                                ?: FontCache.getTypeface(context, DEFAULT_TERMINAL_FONT_PATH, true)
-                        } else {
-                            FontCache.getTypeface(context, DEFAULT_TERMINAL_FONT_PATH, true)
-                        }
-
-                    setTypeface(font)
+                    setTypeface(Typeface.MONOSPACE)
                 }
 
                 addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
@@ -314,12 +308,7 @@ private fun ColumnScope.TerminalView(
                     val heightChanged = (bottom - top) != (oldBottom - oldTop)
 
                     if (widthChanged || heightChanged) {
-                        val terminalColors =
-                            if (isDarkMode) {
-                                currentTheme.darkTerminalColors
-                            } else {
-                                currentTheme.lightTerminalColors
-                            }
+                        val terminalColors = getTerminalColors(context)
                         terminalView
                             .get()
                             ?.applyTerminalColors(
@@ -339,13 +328,7 @@ private fun ColumnScope.TerminalView(
         },
         modifier = Modifier.fillMaxWidth().weight(1f),
         update = { terminalView ->
-            val terminalColors =
-                if (isDarkMode) {
-                    currentTheme.darkTerminalColors
-                } else {
-                    currentTheme.lightTerminalColors
-                }
-
+            val terminalColors = getTerminalColors(terminalView.context)
             terminalView.applyTerminalColors(
                 surfaceColor = surfaceColor,
                 onSurfaceColor = onSurfaceColor,

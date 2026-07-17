@@ -33,9 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.common.utils.BackupUtils
+import com.scto.mobile.ide.utils.BackupUtils
 import com.scto.mobile.ide.core.common.utils.LogCatcher
-import com.scto.mobile.ide.core.common.utils.PermissionManager
+import com.scto.mobile.ide.utils.PermissionManager
 import com.scto.mobile.ide.lsp.ProotStreamConnectionProvider
 import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
@@ -325,6 +325,45 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 setScaleTextSizes(2f, 300f)
 
                 applyLanguageToEditor(this, state.file.name)
+
+                val intelligentFeatures =
+                    com.scto.mobile.ide.ui.editor.intelligent.IntelligentFeatureRegistry.allFeatures.filter { feature ->
+                        feature.isEnabled() &&
+                            feature.supportedExtensions.any { ext ->
+                                state.file.name.endsWith(".$ext", ignoreCase = true)
+                            }
+                    }
+
+                if (intelligentFeatures.isNotEmpty()) {
+                    subscribeAlways(io.github.rosemoe.sora.event.ContentChangeEvent::class.java) { event ->
+                        intelligentFeatures.forEach { feature ->
+                            when (event.action) {
+                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT -> feature.handleInsert(this)
+                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE -> feature.handleDelete(this)
+                            }
+                        }
+
+                        if (event.changedText.length == 1) {
+                            val character = event.changedText.first()
+                            intelligentFeatures.forEach { feature ->
+                                if (feature.triggerCharacters.contains(character)) {
+                                    when (event.action) {
+                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT -> feature.handleInsertChar(character, this)
+                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE -> feature.handleDeleteChar(character, this)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    subscribeAlways(io.github.rosemoe.sora.event.EditorKeyEvent::class.java) { event ->
+                        intelligentFeatures.forEach { it.handleKeyEvent(event, this) }
+                    }
+
+                    subscribeAlways(io.github.rosemoe.sora.event.KeyBindingEvent::class.java) { event ->
+                        intelligentFeatures.forEach { it.handleKeyBindingEvent(event, this) }
+                    }
+                }
 
                 setSelection(0, 0)
                 text.addContentListener(

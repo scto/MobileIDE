@@ -1,5 +1,8 @@
 package com.scto.mobile.ide.icons
 
+import com.scto.mobile.ide.R
+import com.scto.mobile.ide.core.common.icons.MobileIDEIcons
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector

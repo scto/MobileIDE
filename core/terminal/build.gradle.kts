@@ -28,10 +28,13 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:common"))
     implementation(project(":core:main"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
     implementation(project(":core:runner"))
+    implementation(project(":core:lsp"))
+    implementation(project(":core:commands"))
 
     // Editor dependency for ExtraKeys code editor settings
     implementation(project(":editor"))

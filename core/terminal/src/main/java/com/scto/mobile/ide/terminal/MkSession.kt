@@ -2,20 +2,18 @@ package com.scto.mobile.ide.terminal
 
 import android.app.Activity
 import android.content.Context
-import com.scto.mobile.ide.activities.main.MainActivity
 import com.scto.mobile.ide.exec.pendingCommand
 import com.scto.mobile.ide.core.common.files.FileWrapper
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.localBinDir
 import com.scto.mobile.ide.core.common.files.localDir
-import com.scto.mobile.ide.file.localLibDir
+import com.scto.mobile.ide.core.common.files.localLibDir
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.tabs.editor.EditorTab
 import com.scto.mobile.ide.core.terminal.libcommons.application
-import com.scto.mobile.ide.utils.getSourceDirOfPackage
-import com.scto.mobile.ide.utils.getTempDir
-import com.scto.mobile.ide.xededitor.BuildConfig
+import com.scto.mobile.ide.core.common.utils.getSourceDirOfPackage
+import com.scto.mobile.ide.core.common.utils.getTempDir
+import com.scto.mobile.ide.core.terminal.core.BuildConfig
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 import java.io.File
@@ -87,9 +85,10 @@ object MkSession {
             env.add("PROOT_LOADER_32=$loader32")
         }
 
-        when (Settings.seccomp_mode) {
-            "yes" -> env.add("SECCOMP=1")
-            "no" -> env.add("PROOT_NO_SECCOMP=1")
+        if (Settings.seccomp) {
+            env.add("SECCOMP=1")
+        } else {
+            env.add("PROOT_NO_SECCOMP=1")
         }
 
         env.addAll(envVariables.map { "${it.key}=${it.value}" })
@@ -140,7 +139,7 @@ object MkSession {
             localDir(context).absolutePath,
             actualArgs,
             env.toTypedArray(),
-            Settings.terminal_scrollback_buffer,
+            Settings.terminal_scrollback_lines,
             sessionClient,
         ) to workingDir
     }
@@ -156,34 +155,6 @@ suspend fun getPwd(context: Context): String {
         return context.intent.getStringExtra("cwd").toString()
     }
 
-    val currentTab = MainActivity.instance?.viewModel?.tabManager?.currentTab
-    if (Settings.project_as_pwd) {
-        currentTab?.let {
-            if (it is EditorTab && it.file is FileWrapper) {
-                val parent = it.file.getParentFile()
-                if (parent != null && parent is FileWrapper) {
-                    return if (Settings.sandbox) {
-                        parent.getAbsolutePath().removePrefix(localDir(context).absolutePath)
-                    } else {
-                        parent.getAbsolutePath()
-                    }
-                }
-            }
-        }
-    } else {
-        currentTab?.let {
-            if (it is EditorTab && it.file is FileWrapper) {
-                val parent = it.file.getParentFile()
-                if (parent != null && parent is FileWrapper) {
-                    return if (Settings.sandbox) {
-                        parent.getAbsolutePath().removePrefix(localDir(context).absolutePath)
-                    } else {
-                        parent.getAbsolutePath()
-                    }
-                }
-            }
-        }
-    }
     return if (Settings.sandbox) {
         "/home"
     } else {

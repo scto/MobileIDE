@@ -24,11 +24,11 @@ import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.BuildConfig
 import com.scto.mobile.ide.core.common.utils.getSourceDirOfPackage
 import com.scto.mobile.ide.core.common.utils.getTempDir
-import com.scto.mobile.ide.files.child
-import com.scto.mobile.ide.files.localBinDir
-import com.scto.mobile.ide.files.localDir
-import com.scto.mobile.ide.files.localLibDir
-import com.scto.mobile.ide.files.sandboxDir
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.files.localDir
+import com.scto.mobile.ide.core.common.files.localLibDir
+import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.files.sandboxHomeDir
 import com.scto.mobile.ide.utils.application
 import java.io.File
@@ -65,7 +65,7 @@ fun getDefaultBindings(): List<Binding> {
     val list = mutableListOf<Binding>()
 
     with(list) {
-        bind(sandboxHomeDir().absolutePath, "/home")
+        bind(sandboxHomeDir(com.scto.mobile.ide.utils.application!!).absolutePath, "/home")
         bind("/sdcard")
         bind("/storage")
         bind("/data")
@@ -92,7 +92,7 @@ fun getDefaultBindings(): List<Binding> {
 
 suspend fun ubuntuProcess(
     excludeMounts: List<String> = listOf(),
-    root: File = sandboxDir(),
+    root: File = sandboxDir(com.scto.mobile.ide.utils.application!!),
     workingDir: String? = null,
     command: List<String>,
 ): Process =
@@ -144,14 +144,14 @@ suspend fun ubuntuProcess(
             env["LANG"] = "C.UTF-8"
             env["PUBLIC_HOME"] = application!!.getExternalFilesDir(null)?.absolutePath.orEmpty()
             env["DEBUG"] = BuildConfig.DEBUG.toString()
-            env["LOCAL"] = localDir().absolutePath
+            env["LOCAL"] = localDir(com.scto.mobile.ide.utils.application!!).absolutePath
             env["PRIVATE_DIR"] = application!!.filesDir.parentFile!!.absolutePath
-            env["EXT_HOME"] = sandboxHomeDir().absolutePath
+            env["EXT_HOME"] = sandboxHomeDir(com.scto.mobile.ide.utils.application!!).absolutePath
             env["HOME"] =
                 if (Settings.sandbox) {
                     "/home"
                 } else {
-                    sandboxHomeDir().absolutePath
+                    sandboxHomeDir(com.scto.mobile.ide.utils.application!!).absolutePath
                 }
             env["PROMPT_DIRTRIM"] = "2"
             env["LINKER"] =
@@ -171,7 +171,7 @@ suspend fun ubuntuProcess(
             env["SOURCE_DIR"] = application!!.applicationInfo.sourceDir
             env["TERMUX_X11_SOURCE_DIR"] = getSourceDirOfPackage(application!!, "com.termux.x11").orEmpty()
             env["DISPLAY"] = ":0"
-            env["LD_LIBRARY_PATH"] = localLibDir().absolutePath
+            env["LD_LIBRARY_PATH"] = localLibDir(com.scto.mobile.ide.utils.application!!).absolutePath
             env["PROOT_TMP_DIR"] = tmpDir.absolutePath
 
             env["ANDROID_ART_ROOT"] = System.getenv("ANDROID_ART_ROOT").orEmpty()
@@ -185,7 +185,7 @@ suspend fun ubuntuProcess(
             env["EXTERNAL_STORAGE"] = System.getenv("EXTERNAL_STORAGE").orEmpty()
 
             env["PATH"] =
-                "/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:${localBinDir()}:${System.getenv("PATH")}"
+                "/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:${localBinDir(com.scto.mobile.ide.utils.application!!)}:${System.getenv("PATH")}"
 
             val loader32 = "${application!!.applicationInfo.nativeLibraryDir}/libproot-loader32.so"
             if (File(loader32).exists()) {
@@ -203,7 +203,7 @@ suspend fun ubuntuProcess(
 @SuppressLint("SdCardPath")
 suspend fun ubuntuProcess(
     excludeMounts: List<String> = listOf(),
-    root: File = sandboxDir(),
+    root: File = sandboxDir(com.scto.mobile.ide.utils.application!!),
     workingDir: String? = null,
     vararg command: String,
 ): Process {

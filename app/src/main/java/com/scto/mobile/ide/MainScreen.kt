@@ -30,8 +30,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.scto.mobile.ide.core.common.utils.LogConfigRepository
-import com.scto.mobile.ide.core.common.utils.LogConfigState
+import com.scto.mobile.ide.utils.LogConfigRepository
+import com.scto.mobile.ide.utils.LogConfigState
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.editor.CodeEditScreen
@@ -176,9 +176,4 @@ fun MainScreen(
     }
 }
 
-fun NavController.safeNavigate(route: String) {
-    val current = currentBackStackEntry?.destination?.route
-    if (current != route) {
-        navigate(route) { launchSingleTop = true }
-    }
-}
+// safeNavigate moved to NavigationUtils.kt - removed duplicate implementation

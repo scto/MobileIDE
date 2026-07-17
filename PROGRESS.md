@@ -4,6 +4,21 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 
 ---
 
+## [2026-07-17]
+### Build Toolchain Standardization (AGP, Kotlin, R8)
+*   **Version Updates**: Updated the core project's build toolchain to match the newest stable versions already being used successfully in the LSP plugins (`java-lsp`, `json-lsp`, etc.). 
+    *   **AGP**: `8.11.2` -> `8.13.1`
+    *   **Kotlin**: `2.2.20` -> `2.3.0`
+    *   **R8**: `8.2.33` -> `8.13.19`
+*   **Resolution of Deprecation Warnings**: The problem with the old version combination was that it produced several Kotlin 2.0 deprecation warnings during the build phase:
+    ```
+    w: file:///data/data/com.termux/files/home/MobileIDE/build.gradle.kts:58:79: 'KOTLIN_2_0' is deprecated. Will be removed soon
+    w: file:///data/data/com.termux/files/home/MobileIDE/build.gradle.kts:59:74: 'KOTLIN_2_0' is deprecated. Will be removed soon
+    w: file:///data/data/com.termux/files/home/MobileIDE/app/build.gradle.kts:194:75: 'KOTLIN_2_0' is deprecated. Will be removed soon
+    w: file:///data/data/com.termux/files/home/MobileIDE/app/build.gradle.kts:195:70: 'KOTLIN_2_0' is deprecated. Will be removed soon
+    ```
+*   **R8 Modernization**: The core app was previously pinned to R8 `8.2.33` to prevent aggressive tree-shaking from stripping out complex reflection chains (like Apache SSHD and ASN.1 parsers) during Release builds. By updating to `8.13.19` (where R8 is verified to be working well in the plugins), we standardize the ecosystem while fixing the legacy configuration drift.
+
 ## [2026-07-10]
 ### Sandbox Setup & Extraction Fixes
 *   **Removed scto User Creation**: Removed `scto` user and group creation inside the sandboxed container from `setup.sh` to keep environment setup clean.

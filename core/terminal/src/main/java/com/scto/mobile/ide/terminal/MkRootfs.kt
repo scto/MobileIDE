@@ -4,8 +4,8 @@ import android.content.Context
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
-import com.scto.mobile.ide.utils.getTempDir
-import com.scto.mobile.ide.utils.isMainThread
+import com.scto.mobile.ide.core.common.utils.getTempDir
+import com.scto.mobile.ide.core.common.utils.isMainThread
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 
@@ -21,9 +21,9 @@ suspend fun CoroutineScope.getNextStage(context: Context): NEXT_STAGE {
 
     val sandboxFile = File(getTempDir(), "sandbox.tar.gz")
     val rootfsFiles =
-        sandboxDir().listFiles()?.filter {
-            it.absolutePath != sandboxHomeDir().absolutePath &&
-                it.absolutePath != sandboxDir().child("tmp").absolutePath
+        sandboxDir(context).listFiles()?.filter {
+            it.absolutePath != sandboxHomeDir(context).absolutePath &&
+                it.absolutePath != sandboxDir(context).child("tmp").absolutePath
         } ?: emptyList()
 
     return if (sandboxFile.exists().not() || rootfsFiles.isEmpty().not()) {

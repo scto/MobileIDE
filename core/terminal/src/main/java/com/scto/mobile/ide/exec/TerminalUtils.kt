@@ -7,6 +7,7 @@ import com.scto.mobile.ide.core.common.files.createFileIfNot
 import com.scto.mobile.ide.core.common.files.localDir
 import com.scto.mobile.ide.core.common.files.sandboxDir
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.common.files.localBinDir
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -36,8 +37,9 @@ fun launchTerminal(activity: Activity, terminalCommand: TerminalCommand) {
     }
 }
 
+
 fun setupAssetFile(fileName: String) {
-    with(com.scto.mobile.ide.file.localBinDir().child(fileName)) {
+    with(localBinDir().child(fileName)) {
         parentFile?.mkdir()
         createFileIfNot()
         writeText(
