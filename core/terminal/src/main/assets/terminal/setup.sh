@@ -1,4 +1,6 @@
 set -e
+exec > >(tee -a $LOCAL/terminal_setup.log) 2>&1
+set -x
 
 . "$LOCAL/bin/utils"
 
@@ -179,7 +181,7 @@ if [ "$INSTALL_SDK" != "none" ]; then
 fi
 
 info "Configuring build tools environment automatically..."
-sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
+sh $LOCAL/bin/sandbox "mkdir -p /etc && (
   jdk_dir=\"\"
   if command -v javac >/dev/null 2>&1; then
       jdk_dir=\$(dirname \$(dirname \$(readlink -f \$(which javac))))
@@ -199,7 +201,7 @@ sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
           fi
       done
   fi
-  printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=/root/android-sdk\nGRADLE_USER_HOME=/root/.gradle\nAAPT2_HOME=/.mobileide\n\" > /root/etc/mobileide-environment.properties
+  printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=/root/android-sdk\nGRADLE_USER_HOME=/root/.gradle\nAAPT2_HOME=/.mobileide\n\" > /etc/mobileide-environment.properties
 )"
 
 
