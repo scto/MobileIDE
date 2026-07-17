@@ -13,6 +13,8 @@ Dies ist ein experimentelles Entwicklungsprojekt; seine Kernarchitektur und Code
 
 ## Screenshots
 
+<img width="4004" height="6088" alt="Image" src="https://github.com/user-attachments/assets/f5e92e30-c81c-4905-ad38-d9dda1e80702" />
+<img width="4112" height="7872" alt="Image" src="https://github.com/user-attachments/assets/dd2ca4a2-0913-421d-a53f-819ef2783b0e" />
 ### Dark Mode
 <p align="center">
   <img src="Screens/Dark/Screenshot_20260701-152211.png" width="24%" />

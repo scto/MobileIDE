@@ -16,29 +16,25 @@ For a detailed overview, see the [project overview document](MobileIDE_20260716_
 ## Screenshots
 
 ### Dark Mode
+<img width="4004" height="6088" alt="Image" src="https://github.com/user-attachments/assets/f5e92e30-c81c-4905-ad38-d9dda1e80702" />
+
+<img width="4112" height="7872" alt="Image" src="https://github.com/user-attachments/assets/dd2ca4a2-0913-421d-a53f-819ef2783b0e" />
+
+
+### Dark Mode
 <p align="center">
   <img src="Screens/Dark/Screenshot_20260701-152211.png" width="24%" />
   <img src="Screens/Dark/Screenshot_20260701-152427.png" width="24%" />
   <img src="Screens/Dark/Screenshot_20260701-152446.png" width="24%" />
   <img src="Screens/Dark/Screenshot_20260701-152510.png" width="24%" />
 </p>
+
+
+### Light Mode
 <p align="center">
   <img src="Screens/Dark/Screenshot_20260701-152521.png" width="24%" />
   <img src="Screens/Dark/Screenshot_20260701-152614.png" width="24%" />
   <img src="Screens/Dark/Screenshot_20260701-152717.png" width="24%" />
-</p>
-
-### Light Mode
-<p align="center">
-  <img src="Screens/Light/Screenshot_20260701-152935.png" width="24%" />
-  <img src="Screens/Light/Screenshot_20260701-152952.png" width="24%" />
-  <img src="Screens/Light/Screenshot_20260701-153009.png" width="24%" />
-  <img src="Screens/Light/Screenshot_20260701-153020.png" width="24%" />
-</p>
-<p align="center">
-  <img src="Screens/Light/Screenshot_20260701-153051.png" width="24%" />
-  <img src="Screens/Light/Screenshot_20260701-153109.png" width="24%" />
-  <img src="Screens/Light/Screenshot_20260701-153200.png" width="24%" />
 </p>
 
 ## Project Structure
