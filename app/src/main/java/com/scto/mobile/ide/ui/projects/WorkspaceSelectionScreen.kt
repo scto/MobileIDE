@@ -182,5 +182,9 @@ private fun saveAndNavigate(
             LogConfigRepository(context).resetLogPath()
         } catch (_: Exception) {}
     }
+
+    // Start terminal setup after selecting workspace
+    com.scto.mobile.ide.ui.terminal.SetupWorker.startSetupIfNeeded(context)
+
     navController.navigate("project_list") { popUpTo("workspace_selection") { inclusive = true } }
 }

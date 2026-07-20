@@ -199,12 +199,6 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
         }
     }
 
-    LaunchedEffect(pagerState.currentPage, storageGranted) {
-        if (pagerState.currentPage >= 1 && storageGranted) {
-            SetupWorker.startSetupIfNeeded(context)
-        }
-    }
-
     CompositionLocalProvider(LocalContentColor provides contentColor) {
         Scaffold(
             containerColor = Color.Transparent,

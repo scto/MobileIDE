@@ -231,7 +231,8 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
                             val setupState by SetupWorker.setupState.collectAsState()
 
                              LaunchedEffect(Unit) {
-                                 if (WelcomePreferences.isWelcomeCompleted(context)) {
+                                 if (WelcomePreferences.isWelcomeCompleted(context) &&
+                                     WorkspaceManager.isWorkspaceConfigured(context)) {
                                      SetupWorker.startSetupIfNeeded(context)
                                  }
                              }

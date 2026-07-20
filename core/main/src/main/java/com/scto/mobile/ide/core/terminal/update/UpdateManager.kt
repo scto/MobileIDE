@@ -8,7 +8,7 @@ import java.io.File
 
 class UpdateManager {
     fun onUpdate(){
-        val scripts = listOf("init-alpine-host", "init-alpine", "init-alpine-root", "init-ubuntu-host", "init-ubuntu", "init-ubuntu-root")
+        val scripts = listOf("init-host", "init", "sandbox", "setup", "termux-x11", "universal_runner", "utils")
         for (script in scripts) {
             val file = localBinDir().child(script)
             if (file.exists()) {
