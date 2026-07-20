@@ -62,6 +62,7 @@ import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
+import com.scto.mobile.ide.ui.terminal.SetupWorker
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -195,6 +196,12 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !postNotificationsGranted) {
             requestPostNotificationsPermission()
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage, storageGranted) {
+        if (pagerState.currentPage >= 1 && storageGranted) {
+            SetupWorker.startSetupIfNeeded(context)
         }
     }
 

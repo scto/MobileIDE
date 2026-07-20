@@ -230,9 +230,11 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
 
                             val setupState by SetupWorker.setupState.collectAsState()
 
-                            LaunchedEffect(Unit) {
-                                SetupWorker.startSetupIfNeeded(context)
-                            }
+                             LaunchedEffect(Unit) {
+                                 if (WelcomePreferences.isWelcomeCompleted(context)) {
+                                     SetupWorker.startSetupIfNeeded(context)
+                                 }
+                             }
 
                             Box(modifier = Modifier.fillMaxSize()) {
                                 AnimatedContent(
