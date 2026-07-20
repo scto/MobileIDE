@@ -9,7 +9,7 @@ import com.scto.mobile.ide.core.terminal.crashhandler.CrashHandler
 import com.scto.mobile.ide.core.terminal.resources.Res
 import com.scto.mobile.ide.core.terminal.update.UpdateManager
 import com.scto.mobile.ide.icons.pack.IconPackManager
-import com.scto.mobile.ide.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.concurrent.Executors
@@ -40,6 +40,7 @@ class App : Application() {
         com.scto.mobile.ide.core.terminal.libcommons.application = this
         Res.application = this
         iconPackManager = IconPackManager(this)
+        LogCatcher.init(this)
 
         com.rk.lsp.localBinDirProvider = { File(filesDir.parentFile, "local/bin") }
         com.rk.lsp.sandboxDirProvider = { File(filesDir.parentFile, "local/sandbox") }

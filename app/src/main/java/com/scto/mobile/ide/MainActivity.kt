@@ -56,7 +56,7 @@ import com.rk.extension.loader.loadAllExtensions
 import com.rk.extension.manager.ExtensionManager
 import com.scto.mobile.ide.core.common.utils.*
 import com.scto.mobile.ide.utils.*
-import com.scto.mobile.ide.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer

@@ -66,7 +66,7 @@ import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
 import com.scto.mobile.ide.core.tooling.impl.ui.BuildAndTasksPanel
 import com.scto.mobile.ide.core.tooling.impl.ui.ToolingLogPanel
-import com.scto.mobile.ide.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.utils.LogEntry
 import com.scto.mobile.ide.utils.LogConfigRepository
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
