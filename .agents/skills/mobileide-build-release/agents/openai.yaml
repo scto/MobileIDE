@@ -1,4 +1,4 @@
 interface:
   display_name: "MobileIDE Build & Release"
   short_description: "Handles MobileIDE Gradle, ABI, CI, signing, Release, and R8 issues"
-  MobileIDEdefault_prompt: "Uses MobileIDE Build & Release to check for current build or release issues and provides minimal verification commands."
+  default_prompt: "Uses MobileIDE Build & Release to check for current build or release issues and provides minimal verification commands."

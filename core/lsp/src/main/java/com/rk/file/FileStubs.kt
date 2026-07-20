@@ -17,8 +17,8 @@ interface FileType
 object FileTypeManager {
     fun fromExtension(ext: Any): BuiltinFileType? = null
 }
-fun sandboxHomeDir(): File = File("/data/data/com.scto.mobile.ide/local/home")
-fun localBinDir(): File = File("/data/data/com.scto.mobile.ide/local/bin")
+fun sandboxHomeDir(): File = com.rk.lsp.sandboxHomeDir()
+fun localBinDir(): File = com.rk.lsp.localBinDir()
 fun File.createDirIfNot() { this.mkdirs() }
 object FileOperations
 fun File.toFileWrapper(): FileObject = object : FileObject {

@@ -46,7 +46,7 @@ class Main(context: ExtensionContext) : ExtensionAPI(context) {
         }
     }
 
-    override fun onUpdated() {
+    fun onUpdated() {
         dispose()
     }
 

@@ -3,9 +3,13 @@ package com.rk.lsp
 import java.io.File
 
 
-fun localBinDir(): File = File("/data/data/com.scto.mobile.ide/local/bin")
-fun sandboxDir(): File = File("/data/data/com.scto.mobile.ide/local/sandbox")
-fun sandboxHomeDir(): File = File("/data/data/com.scto.mobile.ide/local/home")
+var localBinDirProvider: (() -> File)? = null
+var sandboxDirProvider: (() -> File)? = null
+var sandboxHomeDirProvider: (() -> File)? = null
+
+fun localBinDir(): File = localBinDirProvider?.invoke() ?: File("/data/data/com.scto.mobile.ide/local/bin")
+fun sandboxDir(): File = sandboxDirProvider?.invoke() ?: File("/data/data/com.scto.mobile.ide/local/sandbox")
+fun sandboxHomeDir(): File = sandboxHomeDirProvider?.invoke() ?: File("/data/data/com.scto.mobile.ide/local/home")
 
 fun File.child(name: String): File = File(this, name)
 fun File.getExtension(): String = name.substringAfterLast('.', "")

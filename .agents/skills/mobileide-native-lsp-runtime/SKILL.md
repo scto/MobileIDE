@@ -1,56 +1,39 @@
 ---
-name: tina-native-lsp-runtime
-description: TinaIDE native 编译运行、Android sysroot、tina-toolchain assets、clangd/LSP、Tree-sitter 与 PRoot 排障指南。用于处理 C/C++ 编译、clang/lld/clangd、语言服务、toolchain 包、queries/registry 或 PRoot 相关改动。
+name: mobileide-native-lsp-runtime
+description: MobileIDE PRoot 运行环境、LSP 语言服务、Tree-sitter 语法高亮与 Terminal 排障指南。用于处理 PRoot 容器、LSP 服务器连接、Tree-sitter 高亮以及 Terminal 会话。
 ---
 
-# TinaIDE Native / LSP / Runtime
+# MobileIDE Native / LSP / Runtime
 
 ## 先读文件
 
-- `core/compile/**`：编译、工具链、sysroot 相关能力。
-- `core/lsp/**`：语言服务 provider、remote/plugin/native 入口。
-- `core/ndk/**`、`core/proot/**`、`core/tree-sitter/**`。
-- `app/src/main/java/com/wuxianggujun/tinaide/ui/compose/state/editor/LspEditorManager.kt`。
-- `app/src/main/java/com/wuxianggujun/tinaide/ui/compose/state/editor/EditorContainerState.kt`。
-- `app/src/main/java/com/wuxianggujun/tinaide/ui/compose/components/editor/TinaCodeEditorPage.kt`。
-- `app/src/arm64/assets/tina-toolchain/current.properties`。
-- `app/src/x86_64/assets/tina-toolchain/current.properties`。
-- `tools/verify-tina-toolchain-package.ps1`、`tools/sync-tina-toolchain-assets.ps1`。
+- `editor-lsp/**`：LSP 客户端底层实现，处理 JSON-RPC 交互。
+- `core/lsp/**`：语言服务注册、连接与管理（`LspServer.kt`, `LspRegistry.kt`）。
+- `app/src/main/java/com/scto/mobile/ide/lsp/ProotStreamConnectionProvider.kt`：桥接 LSP 与 PRoot 容器的流连接提供器。
+- `app/src/main/java/com/scto/mobile/ide/ui/terminal/DistroManager.kt`：PRoot 运行环境（如 Alpine/Ubuntu 沙盒）及终端会话的核心管理者。
+- `language-treesitter/**`：Tree-sitter 的 Android/Rosemoe 适配及语法树解析。
+- `extension-languages/**`：内置 LSP 扩展加载器（Java, Kotlin, C++, Bash 等）。
 
 ## 项目事实
 
-- 默认编译/LSP 依赖 native tina-toolchain + Android sysroot，不默认依赖 PRoot rootfs。
-- `AndroidSysrootManager` 与 `AndroidNativeToolchainManager` 是独立管理职责，不能合并。
-- toolchain assets 由 `app/src/<abi>/assets/tina-toolchain/current.properties`、tar.xz 和 sha256 约束。
-- arm64 当前记录为 `version=0.2.4`、`arch=aarch64`、`full=tinaide-toolchain-aarch64-v0.2.4-patched.tar.xz`。
-- x86_64 当前记录为 `version=0.2.4`、`arch=x86_64`、`full=tinaide-toolchain-x86_64-v0.2.4-patched.tar.xz`。
-- Android sysroot 资产通过 `app/src/<abi>/assets/android-sysroot/profiles.json` 管理；同步时必须显式传入 `SysrootAssetName`，旧 `android-sysroot-*-all.tar.xz` 默认包名已移除。
-- C/C++ LSP provider 包括 native clangd、PRoot clangd、remote LSP、plugin LSP。
-- CMake / Make 使用内建语言服务，不默认走 clangd。
+- **PRoot 编译与执行**：构建任务（如 gradle 编译）与部分语言服务通常运行在 PRoot 容器环境中。使用 `DistroManager.buildProotCommand` 包装命令并使用 `DistroManager.getProotEnv` 传递环境变量（如 `PROOT_LOADER`、`PROOT_TMP_DIR`）。
+- **LSP 连接模式**：对运行于沙盒中的语言服务，客户端通过 `ProotStreamConnectionProvider` 与之进行 IO 流通信。
+- **语法高亮**：IDE 在编辑器中集成了 Tree-sitter 进行高亮解析（如 `TsLanguage`），若失败则使用正则高亮作为 fallback。
+- **LSP 安装与更新**：通过设置页面（`LspSettingsScreen`）进行 LSP 服务器的管理与更新，通过 `initCommand` 唤起 Terminal 执行自动安装脚本。
 
 ## 修改流程
 
-1. 先确认问题属于编译、LSP、Tree-sitter、toolchain assets 还是 PRoot。
-2. 搜索现有 manager/provider，不要新增平行实现。
-3. toolchain 包变更先更新对应 ABI assets、sha256 和 `current.properties`。
-4. LSP 状态或 UI 变更同时检查 `LspEditorManager`、`EditorContainerState`、`TinaCodeEditorPage`。
-5. Tree-sitter queries 变更按手动同步/生成流程处理。
+1. 确认更改属于 LSP 协议交互（`editor-lsp`）、宿主连接管理（`core:lsp` / `ProotStreamConnectionProvider`）、运行容器（`DistroManager`）还是具体语言插件。
+2. 尽量复用已有的 LSP 结构和 Provider，不要重新实现平行的连接器。
+3. 修改沙盒配置时需评估 `DistroManager` 对 Alpine / Ubuntu 环境参数的兼容性影响。
+4. 运行编译及测试，检验 LSP 连接是否稳健。
 
 ## 禁止事项
 
-- 不要把 PRoot 当默认 C/C++ 编译路径。
-- 不要合并 sysroot manager 与 native toolchain manager 的职责。
-- 不要手改生成的 language registry。
-- 不要把 `syncTreeSitterQueries` 接入普通 Gradle build。
-- 不要绕过 toolchain assets 校验。
+- 不要硬编码容器内的临时目录，请优先使用 `PROOT_TMP_DIR`。
+- 不要直接在 Android 宿主执行未被 PRoot 包裹的 Linux 二进制文件。
 
 ## 验证
 
-```powershell
-./gradlew :app:compileArm64DebugKotlin --console=plain
-./gradlew :app:assembleArm64Debug --console=plain
-pwsh ./tools/verify-tina-toolchain-package.ps1
-```
-
-- LSP UI 或状态变更跑相关 app/editor tests。
-- Tree-sitter 改动检查 registry 生成任务和 ktlint 排除规则。
+- 修改 LSP 或沙盒环境后，通过 `./gradlew :app:compileArm64DebugKotlin --console=plain` 检验编译。
+- 启动终端或 LSP 安装脚本，确保 `initCommand` 执行无异常。

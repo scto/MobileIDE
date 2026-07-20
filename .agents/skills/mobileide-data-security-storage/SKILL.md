@@ -1,69 +1,43 @@
 ---
-name: tina-data-security-storage
-description: TinaIDE 数据层、安全、权限、路径、敏感信息和文件分享指南。用于修改 Room 数据库、迁移、DataStore/SharedPreferences、ProjectPaths、PathValidator、API key 存储、server HMAC、崩溃日志隐私或 Android 权限。
+name: mobileide-data-security-storage
+description: MobileIDE 数据层、安全、权限、路径、敏感信息和文件分享指南。用于修改 Preferences DataStore、SharedPreferences、文件沙盒路径、FileProvider 文件分享、及 Android 权限。
 ---
 
-# TinaIDE 数据、安全与存储
+# MobileIDE 数据、安全与存储
 
 ## 先读文件
 
-- `core/database/src/main/java/com/wuxianggujun/tinaide/database/user/UserContentDatabase.kt`。
-- `feature/editor/src/main/java/com/wuxianggujun/tinaide/editor/bookmark/db/BookmarkDatabase.kt`。
-- `core/storage/src/main/java/com/wuxianggujun/tinaide/storage/ProjectPaths.kt`。
-- `core/storage/src/main/java/com/wuxianggujun/tinaide/storage/TinaFileProvider.kt`。
-- `core/storage/src/main/java/com/wuxianggujun/tinaide/storage/ExternalFileIntents.kt`。
-- `core/storage/src/main/java/com/wuxianggujun/tinaide/storage/db/StorageDatabase.kt`。
-- `core/security/src/main/java/com/wuxianggujun/tinaide/core/security/PathValidator.kt`。
-- `core/config/**`、`core/logging/**`。
-- `app/src/main/AndroidManifest.xml`。
-- `app/src/main/res/xml/network_security_config.xml`、`backup_rules.xml`、`data_extraction_rules.xml`、`file_paths.xml`。
-- `external/rikkahub/**`：RikkaHub 自身模型、渠道、API Key 和聊天数据维护边界。
+- `app/src/main/java/com/scto/mobile/ide/utils/ThemeDataStore.kt`：主题和颜色配置的数据存储（DataStore）。
+- `app/src/main/java/com/scto/mobile/ide/utils/AppLanguageManager.kt`：语言配置存储（SharedPreferences）。
+- `app/src/main/java/com/scto/mobile/ide/files/sandboxHomeDir.kt`：定义应用沙盒主路径（`files/sandbox`）。
+- `app/src/main/java/com/scto/mobile/ide/App.kt`：包含临时文件夹获取逻辑 `getTempDir()`（`files/parent/tmp`）。
+- `app/src/main/AndroidManifest.xml`：注册权限、服务及 FileProvider。
+- `app/src/main/res/xml/file_paths.xml`：FileProvider 暴露的文件路径配置。
 
 ## 数据层事实
 
-- `UserContentDatabase` 是主要用户内容 Room 数据库，当前有显式 migrations，例如 2->3、3->4、4->5。
-- `BookmarkDatabase` 是编辑器书签数据库。
-- `StorageDatabase` 独立管理项目位置映射，数据库名为 `tinaide_storage.db`，当前有 `project_locations` 迁移和唯一索引约束。
-- `UserContentDatabase` 与 `BookmarkDatabase` 当前 `exportSchema = false`；新增迁移前先核对现有策略和测试。
-- TinaIDE 主仓库不再维护自研 AI 会话数据库；RikkaHub 的聊天、模型和渠道数据在 `external/rikkahub` 自身数据层内维护。
-- 配置类同时存在 Room、DataStore、SharedPreferences 和加密 SharedPreferences，用前先搜索既有 store。
+- **配置管理**：主要采用 Jetpack Preferences DataStore 存储（如 `mobileide_theme_settings`）和标准 Android SharedPreferences 存储（如 `MobileIDE_Settings`）。
+- **无 Room 数据库**：目前本仓无 Room 数据库，所有项目文件索引和编辑器状态大多存储在内存或直接在磁盘上管理，配置存储通过 DataStore / SharedPreferences 实现。
+- **文件沙盒**：应用拥有私有沙盒环境 `sandboxHomeDir(context)`，包含 Alpine 等 PRoot 环境文件均在应用专有目录下运行。
 
 ## 安全与路径事实
 
-- 项目、日志、PRoot、模板等路径应优先通过 `ProjectPaths` 获取。
-- 路径输入校验优先复用 `PathValidator` 和相关 validator。
-- RikkaHub API Key 不应在 TinaIDE 主仓库新增镜像存储；如需修改密钥逻辑，应在 `external/rikkahub` 内按其数据层和安全策略处理。
-- `TinaServerEnvironment.initialize()` 会 trim `SERVER_CONFIG_HMAC_SECRET`。
-- `TinaServerApi` 使用 `ServerConfigHmacVerifier` 校验 server config；空 secret 会跳过并 warning。
-- `CrashLogPrivacyClassifier` 区分 host/user runtime process，主进程 crash 才上传。
-- 外部文件分享统一用 `TinaFileProvider` / `ExternalFileIntents` 生成 `content://` URI。
-- Manifest 当前 `allowBackup=true` 且备份规则包含 `sharedpref`；不要把密钥类字段放入普通 SharedPreferences。
-- Manifest 当前允许明文流量；修改网络安全策略前必须确认 RikkaHub、插件、调试服务、远程 LSP 和本地开发场景影响。
+- 项目和系统临时路径应分别使用 `sandboxHomeDir` 与 `App.getTempDir()` 获取。
+- 外部文件分享统一使用 Android `FileProvider` 进行，授权以 `${applicationId}.fileprovider` 进行 `content://` 资源映射，禁止直接暴露 `file://` URI。
+- Android Manifest 允许明文流量（`usesCleartextTraffic="true"`），修改安全网络策略需确认对远程 LSP 及本地调试接口的影响。
 
 ## Android 权限
 
-- Manifest 包含网络、相机、存储、WAKE_LOCK、VIBRATE、前台服务、安装 APK、FileProvider 等声明。
-- 用户可见权限说明、错误提示、Dialog 文案必须走 `core/i18n`。
-- 修改权限时同步检查 Android 版本条件、request flow、设置页入口和测试。
+- 包含：网络访问、POST_NOTIFICATIONS、MANAGE_EXTERNAL_STORAGE（管理外部存储）、FOREGROUND_SERVICE、安装/删除包权限等。
+- 权限说明与用户可见文案需走本地化多语言资源（`strings.xml`）。
 
 ## 高风险误区
 
-- 不要自行拼接或信任外部传入路径。
-- 不要把 API key、HMAC secret、keystore 密码写入普通日志、Room entity 或 crash 附件。
-- 不要把 API key 放进 TinaIDE 主仓库的普通 SharedPreferences、Room、导出配置或崩溃上报。
-- 不要直接暴露 `file://` 给外部应用；使用 `content://`。
-- 不要在数据库结构变更时漏掉 migration 和 DAO/entity 测试。
-- 不要把 user runtime 进程 crash 当作 host crash 上传。
+- 严禁拼接或信任外部传入的越界路径，防范路径截断与目录穿越漏洞。
+- 严禁在普通日志中打印敏感信息、API key 等。
+- 绝不直接暴露 `file://` 给外部 Activity；请转为 `content://` URI 进行共享。
 
 ## 验证
 
-```powershell
-./gradlew :core:database:testDebugUnitTest --console=plain
-./gradlew :core:security:testDebugUnitTest --console=plain
-./gradlew :core:storage:testDebugUnitTest --console=plain
-./gradlew :rikkahub:embedded:compileDebugKotlin --console=plain
-```
-
-- 数据库变更跑对应 DAO/migration 测试。
-- 权限或分享变更跑 app 编译，并人工核对 Manifest/provider 配置。
-- 涉及日志导出或上传时，确认是否包含用户源码、路径、命令输出、API key、token，并保留显式用户确认边界。
+- 对存储或权限改动后，运行 `./gradlew :app:compileArm64DebugKotlin --console=plain` 验证编译。
+- 人工核对 Manifest 与 `file_paths.xml` 确保路径映射正确，未破坏外部共享接口。

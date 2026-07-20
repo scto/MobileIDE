@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.scto.mobile.ide.core.common.utils.safeNavigate
 import com.rk.lsp.ExternalLspServer
 import com.rk.lsp.LspRegistry
 import com.rk.lsp.LspServer
@@ -200,6 +201,7 @@ fun LspSettingsScreen(navController: NavController) {
                                 LspServerRow(
                                     item = item,
                                     activity = activity,
+                                    navController = navController,
                                     onToggleEnable = { enabled ->
                                         lspSettingsPrefs
                                             .edit()
@@ -244,6 +246,7 @@ fun LspSettingsScreen(navController: NavController) {
                                 LspServerRow(
                                     item = item,
                                     activity = activity,
+                                    navController = navController,
                                     onToggleEnable = { enabled ->
                                         lspSettingsPrefs
                                             .edit()
@@ -283,6 +286,7 @@ fun LspSettingsScreen(navController: NavController) {
 fun LspServerRow(
     item: LspSettingsUiItem,
     activity: Activity?,
+    navController: NavController,
     onToggleEnable: (Boolean) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -324,6 +328,7 @@ fun LspServerRow(
                     IconButton(
                         onClick = {
                             item.server.install(activity)
+                            navController.safeNavigate("terminal")
                             onRefresh()
                         }
                     ) {
@@ -338,6 +343,7 @@ fun LspServerRow(
                         IconButton(
                             onClick = {
                                 item.server.update(activity)
+                                navController.safeNavigate("terminal")
                                 onRefresh()
                             }
                         ) {
@@ -352,6 +358,7 @@ fun LspServerRow(
                         IconButton(
                             onClick = {
                                 item.server.uninstall(activity)
+                                navController.safeNavigate("terminal")
                                 onRefresh()
                             }
                         ) {

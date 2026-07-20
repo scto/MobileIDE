@@ -45,6 +45,8 @@ class KmpServer(
         launchInstaller(activity, "--uninstall")
     }
 
+    override suspend fun hasUpdate(context: Context): Boolean = false
+
     override fun update(activity: Activity) {
         launchInstaller(activity, "--update")
     }

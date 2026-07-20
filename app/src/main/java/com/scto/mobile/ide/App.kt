@@ -41,6 +41,10 @@ class App : Application() {
         Res.application = this
         iconPackManager = IconPackManager(this)
 
+        com.rk.lsp.localBinDirProvider = { File(filesDir.parentFile, "local/bin") }
+        com.rk.lsp.sandboxDirProvider = { File(filesDir.parentFile, "local/sandbox") }
+        com.rk.lsp.sandboxHomeDirProvider = { File(filesDir.parentFile, "local/home") }
+
         Timber.plant(
             object : Timber.DebugTree() {
                 override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {

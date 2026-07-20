@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.safeNavigate
 import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -104,6 +105,7 @@ fun NewProjectScreen(navController: NavController) {
                     snackbarHostState.showSnackbar(context.getString(R.string.new_project_created, dir.name))
                     delay(800)
                     navController.popBackStack()
+                    navController.safeNavigate("code_edit/${dir.name}")
                 }
             },
             onError = { msg ->
@@ -427,31 +429,38 @@ private fun extractTemplate(
 ) {
     val assetManager = context.assets
     assetManager.open("templates/templates.zip").use { inputStream ->
-        java.util.zip.ZipInputStream(inputStream).use { zipInputStream ->
-            var entry = zipInputStream.nextEntry
-            val prefix = "$templateName/"
-            val prefixToStrip = if (templateName == "FlutterApp") prefix else "${prefix}kotlin/"
+        java.io.BufferedInputStream(inputStream).use { bufferedInputStream ->
+            java.util.zip.ZipInputStream(bufferedInputStream).use { zipInputStream ->
+                var entry = zipInputStream.nextEntry
+                val prefix = "$templateName/"
+                val prefixToStrip = if (templateName == "FlutterApp") prefix else "${prefix}kotlin/"
 
-            while (entry != null) {
-                val entryName = entry.name
-                if (entryName.startsWith(prefix) && !entry.isDirectory) {
-                    if (
-                        entryName.endsWith("/info.json") ||
-                            entryName.endsWith("/icon.png") ||
-                            !entryName.startsWith(prefixToStrip)
-                    ) {
-                        zipInputStream.closeEntry()
-                        entry = zipInputStream.nextEntry
-                        continue
-                    }
-                    val relativePath = entryName.substring(prefixToStrip.length)
-                    val packagePath = packageName.replace('.', '/')
-                    val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
+                while (entry != null) {
+                    val entryName = entry.name
+                    if (entryName.startsWith(prefix) && !entry.isDirectory) {
+                        if (
+                            entryName.endsWith("/info.json") ||
+                                entryName.endsWith("/icon.png") ||
+                                !entryName.startsWith(prefixToStrip)
+                        ) {
+                            zipInputStream.closeEntry()
+                            entry = zipInputStream.nextEntry
+                            continue
+                        }
+                        val relativePath = entryName.substring(prefixToStrip.length)
+                        val packagePath = packageName.replace('.', '/')
+                        val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
 
-                    val targetFile = File(targetDir, resolvedRelativePath)
-                    targetFile.parentFile?.mkdirs()
+                        val targetFile = File(targetDir, resolvedRelativePath)
+                        targetFile.parentFile?.mkdirs()
 
-                    val bytes = zipInputStream.readBytes()
+                        val outputStream = java.io.ByteArrayOutputStream()
+                        val buffer = ByteArray(4096)
+                        var len: Int
+                        while (zipInputStream.read(buffer).also { len = it } > 0) {
+                            outputStream.write(buffer, 0, len)
+                        }
+                        val bytes = outputStream.toByteArray()
                     if (isTextFile(resolvedRelativePath)) {
                         var content = String(bytes, Charsets.UTF_8)
                         content = content.replace("\$packageName", packageName)
@@ -479,6 +488,7 @@ private fun extractTemplate(
             }
         }
     }
+}
 }
 
 private fun isTextFile(fileName: String): Boolean {

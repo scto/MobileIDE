@@ -49,13 +49,22 @@ object SetupWorker {
     fun startSetupIfNeeded(context: Context) {
         val filesDir = context.filesDir
         val prefixDir = filesDir.parentFile!!
-        if (File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").exists()) return
+        if (File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").exists()) {
+            if (!_setupState.value.isSuccess) {
+                _setupState.value = SetupState(isActive = false, isSuccess = true)
+            }
+            return
+        }
         if (_setupState.value.isActive) return
         
         setupJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 _setupState.value = SetupState(isActive = true, status = "Starte Setup...")
                 prepareEnvironment(context)
+                context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("first_run_distro_selected", true)
+                    .apply()
                 _setupState.value = SetupState(isActive = false, isSuccess = true)
             } catch (e: Exception) {
                 _setupState.value = _setupState.value.copy(isActive = false, error = e.message)

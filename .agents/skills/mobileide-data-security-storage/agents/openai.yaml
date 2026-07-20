@@ -1,4 +1,4 @@
 interface:
-  display_name: "Tina 数据安全"
-  short_description: "修改 TinaIDE 数据库、路径、权限、敏感信息和文件分享"
-  default_prompt: "使用 Tina 数据安全检查这个数据、权限或存储改动的风险与验证。"
+  display_name: "MobileIDE 数据安全"
+  short_description: "修改 MobileIDE 存储、路径、权限、敏感信息和文件分享"
+  default_prompt: "使用 MobileIDE 数据安全检查这个存储、权限或路径改动的风险与验证。"

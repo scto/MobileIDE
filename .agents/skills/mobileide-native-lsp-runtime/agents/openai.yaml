@@ -1,4 +1,4 @@
 interface:
-  display_name: "Tina Native LSP"
-  short_description: "处理 TinaIDE native toolchain、sysroot、clangd/LSP、Tree-sitter 和 PRoot"
-  default_prompt: "使用 Tina Native LSP 分析这个编译、语言服务或 toolchain 问题。"
+  display_name: "MobileIDE Native LSP"
+  short_description: "处理 MobileIDE PRoot、LSP 客户端、Tree-sitter 和 Terminal"
+  default_prompt: "使用 MobileIDE Native LSP 分析这个沙盒、语言服务或终端问题。"

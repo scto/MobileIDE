@@ -57,7 +57,9 @@ import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.Virtual
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
 import com.termux.view.TerminalView
+import java.io.File
 import java.lang.ref.WeakReference
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -71,9 +73,13 @@ fun TerminalScreen(navController: NavController) {
     var isEnvironmentReady by remember { mutableStateOf(false) }
     val isSystemDark = isSystemInDarkTheme()
     val setupState by SetupWorker.setupState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     val prefs = remember { context.getSharedPreferences("MobileIDE_Settings", android.content.Context.MODE_PRIVATE) }
-    val isFirstRun = remember { !prefs.getBoolean("first_run_distro_selected", false) }
+    val isFirstRun = remember {
+        val setupMarker = File(context.filesDir.parentFile, "local/.terminal_setup_ok_DO_NOT_REMOVE")
+        !setupMarker.exists() && !prefs.getBoolean("first_run_distro_selected", false)
+    }
     var showDistroDialog by rememberSaveable { mutableStateOf(isFirstRun) }
     var selectedDistroDialog by rememberSaveable {
         mutableStateOf(prefs.getString("selected_distro", "ubuntu") ?: "ubuntu")
@@ -158,12 +164,24 @@ fun TerminalScreen(navController: NavController) {
             confirmButton = {
                 Button(
                     onClick = {
+                        val prevDistro = prefs.getString("selected_distro", "ubuntu") ?: "ubuntu"
                         prefs
                             .edit()
                             .putString("selected_distro", selectedDistroDialog)
                             .putBoolean("first_run_distro_selected", true)
                             .apply()
                         showDistroDialog = false
+
+                        // If the newly selected distro is different and not installed, trigger reinstall
+                        if (selectedDistroDialog != prevDistro) {
+                            val prefixDir = context.filesDir.parentFile!!
+                            val distroDir = File(prefixDir, "local/$selectedDistroDialog")
+                            if (!distroDir.exists()) {
+                                coroutineScope.launch {
+                                    SetupWorker.reinstallTerminal(context)
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -175,8 +193,8 @@ fun TerminalScreen(navController: NavController) {
 
     var setupError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(setupState) {
-        if (!setupState.isActive && setupState.isSuccess && !isEnvironmentReady) {
+    LaunchedEffect(setupState, showDistroDialog) {
+        if (!showDistroDialog && !setupState.isActive && setupState.isSuccess && !isEnvironmentReady) {
             isEnvironmentReady = true
             if (SessionManager.sessions.isEmpty()) {
                 SessionManager.addNewSession(context)
@@ -207,6 +225,13 @@ fun TerminalScreen(navController: NavController) {
         }
     } else if (!isEnvironmentReady) {
         // Wait for background setup
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Warte auf Terminal-Setup...", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
         return
     }
 

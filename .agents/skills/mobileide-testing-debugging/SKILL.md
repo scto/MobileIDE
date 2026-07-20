@@ -1,59 +1,45 @@
 ---
-name: tina-testing-debugging
-description: TinaIDE 测试、排障和质量验证指南。用于选择单元测试/仪器测试命令、定位失败原因、验证 editor/AI/plugin/database/security 等模块改动，或为文档变更做轻量检查。
+name: mobileide-testing-debugging
+description: MobileIDE 测试与排障指南。用于选择单元测试/仪器测试命令、定位失败原因、验证 APK 构建、编辑器及 Terminal 等核心模块改动。
 ---
 
-# TinaIDE 测试与排障
+# MobileIDE 测试与排障
 
 ## 先读文件
 
-- `docs/testing/README.md`：项目已有测试说明和 editor popup 回归命令。
-- 目标模块的 `build.gradle.kts`：确认测试依赖和 Android test 配置。
-- 目标模块的 `src/test/**` 与 `src/androidTest/**`：优先复用现有测试风格。
-- `gradle/libs.versions.toml`：JUnit、Truth、Robolectric、MockK、AndroidX Test、coroutines-test 等版本。
+- 目标模块的 `build.gradle` 或 `build.gradle.kts`：确认测试配置和依赖。
+- 目标模块的 `src/test/**` 与 `src/androidTest/**`：参考已有测试类来编写测试用例。
+- `gradle/libs.versions.toml`：集中的依赖管理。
 
 ## 常用命令
 
 ```powershell
-./gradlew :app:testArm64DebugUnitTest --tests "com.example.TestName" --console=plain
-./gradlew :rikkahub:embedded:compileDebugKotlin --console=plain
-./gradlew :core:editor-view:testDebugUnitTest --tests "com.wuxianggujun.tinaide.core.editorview.EditorPopupComposeSmokeTest" --tests "com.wuxianggujun.tinaide.core.editorview.PopupOverlaySharedAnchorIntegrationTest" --tests "com.wuxianggujun.tinaide.core.editorview.EditorOverlaysIntegrationTest" --console=plain
-./gradlew :core:editor-view:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.wuxianggujun.tinaide.core.editorview.EditorCompletionPopupInstrumentationTest,com.wuxianggujun.tinaide.core.editorview.EditorSharedPopupInstrumentationTest --console=plain
+# 运行 apk-builder 单元测试
+./gradlew :core:apk-builder:testDebugUnitTest --console=plain
+
+# 运行 terminal-emulator 单元测试
+./gradlew :core:terminal-emulator:test --console=plain
+
+# 运行 editor 单元测试
+./gradlew :editor:testDebugUnitTest --console=plain
+
+# 运行 language-treesitter 单元测试
+./gradlew :language-treesitter:testDebugUnitTest --console=plain
 ```
 
-- 后台执行测试时设置最大超时 60 秒，避免卡死。
-- `connectedDebugAndroidTest` 需要连接设备或模拟器。
+## 测试覆盖重点
 
-## 覆盖重点
-
-- `core/editor-view`：popup、gesture、overlay、rendering、instrumented editor 行为。
-- RikkaHub 集成：主仓库入口、embedded 编译、侧边栏容器和设置入口。
-- `core/database`：Room DAO、entity、migration 相关行为。
-- `core/security`：`PathValidator`、server config HMAC 校验。
-- `core/plugin`：manifest、权限、脚本 API、LSP plugin、marketplace、host command。
-- `app`：主界面导航、LSP routing、testing screens、plugin bridge。
-- 多数 `core/*` 与 `feature/*` Android library 模块通过 `tina.android.library` convention 自动获得 JUnit、Truth、Robolectric、MockK、coroutines-test；不要仅凭模块 `build.gradle.kts` 未写 `testImplementation` 就重复加依赖。
-- RikkaHub 内部测试应在 `external/rikkahub` 子模块内按其测试约定运行；主仓库默认只要求 embedded 编译和宿主入口验证。
-
-## 排障流程
-
-1. 先用失败模块和测试名缩小范围，不要直接跑全量。
-2. 查看同目录现有测试的 fixture、mock、rule 和 coroutine dispatcher 写法。
-3. Android 资源或 Compose 相关单测优先确认模块是否启用了 `unitTests.isIncludeAndroidResources`。
-4. 涉及数据库时检查 schema version、DAO、migration 和测试数据库创建方式。
-5. 涉及外部进程、文件系统、设备权限时区分 unit test 与 instrumented test。
+- **APK 构建功能**：在 `:core:apk-builder` 中对 `ApkSigner`, `ManifestPatcher` 以及 `DebugKeyStore` 进行签名与打包模板替换逻辑测试。
+- **终端仿真（Terminal）**：在 `:core:terminal-emulator` 中对终端输入输出、光标操作、控制序列等进行基于 JUnit 的常规测试。
+- **编辑器核心 (editor)**：对文本 IO、缓存、撤销重做、高亮等底层文本库机制（如 `io.github.rosemoe.sora`）进行充分测试。
+- **语法高亮 (language-treesitter)**：对语法树节点解析及相关逻辑进行测试。
 
 ## 高风险误区
 
-- 不要用新测试框架替代现有 JUnit4/Truth/Robolectric/MockK 风格，除非模块已有迁移。
-- 不要在测试里依赖真实用户目录、真实 API key、真实 keystore 或生产网络。
-- 不要忽略 editor popup 回归；这类 UI 行为已有专门 smoke/integration 测试。
-- 不要把失败的 instrumented test 当作本地 unit test 可复现问题。
-- 不要把 `app/src/androidTest` 的 native toolchain / PRoot smoke 当作稳定 CI 必跑项；它们依赖设备、ABI 和资产准备，`assumeTrue` 跳过不等于失败。
+- 严禁在单元测试中读取宿主的真实私有目录或外部网络。
+- 测试过程中应当 mock 复杂的外部环境（如 Android Context），避免对真实系统环境产生依赖。
 
 ## 验证
 
-- 代码变更跑目标模块最小测试，再跑对应 Kotlin compile。
-- UI/editor 交互变更补跑 docs/testing 中对应回归命令。
-- RikkaHub 相关主仓库改动至少运行 `./gradlew :rikkahub:embedded:compileDebugKotlin --console=plain`；涉及宿主入口时再跑 `./gradlew :app:compileArm64DebugKotlin --console=plain`。
-- 仅文档/skill 变更可做 Markdown 元数据、路径存在性和 `git diff` 检查。
+- 代码变更后优先编译目标模块，然后执行对应的单元测试。
+- 针对修改涉及的端到端页面，请启动 App 并人工交互验证以确保无 Regression。

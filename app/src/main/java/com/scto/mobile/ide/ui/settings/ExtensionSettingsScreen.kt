@@ -32,16 +32,10 @@ import kotlinx.coroutines.launch
 fun ExtensionSettingsScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var extensions by remember { mutableStateOf<List<LocalExtension>>(emptyList()) }
+    val extensions = extensionManager.localExtensions.values.toList()
     var showRestartDialog by remember { mutableStateOf(false) }
     var selectedExtensionForInfo by remember { mutableStateOf<LocalExtension?>(null) }
     var targetExtensionIdForUpdate by remember { mutableStateOf<String?>(null) }
-
-    fun refresh() {
-        extensions = extensionManager.localExtensions.values.toList()
-    }
-
-    LaunchedEffect(Unit) { refresh() }
 
     val filePickerLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -55,8 +49,6 @@ fun ExtensionSettingsScreen(navController: NavController) {
                         val res = extensionManager.installExtensionFromZip(tempFile)
                         tempFile.delete()
                         if (res is InstallResult.Success) {
-                            Toast.makeText(context, "Extension installed successfully", Toast.LENGTH_SHORT).show()
-                            refresh()
                             showRestartDialog = true
                         } else {
                             val errMsg =
@@ -97,7 +89,6 @@ fun ExtensionSettingsScreen(navController: NavController) {
                                     )
                                     .show()
                             }
-                            refresh()
                             showRestartDialog = true
                         } else {
                             val errMsg =
@@ -224,7 +215,6 @@ fun ExtensionSettingsScreen(navController: NavController) {
                                                         Toast.LENGTH_SHORT,
                                                     )
                                                     .show()
-                                                refresh()
                                                 showRestartDialog = true
                                             } else {
                                                 Toast.makeText(

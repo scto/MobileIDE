@@ -1,70 +1,53 @@
 ---
 name: mobileide-build-release
-description: MobileIDE build, Gradle, ABI, CI, release, signing, and R8 troubleshooting guide. Used for handling assemble/compile failures, APK builds, version numbers, GitHub Actions, toolchain asset verification, or Release obfuscation issues.
+description: MobileIDE build, Gradle, ABI, CI, release, signing, and build verification guide. Used for handling assemble/compile failures, APK builds, product flavors, versions, and signing configuration.
 ---
 
 # MobileIDE Build and Release
 
-## Read the files first
+## 先读文件
 
-- `gradle/wrapper/gradle-wrapper.properties`: Gradle Wrapper version, currently pointing to Gradle 9.6.0.
-- `settings.gradle.kts`: `includeBuild("build-logic")`, module and external tree-sitter replacement.
-- `build.gradle.kts`: Root plugin, ktlint configuration.
-- `gradle/libs.versions.toml`: AGP, Kotlin, AGP `legacy-kapt` plugin, Compose BOM, and dependency versions.
-- `app/build.gradle.kts`: ABI flavor, Release, signing, R8 configuration.
-- `build-logic/convention/src/main/kotlin/**`: ABI aggregation, versioning, mapping, Tree-sitter, toolchain assets verification, and other convention plugins.
-- `.github/workflows/**`: dev, PR, and release build matrices.
-- `version.properties`, `keystore.properties.example`, `docs/proguard-rules-reference.md`.
+- `gradle/wrapper/gradle-wrapper.properties`：Gradle Wrapper 版本配置（当前为 Gradle 9.6.0）。
+- `settings.gradle.kts`：包含的子模块定义。
+- `build.gradle.kts`：根目录 Gradle 配置。
+- `gradle/libs.versions.toml`：依赖项版本及应用程序版本信息（`versionCode`、`versionName`、`applicationId`）。
+- `app/build.gradle.kts`：包含 `Fdroid` / `PlayStore` 渠道（flavors）定义、签名（Signing）及编译打包配置。
+- `app/keystore.properties`：签名文件配置文件路径和口令（实际证书密码由用户本地控制，不能提交）。
 
-## Commonly Used Commands
+## 常用命令
 
 ```powershell
-./gradlew :app:compileArm64DebugKotlin --console=plain
-./gradlew :app:assembleArm64Debug --console=plain
-./gradlew -Pmobileide.devAbi=x86_64 :app:assembleX86_64Debug --console=plain
-./gradlew :app:assembleDebugAllAbi --console=plain
-./gradlew :app:assembleArm64Release --console=plain
-./gradlew ktlintCheck --console=plain
+# 编译 Fdroid Debug 版本
+./gradlew :app:compileFdroidDebugKotlin --console=plain
 
+# 构建 Fdroid Debug APK
+./gradlew :app:assembleFdroidDebug --console=plain
+
+# 构建 PlayStore Debug APK
+./gradlew :app:assemblePlayStoreDebug --console=plain
+
+# 运行代码格式检查 (项目使用的是 ktfmt 插件而非 ktlint)
+./gradlew ktfmtCheck --console=plain
+
+# 自动格式化代码
+./gradlew ktfmtFormat --console=plain
 ```
 
-- The Windows helper script exists: `tools/build-apk.ps1`.
-- `tools/build-apk.ps1 -Universal` will temporarily write `app/build.gradle.kts`; you must confirm the impact before execution.
+## 项目构建事实
 
-````
+- **版本号控制**：版本号集中托管在 `gradle/libs.versions.toml` 中，杜绝在各模块中硬编码。
+- **渠道（Product Flavors）**：
+  - `Fdroid`：面向 F-Droid 商店，限制 `targetSdk = 28`（以规避某些高版本 Android 特权限制）。
+  - `PlayStore`：面向 Google Play，设置 `targetSdk = 35`。
+- **打包签名**：`release` 构建使用 `app/build.gradle.kts` 中的 `acsProps` 获取 `keystore.properties`。在未配置该属性时默认回退。
+- **代码混淆/裁剪**：当前版本的 `release` 配置中，`isMinifyEnabled` 和 `isShrinkResources` 默认设为 `false`。
 
-## Project Facts
-- Dependency versions are centralized in `gradle/libs.versions.toml`; avoid scattering hard-coded versions throughout modules.
-- `app` flavors are `arm64` and `x86_64`, with the local default being `mobileide.devAbi=arm64`.
-- Use `:app:assembleDebugAllAbi`, `:app:assembleReleaseAllAbi`, or `-Pmobileide.allAbi=true` for all ABIs.
-- Releases are enabled by default with `isMinifyEnabled = true` and `isShrinkResources = true`.
-- Release signing reads `keystore.properties`; the actual keystore and password cannot be submitted.
-- Non-tagged releases may auto-increment `version.properties` during `assemble/bundle/install`.
-- Tag releases require `v*` to be equal to `versionName` after removing the `v`.
-- Release builds back up R8 mappings; mapping files are only archived locally by the public build logic.
-- CI uses JDK 17, CMake 3.22.1, tree-sitter-cli 0.22.1, and recursively checks out submodules.
+## 高风险误区
 
-## Reusable Entry Points
+- 严禁提交任何真实的 keystore 密钥证书或包含实际密码的 `keystore.properties`。
+- 新增依赖时应优先写入 `gradle/libs.versions.toml`。
+- 进行代码验证时请统一使用 `ktfmt` 格式化命令。
 
-- ABI aggregation: `MobileAndroidAppAbiAggregationPlugin`.
-- Version increment: `MobileAndroidAppVersioningPlugin`.
-- Mapping backup: `MobileAndroidAppMappingPlugin`.
-- Tree-sitter registry and ktlint task integration: `MobileAndroidAppTreeSitterPlugin`.
-- Toolchain asset integrity: `verifyMobileToolchainAssets` related build logic.
-- Automatic registration of library modules `consumer-rules.pro`: `MobileAndroidLibraryPlugin`.
+## 验证
 
-## Prohibited Practices
-
-- Do not duplicate `assembleDebugAllAbi` or reimplement version incrementing.
-- Do not attach `syncTreeSitterQueries` to a regular build; it is a manual network task.
-- Do not redirect Gradle build artifacts to `LOCALAPPDATA/MobileIDE/gradle-out/**`.
-- Do not read, print, or commit actual `keystore.properties`, keystore, or CI secrets.
-- Adding third-party libraries must evaluate R8 keep rules, preferably written in the `consumer-rules.pro` of the importing module.
-- Do not restore or copy `docs/workflows/receive-release.yml` to `.github/workflows/`; the release chain for this private repository `repository_dispatch` is deprecated.
-
-## Verification
-
-- For documentation or script changes, at least check `git diff -- AGENTS.md .agents tools build-logic app/build.gradle.kts`.
-- For build logic changes, run the smallest target first: `:app:compileArm64DebugKotlin`.
-- For ABI or packaging changes, run the corresponding assemble.
-- For R8/Release changes, ensure the user explicitly accepts the version/mapping side effects before running the target release assemble, and check that keep-alive rules are in the correct module.
+- 任何涉及构建、配置及依赖的修改，至少运行对应渠道的编译任务（如 `./gradlew :app:compileFdroidDebugKotlin --console=plain`）以确保无编译失败。

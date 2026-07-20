@@ -1,52 +1,37 @@
 ---
 name: mobileide-ai-tools
-description: MobileIDE RikkaHub/AI integration development guide. Used for modifying the embedded RikkaHub entry point, sidebar chat container, model/channel boundaries, API key security boundaries, embedded compilation, or AI integration with the editor host.
+description: MobileIDE AI 智能编程助手指南。用于修改 AI 聊天面板、API 提供商支持（如 DeepSeek、OpenAI、Gemini 等）、流式 API 调用以及会话保存。
 ---
 
-# MobileIDE RikkaHub / AI Integration
+# MobileIDE AI 智能编程助手
 
-## Read First
+## 先读文件
 
-- `settings.gradle.kts`: `external/rikkahub` included build and `rikkahub-embedded` dependency substitution.
-- `app/build.gradle.kts`: Dependency of the main APK on `me.rerere.rikkahub:rikkahub-embedded`.
-- `app/src/main/java/com/scto/mobile/ide/ui/compose/components/DrawerContent.kt`.
-- `app/src/main/java/com/scto/mobile/ide/settings/SettingsActivity.kt`.
-- `external/rikkahub/embedded/**`.
-- `external/rikkahub/app/src/main/java/me/rerere/rikkahub/RikkaHubEmbeddedChatPane.kt`: Contains `RikkaHubEmbeddedChatPane` and `RikkaHubEmbeddedSettingsPane`.
-- `RikkaHub integration entry point in `docs/开发指南.md` (Development Guide).
-- `RikkaHub integration description in `docs/架构概览.md` (Architecture Overview).
-- `feature/help/src/main/assets/help/getting-started.md` and `known-issues.md`.
-- 
-## Current Facts
+- `app/src/main/java/com/scto/mobile/ide/ui/editor/aicoding/AICodingPanel.kt`：AI 聊天界面的 Compose UI 组件。
+- `app/src/main/java/com/scto/mobile/ide/ui/editor/aicoding/AICodingViewModel.kt`：核心业务逻辑。包含 API 调用、模型拉取、会话管理等。
+- `app/src/main/java/com/scto/mobile/ide/ui/editor/aicoding/AICodingState.kt`：AI 面板的显示与过渡状态。
+- `app/src/main/java/com/scto/mobile/ide/ui/editor/aicoding/MarkdownRenderer.kt`：AI 回复的 Markdown 渲染。
+- `app/src/main/java/com/scto/mobile/ide/ui/editor/aicoding/AICodingLocalizedText.kt`：AI 聊天助手的本地化文案辅助工具。
 
-- MobileIDE has removed the self-developed `feature:ai`, chat repository, channel repository, and tool calling system.
-- AI chat, models, channels, MCP, API Key, streaming responses, and stopping generation are maintained entirely by RikkaHub itself.
-- The MobileIDE main repository is only responsible for the embedded library dependency, sidebar entry point, settings entry point, host lifecycle, and help documentation.
-- RikkaHub source code is located in the `external/rikkahub` submodule; when modifying the submodule, you must commit and push the submodule changes first, and then commit the main repository gitlink.
-- Do not add API Key mirror storage, log output, configuration export, or crash attachments in the main repository.
- 
-## Modification Workflow
+## 功能设计
 
-1. Determine whether the change belongs to the host entry point or RikkaHub's internal capabilities first.
-2. For host entry point changes, prioritize checking `DrawerContent`, `SettingsActivity`, and embedded dependency boundaries.
-3. Capabilities such as chat, models, channels, MCP, API Keys, and stopping generation should reside in `external/rikkahub`.
-4. If user-visible copy (strings) is located in the MobileIDE main repository, it must use `core/i18n`; if it is located in the RikkaHub submodule, maintain it according to RikkaHub's own resource rules.
-5. When help documentation is involved, check and update `feature/help/src/main/assets/help/*.md` synchronously.
+- **API 连接**：基于 `OkHttpClient` 以流式请求（Streaming）与各大主流 AI 厂商（OpenAI, DeepSeek, Google Gemini, Anthropic, SiliconFlow 等）的兼容 API 进行交互。
+- **配置持久化**：API Key、Base URL 及模型等配置保存在 `ai_coding_settings` SharedPreferences 中。
+- **会话持久化**：历史聊天会话在私有文件系统下以 `ai_chat_sessions.json` 进行 JSON 读写保存。
+- **本地化**：通过 `AICodingLocalizedText` 进行宿主语言的即时转换，以在未配置 Key 时展示正确的错误提示与预设助理消息。
 
-## High-Risk Pitfalls
+## 修改流程
 
-- Do not restore the `feature:ai` or the legacy `AiTool`, `ToolRegistry`, and `AiChannelRepository` chains.
-- Do not store copies of RikkaHub API Keys in the main MobileIDE repository.
-- Do not move RikkaHub's internal page logic to app/.
-- Do not commit only the main repository gitlink while forgetting to push the `external/rikkahub` submodule commits.
-- Do not treat confirmed AGP internal deprecation warnings in the RikkaHub Problems report as compilation failures.
+1. 确认更改属于 UI 层面（如 `AICodingPanel` 布局）还是网络/底层接口（如 `AICodingViewModel` 内的 HTTP 组装或 JSON 解析）。
+2. 在 `AICodingViewModel` 中加入新的 API 提供商时，需在 `ApiProvider` 枚举中注册其名称、默认 Base URL 及默认模型。
+3. 如果修改了流式返回的 JSON 结构，需重点测试不同厂商（特别是 DeepSeek 的 reasoning_content 思考过程或 Google API）的兼容性。
 
-## Verification
+## 禁止事项
 
-```powershell
-./gradlew :rikkahub:embedded:compileDebugKotlin --console=plain
-./gradlew :app:compileArm64DebugKotlin --console=plain
-```
+- 严禁在日志中输出用户输入的 API Key。
+- 不要将庞大的 Markdown 解析放到 UI 主线程执行，避免打字机输出或流式回显时造成掉帧。
 
-- When only modifying the main repository documentation, at least check `git diff`, verify that the paths actually exist, and ensure help assets are synchronized.
-- When modifying RikkaHub source code, prioritize running the embedded compile; only run the app compile when the changes involve the main APK host entry point.
+## 验证
+
+- 运行 `./gradlew :app:compileArm64DebugKotlin --console=plain` 确保无编译错误。
+- 本地启动 AI 面板测试，配置正确的 API 密钥，验证流式回显与思考过程是否正常展现。
