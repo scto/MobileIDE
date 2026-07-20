@@ -233,8 +233,9 @@ object SetupWorker {
 
             val prootSrc = File(filesDir, "proot")
             if (prootSrc.exists()) {
-                prootSrc.copyTo(File(binDir, "proot"), overwrite = true)
-                File(binDir, "proot").setExecutable(true)
+                val prootFile = File(binDir, "proot")
+                prootSrc.copyTo(prootFile, overwrite = true)
+                setFileExecutable(prootFile)
             }
 
             // Copy terminal script assets to local/bin and make them executable
@@ -251,19 +252,20 @@ object SetupWorker {
             val lspDir = File(binDir, "lsp").apply { mkdirs() }
             val lspAssets = context.assets.list("terminal/lsp") ?: emptyArray()
             for (asset in lspAssets) {
-                forceCopyAsset(context, "terminal/lsp/$asset", File(lspDir, asset))
-                File(lspDir, asset).setExecutable(true)
+                val lspFile = File(lspDir, asset)
+                forceCopyAsset(context, "terminal/lsp/$asset", lspFile)
+                setFileExecutable(lspFile)
             }
 
-            File(binDir, "init-host").setExecutable(true)
-            File(binDir, "init").setExecutable(true)
-            File(binDir, "utils").setExecutable(true)
-            File(binDir, "setup").setExecutable(true)
-            File(binDir, "sandbox").setExecutable(true)
-            File(binDir, "universal_runner").setExecutable(true)
-            File(binDir, "termux-x11").setExecutable(true)
-            File(binDir, "ideenv").setExecutable(true)
-            File(binDir, "idesetup").setExecutable(true)
+            setFileExecutable(File(binDir, "init-host"))
+            setFileExecutable(File(binDir, "init"))
+            setFileExecutable(File(binDir, "utils"))
+            setFileExecutable(File(binDir, "setup"))
+            setFileExecutable(File(binDir, "sandbox"))
+            setFileExecutable(File(binDir, "universal_runner"))
+            setFileExecutable(File(binDir, "termux-x11"))
+            setFileExecutable(File(binDir, "ideenv"))
+            setFileExecutable(File(binDir, "idesetup"))
 
             distroDir.mkdirs()
             val sandboxLink = File(prefixDir, "local/sandbox")
@@ -376,6 +378,15 @@ object SetupWorker {
             }
         } catch (e: Exception) {
             LogCatcher.e("SetupWorker", "Failed to force copy asset $assetName", e)
+        }
+    }
+
+    private fun setFileExecutable(file: File) {
+        val success = file.setExecutable(true, false)
+        if (!success) {
+            try {
+                Runtime.getRuntime().exec(arrayOf("chmod", "755", file.absolutePath)).waitFor()
+            } catch (_: Exception) {}
         }
     }
 

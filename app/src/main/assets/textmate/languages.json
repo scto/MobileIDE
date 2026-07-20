@@ -190,7 +190,7 @@
     {
       "grammar": "textmate/objective-c/syntaxes/objective-c++.tmLanguage.json",
       "name": "objective-cpp",
-      "scopeName": "source.objc++",
+      "scopeName": "source.objcpp",
       "languageConfiguration": "textmate/objective-c/language-configuration.json"
     },
     {

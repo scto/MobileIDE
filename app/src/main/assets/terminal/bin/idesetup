@@ -1,0 +1,371 @@
+#!/bin/bash
+
+set -eu
+
+Color_Off='\033[0m'
+Black='\033[0;30m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+Blue='\033[0;34m'
+Purple='\033[0;35m'
+Cyan='\033[0;36m'
+White='\033[0;37m'
+Orange="\e[38;5;208m"
+
+yes='^[Yy][Ee]?[Ss]?$'
+
+print_info() {
+    printf "${Blue}$1$Color_Off\n"
+}
+
+print_err() {
+    printf "${Red}$1$Color_Off\n"
+}
+
+print_warn() {
+    printf "${Orange}$1$Color_Off\n"
+}
+
+print_success() {
+    printf "${Green}$1$Color_Off\n"
+}
+
+print_help() {
+    echo "MobileIDE build tools installer"
+    echo "This script helps you easily install build tools in MobileIDE."
+    echo ""
+    echo "Usage:"
+    echo "${0} -s 36.0.1 -c -j 17"
+    echo "This will install Android SDK 36.0.1 with command line tools and JDK 17."
+    echo ""
+    echo "Options :"
+    echo "-i   Set the installation directory. Defaults to \$HOME."
+    echo "-s   Android SDK version to download."
+    echo "-c   Download Android SDK with command line tools."
+    echo "-m   Manifest file URL. Defaults to 'manifest.json' in 'mobileide-tools' GitHub repository."
+    echo "-j   OpenJDK version to install. Values can be '17' or '21'"
+    echo ""
+    echo "For testing purposes:"
+    echo "-a   CPU architecture. Extracted using 'uname -m' by default."
+    echo "-p   Package manager. Defaults to 'apt'."
+    echo "-l   Name of curl package that will be installed before starting installation process. Defaults to 'curl'."
+    echo ""
+    echo "-h   Prints this message."
+}
+
+download_and_extract() {
+    # Display name to use in print messages
+    name=$1
+
+    # URL to download from
+    url=$2
+
+    # Directory in which the downloaded archive will be extracted
+    dir=$3
+
+    # Destination path for downloading the file
+    dest=$4
+
+    if [ -L "$dir" ]; then
+        local_target=$(readlink -f "$dir" || readlink "$dir")
+        mkdir -p "$local_target"
+    fi
+
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+
+    cd "$dir" || { print_err "Failed to change directory to $dir"; exit 1; }
+
+    do_download=true
+    if [ -f $dest ]; then
+        name=$(basename $dest)
+        print_info "File ${name} already exists."
+        if is_yes "Do you want to skip the download process?"; then
+            do_download=false
+        fi
+        echo ""
+    fi
+
+    if [ "$do_download" = "true" ]; then
+        print_info "Downloading $name..."
+        curl -L -o $dest $url  --http1.1
+        print_success "$name has been downloaded."
+        echo ""
+    fi
+
+    if [ ! -f $dest ]; then
+        print_err "The downloaded file $name does not exist. Cannot proceed..."
+        exit 1
+    fi
+
+    # Extract the downloaded archive
+    print_info "Extracting downloaded archive..."
+    tar --no-same-owner --no-same-permissions -xvJf $dest
+    print_info "Extracted successfully"
+
+    echo ""
+
+    # Delete the downloaded file
+    rm -vf $dest
+
+    # cd into the previous working directory
+    cd -
+}
+
+is_yes() {
+    msg=$1
+
+    printf "$msg ([y]es/[n]o): "
+    read ans
+
+    if [[ "$ans" =~ $yes ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
+download_comp() {
+    nm=$1
+    jq_query=$2
+    mdir=$3
+    dname=$4
+
+    # Extract the Android SDK URL
+    print_info "Extracting URL for $nm from manifest..."
+    url=$(jq -r "${jq_query}" $downloaded_manifest)
+    
+    if [ "$url" = "null" ] || [ -z "$url" ]; then
+        print_warn "URL for $nm not found in manifest. Skipping..."
+        echo ""
+        return
+    fi
+    
+    print_success "Found URL: $url"
+    echo ""
+
+    # Download and extract the Android SDK build tools
+    download_and_extract "$nm" "$url" "$mdir" "$mdir/$dname.tar.xz"
+}
+
+arch=$(uname -m)
+install_dir=$HOME
+sdkver_org=36.0.1
+with_cmdline=false
+manifest="https://raw.githubusercontent.com/scto/mobileide-tools/main/manifest.json"
+aptm="apt"
+apt_curl="curl"
+jdk_version="17"
+
+OPTIND=1
+while getopts "uch?i:s:j:m:a:p:l:" opt; do
+  case "$opt" in
+    h|\?)
+      print_help
+      exit 0
+      ;;
+    i) install_dir=$OPTARG
+      ;;
+    s) sdkver_org=$OPTARG
+      ;;
+    c) with_cmdline=true
+      ;;
+    m) manifest=$OPTARG
+      ;;
+    a) arch=$OPTARG
+      ;;
+    p) aptm=$OPTARG
+      ;;
+    l) apt_curl=$OPTARG
+      ;;
+    j) jdk_version=$OPTARG
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+[ "${1:-}" = "--" ] && shift
+
+if [ "$arch" = "armv7l" ]; then
+    arch="arm"
+fi
+
+# 64-bit CPU in 32-bit mode
+if [ "$arch" = "armv8l" ]; then
+    arch="arm"
+fi
+
+if [ "$jdk_version" != "17" ] && [ "$jdk_version" != "21" ]; then
+    print_err "Invalid JDK version '$jdk_version'. Value can be '17' or '21'."
+    exit 1
+fi
+
+if [ "$jdk_version" == "21" ]; then
+    print_warn "OpenJDK 21 support in MobileIDE is experimental. It may or may not work properly."
+    print_warn "Also, OpenJDK 21 is only supported in Gradle v8.4 and newer. Older versions of Gradle will NOT work!"
+    if ! is_yes "Do you still want to install OpenJDK 21?"; then
+        jdk_version="17"
+        print_info="OpenJDK version has been reset to '17'"
+    fi
+fi
+
+apts="$apt_curl jq tar"
+if [ "$aptm" = "apt" ]; then
+    apts+=" xz-utils"
+else
+    apts+=" xz"
+fi
+
+# Ask the user whether 'git' should be installed as well
+if is_yes "Do you want to install git?"; then
+    apts+=" git"
+fi
+
+# Ask the user whether 'openssh' should be installed as well
+if is_yes "Do you want to install openssh?"; then
+    if [ "$aptm" = "apt" ]; then
+        apts+=" openssh-client openssh-server"
+    else
+        apts+=" openssh"
+    fi
+fi
+
+if [ "$aptm" = "apt" ]; then
+    apt_exec="apt-get"
+else
+    apt_exec="$aptm"
+fi
+
+if [ ! command -v $apt_exec &> /dev/null ]; then
+    print_err "'$apt_exec' command not found. Try installing 'termux-tools' and '$apt_exec'."
+    exit 1
+fi
+
+# Update repositories and packages
+print_info "Update packages..."
+$apt_exec update && $apt_exec upgrade -y
+
+# Install required packages
+print_info "Installing required packages.."
+$apt_exec install $apts -y
+print_success "Packages installed"
+echo ""
+
+if [ ! -f $install_dir ]; then
+    print_info "Installation directory does not exist. Creating directory..."
+    mkdir -p $install_dir
+fi
+
+# Download the manifest.json file
+print_info "Downloading manifest file..."
+downloaded_manifest="$install_dir/manifest.json"
+curl -s -L -o $downloaded_manifest $manifest
+print_success "Manifest file downloaded"
+echo ""
+
+print_info "Available Android SDK Versions:"
+# Parse keys from the manifest for the current architecture
+versions=($(jq -r ".build_tools.${arch} | keys[]" $downloaded_manifest | sort -r))
+for i in "${!versions[@]}"; do
+    v="${versions[$i]}"
+    v="${v#_}"
+    v="${v//_/.}"
+    echo "  [$i] $v"
+done
+
+echo ""
+read -p "Select the Android SDK version to install (0-$((${#versions[@]}-1))) [0]: " sel
+if [ -z "$sel" ]; then
+    sel=0
+fi
+selected_raw="${versions[$sel]}"
+selected_clean="${selected_raw#_}"
+sdkver_org="${selected_clean//_/.}"
+sdk_version="${selected_raw}"
+echo ""
+
+echo "------------------------------------------"
+echo "Installation directory    : ${install_dir}"
+echo "SDK version               : ${sdkver_org}"
+echo "JDK version               : ${jdk_version}"
+echo "With command line tools   : ${with_cmdline}"
+echo "Extra packages            : ${apts}"
+echo "CPU architecture          : ${arch}"
+echo "------------------------------------------"
+
+if ! is_yes "Confirm configuration" ; then
+    print_err "Aborting..."
+    exit 1
+fi
+
+# Install the Android SDK
+download_comp "Android SDK" ".android_sdk" $install_dir "android-sdk"
+
+BASE_VERSION="_34_0_4"
+
+# Always install base versions (34.0.4)
+download_comp "Android SDK Build Tools (Base 34.0.4)" ".build_tools | .${arch} | .${BASE_VERSION}" "$install_dir/android-sdk" "android-sdk-build-tools-base"
+download_comp "Android SDK Platform Tools (Base 34.0.4)" ".platform_tools | .${arch} | .${BASE_VERSION}" "$install_dir/android-sdk" "android-sdk-platform-tools-base"
+
+# If the selected version is different, install it over the base versions
+if [ "$sdk_version" != "$BASE_VERSION" ]; then
+    download_comp "Android SDK Build Tools ($sdkver_org)" ".build_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-build-tools"
+    download_comp "Android SDK Platform Tools ($sdkver_org)" ".platform_tools | .${arch} | .${sdk_version}" "$install_dir/android-sdk" "android-sdk-platform-tools"
+fi
+
+if [ "$with_cmdline" = true ]; then
+    # Install the Command Line tools
+    download_comp "Command-line tools" ".cmdline_tools" "$install_dir/android-sdk" "cmdline-tools"
+fi
+
+# Install JDK
+if [ "$aptm" = "apk" ]; then
+    pkg_name="openjdk$jdk_version"
+else
+    pkg_name="openjdk-$jdk_version-jdk"
+fi
+print_info "Installing package: '$pkg_name'"
+$apt_exec install "$pkg_name" -y
+print_info "JDK $jdk_version has been installed."
+
+if command -v javac >/dev/null 2>&1; then
+    jdk_dir=$(dirname $(dirname $(readlink -f $(which javac))))
+else
+    jdk_dir=""
+    for d in /usr/lib/jvm/java-${jdk_version}-openjdk*; do
+        if [ -d "$d" ]; then
+            jdk_dir="$d"
+            break
+        fi
+    done
+    if [ -z "$jdk_dir" ]; then
+        jdk_dir="/usr/lib/jvm/java-${jdk_version}-openjdk-${arch}"
+    fi
+fi
+
+print_info "Updating mobileide-environment.properties..."
+print_info "JAVA_HOME=$jdk_dir"
+echo ""
+props_dir="$ROOT/etc"
+props="$props_dir/mobileide-environment.properties"
+
+if [ ! -d $props_dir ]; then
+    mkdir -p $props_dir
+fi
+
+if [ ! -e $props ]; then
+    printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\nGRADLE_USER_HOME=\$HOME/.gradle\nAAPT2_HOME=/.mobileide\n" > $props
+    print_success "Properties file updated successfully!"
+else
+    if is_yes "$props file already exists. Would you like to overwrite it?"; then
+        printf "JAVA_HOME=$jdk_dir\nANDROID_SDK_ROOT=$install_dir/android-sdk\nGRADLE_USER_HOME=\$HOME/.gradle\nAAPT2_HOME=/.mobileide\n" > $props
+        print_success "Properties file updated successfully!"
+    else
+        print_err "Manually edit $ROOT/etc/mobileide-environment.properties file and set JAVA_HOME, ANDROID_SDK_ROOT, GRADLE_USER_HOME and AAPT2_HOME."
+    fi
+fi
+
+rm -vf $downloaded_manifest
+print_success "Downloads completed. You are ready to go!"
