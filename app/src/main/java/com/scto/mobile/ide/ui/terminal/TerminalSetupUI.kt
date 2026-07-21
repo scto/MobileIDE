@@ -52,6 +52,9 @@ fun ToolchainSelectionDialog(
             ToolchainItem("build-tools-33.0.2", "build-tools 33.0.2", isRecommended = false, category = "Build-Tools"),
             ToolchainItem("build-tools-33.0.1", "build-tools 33.0.1", isRecommended = false, category = "Build-Tools"),
             ToolchainItem("build-tools-32.0.0", "build-tools 32.0.0", isRecommended = false, category = "Build-Tools"),
+            // Native & Build Utilities
+            ToolchainItem("cmake", "CMake", isRecommended = false, category = "Native & Build Utilities"),
+            ToolchainItem("build-essential", "GNU Build-Essential & Git", isRecommended = true, category = "Native & Build Utilities"),
         )
     }
 

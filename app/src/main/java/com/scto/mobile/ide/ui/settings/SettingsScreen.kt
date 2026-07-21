@@ -405,15 +405,6 @@ fun SettingsScreen(
                 )
             }
 
-            item(key = "build_settings") {
-                SimpleSettingsCard(
-                    icon = Icons.Outlined.Build,
-                    title = stringResource(R.string.settings_build_title),
-                    subtitle = stringResource(R.string.settings_build_summary),
-                    onClick = { navController.navigate("settings/build") },
-                )
-            }
-
             item(key = "extension_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Extension,

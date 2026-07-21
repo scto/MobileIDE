@@ -397,6 +397,14 @@ object SetupWorker {
                         packages.add("build-essential")
                     }
                 }
+                tool == "cmake" -> packages.add("cmake")
+                tool == "build-essential" -> {
+                    if (isApk) {
+                        packages.add("build-base git")
+                    } else {
+                        packages.add("build-essential git")
+                    }
+                }
             }
         }
 
