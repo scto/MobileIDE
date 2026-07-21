@@ -52,7 +52,7 @@ class TerminalBackEnd(
     }
     
     override fun onSessionFinished(finishedSession: TerminalSession) {
-
+        onSessionCloseRequested?.invoke(finishedSession)
     }
     
     override fun onCopyTextToClipboard(session: TerminalSession, text: String) {
@@ -180,6 +180,13 @@ class TerminalBackEnd(
     override fun copyModeChanged(copyMode: Boolean) {}
     
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
+        // Ctrl+D Shortcut: Immediately terminate active shell session and close UI window
+        if (e.isCtrlPressed && keyCode == KeyEvent.KEYCODE_D) {
+            session.finishIfRunning()
+            onSessionCloseRequested?.invoke(session)
+            return true
+        }
+
         val act = activity
         if (act != null) {
             if (KeyShortcutHandler.handle(keyCode, e, act)) {

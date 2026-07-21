@@ -86,6 +86,9 @@ import com.scto.mobile.ide.ui.editor.git.GitViewModel
 import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import com.scto.mobile.ide.ui.terminal.DistroManager
+import android.app.Activity
+import com.rk.lsp.LspRegistry
+import com.rk.lsp.LspServer
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -114,6 +117,49 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
     val gitViewModel: GitViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is Activity) return@remember ctx
+            ctx = ctx.baseContext
+        }
+        null
+    }
+
+    val activeTab = viewModel.openFiles.getOrNull(viewModel.activeFileIndex)
+    val activeFile = activeTab?.file
+
+    var missingLspServer by remember { mutableStateOf<LspServer?>(null) }
+    var dismissedLspFile by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(activeFile, viewModel.activeFileIndex) {
+        if (activeFile != null && activeFile.absolutePath != dismissedLspFile) {
+            withContext(Dispatchers.IO) {
+                val fileExt = activeFile.extension.lowercase()
+                if (fileExt.isNotEmpty()) {
+                    val allServers = LspRegistry.extensionServers + LspRegistry.externalServers
+                    val matchingServer = allServers.find { server ->
+                        server.supportedExtensions.contains(fileExt)
+                    }
+                    val isInstalled = matchingServer?.isInstalled(context) ?: true
+                    withContext(Dispatchers.Main) {
+                        if (matchingServer != null && !isInstalled) {
+                            missingLspServer = matchingServer
+                        } else {
+                            missingLspServer = null
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        missingLspServer = null
+                    }
+                }
+            }
+        } else {
+            missingLspServer = null
+        }
+    }
 
     // 初始化 Git (加载配置等)
     LaunchedEffect(projectPath) { gitViewModel.initialize(projectPath) }
@@ -686,6 +732,29 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
 
                         if (isAiEnabled) {
                             AICodingPanel()
+                        }
+
+                        // Sora-Editor LSP Overlay
+                        missingLspServer?.let { server ->
+                            val currentFileExt = activeFile?.extension.orEmpty()
+                            LspOverlayView(
+                                server = server,
+                                fileExtension = currentFileExt,
+                                onInstall = {
+                                    if (activity != null) {
+                                        server.install(activity)
+                                        navController.safeNavigate("terminal")
+                                    }
+                                    missingLspServer = null
+                                },
+                                onDismiss = {
+                                    dismissedLspFile = activeFile?.absolutePath
+                                    missingLspServer = null
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 8.dp, start = 12.dp, end = 12.dp)
+                            )
                         }
                     }
                 },
@@ -2086,3 +2155,79 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
         confirmButton = { TextButton(onClick = onDismissRequest) { Text("Schließen") } },
     )
 }
+
+@Composable
+fun LspOverlayView(
+    server: LspServer,
+    fileExtension: String,
+    onInstall: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            com.scto.mobile.ide.ui.settings.LspLogoBadge(languageName = server.languageName)
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(
+                        R.string.lsp_overlay_title,
+                        server.languageName
+                    ),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(
+                        R.string.lsp_overlay_message,
+                        server.serverName,
+                        fileExtension
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = onInstall,
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Download,
+                    contentDescription = stringResource(R.string.action_install),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.action_install),
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.action_close),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+

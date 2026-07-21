@@ -532,4 +532,10 @@
     <string name="about_developer_role_localization">本地化</string>
     <string name="about_developer_desc_language">英文翻译和维护</string>
     <string name="file_tree_remember_expanded_states">记住文件夹展开状态</string>
+    <string name="settings_lsp_servers_title">LSP 语言服务</string>
+    <string name="action_update">更新</string>
+    <string name="lsp_status_installed">已安装</string>
+    <string name="lsp_status_not_installed">未安装</string>
+    <string name="lsp_overlay_title">%1$s 语言服务</string>
+    <string name="lsp_overlay_message">适用于 .%2$s 文件的 %1$s 语言服务未安装。是否立即安装？</string>
 </resources>

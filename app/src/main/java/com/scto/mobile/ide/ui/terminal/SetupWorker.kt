@@ -29,10 +29,19 @@ data class SetupState(
     val downloadedBytes: Long = 0L,
     val totalBytes: Long = -1L,
     val isSuccess: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val logs: List<String> = emptyList(),
+    val startTimeMs: Long = 0L,
+    val currentStep: Int = 0,
+    val totalSteps: Int = 5,
+    val showToolchainDialog: Boolean = false
 ) {
     val percentage: Float
-        get() = if (totalBytes > 0L) (downloadedBytes.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f) else -1f
+        get() = when {
+            totalBytes > 0L -> (downloadedBytes.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f)
+            totalSteps > 0 && currentStep > 0 -> (currentStep.toFloat() / totalSteps.toFloat()).coerceIn(0f, 1f)
+            else -> -1f
+        }
 }
 
 object SetupWorker {
@@ -341,7 +350,8 @@ object SetupWorker {
                     if (cleanLine.isNotEmpty()) {
                         LogCatcher.i("SetupWorker", "[setup.sh] $cleanLine")
                         withContext(Dispatchers.Main) { 
-                            _setupState.value = _setupState.value.copy(status = cleanLine)
+                            val currentLogs = _setupState.value.logs + cleanLine
+                            _setupState.value = _setupState.value.copy(status = cleanLine, logs = currentLogs)
                         }
                     }
                 }
@@ -354,6 +364,109 @@ object SetupWorker {
 
             if (sandboxTar.exists()) {
                 sandboxTar.delete()
+            }
+
+            // Post-Install Trigger: Pause setup flow and prompt user for toolchain selection
+            withContext(Dispatchers.Main) {
+                _setupState.value = _setupState.value.copy(
+                    showToolchainDialog = true,
+                    status = "Basis-System installiert. Bitte Entwicklungstools wählen.",
+                    currentStep = 4
+                )
+            }
+        }
+    }
+
+    fun dismissToolchainDialog() {
+        _setupState.value = _setupState.value.copy(showToolchainDialog = false)
+    }
+
+    fun generateToolchainCommand(selectedTools: Set<String>, distro: String): String {
+        val packages = mutableListOf<String>()
+        val isApk = distro.equals("alpine", ignoreCase = true)
+
+        for (tool in selectedTools) {
+            when {
+                tool == "openjdk-17" -> packages.add(if (isApk) "openjdk17" else "openjdk-17-jdk")
+                tool == "openjdk-21" -> packages.add(if (isApk) "openjdk21" else "openjdk-21-jdk")
+                tool == "openjdk-24" -> packages.add(if (isApk) "openjdk24" else "openjdk-24-jdk")
+                tool.startsWith("build-tools") -> {
+                    if (isApk) {
+                        packages.add("build-base")
+                    } else {
+                        packages.add("build-essential")
+                    }
+                }
+            }
+        }
+
+        if (packages.isEmpty()) return "echo 'Keine Entwicklungstools ausgewählt.'"
+
+        return if (isApk) {
+            "apk update && apk add --no-cache ${packages.joinToString(" ")}"
+        } else {
+            "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y ${packages.joinToString(" ")}"
+        }
+    }
+
+    suspend fun runToolchainInstallation(context: Context, selectedTools: Set<String>) {
+        withContext(Dispatchers.IO) {
+            _setupState.value = _setupState.value.copy(
+                showToolchainDialog = false,
+                status = "Installiere ausgewählte Entwicklungstools...",
+                currentStep = 5
+            )
+            val distroName = getDistroName(context)
+            val cmd = generateToolchainCommand(selectedTools, distroName)
+            
+            val filesDir = context.filesDir
+            val prefixDir = filesDir.parentFile!!
+            val binDir = File(prefixDir, "local/bin")
+            val libDir = File(prefixDir, "local/lib")
+            val nativeLibDir = context.applicationInfo.nativeLibraryDir
+            val libProot = File(nativeLibDir, "libproot.so")
+            val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
+
+            val initHostScript = File(binDir, "init-host")
+            if (initHostScript.exists()) {
+                val pb = ProcessBuilder("sh", initHostScript.absolutePath, "bash", "-c", cmd)
+                val pbEnv = pb.environment()
+                pbEnv["PATH"] = "${System.getenv("PATH")}:/sbin:${binDir.absolutePath}"
+                pbEnv["HOME"] = "/home"
+                pbEnv["TERM"] = "xterm-256color"
+                pbEnv["LANG"] = "C.UTF-8"
+                pbEnv["PREFIX"] = prefixDir.absolutePath
+                pbEnv["LOCAL"] = "${prefixDir.absolutePath}/local"
+                pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
+                pbEnv["PROOT"] = prootExec
+                pbEnv["PROOT_EXEC"] = prootExec
+                pbEnv["TMPDIR"] = context.cacheDir.absolutePath
+                pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
+                pb.redirectErrorStream(true)
+                try {
+                    val process = pb.start()
+                    val ansiRegex = Regex("\u001B\\[[;\\d]*[a-zA-Z]")
+                    process.inputStream.bufferedReader().use { reader ->
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
+                            if (cleanLine.isNotEmpty()) {
+                                withContext(Dispatchers.Main) {
+                                    val newLogs = _setupState.value.logs + cleanLine
+                                    _setupState.value = _setupState.value.copy(status = cleanLine, logs = newLogs)
+                                }
+                            }
+                        }
+                    }
+                    process.waitFor()
+                } catch (e: Exception) {
+                    LogCatcher.e("SetupWorker", "Toolchain installation failed", e)
+                }
+            }
+
+            File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").createNewFile()
+            withContext(Dispatchers.Main) {
+                _setupState.value = SetupState(isActive = false, isSuccess = true)
             }
         }
     }

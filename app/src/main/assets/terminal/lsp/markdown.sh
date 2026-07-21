@@ -15,7 +15,7 @@ install() {
   npm install -g --prefix /usr vscode-langservers-extracted
 
   info 'Markdown language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -24,7 +24,7 @@ uninstall() {
     npm uninstall -g --prefix /usr vscode-langservers-extracted
     info 'Extracted VSCode language servers uninstalled successfully.'
     uninstall_nodejs
-    exit 0
+    read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
   fi
 }
 
@@ -32,7 +32,7 @@ update() {
   info 'Updating extracted VSCode language servers...'
   npm update -g --prefix /usr vscode-langservers-extracted
   info 'Extracted VSCode language servers updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in

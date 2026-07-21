@@ -213,3 +213,21 @@ tasks.register<Zip>("createFinalZip") {
     destinationDirectory.set(File(rootDir, "output"))
 }
 
+// --------------- copy final zip to MobileIDE assets -----------------
+
+val copyPluginToAssets by tasks.registering(Copy::class) {
+    outputs.upToDateWhen { false }
+    description = "Copies the generated plugin ZIP archive to MobileIDE's assets directory."
+    group = "build"
+    dependsOn("createFinalZip")
+
+    val zipTask = tasks.named<Zip>("createFinalZip").get()
+    from(zipTask.archiveFile)
+    into(File(rootDir, "../../app/src/main/assets/bundled_plugins"))
+}
+
+tasks.named("createFinalZip").configure {
+    finalizedBy(copyPluginToAssets)
+}
+
+

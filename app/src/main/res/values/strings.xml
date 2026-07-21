@@ -594,4 +594,9 @@
     <string name="permission_denied">Permission denied</string>
     <string name="settings_theme_summary">Change app theme, colors, and layout</string>
     <string name="settings_lsp_servers_title">LSP Servers</string>
+    <string name="action_update">Update</string>
+    <string name="lsp_status_installed">Installed</string>
+    <string name="lsp_status_not_installed">Not Installed</string>
+    <string name="lsp_overlay_title">%1$s Language Server</string>
+    <string name="lsp_overlay_message">LSP Server %1$s for .%2$s files is not installed. Install now?</string>
 </resources>

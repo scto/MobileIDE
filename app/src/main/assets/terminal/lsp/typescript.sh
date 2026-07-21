@@ -14,7 +14,7 @@ install() {
   info "Installing TypeScript language server..."
   npm install -g --prefix /usr typescript typescript-language-server
   info 'TypeScript language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -22,14 +22,14 @@ uninstall() {
   npm uninstall -g --prefix /usr typescript typescript-language-server
   info 'TypeScript language server uninstalled successfully.'
   uninstall_nodejs
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
   info "Updating TypeScript language server..."
   npm update -g --prefix /usr typescript typescript-language-server
   info 'TypeScript language server updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in

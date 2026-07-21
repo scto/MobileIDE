@@ -316,73 +316,64 @@ fun LspServerRow(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = if (item.isInstalled) "Installiert" else "Nicht installiert",
+                text = if (item.isInstalled) stringResource(R.string.lsp_status_installed) else stringResource(R.string.lsp_status_not_installed),
                 style = MaterialTheme.typography.labelSmall,
                 color = if (item.isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             if (activity != null) {
-                if (!item.isInstalled) {
-                    IconButton(
-                        onClick = {
-                            item.server.install(activity)
+                // [INSTALL] Button
+                IconButton(
+                    onClick = {
+                        item.server.install(activity)
+                        navController.safeNavigate("terminal")
+                        onRefresh()
+                    },
+                    enabled = !item.isInstalled
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = stringResource(R.string.action_install),
+                        tint = if (!item.isInstalled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    )
+                }
+
+                // [UPDATE] Button
+                IconButton(
+                    onClick = {
+                        item.server.update(activity)
+                        navController.safeNavigate("terminal")
+                        onRefresh()
+                    },
+                    enabled = item.isInstalled
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.action_update),
+                        tint = if (item.isInstalled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    )
+                }
+
+                // [UNINSTALL] Button
+                IconButton(
+                    onClick = {
+                        if (item.server is ExternalLspServer) {
+                            LspRegistry.removeExternalServer(activity, item.server)
+                        } else {
+                            item.server.uninstall(activity)
                             navController.safeNavigate("terminal")
-                            onRefresh()
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Download,
-                            contentDescription = "Installieren",
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                } else {
-                    if (item.isUpdatable) {
-                        IconButton(
-                            onClick = {
-                                item.server.update(activity)
-                                navController.safeNavigate("terminal")
-                                onRefresh()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = "Aktualisieren",
-                                tint = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                    }
-                    if (item.server.canBeUninstalled && item.server !is ExternalLspServer) {
-                        IconButton(
-                            onClick = {
-                                item.server.uninstall(activity)
-                                navController.safeNavigate("terminal")
-                                onRefresh()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Deinstallieren",
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
-                    if (item.server is ExternalLspServer) {
-                        IconButton(
-                            onClick = {
-                                LspRegistry.removeExternalServer(activity, item.server)
-                                onRefresh()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Deinstallieren",
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
+                        onRefresh()
+                    },
+                    enabled = item.isInstalled && item.server.canBeUninstalled
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.action_uninstall),
+                        tint = if (item.isInstalled && item.server.canBeUninstalled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    )
                 }
             }
 

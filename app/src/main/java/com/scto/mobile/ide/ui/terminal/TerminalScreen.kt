@@ -206,6 +206,21 @@ fun TerminalScreen(navController: NavController) {
         SetupWorker.startSetupIfNeeded(context)
     }
 
+    var isLogBottomSheetExpanded by remember { mutableStateOf(false) }
+
+    if (setupState.showToolchainDialog) {
+        ToolchainSelectionDialog(
+            onConfirmSelection = { selectedTools ->
+                coroutineScope.launch {
+                    SetupWorker.runToolchainInstallation(context, selectedTools)
+                }
+            },
+            onDismiss = {
+                SetupWorker.dismissToolchainDialog()
+            }
+        )
+    }
+
     if (setupError != null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -224,12 +239,26 @@ fun TerminalScreen(navController: NavController) {
             }
         }
     } else if (!isEnvironmentReady) {
-        // Wait for background setup
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Interactive Setup View with Expandable Log BottomSheet
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
                 CircularProgressIndicator()
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Warte auf Terminal-Setup...", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = setupState.status.ifEmpty { "Terminal-Setup wird ausgeführt..." },
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                TerminalSetupBottomSheet(
+                    setupState = setupState,
+                    isExpanded = isLogBottomSheetExpanded,
+                    onExpandToggle = { isLogBottomSheetExpanded = !isLogBottomSheetExpanded }
+                )
             }
         }
         return

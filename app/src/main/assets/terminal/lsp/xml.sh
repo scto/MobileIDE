@@ -18,7 +18,7 @@ install() {
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -32,7 +32,7 @@ uninstall() {
     apt autoremove -y
     info "OpenJDK uninstalled successfully."
   fi
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
@@ -42,7 +42,7 @@ update() {
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in

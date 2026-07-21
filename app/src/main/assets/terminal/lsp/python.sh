@@ -36,7 +36,7 @@ install() {
   info "Installing Pyright language server..."
   npm install -g --prefix /usr pyright
   info 'Pyright language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -44,14 +44,14 @@ uninstall() {
   npm uninstall -g --prefix /usr pyright
   info 'Pyright language server uninstalled successfully.'
   uninstall_nodejs
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
   info "Updating Pyright language server..."
   npm update -g --prefix /usr pyright
   info 'Pyright language server updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in
