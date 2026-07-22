@@ -37,85 +37,143 @@ data class ToolchainItem(
 )
 
 @Composable
-fun ToolchainSelectionDialog(
-    onConfirmSelection: (Set<String>) -> Unit,
+fun JdkSelectionDialog(
+    onConfirmSelection: (String) -> Unit,
     onDismiss: () -> Unit = {}
 ) {
-    val items = remember {
+    val versions = remember {
         listOf(
-            // OpenJDK
-            ToolchainItem("openjdk-17", "openjdk-17", isRecommended = false, category = "OpenJDK"),
-            ToolchainItem("openjdk-21", "openjdk-21", isRecommended = true, category = "OpenJDK"),
-            ToolchainItem("openjdk-24", "openjdk-24", isRecommended = false, category = "OpenJDK"),
-            // Build-Tools
-            ToolchainItem("build-tools-36.0.1-RC", "build-tools 36.0.1-RC", isRecommended = false, category = "Build-Tools"),
-            ToolchainItem("build-tools-36.0.1", "build-tools 36.0.1", isRecommended = false, category = "Build-Tools"),
-            ToolchainItem("build-tools-35.0.1", "build-tools 35.0.1", isRecommended = true, category = "Build-Tools"),
-            ToolchainItem("build-tools-34.0.0", "build-tools 34.0.0", isRecommended = false, category = "Build-Tools"),
-            ToolchainItem("build-tools-33.0.2", "build-tools 33.0.2", isRecommended = false, category = "Build-Tools"),
-            ToolchainItem("build-tools-33.0.1", "build-tools 33.0.1", isRecommended = false, category = "Build-Tools"),
-            ToolchainItem("build-tools-32.0.0", "build-tools 32.0.0", isRecommended = false, category = "Build-Tools"),
-            // Native & Build Utilities
-            ToolchainItem("cmake", "CMake", isRecommended = false, category = "Native & Build Utilities"),
-            ToolchainItem("build-essential", "GNU Build-Essential & Git", isRecommended = true, category = "Native & Build Utilities"),
+            ToolchainItem("openjdk-17", "OpenJDK 17", isRecommended = false, category = "Java Development Kit"),
+            ToolchainItem("openjdk-21", "OpenJDK 21", isRecommended = true, category = "Java Development Kit"),
+            ToolchainItem("openjdk-24", "OpenJDK 24", isRecommended = false, category = "Java Development Kit")
         )
     }
-
-    // Default-State: Recommended packages pre-checked
-    val selectedIds = remember {
-        mutableStateSetOf<String>().apply {
-            addAll(items.filter { it.isRecommended }.map { it.id })
-        }
-    }
+    var selectedId by remember { mutableStateOf("openjdk-21") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Entwicklungstools auswählen",
+                text = "OpenJDK-Version auswählen",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val grouped = items.groupBy { it.category }
-                grouped.forEach { (category, categoryItems) ->
-                    item {
-                        Text(
-                            text = category,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                Text(
+                    text = "Bitte wähle die gewünschte Java Development Kit Version:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                versions.forEach { item ->
+                    val isSelected = selectedId == item.id
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { selectedId = item.id }
+                            .padding(vertical = 8.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { selectedId = item.id }
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (item.isRecommended) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Empfohlen",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
-                    items(categoryItems) { item ->
-                        val isChecked = selectedIds.contains(item.id)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirmSelection(selectedId) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Weiter")
+            }
+        }
+    )
+}
+
+@Composable
+fun BuildToolsSelectionDialog(
+    onConfirmSelection: (String) -> Unit,
+    onDismiss: () -> Unit = {}
+) {
+    val versions = remember {
+        listOf(
+            ToolchainItem("build-tools-36.0.1-RC", "Build-Tools 36.0.1-RC", isRecommended = false, category = "Android Build-Tools"),
+            ToolchainItem("build-tools-36.0.1", "Build-Tools 36.0.1", isRecommended = false, category = "Android Build-Tools"),
+            ToolchainItem("build-tools-35.0.1", "Build-Tools 35.0.1", isRecommended = true, category = "Android Build-Tools"),
+            ToolchainItem("build-tools-34.0.0", "Build-Tools 34.0.0", isRecommended = false, category = "Android Build-Tools"),
+            ToolchainItem("build-tools-33.0.2", "Build-Tools 33.0.2", isRecommended = false, category = "Android Build-Tools"),
+            ToolchainItem("build-tools-32.0.0", "Build-Tools 32.0.0", isRecommended = false, category = "Android Build-Tools")
+        )
+    }
+    var selectedId by remember { mutableStateOf("build-tools-35.0.1") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Android Build-Tools auswählen",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Bitte wähle die gewünschte Android Build-Tools Version:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(versions) { item ->
+                        val isSelected = selectedId == item.id
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    if (isChecked) {
-                                        selectedIds.remove(item.id)
-                                    } else {
-                                        selectedIds.add(item.id)
-                                    }
-                                }
-                                .padding(vertical = 4.dp, horizontal = 4.dp),
+                                .clickable { selectedId = item.id }
+                                .padding(vertical = 6.dp, horizontal = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { checked ->
-                                    if (checked) selectedIds.add(item.id) else selectedIds.remove(item.id)
-                                }
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = { selectedId = item.id }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -126,11 +184,10 @@ fun ToolchainSelectionDialog(
                             if (item.isRecommended) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.primaryContainer,
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Text(
-                                        text = "Recommended",
+                                        text = "Empfohlen",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
@@ -144,7 +201,7 @@ fun ToolchainSelectionDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onConfirmSelection(selectedIds) },
+                onClick = { onConfirmSelection(selectedId) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Installieren")

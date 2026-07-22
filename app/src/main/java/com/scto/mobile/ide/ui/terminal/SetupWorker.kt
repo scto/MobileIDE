@@ -23,8 +23,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+sealed interface InstallState {
+    object Idle : InstallState
+    object InstallingRootfs : InstallState
+    object InstallingDistribution : InstallState
+    object AwaitingJdkSelection : InstallState
+    data class InstallingJdk(val version: String) : InstallState
+    object AwaitingBuildToolsSelection : InstallState
+    data class InstallingBuildTools(val version: String) : InstallState
+    object Success : InstallState
+    data class Error(val message: String) : InstallState
+}
+
 data class SetupState(
     val isActive: Boolean = false,
+    val installState: InstallState = InstallState.Idle,
     val status: String = "",
     val downloadedBytes: Long = 0L,
     val totalBytes: Long = -1L,
@@ -34,6 +47,8 @@ data class SetupState(
     val startTimeMs: Long = 0L,
     val currentStep: Int = 0,
     val totalSteps: Int = 5,
+    val selectedJdk: String = "openjdk-21",
+    val selectedBuildTools: String = "build-tools-35.0.1",
     val showToolchainDialog: Boolean = false
 ) {
     val percentage: Float
@@ -67,18 +82,53 @@ object SetupWorker {
     fun startSetupIfNeeded(context: Context) {
         if (isTerminalInstalled(context)) {
             if (!_setupState.value.isSuccess) {
-                _setupState.value = SetupState(isActive = false, isSuccess = true)
+                _setupState.value = SetupState(isActive = false, installState = InstallState.Success, isSuccess = true)
             }
             return
         }
         if (_setupState.value.isActive) return
         
-        // Present Toolchain Selection Dialog BEFORE download & setup starts
-        _setupState.value = SetupState(
-            isActive = false,
-            showToolchainDialog = true,
-            status = "Bitte Entwicklungstools wählen."
-        )
+        startSequentialSetup(context)
+    }
+
+    fun startSequentialSetup(context: Context) {
+        if (isTerminalInstalled(context)) {
+            _setupState.value = SetupState(isActive = false, installState = InstallState.Success, isSuccess = true)
+            return
+        }
+        if (_setupState.value.isActive) return
+
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            val startTime = System.currentTimeMillis()
+            try {
+                // 1. Rootfs Phase
+                _setupState.value = SetupState(
+                    isActive = true,
+                    installState = InstallState.InstallingRootfs,
+                    status = "Installiere Rootfs...",
+                    currentStep = 1,
+                    totalSteps = 5,
+                    startTimeMs = startTime,
+                    logs = listOf("Starte RootFS Download & Installation...")
+                )
+
+                prepareEnvironment(context)
+
+                // 3. Pause & Prompt JDK Selection
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.AwaitingJdkSelection,
+                    status = "Warte auf OpenJDK-Auswahl...",
+                    currentStep = 3
+                )
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Sequential setup failed", e)
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(e.message ?: "Setup-Fehler"),
+                    error = e.message ?: "Setup-Fehler"
+                )
+            }
+        }
     }
 
     suspend fun reinstallTerminal(
@@ -425,98 +475,129 @@ object SetupWorker {
         }
     }
 
-    suspend fun runToolchainInstallation(context: Context, selectedTools: Set<String>) {
-        withContext(Dispatchers.IO) {
-            val startTime = System.currentTimeMillis()
-            _setupState.value = SetupState(
-                isActive = true,
-                showToolchainDialog = false,
-                status = "Starte Terminal-Installation...",
-                startTimeMs = startTime,
-                logs = listOf("Starte Installations-Workflow..."),
-                currentStep = 1
-            )
-            
+    fun confirmJdkSelection(context: Context, jdkVersion: String) {
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Download container & prepare environment
-                prepareEnvironment(context)
-
-                // 2. Install selected development tools (OpenJDK, Build-Tools, etc.)
                 _setupState.value = _setupState.value.copy(
-                    status = "Installiere ausgewählte Entwicklungstools...",
+                    installState = InstallState.InstallingJdk(jdkVersion),
+                    selectedJdk = jdkVersion,
+                    status = "Installiere OpenJDK ($jdkVersion)...",
+                    logs = _setupState.value.logs + "Installiere OpenJDK $jdkVersion...",
+                    currentStep = 3
+                )
+
+                installSingleToolchainPackage(context, jdkVersion)
+
+                // Move to Phase 4: Build Tools Selection
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.AwaitingBuildToolsSelection,
+                    status = "Warte auf Build Tools-Auswahl...",
+                    currentStep = 4
+                )
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "JDK installation failed", e)
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(e.message ?: "JDK-Installation fehlgeschlagen"),
+                    error = e.message ?: "JDK-Installation fehlgeschlagen"
+                )
+            }
+        }
+    }
+
+    fun confirmBuildToolsSelection(context: Context, buildToolsVersion: String) {
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.InstallingBuildTools(buildToolsVersion),
+                    selectedBuildTools = buildToolsVersion,
+                    status = "Installiere Build Tools ($buildToolsVersion)...",
+                    logs = _setupState.value.logs + "Installiere Build Tools $buildToolsVersion...",
                     currentStep = 5
                 )
-                val distroName = getDistroName(context)
-                val cmd = generateToolchainCommand(selectedTools, distroName)
-                
+
+                installSingleToolchainPackage(context, buildToolsVersion)
+
+                // Phase 5: Completion & Persistent Settings
                 val filesDir = context.filesDir
                 val prefixDir = filesDir.parentFile!!
-                val binDir = File(prefixDir, "local/bin")
-                val libDir = File(prefixDir, "local/lib")
-                val nativeLibDir = context.applicationInfo.nativeLibraryDir
-                val libProot = File(nativeLibDir, "libproot.so")
-                val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
-
-                val initHostScript = File(binDir, "init-host")
-                if (initHostScript.exists()) {
-                    val pb = ProcessBuilder("sh", initHostScript.absolutePath, "bash", "-c", cmd)
-                    val pbEnv = pb.environment()
-                    pbEnv["PATH"] = "${System.getenv("PATH")}:/sbin:${binDir.absolutePath}"
-                    pbEnv["HOME"] = "/home"
-                    pbEnv["TERM"] = "xterm-256color"
-                    pbEnv["LANG"] = "C.UTF-8"
-                    pbEnv["PREFIX"] = prefixDir.absolutePath
-                    pbEnv["LOCAL"] = "${prefixDir.absolutePath}/local"
-                    pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
-                    pbEnv["PROOT"] = prootExec
-                    pbEnv["PROOT_EXEC"] = prootExec
-                    pbEnv["TMPDIR"] = context.cacheDir.absolutePath
-                    pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
-                    pb.redirectErrorStream(true)
-                    try {
-                        val process = pb.start()
-                        val ansiRegex = Regex("\u001B\\[[;\\d]*[a-zA-Z]")
-                        process.inputStream.bufferedReader().use { reader ->
-                            var line: String?
-                            while (reader.readLine().also { line = it } != null) {
-                                val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
-                                if (cleanLine.isNotEmpty()) {
-                                    withContext(Dispatchers.Main) {
-                                        val newLogs = _setupState.value.logs + cleanLine
-                                        _setupState.value = _setupState.value.copy(status = cleanLine, logs = newLogs)
-                                    }
-                                }
-                            }
-                        }
-                        process.waitFor()
-                    } catch (e: Exception) {
-                        LogCatcher.e("SetupWorker", "Toolchain installation failed", e)
-                    }
-                }
-
-                // 3. Persistent Status Signature & Marker File
                 File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").createNewFile()
+
                 context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
                     .edit()
                     .putBoolean("is_terminal_installed", true)
-                    .putBoolean("first_run_distro_selected", true)
+                    .putString("installed_openjdk_version", _setupState.value.selectedJdk)
+                    .putString("installed_build_tools_version", _setupState.value.selectedBuildTools)
                     .apply()
 
                 _setupState.value = SetupState(
                     isActive = false,
+                    installState = InstallState.Success,
                     isSuccess = true,
-                    status = "Terminal erfolgreich installiert!"
+                    status = "Installation erfolgreich!"
                 )
 
                 withContext(Dispatchers.Main) {
                     SessionManager.addNewSession(context)
                 }
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Terminal setup failed", e)
+                LogCatcher.e("SetupWorker", "Build Tools installation failed", e)
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
-                    error = e.message ?: "Installation fehlgeschlagen"
+                    installState = InstallState.Error(e.message ?: "Build-Tools-Installation fehlgeschlagen"),
+                    error = e.message ?: "Build-Tools-Installation fehlgeschlagen"
                 )
+            }
+        }
+    }
+
+    private suspend fun installSingleToolchainPackage(context: Context, toolName: String) {
+        val distroName = getDistroName(context)
+        val cmd = generateToolchainCommand(setOf(toolName), distroName)
+
+        val filesDir = context.filesDir
+        val prefixDir = filesDir.parentFile!!
+        val binDir = File(prefixDir, "local/bin")
+        val libDir = File(prefixDir, "local/lib")
+        val nativeLibDir = context.applicationInfo.nativeLibraryDir
+        val libProot = File(nativeLibDir, "libproot.so")
+        val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
+
+        val initHostScript = File(binDir, "init-host")
+        if (initHostScript.exists()) {
+            val pb = ProcessBuilder("sh", initHostScript.absolutePath, "bash", "-c", cmd)
+            val pbEnv = pb.environment()
+            pbEnv["PATH"] = "${System.getenv("PATH")}:/sbin:${binDir.absolutePath}"
+            pbEnv["HOME"] = "/home"
+            pbEnv["TERM"] = "xterm-256color"
+            pbEnv["LANG"] = "C.UTF-8"
+            pbEnv["PREFIX"] = prefixDir.absolutePath
+            pbEnv["LOCAL"] = "${prefixDir.absolutePath}/local"
+            pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
+            pbEnv["PROOT"] = prootExec
+            pbEnv["PROOT_EXEC"] = prootExec
+            pbEnv["TMPDIR"] = context.cacheDir.absolutePath
+            pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
+            pb.redirectErrorStream(true)
+            
+            try {
+                val process = pb.start()
+                val ansiRegex = Regex("\u001B\\[[;\\d]*[a-zA-Z]")
+                process.inputStream.bufferedReader().use { reader ->
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
+                        if (cleanLine.isNotEmpty()) {
+                            withContext(Dispatchers.Main) {
+                                val newLogs = _setupState.value.logs + cleanLine
+                                _setupState.value = _setupState.value.copy(status = cleanLine, logs = newLogs)
+                            }
+                        }
+                    }
+                }
+                process.waitFor()
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Toolchain package installation failed", e)
             }
         }
     }

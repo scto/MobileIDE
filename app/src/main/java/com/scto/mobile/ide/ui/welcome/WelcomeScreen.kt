@@ -247,6 +247,14 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                     monetTertiary = MaterialTheme.colorScheme.tertiary,
                 )
 
+                val setupState by SetupWorker.setupState.collectAsState()
+
+                LaunchedEffect(storageGranted) {
+                    if (storageGranted && !SetupWorker.isTerminalInstalled(context)) {
+                        SetupWorker.startSequentialSetup(context)
+                    }
+                }
+
                 // Content layer
                 HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().padding(paddingValues)) { page ->
                     when (page) {
@@ -280,6 +288,33 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                                 },
                             )
                     }
+                }
+
+                // Dialogs & Progress Overlay for Sequential Terminal Setup
+                when (setupState.installState) {
+                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingJdkSelection -> {
+                        com.scto.mobile.ide.ui.terminal.JdkSelectionDialog(
+                            onConfirmSelection = { jdk ->
+                                SetupWorker.confirmJdkSelection(context, jdk)
+                            }
+                        )
+                    }
+                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingBuildToolsSelection -> {
+                        com.scto.mobile.ide.ui.terminal.BuildToolsSelectionDialog(
+                            onConfirmSelection = { buildTools ->
+                                SetupWorker.confirmBuildToolsSelection(context, buildTools)
+                            }
+                        )
+                    }
+                    else -> {}
+                }
+
+                if (setupState.isActive) {
+                    com.scto.mobile.ide.ui.terminal.TerminalSetupOverlayWindow(
+                        setupState = setupState,
+                        onClearLogs = { SetupWorker.clearLogs() },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }

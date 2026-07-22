@@ -405,6 +405,25 @@ fun SettingsScreen(
                 )
             }
 
+            item(key = "terminal_info_settings") {
+                val isTerminalInstalled = generalPrefs.getBoolean("is_terminal_installed", false)
+                val installedJdk = generalPrefs.getString("installed_openjdk_version", "Nicht installiert") ?: "Nicht installiert"
+                val installedBuildTools = generalPrefs.getString("installed_build_tools_version", "Nicht installiert") ?: "Nicht installiert"
+
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Terminal,
+                    title = "Terminal & Toolchain Status",
+                    subtitle = if (isTerminalInstalled) "Installiert ($installedJdk, $installedBuildTools)" else "Nicht eingerichtet",
+                    onClick = {
+                        Toast.makeText(
+                            context,
+                            "Terminal: ${if (isTerminalInstalled) "Installiert" else "Nicht eingerichtet"}\nJDK: $installedJdk\nBuild-Tools: $installedBuildTools",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                )
+            }
+
             item(key = "extension_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Extension,

@@ -208,17 +208,22 @@ fun TerminalScreen(navController: NavController) {
 
     var isLogBottomSheetExpanded by remember { mutableStateOf(false) }
 
-    if (setupState.showToolchainDialog) {
-        ToolchainSelectionDialog(
-            onConfirmSelection = { selectedTools ->
-                coroutineScope.launch {
-                    SetupWorker.runToolchainInstallation(context, selectedTools)
+    when (setupState.installState) {
+        is InstallState.AwaitingJdkSelection -> {
+            JdkSelectionDialog(
+                onConfirmSelection = { jdk ->
+                    SetupWorker.confirmJdkSelection(context, jdk)
                 }
-            },
-            onDismiss = {
-                SetupWorker.dismissToolchainDialog()
-            }
-        )
+            )
+        }
+        is InstallState.AwaitingBuildToolsSelection -> {
+            BuildToolsSelectionDialog(
+                onConfirmSelection = { buildTools ->
+                    SetupWorker.confirmBuildToolsSelection(context, buildTools)
+                }
+            )
+        }
+        else -> {}
     }
 
     if (setupError != null) {
