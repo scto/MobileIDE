@@ -359,7 +359,11 @@ object SetupWorker {
             }
 
             // Execute setup.sh in the background to extract and install all tools
-            _setupState.value = _setupState.value.copy(status = "Extraktion und Installation wird gestartet...")
+            _setupState.value = _setupState.value.copy(
+                installState = InstallState.InstallingDistribution,
+                status = "Installiere Distribution...",
+                currentStep = 2
+            )
             val nativeLibDir = context.applicationInfo.nativeLibraryDir
             val libProot = File(nativeLibDir, "libproot.so")
             val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
@@ -481,7 +485,7 @@ object SetupWorker {
                 _setupState.value = _setupState.value.copy(
                     installState = InstallState.InstallingJdk(jdkVersion),
                     selectedJdk = jdkVersion,
-                    status = "Installiere OpenJDK ($jdkVersion)...",
+                    status = "Installiere OpenJDK...",
                     logs = _setupState.value.logs + "Installiere OpenJDK $jdkVersion...",
                     currentStep = 3
                 )
@@ -511,7 +515,7 @@ object SetupWorker {
                 _setupState.value = _setupState.value.copy(
                     installState = InstallState.InstallingBuildTools(buildToolsVersion),
                     selectedBuildTools = buildToolsVersion,
-                    status = "Installiere Build Tools ($buildToolsVersion)...",
+                    status = "Installiere Build Tools...",
                     logs = _setupState.value.logs + "Installiere Build Tools $buildToolsVersion...",
                     currentStep = 5
                 )

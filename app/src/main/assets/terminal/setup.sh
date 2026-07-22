@@ -27,19 +27,19 @@ ARGS="$ARGS -b /dev/urandom:/dev/random"
 ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $PRIVATE_DIR"
 
-if [ -e "/proc/self/fd" ]; then
+if [ -d "/proc/self/fd" ]; then
   ARGS="$ARGS -b /proc/self/fd:/dev/fd"
 fi
 
-if [ -e "/proc/self/fd/0" ]; then
+if [ -e "$(realpath /proc/self/fd/0 2>/dev/null)" ]; then
   ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
 fi
 
-if [ -e "/proc/self/fd/1" ]; then
+if [ -e "$(realpath /proc/self/fd/1 2>/dev/null)" ]; then
   ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
 fi
 
-if [ -e "/proc/self/fd/2" ]; then
+if [ -e "$(realpath /proc/self/fd/2 2>/dev/null)" ]; then
   ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
 fi
 

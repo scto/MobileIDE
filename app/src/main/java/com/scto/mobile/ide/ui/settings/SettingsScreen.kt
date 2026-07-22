@@ -405,21 +405,38 @@ fun SettingsScreen(
                 )
             }
 
-            item(key = "terminal_info_settings") {
+            item(key = "terminal_installed_setting") {
                 val isTerminalInstalled = generalPrefs.getBoolean("is_terminal_installed", false)
-                val installedJdk = generalPrefs.getString("installed_openjdk_version", "Nicht installiert") ?: "Nicht installiert"
-                val installedBuildTools = generalPrefs.getString("installed_build_tools_version", "Nicht installiert") ?: "Nicht installiert"
-
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Terminal,
-                    title = "Terminal & Toolchain Status",
-                    subtitle = if (isTerminalInstalled) "Installiert ($installedJdk, $installedBuildTools)" else "Nicht eingerichtet",
+                    title = "Terminal Installed",
+                    subtitle = if (isTerminalInstalled) "Ja (is_terminal_installed = true)" else "Nein (is_terminal_installed = false)",
                     onClick = {
-                        Toast.makeText(
-                            context,
-                            "Terminal: ${if (isTerminalInstalled) "Installiert" else "Nicht eingerichtet"}\nJDK: $installedJdk\nBuild-Tools: $installedBuildTools",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(context, "Terminal Status: ${if (isTerminalInstalled) "Installiert" else "Nicht installiert"}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+
+            item(key = "openjdk_version_setting") {
+                val installedJdk = generalPrefs.getString("installed_openjdk_version", "Nicht installiert") ?: "Nicht installiert"
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Code,
+                    title = "OpenJDK Version",
+                    subtitle = installedJdk,
+                    onClick = {
+                        Toast.makeText(context, "Installierte OpenJDK Version: $installedJdk", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+
+            item(key = "buildtools_version_setting") {
+                val installedBuildTools = generalPrefs.getString("installed_build_tools_version", "Nicht installiert") ?: "Nicht installiert"
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Build,
+                    title = "Buildtools Version",
+                    subtitle = installedBuildTools,
+                    onClick = {
+                        Toast.makeText(context, "Installierte Buildtools Version: $installedBuildTools", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
