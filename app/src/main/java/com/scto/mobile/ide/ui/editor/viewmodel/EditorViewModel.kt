@@ -809,7 +809,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "java",
                     "jav" -> "source.java"
                     "kt",
-                    "kts" -> "source.kotlin"
+                    "kts" -> "source.java"
                     "xml",
                     "xaml",
                     "dtd",
