@@ -180,8 +180,10 @@ class TerminalBackEnd(
     override fun copyModeChanged(copyMode: Boolean) {}
     
     override fun onKeyDown(keyCode: Int, e: KeyEvent, session: TerminalSession): Boolean {
-        // Ctrl+D Shortcut: Immediately terminate active shell session and close UI window
-        if (e.isCtrlPressed && keyCode == KeyEvent.KEYCODE_D) {
+        // Ctrl+D Shortcut (Hardware keyboard or VirtualKeys bar): Send EOF and close session like Termux
+        val isCtrl = readControlKey() || e.isCtrlPressed
+        if (isCtrl && (keyCode == KeyEvent.KEYCODE_D || e.unicodeChar == 'd'.code || e.unicodeChar == 'D'.code)) {
+            session.write(byteArrayOf(4), 0, 1)
             session.finishIfRunning()
             onSessionCloseRequested?.invoke(session)
             return true
@@ -269,6 +271,12 @@ class TerminalBackEnd(
     }
     
     override fun onCodePoint(codePoint: Int, ctrlDown: Boolean, session: TerminalSession): Boolean {
+        if ((ctrlDown || readControlKey()) && (codePoint == 'd'.code || codePoint == 'D'.code || codePoint == 4)) {
+            session.write(byteArrayOf(4), 0, 1)
+            session.finishIfRunning()
+            onSessionCloseRequested?.invoke(session)
+            return true
+        }
         return false
     }
     

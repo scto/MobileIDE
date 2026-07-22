@@ -101,8 +101,10 @@ object SetupWorker {
             File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
 
             prepareEnvironment(context)
-            _setupState.value = SetupState(isActive = false, isSuccess = true)
-            SessionManager.addNewSession(context)
+            withContext(Dispatchers.Main) {
+                _setupState.value = SetupState(isActive = false, isSuccess = true)
+                SessionManager.addNewSession(context)
+            }
         }
     }
 
@@ -366,6 +368,8 @@ object SetupWorker {
                 sandboxTar.delete()
             }
 
+            File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
+
             // Post-Install Trigger: Pause setup flow and prompt user for toolchain selection
             withContext(Dispatchers.Main) {
                 _setupState.value = _setupState.value.copy(
@@ -379,6 +383,10 @@ object SetupWorker {
 
     fun dismissToolchainDialog() {
         _setupState.value = _setupState.value.copy(showToolchainDialog = false)
+    }
+
+    fun clearLogs() {
+        _setupState.value = _setupState.value.copy(logs = emptyList())
     }
 
     fun generateToolchainCommand(selectedTools: Set<String>, distro: String): String {

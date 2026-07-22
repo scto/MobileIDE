@@ -13,14 +13,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -151,12 +154,12 @@ fun ToolchainSelectionDialog(
 }
 
 @Composable
-fun TerminalSetupBottomSheet(
+fun TerminalSetupOverlayWindow(
     setupState: SetupState,
-    onExpandToggle: () -> Unit,
-    isExpanded: Boolean,
+    onClearLogs: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val durationText = remember(setupState.startTimeMs) {
         if (setupState.startTimeMs == 0L) ""
         else {
@@ -170,11 +173,11 @@ fun TerminalSetupBottomSheet(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(12.dp),
+            .padding(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
@@ -182,10 +185,9 @@ fun TerminalSetupBottomSheet(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            // Header Row: Title & Action Buttons (Share & Clear)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onExpandToggle() },
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
@@ -196,8 +198,8 @@ fun TerminalSetupBottomSheet(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = setupState.status.ifEmpty { "Terminal Setup läuft..." },
-                        style = MaterialTheme.typography.titleSmall,
+                        text = setupState.status.ifEmpty { "Terminal-Setup läuft..." },
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -210,16 +212,41 @@ fun TerminalSetupBottomSheet(
                         )
                     }
                 }
-                IconButton(onClick = onExpandToggle) {
+
+                // Share Button
+                IconButton(
+                    onClick = {
+                        val logText = setupState.logs.joinToString("\n")
+                        if (logText.isNotEmpty()) {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(android.content.Intent.EXTRA_SUBJECT, "MobileIDE Terminal Setup Log")
+                                putExtra(android.content.Intent.EXTRA_TEXT, logText)
+                            }
+                            context.startActivity(android.content.Intent.createChooser(intent, "Setup Log teilen"))
+                        }
+                    }
+                ) {
                     Icon(
-                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                        contentDescription = if (isExpanded) "Einklappen" else "Ausklappen"
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Logs teilen",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // Clear Button
+                IconButton(onClick = onClearLogs) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Logs leeren",
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Progress Bar
             if (setupState.percentage >= 0f) {
                 LinearProgressIndicator(
                     progress = { setupState.percentage },
@@ -231,44 +258,44 @@ fun TerminalSetupBottomSheet(
                 )
             }
 
-            AnimatedVisibility(visible = isExpanded) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Installation Output Logs:",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.secondary
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Installation Output Logs:",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Scrollable Log Window
+            val lazyListState = rememberLazyListState()
+            LaunchedEffect(setupState.logs.size) {
+                if (setupState.logs.isNotEmpty()) {
+                    lazyListState.animateScrollToItem(setupState.logs.size - 1)
+                }
+            }
+
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    val lazyListState = rememberLazyListState()
-                    LaunchedEffect(setupState.logs.size) {
-                        if (setupState.logs.isNotEmpty()) {
-                            lazyListState.animateScrollToItem(setupState.logs.size - 1)
-                        }
-                    }
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .background(
-                                color = Color.Black.copy(alpha = 0.85f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(8.dp)
-                    ) {
-                        items(setupState.logs) { log ->
-                            Text(
-                                text = log,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = FontFamily.Monospace,
-                                color = Color(0xFF00FF66)
-                            )
-                        }
-                    }
+                    .padding(10.dp)
+            ) {
+                items(setupState.logs) { log ->
+                    Text(
+                        text = log,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = Color(0xFF00FF66)
+                    )
                 }
             }
         }

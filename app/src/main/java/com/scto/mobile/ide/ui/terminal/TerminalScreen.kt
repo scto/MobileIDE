@@ -239,27 +239,13 @@ fun TerminalScreen(navController: NavController) {
             }
         }
     } else if (!isEnvironmentReady) {
-        // Interactive Setup View with Expandable Log BottomSheet
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = setupState.status.ifEmpty { "Terminal-Setup wird ausgeführt..." },
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.weight(1f))
-
-                TerminalSetupBottomSheet(
-                    setupState = setupState,
-                    isExpanded = isLogBottomSheetExpanded,
-                    onExpandToggle = { isLogBottomSheetExpanded = !isLogBottomSheetExpanded }
-                )
-            }
+        // Interactive Setup Overlay Window
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            TerminalSetupOverlayWindow(
+                setupState = setupState,
+                onClearLogs = { SetupWorker.clearLogs() },
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
         return
     }

@@ -223,7 +223,29 @@ object DistroManager {
             "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
         )
 
-        return TerminalSession(shell, context.filesDir.absolutePath, args, env.toTypedArray(), 10000, client)
+        val createSessionAction = {
+            TerminalSession(shell, context.filesDir.absolutePath, args, env.toTypedArray(), 10000, client)
+        }
+
+        return if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            createSessionAction()
+        } else {
+            var session: TerminalSession? = null
+            var exception: Throwable? = null
+            val latch = java.util.concurrent.CountDownLatch(1)
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    session = createSessionAction()
+                } catch (t: Throwable) {
+                    exception = t
+                } finally {
+                    latch.countDown()
+                }
+            }
+            latch.await()
+            exception?.let { throw it }
+            session!!
+        }
     }
 
     private fun copyAsset(context: Context, assetName: String, destFile: File) {
