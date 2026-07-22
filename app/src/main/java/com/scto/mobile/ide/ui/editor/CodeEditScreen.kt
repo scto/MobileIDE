@@ -523,8 +523,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                             text = { Text(terminalText) },
                                             onClick = {
                                                 isMoreMenuExpanded = false
-                                                // 🔥 跳转到独立的终端页面
-                                                navController.navigate("terminal")
+                                                if (com.scto.mobile.ide.ui.terminal.SetupWorker.isTerminalInstalled(context)) {
+                                                    navController.navigate("terminal")
+                                                } else {
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "Das Terminal ist noch nicht eingerichtet. Bitte führe das Setup beim Terminal-Tab oder in den Einstellungen durch.",
+                                                        android.widget.Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
                                             },
                                         )
                                         DropdownMenuItem(
@@ -719,7 +726,17 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     snackbarHostState = snackbarHostState,
                                     navController = navController,
                                     folderName = folderName,
-                                    onNavigateToTerminal = { navController.safeNavigate("terminal") },
+                                    onNavigateToTerminal = {
+                                        if (com.scto.mobile.ide.ui.terminal.SetupWorker.isTerminalInstalled(context)) {
+                                            navController.safeNavigate("terminal")
+                                        } else {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Das Terminal ist noch nicht eingerichtet. Bitte führe das Setup beim Terminal-Tab oder in den Einstellungen durch.",
+                                                android.widget.Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    },
                                     onShowJumpLine = { isOpenJump = true },
                                     onShowCreate = { showCreateDialog = true },
                                     onShowColorPicker = { showColorPicker = true },
