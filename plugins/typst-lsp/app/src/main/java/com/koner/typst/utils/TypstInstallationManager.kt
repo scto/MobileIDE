@@ -1,15 +1,15 @@
 package com.koner.typst.utils
 
 import com.koner.typst.R
-import com.rk.activities.main.MainActivity
-import com.rk.exec.ShellUtils
-import com.rk.exec.TerminalCommand
-import com.rk.exec.launchTerminal
+import com.scto.mobile.ide.MainActivity
+import com.scto.mobile.ide.exec.ShellUtils
+import com.scto.mobile.ide.exec.TerminalCommand
+import com.scto.mobile.ide.exec.launchTerminal
 import com.rk.extension.ExtensionContext
-import com.rk.file.child
-import com.rk.file.sandboxHomeDir
-import com.rk.utils.dialog
-import com.rk.utils.toast
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.common.utils.dialog
+import com.scto.mobile.ide.core.common.utils.toast
 import io.github.z4kn4fein.semver.toVersionOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

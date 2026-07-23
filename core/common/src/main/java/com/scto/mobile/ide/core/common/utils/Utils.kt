@@ -91,6 +91,14 @@ fun toast(message: String?) {
     runOnUiThread { Toast.makeText(application!!, message, Toast.LENGTH_SHORT).show() }
 }
 
+fun logInfo(msg: Any?) {
+    Log.i("MobileIDE", msg.toString())
+}
+
+fun logError(msg: Any?) {
+    Log.e("MobileIDE", msg.toString())
+}
+
 /** Returns true if the currently selected user theme is dark. If it's set to system, the system theme is used. */
 fun isDarkTheme(ctx: Context): Boolean {
     return when (Settings.default_night_mode) {

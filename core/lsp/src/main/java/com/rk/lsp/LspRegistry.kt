@@ -10,6 +10,8 @@ import java.io.File
 import java.net.URI
 import org.eclipse.lsp4j.ServerCapabilities
 
+fun localBinDir(): File = File("/data/data/com.scto.mobile.ide/local/bin")
+
 data class ExternalServerData(
     val id: String,
     val languageName: String,

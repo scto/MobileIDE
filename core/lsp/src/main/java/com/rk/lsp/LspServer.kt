@@ -62,7 +62,7 @@ abstract class LspServer {
     open fun getInitializationOptions(uri: URI?): Any? = null
 
     open fun isSupported(file: java.io.File): Boolean {
-        return supportedExtensions.contains(file.getExtension().lowercase())
+        return supportedExtensions.contains(file.extension.lowercase())
     }
 
     override fun equals(other: Any?): Boolean {
@@ -75,4 +75,6 @@ abstract class LspServer {
 
     override fun hashCode(): Int = id.hashCode()
 }
+
+interface LspConnector
 

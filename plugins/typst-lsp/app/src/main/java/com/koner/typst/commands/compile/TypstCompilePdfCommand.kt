@@ -6,7 +6,7 @@ import com.rk.commands.EditorActionContext
 import com.rk.commands.EditorCommand
 import com.rk.commands.EditorNonActionContext
 import com.rk.extension.ExtensionContext
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.icons.Icon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

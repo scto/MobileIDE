@@ -3,8 +3,8 @@ package com.rk.lua
 import android.app.Activity
 import android.content.Context
 import android.os.Build
-import com.rk.file.BuiltinFileType
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.rk.lsp.LspConnectionConfig
 import com.rk.lsp.LspServer
 import java.io.File

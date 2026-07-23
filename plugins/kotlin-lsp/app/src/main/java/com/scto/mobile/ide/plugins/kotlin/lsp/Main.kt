@@ -5,10 +5,10 @@ import android.os.Bundle
 import androidx.annotation.Keep
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionContext
-import com.rk.file.child
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.rk.lsp.LspRegistry
-import com.rk.utils.getTempDir
+import com.scto.mobile.ide.core.common.files.getCacheDir as getTempDir
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.io.writeText

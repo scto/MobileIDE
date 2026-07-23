@@ -12,11 +12,11 @@ import com.koner.typst.utils.TypstInstallationManager
 import com.rk.commands.CommandProvider
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionContext
-import com.rk.file.FileTypeManager
-import com.rk.file.child
+import com.scto.mobile.ide.core.common.files.FileTypeManager
+import com.scto.mobile.ide.core.common.files.child
 import com.rk.lsp.LspRegistry
-import com.rk.runner.RunnerManager
-import com.rk.utils.getTempDir
+import com.scto.mobile.ide.runner.RunnerManager
+import com.scto.mobile.ide.core.common.files.getCacheDir as getTempDir
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver

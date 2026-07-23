@@ -7,11 +7,11 @@ import androidx.annotation.Keep
 import com.rk.extension.ActivityProvider
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionContext
-import com.rk.file.child
+import com.scto.mobile.ide.core.common.files.child
 import com.rk.lsp.LspRegistry
-import com.rk.utils.dialog
-import com.rk.utils.logInfo
-import com.rk.utils.toast
+import com.scto.mobile.ide.core.common.utils.dialog
+import com.scto.mobile.ide.core.common.utils.logInfo
+import com.scto.mobile.ide.core.common.utils.toast
 import java.io.File
 
 @Keep

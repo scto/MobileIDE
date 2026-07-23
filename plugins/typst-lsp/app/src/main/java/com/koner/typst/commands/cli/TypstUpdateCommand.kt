@@ -6,7 +6,7 @@ import com.koner.typst.utils.TypstInstallationAction
 import com.koner.typst.utils.TypstInstallationManager
 import com.rk.commands.ActionContext
 import com.rk.commands.GlobalCommand
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.icons.Icon
 
 class TypstUpdateCommand(
     private val icon: Icon,

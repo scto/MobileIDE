@@ -1,8 +1,8 @@
 package com.koner.typst
 
 import android.content.res.Resources
-import com.rk.file.FileType
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.files.FileType
+import com.scto.mobile.ide.core.common.icons.Icon
 
 class TypstLanguage(resources: Resources) : FileType {
     override val extensions = listOf("typ")

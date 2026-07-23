@@ -6,10 +6,10 @@ import androidx.annotation.Keep
 import com.rk.extension.ActivityProvider
 import com.rk.extension.ExtensionAPI
 import com.rk.extension.ExtensionContext
-import com.rk.file.child
-import com.rk.file.createDirIfNot
-import com.rk.file.localBinDir
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.createDirIfNot
+import com.scto.mobile.ide.core.common.files.localBinDir
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.rk.lsp.LspRegistry
 
 @Keep

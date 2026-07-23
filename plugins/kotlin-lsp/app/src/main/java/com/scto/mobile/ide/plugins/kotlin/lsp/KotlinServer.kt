@@ -2,18 +2,15 @@ package com.scto.mobile.ide.plugins.kotlin.lsp
 
 import android.app.Activity
 import android.content.Context
-import com.rk.exec.isTerminalInstalled
-import com.rk.file.child
-import com.rk.file.BuiltinFileType
-import com.rk.file.sandboxHomeDir
-import com.rk.icons.Icon
+import com.scto.mobile.ide.exec.isTerminalInstalled
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.rk.lsp.LspConnectionConfig
 import com.rk.lsp.ScriptedLspServer
-import com.rk.exec.launchTerminal
-import com.rk.exec.TerminalCommand
-import com.rk.activities.main.MainActivity
-import com.rk.extension.ExtensionContext
-import java.io.BuiltinFileType
+import com.scto.mobile.ide.exec.launchTerminal
+import com.scto.mobile.ide.exec.TerminalCommand
 
 class KotlinServer(
     override val icon: Icon? = BuiltinFileType.KOTLIN.icon,

@@ -2,15 +2,15 @@ package com.koner.typst.commands.compile
 
 import com.koner.typst.R
 import com.koner.typst.utils.TypstInstallationManager
-import com.rk.activities.main.MainActivity
-import com.rk.exec.ShellUtils
+import com.scto.mobile.ide.MainActivity
+import com.scto.mobile.ide.exec.ShellUtils
 import com.rk.extension.ActivityProvider
 import com.rk.extension.ExtensionContext
-import com.rk.file.FileObject
-import com.rk.file.FileOperations
-import com.rk.file.toFileWrapper
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.files.FileOperations
+import com.scto.mobile.ide.core.common.files.toFileWrapper
 import com.rk.resources.fillPlaceholders
-import com.rk.utils.toast
+import com.scto.mobile.ide.core.common.utils.toast
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
