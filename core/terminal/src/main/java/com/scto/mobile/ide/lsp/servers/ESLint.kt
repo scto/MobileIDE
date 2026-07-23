@@ -7,8 +7,8 @@ import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.localBinDir
 import com.scto.mobile.ide.core.common.files.sandboxDir
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ScriptedLspServer
 
 object ESLint : ScriptedLspServer() {
     override val id: String = "eslint"

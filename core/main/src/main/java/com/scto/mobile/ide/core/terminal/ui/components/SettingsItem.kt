@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.rk.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
 
 @Composable
 fun SettingsItem(

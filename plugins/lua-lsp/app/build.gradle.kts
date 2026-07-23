@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.rk.demo"
+    namespace = "com.scto.mobile.ide.demo"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.rk.demo"
+        applicationId = "com.scto.mobile.ide.demo"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

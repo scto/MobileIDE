@@ -2,8 +2,8 @@ package com.scto.mobile.ide.commands.global
 
 import android.content.Intent
 import com.scto.mobile.ide.activities.terminal.Terminal
-import com.rk.commands.BaseCommand
-import com.rk.commands.CommandContext
+import com.scto.mobile.ide.commands.BaseCommand
+import com.scto.mobile.ide.commands.CommandContext
 import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.getString

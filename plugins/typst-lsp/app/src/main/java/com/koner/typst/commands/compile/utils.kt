@@ -4,12 +4,12 @@ import com.koner.typst.R
 import com.koner.typst.utils.TypstInstallationManager
 import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.exec.ShellUtils
-import com.rk.extension.ActivityProvider
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ActivityProvider
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.core.common.files.FileOperations
 import com.scto.mobile.ide.core.common.files.toFileWrapper
-import com.rk.resources.fillPlaceholders
+import com.scto.mobile.ide.resources.fillPlaceholders
 import com.scto.mobile.ide.core.common.utils.toast
 import java.io.File
 import kotlinx.coroutines.Dispatchers

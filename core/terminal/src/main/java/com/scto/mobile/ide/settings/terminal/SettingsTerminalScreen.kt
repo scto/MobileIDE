@@ -27,10 +27,10 @@ import com.scto.mobile.ide.activities.settings.settingsNavController
 import com.scto.mobile.ide.core.terminal.ui.components.NextScreenCard
 import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
 import com.scto.mobile.ide.core.terminal.ui.components.ValueSlider
-import com.rk.components.compose.preferences.base.PreferenceGroup
-import com.rk.components.compose.preferences.base.PreferenceLayout
-import com.rk.components.compose.preferences.base.PreferenceTemplate
-import com.rk.components.compose.preferences.switch.PreferenceSwitch
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.createFileIfNot
 import com.scto.mobile.ide.core.common.files.localBinDir

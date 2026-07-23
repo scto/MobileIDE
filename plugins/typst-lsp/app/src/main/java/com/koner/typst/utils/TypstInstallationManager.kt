@@ -5,7 +5,7 @@ import com.scto.mobile.ide.MainActivity
 import com.scto.mobile.ide.exec.ShellUtils
 import com.scto.mobile.ide.exec.TerminalCommand
 import com.scto.mobile.ide.exec.launchTerminal
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.common.utils.dialog

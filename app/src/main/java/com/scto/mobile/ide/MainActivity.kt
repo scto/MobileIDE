@@ -51,9 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.rk.extension.extensionManager
-import com.rk.extension.loader.loadAllExtensions
-import com.rk.extension.manager.ExtensionManager
+import com.scto.mobile.ide.extension.extensionManager
+import com.scto.mobile.ide.extension.loader.loadAllExtensions
+import com.scto.mobile.ide.extension.manager.ExtensionManager
 import com.scto.mobile.ide.core.common.utils.*
 import com.scto.mobile.ide.utils.*
 import com.scto.mobile.ide.core.common.utils.LogCatcher
@@ -124,15 +124,15 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
         extensionManager = ExtensionManager(application)
 
         // Setup a dummy extension for user testing
-        val testExtDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.rk.test_extension")
+        val testExtDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.test_extension")
         if (!testExtDir.exists()) {
             testExtDir.mkdirs()
             val manifestJson =
                 """
                 {
-                  "id": "com.rk.test_extension",
+                  "id": "com.scto.mobile.ide.test_extension",
                   "name": "Test Extension",
-                  "mainClass": "com.rk.test.TestExtension",
+                  "mainClass": "com.scto.mobile.ide.test.TestExtension",
                   "version": "1.0.0",
                   "description": "This is a test extension to verify that the ExtensionSettingsScreen displays, toggles, and uninstalls local extensions correctly.",
                   "author": {
@@ -154,10 +154,10 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
             com.scto.mobile.ide.core.common.utils.BundledPluginLoader.install(application)
             extensionManager.indexLocalExtensions()
             extensionManager.loadAllExtensions()
-            com.rk.lsp.LspRegistry.loadExternalServers(applicationContext)
+            com.scto.mobile.ide.lsp.LspRegistry.loadExternalServers(applicationContext)
         }
 
-        com.rk.lsp.ScriptedLspServer.terminalLauncher =
+        com.scto.mobile.ide.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
                 com.scto.mobile.ide.exec.pendingCommand =
                     com.scto.mobile.ide.exec.TerminalCommand(

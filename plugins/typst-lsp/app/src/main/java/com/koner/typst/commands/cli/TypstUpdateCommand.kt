@@ -4,8 +4,8 @@ import android.content.res.Resources
 import com.koner.typst.R
 import com.koner.typst.utils.TypstInstallationAction
 import com.koner.typst.utils.TypstInstallationManager
-import com.rk.commands.ActionContext
-import com.rk.commands.GlobalCommand
+import com.scto.mobile.ide.commands.ActionContext
+import com.scto.mobile.ide.commands.GlobalCommand
 import com.scto.mobile.ide.core.common.icons.Icon
 
 class TypstUpdateCommand(

@@ -1,7 +1,7 @@
 package com.scto.mobile.ide.commands
 
-import com.rk.commands.Command
-import com.rk.commands.CommandContext
+import com.scto.mobile.ide.commands.Command
+import com.scto.mobile.ide.commands.CommandContext
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 
 data class MobileIDECommandContext(val editorViewModel: EditorViewModel) : CommandContext

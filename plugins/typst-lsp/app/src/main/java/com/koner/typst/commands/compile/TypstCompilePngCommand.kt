@@ -2,10 +2,10 @@ package com.koner.typst.commands.compile
 
 import com.koner.typst.R
 import com.koner.typst.utils.TypstInstallationManager
-import com.rk.commands.EditorActionContext
-import com.rk.commands.EditorCommand
-import com.rk.commands.EditorNonActionContext
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.commands.EditorActionContext
+import com.scto.mobile.ide.commands.EditorCommand
+import com.scto.mobile.ide.commands.EditorNonActionContext
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.icons.Icon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

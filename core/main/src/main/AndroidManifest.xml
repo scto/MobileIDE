@@ -12,6 +12,6 @@
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
             </intent-filter>
         </provider>
-       <!-- <service android:name="com.rk.runner.runners.web.html.HtmlRunner$DevTools"/> -->
+       <!-- <service android:name="com.scto.mobile.ide.runner.runners.web.html.HtmlRunner$DevTools"/> -->
     </application>
 </manifest>

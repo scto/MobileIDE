@@ -40,8 +40,8 @@ import androidx.navigation.NavController
 import android.widget.Toast
 import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
 import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
-import com.rk.components.compose.preferences.base.PreferenceGroup
-import com.rk.components.compose.preferences.base.PreferenceLayout
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.R
 import com.scto.mobile.ide.runner.RunnerManager

@@ -30,9 +30,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
-import com.rk.components.compose.preferences.base.PreferenceGroup
-import com.rk.components.compose.preferences.base.PreferenceLayout
-import com.rk.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
 import com.scto.mobile.ide.core.common.icons.LucideCircleQuestionMark
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.common.utils.openUrl

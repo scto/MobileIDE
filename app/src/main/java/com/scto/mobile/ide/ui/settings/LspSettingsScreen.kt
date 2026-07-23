@@ -26,9 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.core.common.utils.safeNavigate
-import com.rk.lsp.ExternalLspServer
-import com.rk.lsp.LspRegistry
-import com.rk.lsp.LspServer
+import com.scto.mobile.ide.lsp.ExternalLspServer
+import com.scto.mobile.ide.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspServer
 import com.scto.mobile.ide.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -2,7 +2,7 @@ package com.scto.mobile.ide
 
 import android.app.Application
 import android.content.Intent
-import com.rk.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspRegistry
 import com.scto.mobile.ide.activities.terminal.Terminal
 import com.scto.mobile.ide.exec.pendingCommand
 import com.scto.mobile.ide.feature.Feature

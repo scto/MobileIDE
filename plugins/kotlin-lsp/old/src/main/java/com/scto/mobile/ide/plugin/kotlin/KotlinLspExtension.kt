@@ -1,12 +1,12 @@
 package com.scto.mobile.ide.plugin.kotlin
 
 import android.content.Context
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.LspRegistry
-import com.rk.lsp.ScriptedLspServer
-import com.rk.lsp.localBinDir
+import com.scto.mobile.ide.extension.ExtensionAPI
+import com.scto.mobile.ide.extension.ExtensionContext
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.localBinDir
 import java.io.File
 
 class KotlinLspExtension(context: ExtensionContext) : ExtensionAPI(context) {

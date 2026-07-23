@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rk.extension.languages"
+    namespace = "com.scto.mobile.ide.extension.languages"
     compileSdk = 34
 
     defaultConfig {

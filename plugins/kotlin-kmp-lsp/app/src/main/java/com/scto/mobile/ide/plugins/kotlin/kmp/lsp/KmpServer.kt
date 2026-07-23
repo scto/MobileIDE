@@ -8,11 +8,11 @@ import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ScriptedLspServer
 import com.scto.mobile.ide.exec.launchTerminal
 import com.scto.mobile.ide.exec.TerminalCommand
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ExtensionContext
 import java.io.File
 
 class KmpServer(

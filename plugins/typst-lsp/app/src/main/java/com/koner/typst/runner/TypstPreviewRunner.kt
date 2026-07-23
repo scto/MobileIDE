@@ -8,10 +8,10 @@ import androidx.core.net.toUri
 import com.koner.typst.R
 import com.koner.typst.utils.TypstInstallationManager
 import com.scto.mobile.ide.exec.ubuntuProcess
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.resources.fillPlaceholders
+import com.scto.mobile.ide.resources.fillPlaceholders
 import com.scto.mobile.ide.runner.Runner
 import com.scto.mobile.ide.core.common.utils.toast
 import java.net.ServerSocket

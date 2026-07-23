@@ -3,11 +3,11 @@ package com.scto.mobile.ide.plugins.kotlin.kmp.lsp
 import android.app.Activity
 import android.os.Bundle
 import androidx.annotation.Keep
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ExtensionAPI
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspRegistry
 import com.scto.mobile.ide.core.common.files.getCacheDir as getTempDir
 import kotlinx.coroutines.runBlocking
 import java.io.File

@@ -1,8 +1,8 @@
 {
   "$schema": "schema/schema.json",
-  "id": "com.rk.xededitor.json",
-  "name": "Json LSP",
-  "mainClass": "com.rk.xededitor.json.Main",
+  "id": "com.scto.mobile.ide.plugin.json",
+  "name": "JSON LSP",
+  "mainClass": "com.scto.mobile.ide.plugin.json.Main",
   "version": "1.0.2",
   "description": "JSON Language Server Protocol extension for Xed-Editor",
   "author": {

@@ -1,8 +1,8 @@
 {
   "$schema": "schema/schema.json",
-  "id": "com.rk.lua",
-  "name": "Lua-LSP",
-  "mainClass": "com.rk.lua.Main",
+  "id": "com.scto.mobile.ide.plugin.lua",
+  "name": "Lua LSP",
+  "mainClass": "com.scto.mobile.ide.plugin.lua.Main",
   "version": "1.0.2",
   "description": "A fast lua lsp",
   "author": {

@@ -4,12 +4,12 @@ import android.app.Activity
 import android.content.Context
 import com.koner.typst.utils.GithubReleasesApi
 import com.scto.mobile.ide.exec.isTerminalInstalled
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ScriptedLspServer
 import io.github.z4kn4fein.semver.toVersionOrNull
 import kotlinx.coroutines.launch
 import java.io.File

@@ -3,14 +3,14 @@ package com.scto.mobile.ide.plugins.java.lsp
 import android.app.Activity
 import android.os.Bundle
 import androidx.annotation.Keep
-import com.rk.extension.ActivityProvider
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.extension.ActivityProvider
+import com.scto.mobile.ide.extension.ExtensionAPI
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.createDirIfNot
 import com.scto.mobile.ide.core.common.files.localBinDir
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspRegistry
 
 @Keep
 @Suppress("unused")

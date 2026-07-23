@@ -44,10 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.rk.components.compose.preferences.base.PreferenceGroup
-import com.rk.components.compose.preferences.base.PreferenceLayout
-import com.rk.components.compose.preferences.base.PreferenceTemplate
-import com.rk.components.compose.preferences.switch.PreferenceSwitch
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot

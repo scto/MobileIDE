@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.rk.xededitor"
+    namespace = "com.scto.mobile.ide.xededitor"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.rk.demo"
+        applicationId = "com.scto.mobile.ide.demo"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

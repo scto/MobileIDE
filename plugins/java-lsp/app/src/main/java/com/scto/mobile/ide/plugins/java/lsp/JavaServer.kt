@@ -6,9 +6,9 @@ import com.scto.mobile.ide.exec.isTerminalInstalled
 import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.core.common.files.sandboxHomeDir
 import com.scto.mobile.ide.core.common.icons.Icon
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.ProcessConnection
-import com.rk.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ProcessConnection
+import com.scto.mobile.ide.lsp.ScriptedLspServer
 import java.io.File
 
 import com.scto.mobile.ide.plugins.java.lsp.utils.JdtlsApi

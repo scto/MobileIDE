@@ -9,12 +9,12 @@ import com.koner.typst.commands.compile.TypstCompilePngCommand
 import com.koner.typst.commands.compile.TypstCompileSvgCommand
 import com.koner.typst.runner.TypstPreviewRunner
 import com.koner.typst.utils.TypstInstallationManager
-import com.rk.commands.CommandProvider
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.commands.CommandProvider
+import com.scto.mobile.ide.extension.ExtensionAPI
+import com.scto.mobile.ide.extension.ExtensionContext
 import com.scto.mobile.ide.core.common.files.FileTypeManager
 import com.scto.mobile.ide.core.common.files.child
-import com.rk.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspRegistry
 import com.scto.mobile.ide.runner.RunnerManager
 import com.scto.mobile.ide.core.common.files.getCacheDir as getTempDir
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry

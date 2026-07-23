@@ -1,8 +1,8 @@
 {
   "$schema": "schema/schema.json",
-  "id": "com.rk.xededitor.python",
+  "id": "com.scto.mobile.ide.plugin.python",
   "name": "Python LSP",
-  "mainClass": "com.rk.xededitor.python.Main",
+  "mainClass": "com.scto.mobile.ide.plugin.python.Main",
   "version": "1.0.3",
   "description": "Python Language Server Protocol support for Xed-Editor",
   "author": {

@@ -1436,7 +1436,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
             if (!addedLspDefinitions.contains(fileExtension)) {
                 val matchingServer =
-                    (com.rk.lsp.LspRegistry.extensionServers + com.rk.lsp.LspRegistry.externalServers).find {
+                    (com.scto.mobile.ide.lsp.LspRegistry.extensionServers + com.scto.mobile.ide.lsp.LspRegistry.externalServers).find {
                         it.isSupported(realFile)
                     }
 
@@ -1449,7 +1449,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         val isEnabled = lspSettingsPrefs.getBoolean("lsp_enabled_${matchingServer.id}", true)
                         if (isEnabled) {
                             val config = matchingServer.getConnectionConfig()
-                            if (config is com.rk.lsp.LspConnectionConfig.Process) {
+                            if (config is com.scto.mobile.ide.lsp.LspConnectionConfig.Process) {
                                 CustomLanguageServerDefinition(
                                     ext = fileExtension,
                                     serverConnectProvider = {

@@ -87,8 +87,8 @@ import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import com.scto.mobile.ide.ui.terminal.DistroManager
 import android.app.Activity
-import com.rk.lsp.LspRegistry
-import com.rk.lsp.LspServer
+import com.scto.mobile.ide.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspServer
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -927,7 +927,7 @@ fun EditCode(
         if (activeTab != null) {
             val file = activeTab.file
             if (file.isFile) {
-                val server = com.rk.lsp.LspRegistry.extensionServers.find { it.isSupported(file) }
+                val server = com.scto.mobile.ide.lsp.LspRegistry.extensionServers.find { it.isSupported(file) }
                 if (server != null && !promptedServers.contains(server.id)) {
                     val isInstalled =
                         withContext(Dispatchers.IO) {
@@ -2062,7 +2062,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
     val scope = rememberCoroutineScope()
 
     val allCommands = remember {
-        (com.rk.commands.CommandManager.getCommands() +
+        (com.scto.mobile.ide.commands.CommandManager.getCommands() +
                 com.scto.mobile.ide.commands.MobileIDECommandManager.getAllCommands())
             .distinctBy { it.id }
     }
