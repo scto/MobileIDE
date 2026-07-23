@@ -57,6 +57,7 @@ import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition
 import io.github.rosemoe.sora.lsp.editor.LspEditor
@@ -814,7 +815,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "xaml",
                     "dtd",
                     "plist",
-                    "svg" -> "text.xml"
+                    "svg" -> "text.html.basic"
                     "properties",
                     "cfg",
                     "conf",
@@ -822,9 +823,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "editorconfig",
                     "gitconfig",
                     "gitmodules",
-                    "gitattributes" -> "source.properties"
-                    "toml" -> "source.toml"
-                    "ini" -> "source.ini"
+                    "gitattributes",
+                    "toml",
+                    "ini" -> "source.yaml"
                     "cmake",
                     "cmakelists" -> "source.cmake"
                     "log" -> "text.log"
@@ -858,7 +859,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "rhistory",
                     "rprofile" -> "source.r"
                     "cshtml" -> "text.html.cshtml"
-                    "rst" -> "source.rst"
+                    "rst" -> "text.restructuredtext"
                     "rb",
                     "rbx",
                     "rjs",
@@ -885,13 +886,36 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             if (LogCatcher.isLoggingEnabled) {
                 LogCatcher.i("TextMateLanguage", "Mapped extension $extension to scope: $scopeName")
             }
+
+            val registry = ThemeRegistry.getInstance()
             val prefs = context.getSharedPreferences("MobileIDE_Editor_Settings", Context.MODE_PRIVATE)
             val lspEnabled = prefs.getBoolean("editor_lsp_enabled", false)
-            val tmLang = TextMateLanguage.create(scopeName, !lspEnabled)
-            if (LogCatcher.isLoggingEnabled) {
-                LogCatcher.i("TextMateLanguage", "TextMateLanguage created successfully for scope: $scopeName")
+
+            return try {
+                val tmLang = TextMateLanguage.create(scopeName, !lspEnabled)
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("TextMateLanguage", "TextMateLanguage created successfully for scope: $scopeName")
+                }
+                tmLang
+            } catch (e: Exception) {
+                val fallbackScope = when (scopeName) {
+                    "source.yaml", "text.html.basic" -> null
+                    else -> "source.yaml"
+                }
+                if (fallbackScope != null) {
+                    try {
+                        val fallbackLang = TextMateLanguage.create(fallbackScope, !lspEnabled)
+                        if (LogCatcher.isLoggingEnabled) {
+                            LogCatcher.i("TextMateLanguage", "Fallback TextMateLanguage created for $extension using scope: $fallbackScope")
+                        }
+                        return fallbackLang
+                    } catch (_: Exception) {}
+                }
+                if (LogCatcher.isLoggingEnabled) {
+                    LogCatcher.i("TextMateLanguage", "TextMate scope $scopeName not available for extension: $extension")
+                }
+                null
             }
-            tmLang
         } catch (e: Exception) {
             if (LogCatcher.isLoggingEnabled) {
                 LogCatcher.e("TextMateLanguage", "Failed to create TextMateLanguage for extension: $extension", e)
