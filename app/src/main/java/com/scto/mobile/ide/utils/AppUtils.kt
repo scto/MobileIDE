@@ -1,7 +1,7 @@
 package com.scto.mobile.ide.core.common.utils
 
-import com.scto.mobile.ide.files.BuiltinFileType
-import com.scto.mobile.ide.files.FileObject
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ObjectInputStream

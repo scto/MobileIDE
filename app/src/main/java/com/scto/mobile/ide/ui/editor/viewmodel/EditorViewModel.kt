@@ -35,7 +35,7 @@ import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.utils.BackupUtils
 import com.scto.mobile.ide.core.common.utils.LogCatcher
-import com.scto.mobile.ide.utils.PermissionManager
+import com.scto.mobile.ide.core.common.utils.PermissionManager
 import com.scto.mobile.ide.lsp.ProotStreamConnectionProvider
 import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
