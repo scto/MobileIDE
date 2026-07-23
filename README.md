@@ -11,7 +11,7 @@ MobileIDE is a native Android Integrated Development Environment (IDE) for app d
 
 This is an experimental engineering project; its core architecture and code logic were collaboratively completed by multiple AI models (Claude, Gemini, DeepSeek).
 
-For a detailed overview, see the [project overview document](MobileIDE_20260716_220908.md).
+For a detailed overview, see the [project status document](status.md).
 
 ## Screenshots
 
