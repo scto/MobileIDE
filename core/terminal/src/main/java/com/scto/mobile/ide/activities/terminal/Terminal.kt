@@ -59,7 +59,7 @@ import com.scto.mobile.ide.terminal.TerminalScreen
 import com.scto.mobile.ide.terminal.changeSession
 import com.scto.mobile.ide.terminal.getNextStage
 import com.scto.mobile.ide.terminal.terminalView
-import com.scto.mobile.ide.theme.XedTheme
+import com.scto.mobile.ide.theme.MobileIDETheme
 import com.scto.mobile.ide.core.common.utils.errorDialog
 import com.scto.mobile.ide.core.common.utils.getTempDir
 import com.scto.mobile.ide.core.common.utils.toast
@@ -172,7 +172,7 @@ class Terminal : AppCompatActivity() {
         }
 
         setContent {
-            XedTheme {
+            MobileIDETheme {
                 Surface {
                     if (sessionBinder != null) {
                         TerminalScreenHost(this)

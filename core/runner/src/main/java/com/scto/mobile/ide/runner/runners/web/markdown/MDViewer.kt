@@ -13,7 +13,7 @@ import com.scto.mobile.ide.runner.runners.web.WebActivity
 import com.scto.mobile.ide.runner.runners.web.WebScreen
 import com.scto.mobile.ide.runner.runners.web.html.HtmlRunner
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.theme.XedTheme
+import com.scto.mobile.ide.theme.MobileIDETheme
 import com.scto.mobile.ide.core.common.utils.isDarkTheme
 import com.scto.mobile.ide.core.common.utils.toast
 import fi.iki.elonen.NanoHTTPD
@@ -49,7 +49,7 @@ class MDViewer : WebActivity() {
 
                 // Now load WebView inside Compose
                 setContent {
-                    XedTheme {
+                    MobileIDETheme {
                         WebScreen(
                             title = file.getName(),
                             onBackPressed = { onBackPressedDispatcher.onBackPressed() },

@@ -27,7 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
-import com.scto.mobile.ide.theme.XedTheme
+import com.scto.mobile.ide.theme.MobileIDETheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 abstract class WebActivity : ComponentActivity() {
@@ -51,7 +51,7 @@ abstract class WebActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            XedTheme {
+            MobileIDETheme {
                 WebScreen(
                     title = "WebView",
                     onBackPressed = { handleBackPressed() },
