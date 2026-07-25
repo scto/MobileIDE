@@ -358,10 +358,13 @@ object SetupWorker {
                 }
             }
 
-            // Copy rootfs archive to the cache directory as sandbox.tar.gz
-            val sandboxTar = File(context.cacheDir, "sandbox.tar.gz")
+            // Copy rootfs archive to the cache directory and proot_tmp as sandbox.tar.gz
+            val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+            val sandboxTarCache = File(context.cacheDir, "sandbox.tar.gz")
+            val sandboxTarTmp = File(prootTmpDir, "sandbox.tar.gz")
             if (rootfsTar.exists()) {
-                rootfsTar.copyTo(sandboxTar, overwrite = true)
+                rootfsTar.copyTo(sandboxTarCache, overwrite = true)
+                rootfsTar.copyTo(sandboxTarTmp, overwrite = true)
             }
 
             // Execute setup.sh in the background to extract and install all tools
@@ -385,7 +388,6 @@ object SetupWorker {
             pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
             pbEnv["LINKER"] =
                 if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
-            val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
             pbEnv["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
             pbEnv["TMPDIR"] = prootTmpDir.absolutePath
             pbEnv["TMP_DIR"] = prootTmpDir.absolutePath
@@ -425,8 +427,11 @@ object SetupWorker {
                 throw IllegalStateException("Setup-Skript fehlgeschlagen mit Exit-Code $exitCode")
             }
 
-            if (sandboxTar.exists()) {
-                sandboxTar.delete()
+            if (sandboxTarCache.exists()) {
+                sandboxTarCache.delete()
+            }
+            if (sandboxTarTmp.exists()) {
+                sandboxTarTmp.delete()
             }
 
             File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
