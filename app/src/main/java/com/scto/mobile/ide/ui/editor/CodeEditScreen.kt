@@ -1779,32 +1779,45 @@ private suspend fun performBuild(
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Project Path: $projectPath")
 
+        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
         val prefixDir = context.filesDir.parentFile!!
+        val activeDistroDir = File(prefixDir, "local/$distroName")
         val sandboxDir = File(prefixDir, "local/sandbox")
+        val distroDirs = listOf(activeDistroDir, sandboxDir).distinct().filter { it.exists() }
 
         // 1. Check OpenJDK installation
-        val isJdk17Installed =
-            File(sandboxDir, "usr/lib/jvm").let { jvm ->
-                jvm.exists() &&
-                    jvm.isDirectory &&
-                    (jvm.listFiles()?.any { it.name.startsWith("java-17-openjdk") && File(it, "bin/java").exists() }
-                        ?: false)
-            }
-        val isJdk21Installed =
-            File(sandboxDir, "usr/lib/jvm").let { jvm ->
-                jvm.exists() &&
-                    jvm.isDirectory &&
-                    (jvm.listFiles()?.any { it.name.startsWith("java-21-openjdk") && File(it, "bin/java").exists() }
-                        ?: false)
-            }
+        val isJdk17Installed = distroDirs.any { d ->
+            val jvm = File(d, "usr/lib/jvm")
+            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                it.name.startsWith("java-17-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
+            } ?: false)
+        }
+        val isJdk21Installed = distroDirs.any { d ->
+            val jvm = File(d, "usr/lib/jvm")
+            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                it.name.startsWith("java-21-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
+            } ?: false)
+        }
+        val isJdk24Installed = distroDirs.any { d ->
+            val jvm = File(d, "usr/lib/jvm")
+            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
+                it.name.startsWith("java-24-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
+            } ?: false)
+        }
+        val isJdkInstalled = isJdk17Installed || isJdk21Installed || isJdk24Installed || distroDirs.any { d ->
+            File(d, "usr/bin/java").exists() || File(d, "usr/lib/jvm/default-java").exists()
+        }
 
         // 2. Check Gradle installation
-        val isGradleInstalled = File(sandboxDir, "usr/bin/gradle").exists()
+        val isGradleInstalled = distroDirs.any { d ->
+            File(d, "usr/bin/gradle").exists() || File(d, "usr/local/bin/gradle").exists() || File(d, "bin/gradle").exists()
+        } || File(projectPath, "gradlew").exists()
 
         // 3. Check Android SDK installation
         val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
-        val distroSdk = File(sandboxDir, "root/android-sdk")
-        val isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
+        val distroSdks = distroDirs.map { File(it, "root/android-sdk") } + distroDirs.map { File(it, "home/android-sdk") }
+        val isAndroidSdkInstalled = hostSdk.exists() || distroSdks.any { it.exists() }
 
         // 4. Optional: Check NDK and CMake if project has native files
         val hasCpp =
@@ -1813,14 +1826,18 @@ private suspend fun performBuild(
                 File(projectPath, "CMakeLists.txt").exists() ||
                 File(projectPath, "app/CMakeLists.txt").exists()
 
-        val isCmakeInstalled = File(sandboxDir, "usr/bin/cmake").exists()
+        val isCmakeInstalled = distroDirs.any { d ->
+            File(d, "usr/bin/cmake").exists() || File(d, "usr/local/bin/cmake").exists() || File(d, "bin/cmake").exists()
+        } || hostSdk.let { File(it, "cmake").exists() } || distroSdks.any { File(it, "cmake").exists() }
+
         val isNdkInstalled =
             (hostSdk.exists() && (File(hostSdk, "ndk").exists() || File(hostSdk, "ndk-bundle").exists())) ||
-                (distroSdk.exists() && File(distroSdk, "ndk").exists())
+                distroSdks.any { File(it, "ndk").exists() || File(it, "ndk-bundle").exists() } ||
+                distroDirs.any { d -> File(d, "usr/lib/android-sdk/ndk").exists() || File(d, "usr/ndk").exists() }
 
         // Compile list of missing components
         val missingComponents = mutableListOf<String>()
-        if (!isJdk17Installed && !isJdk21Installed) {
+        if (!isJdkInstalled) {
             missingComponents.add("OpenJDK 17 or OpenJDK 21")
         }
         if (!isGradleInstalled) {
@@ -1857,18 +1874,21 @@ private suspend fun performBuild(
 
         // Determine JAVA_HOME inside PRoot container
         val javaHomeInContainer =
-            File(sandboxDir, "usr/lib/jvm").let { jvm ->
+            distroDirs.firstNotNullOfOrNull { d ->
+                val jvm = File(d, "usr/lib/jvm")
                 if (jvm.exists() && jvm.isDirectory) {
                     val dirs = jvm.listFiles()
                     val java21 = dirs?.find { it.name.startsWith("java-21-openjdk") && File(it, "bin/java").exists() }
                     val java17 = dirs?.find { it.name.startsWith("java-17-openjdk") && File(it, "bin/java").exists() }
+                    val java24 = dirs?.find { it.name.startsWith("java-24-openjdk") && File(it, "bin/java").exists() }
                     when {
                         java21 != null -> "/usr/lib/jvm/${java21.name}"
                         java17 != null -> "/usr/lib/jvm/${java17.name}"
-                        else -> ""
+                        java24 != null -> "/usr/lib/jvm/${java24.name}"
+                        else -> null
                     }
-                } else ""
-            }
+                } else null
+            } ?: ""
 
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
 

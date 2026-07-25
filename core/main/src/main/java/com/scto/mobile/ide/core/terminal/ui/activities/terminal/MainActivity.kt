@@ -31,13 +31,15 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+
 import com.scto.mobile.ide.core.terminal.service.SessionService
 import com.scto.mobile.ide.core.terminal.ui.navHosts.MainActivityNavHost
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalScreen
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.terminalView
-import com.scto.mobile.ide.core.terminal.ui.theme.TermixTheme
+import com.scto.mobile.ide.core.terminal.ui.theme.MobileIDETheme
 import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -60,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     // and triggers recomposition of the entire tree when scheme changes
                     val currentColorScheme by ColorSchemeManager.currentScheme
                     
-                    TermixTheme(terminalColorScheme = currentColorScheme) {
+                    MobileIDETheme(terminalColorScheme = currentColorScheme) {
                         Surface(modifier = Modifier.fillMaxSize()) {
                             val navController = rememberNavController()
                             MainActivityNavHost(navController = navController, mainActivity = this@MainActivity)
@@ -82,14 +84,10 @@ class MainActivity : ComponentActivity() {
                                     keyboardController?.hide()
                                 }
                             }
-
-
                         }
                     }
                 }
             }
-
-
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -118,8 +116,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     private var denied = 1
+    
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (!isGranted && denied <= 2) {
@@ -138,6 +136,7 @@ class MainActivity : ComponentActivity() {
     }
 
     var isKeyboardVisible = false
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -150,6 +149,7 @@ class MainActivity : ComponentActivity() {
     }
 
     var wasKeyboardOpen = false
+    
     override fun onPause() {
         super.onPause()
         wasKeyboardOpen = isKeyboardVisible
@@ -168,7 +168,6 @@ class MainActivity : ComponentActivity() {
 
             isKeyboardVisible = isVisible
         }
-
 
         if (wasKeyboardOpen && !isKeyboardVisible){
             terminalView.get()?.let {

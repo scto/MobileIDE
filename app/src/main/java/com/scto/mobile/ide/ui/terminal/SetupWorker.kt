@@ -31,6 +31,10 @@ sealed interface InstallState {
     data class InstallingJdk(val version: String) : InstallState
     object AwaitingBuildToolsSelection : InstallState
     data class InstallingBuildTools(val version: String) : InstallState
+    object AwaitingNdkSelection : InstallState
+    data class InstallingNdk(val version: String) : InstallState
+    object AwaitingCmakeSelection : InstallState
+    data class InstallingCmake(val version: String) : InstallState
     object Success : InstallState
     data class Error(val message: String) : InstallState
 }
@@ -46,9 +50,11 @@ data class SetupState(
     val logs: List<String> = emptyList(),
     val startTimeMs: Long = 0L,
     val currentStep: Int = 0,
-    val totalSteps: Int = 5,
+    val totalSteps: Int = 7,
     val selectedJdk: String = "openjdk-21",
     val selectedBuildTools: String = "build-tools-35.0.1",
+    val selectedNdk: String = "30.0.14904198",
+    val selectedCmake: String = "3.22",
     val showToolchainDialog: Boolean = false
 ) {
     val percentage: Float
@@ -379,11 +385,12 @@ object SetupWorker {
             pbEnv["LD_LIBRARY_PATH"] = libDir.absolutePath
             pbEnv["LINKER"] =
                 if (File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"
-            pbEnv["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
-            pbEnv["TMPDIR"] = context.cacheDir.absolutePath
+            val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+            pbEnv["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
+            pbEnv["TMPDIR"] = prootTmpDir.absolutePath
+            pbEnv["TMP_DIR"] = prootTmpDir.absolutePath
             pbEnv["PROOT"] = prootExec
             pbEnv["PROOT_EXEC"] = prootExec
-            pbEnv["TMP_DIR"] = context.cacheDir.absolutePath
             pbEnv["PRIVATE_DIR"] = context.filesDir.absolutePath
             pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
 
@@ -517,12 +524,79 @@ object SetupWorker {
                     selectedBuildTools = buildToolsVersion,
                     status = "Installiere Build Tools...",
                     logs = _setupState.value.logs + "Installiere Build Tools $buildToolsVersion...",
-                    currentStep = 5
+                    currentStep = 4,
+                    totalSteps = 7
                 )
 
                 installSingleToolchainPackage(context, buildToolsVersion)
 
-                // Phase 5: Completion & Persistent Settings
+                // Move to Phase 5: NDK Selection
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.AwaitingNdkSelection,
+                    status = "Warte auf NDK-Auswahl...",
+                    currentStep = 5,
+                    totalSteps = 7
+                )
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Build Tools installation failed", e)
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(e.message ?: "Build-Tools-Installation fehlgeschlagen"),
+                    error = e.message ?: "Build-Tools-Installation fehlgeschlagen"
+                )
+            }
+        }
+    }
+
+    fun confirmNdkSelection(context: Context, ndkVersion: String) {
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.InstallingNdk(ndkVersion),
+                    selectedNdk = ndkVersion,
+                    status = "Installiere NDK...",
+                    logs = _setupState.value.logs + "Installiere NDK $ndkVersion...",
+                    currentStep = 5,
+                    totalSteps = 7
+                )
+
+                installSingleToolchainPackage(context, "ndk-$ndkVersion")
+
+                // Move to Phase 6: CMake Selection
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.AwaitingCmakeSelection,
+                    status = "Warte auf CMake-Auswahl...",
+                    currentStep = 6,
+                    totalSteps = 7
+                )
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "NDK installation failed", e)
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(e.message ?: "NDK-Installation fehlgeschlagen"),
+                    error = e.message ?: "NDK-Installation fehlgeschlagen"
+                )
+            }
+        }
+    }
+
+    fun confirmCmakeSelection(context: Context, cmakeVersion: String) {
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.InstallingCmake(cmakeVersion),
+                    selectedCmake = cmakeVersion,
+                    status = "Installiere CMake...",
+                    logs = _setupState.value.logs + "Installiere CMake $cmakeVersion...",
+                    currentStep = 6,
+                    totalSteps = 7
+                )
+
+                installSingleToolchainPackage(context, "cmake")
+
+                writeEnvironmentProperties(context)
+
+                // Phase 7: Completion & Persistent Settings
                 val filesDir = context.filesDir
                 val prefixDir = filesDir.parentFile!!
                 File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").createNewFile()
@@ -532,6 +606,8 @@ object SetupWorker {
                     .putBoolean("is_terminal_installed", true)
                     .putString("installed_openjdk_version", _setupState.value.selectedJdk)
                     .putString("installed_build_tools_version", _setupState.value.selectedBuildTools)
+                    .putString("installed_ndk_version", _setupState.value.selectedNdk)
+                    .putString("installed_cmake_version", _setupState.value.selectedCmake)
                     .apply()
 
                 _setupState.value = SetupState(
@@ -545,13 +621,47 @@ object SetupWorker {
                     SessionManager.addNewSession(context)
                 }
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Build Tools installation failed", e)
+                LogCatcher.e("SetupWorker", "CMake installation failed", e)
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
-                    installState = InstallState.Error(e.message ?: "Build-Tools-Installation fehlgeschlagen"),
-                    error = e.message ?: "Build-Tools-Installation fehlgeschlagen"
+                    installState = InstallState.Error(e.message ?: "CMake-Installation fehlgeschlagen"),
+                    error = e.message ?: "CMake-Installation fehlgeschlagen"
                 )
             }
+        }
+    }
+
+    private fun writeEnvironmentProperties(context: Context) {
+        try {
+            val distroName = getDistroName(context)
+            val prefixDir = context.filesDir.parentFile!!
+            val distroDir = File(prefixDir, "local/$distroName")
+            val envProps = File(distroDir, "root/etc/mobileide-environment.properties")
+            envProps.parentFile?.mkdirs()
+
+            val existingLines = if (envProps.exists()) envProps.readLines().toMutableList() else mutableListOf()
+            val propsMap = mutableMapOf<String, String>()
+
+            for (line in existingLines) {
+                val trimmed = line.trim()
+                if (trimmed.isNotEmpty() && !trimmed.startsWith("#") && trimmed.contains("=")) {
+                    val parts = trimmed.split("=", limit = 2)
+                    propsMap[parts[0].trim()] = parts[1].trim()
+                }
+            }
+
+            val ndkVer = _setupState.value.selectedNdk
+            propsMap["ANDROID_NDK_HOME"] = "/root/android-sdk/ndk/$ndkVer"
+            propsMap["NDK_HOME"] = "/root/android-sdk/ndk/$ndkVer"
+            propsMap["CMAKE_HOME"] = "/usr"
+
+            val sb = java.lang.StringBuilder()
+            for ((k, v) in propsMap) {
+                sb.append("$k=$v\n")
+            }
+            envProps.writeText(sb.toString())
+        } catch (e: Exception) {
+            LogCatcher.e("SetupWorker", "Failed to write mobileide-environment.properties", e)
         }
     }
 

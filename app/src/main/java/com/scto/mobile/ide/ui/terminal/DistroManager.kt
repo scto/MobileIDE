@@ -106,8 +106,9 @@ object DistroManager {
         val env = mutableMapOf<String, String>()
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
-        env["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
-        env["TMPDIR"] = context.cacheDir.absolutePath
+        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+        env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
+        env["TMPDIR"] = prootTmpDir.absolutePath
 
         val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
         env["LD_LIBRARY_PATH"] = libPath
@@ -173,6 +174,7 @@ object DistroManager {
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
 
+        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
         val env =
             mutableListOf(
                 "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
@@ -183,8 +185,8 @@ object DistroManager {
                 "LOCAL=${prefixDir.absolutePath}/local",
                 "LD_LIBRARY_PATH=${libDir.absolutePath}",
                 "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
-                "PROOT_TMP_DIR=${context.cacheDir.absolutePath}",
-                "TMPDIR=${context.cacheDir.absolutePath}",
+                "PROOT_TMP_DIR=${prootTmpDir.absolutePath}",
+                "TMPDIR=${prootTmpDir.absolutePath}",
                 "MOBILEIDE_VERSION_NAME=$versionName",
                 "MOBILEIDE_VERSION_CODE=$versionCode",
                 "MOBILEIDE_WORKSPACE=$workspacePath",

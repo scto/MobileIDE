@@ -178,6 +178,8 @@ fun SettingsScreen(
     var isAndroidSdkInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform34Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isPlatform35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
+    var isBuildTools35Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
+    var isBuildTools36Installed by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isCmakeInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isNdkInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
     var isBaseUtilsInstalled by remember(refreshTrigger, selectedDistro) { mutableStateOf(false) }
@@ -236,6 +238,13 @@ fun SettingsScreen(
                 File(hostSdk, "platforms/android-34").exists() || File(distroSdk, "platforms/android-34").exists()
             isPlatform35Installed =
                 File(hostSdk, "platforms/android-35").exists() || File(distroSdk, "platforms/android-35").exists()
+
+            isBuildTools35Installed =
+                File(hostSdk, "build-tools/35.0.0").exists() || File(distroSdk, "build-tools/35.0.0").exists() ||
+                    File(hostSdk, "build-tools/35.0.1").exists() || File(distroSdk, "build-tools/35.0.1").exists()
+            isBuildTools36Installed =
+                File(hostSdk, "build-tools/36.0.0").exists() || File(distroSdk, "build-tools/36.0.0").exists() ||
+                    File(hostSdk, "build-tools/36.0.1").exists() || File(distroSdk, "build-tools/36.0.1").exists()
 
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
             isNdkInstalled =
@@ -312,6 +321,95 @@ fun SettingsScreen(
                         )
                         .show()
                     refreshTrigger++
+                }
+            }
+        }
+    }
+
+    fun executeInContainerSync(command: String): com.scto.mobile.ide.core.terminal.exec.ProcessResult {
+        val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
+        val env = DistroManager.getProotEnv(context)
+        return try {
+            val process = ProcessBuilder(fullCommand)
+                .apply {
+                    environment().putAll(env)
+                    redirectErrorStream(true)
+                }
+                .start()
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+            com.scto.mobile.ide.core.terminal.exec.ProcessResult(process.exitValue(), output)
+        } catch (e: Exception) {
+            com.scto.mobile.ide.core.terminal.exec.ProcessResult(-1, e.message ?: "Execution error")
+        }
+    }
+
+    fun runInstallWithPrereqs(jobName: String, command: String) {
+        activeInstallJobName = jobName
+        (context as? android.app.Activity)?.runOnUiThread {
+            Toast.makeText(context, "Voraussetzungen werden geprüft...", Toast.LENGTH_SHORT).show()
+        }
+
+        thread {
+            val prereqResult = kotlinx.coroutines.runBlocking {
+                com.scto.mobile.ide.core.terminal.exec.CommandLineToolsPrerequisites.ensureCommandLineToolsPrerequisites(
+                    context = context,
+                    distroName = selectedDistro,
+                    executeInContainer = ::executeInContainerSync
+                )
+            }
+
+            if (prereqResult.isFailure) {
+                val errorMsg = prereqResult.exceptionOrNull()?.message ?: "Voraussetzungen konnten nicht installiert werden"
+                (context as? android.app.Activity)?.runOnUiThread {
+                    activeInstallJobName = null
+                    Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                }
+                return@thread
+            }
+
+            (context as? android.app.Activity)?.runOnUiThread {
+                Toast.makeText(context, "$jobName wird installiert...", Toast.LENGTH_SHORT).show()
+            }
+
+            val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
+            val env = DistroManager.getProotEnv(context)
+
+            try {
+                val process = ProcessBuilder(fullCommand)
+                    .apply {
+                        environment().putAll(env)
+                        redirectErrorStream(true)
+                    }
+                    .start()
+                process.waitFor()
+                val success = process.exitValue() == 0
+
+                (context as? android.app.Activity)?.runOnUiThread {
+                    activeInstallJobName = null
+                    if (success) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.toast_install_success, jobName),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.toast_install_failed,
+                                jobName,
+                                "Exit code " + process.exitValue(),
+                            ),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                    refreshTrigger++
+                }
+            } catch (e: Exception) {
+                (context as? android.app.Activity)?.runOnUiThread {
+                    activeInstallJobName = null
+                    Toast.makeText(context, "Installationsfehler: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -438,6 +536,22 @@ fun SettingsScreen(
                     onClick = {
                         Toast.makeText(context, "Installierte Buildtools Version: $installedBuildTools", Toast.LENGTH_SHORT).show()
                     }
+                )
+            }
+
+            item(key = "build_settings") {
+                BuildSettingsItem(
+                    isJdk17Installed = isJdk17Installed,
+                    isJdk21Installed = isJdk21Installed,
+                    isAndroidSdkInstalled = isAndroidSdkInstalled,
+                    isPlatform34Installed = isPlatform34Installed,
+                    isPlatform35Installed = isPlatform35Installed,
+                    isBuildTools35Installed = isBuildTools35Installed,
+                    isBuildTools36Installed = isBuildTools36Installed,
+                    isCmakeInstalled = isCmakeInstalled,
+                    isNdkInstalled = isNdkInstalled,
+                    onInstall = ::runInstall,
+                    onInstallWithPrereqs = ::runInstallWithPrereqs,
                 )
             }
 
@@ -1788,9 +1902,12 @@ fun BuildSettingsItem(
     isAndroidSdkInstalled: Boolean,
     isPlatform34Installed: Boolean,
     isPlatform35Installed: Boolean,
+    isBuildTools35Installed: Boolean,
+    isBuildTools36Installed: Boolean,
     isCmakeInstalled: Boolean,
     isNdkInstalled: Boolean,
     onInstall: (String, String) -> Unit,
+    onInstallWithPrereqs: (String, String) -> Unit,
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     val expandDuration = 200
@@ -1884,10 +2001,46 @@ fun BuildSettingsItem(
                             name = stringResource(R.string.settings_build_android_sdk),
                             isInstalled = isAndroidSdkInstalled,
                             onInstall = {
-                                onInstall(
+                                onInstallWithPrereqs(
                                     "Android SDK",
                                     "mkdir -p \$HOME/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d \$HOME/android-sdk && rm /tmp/sdk.zip",
                                 )
+                            },
+                        )
+
+                        BuildToolRow(
+                            name = stringResource(R.string.settings_build_tools),
+                            isInstalled = isBuildTools35Installed || isBuildTools36Installed,
+                            infoText =
+                                if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36"
+                                else if (isBuildTools35Installed) "v35"
+                                else if (isBuildTools36Installed) "v36" else null,
+                            onInstall = {},
+                            customInstallButton = {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstallWithPrereqs(
+                                                "Build-Tools v35",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;35.0.0\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
+                                    ) {
+                                        Text("v35")
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            onInstallWithPrereqs(
+                                                "Build-Tools v36",
+                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;36.0.0\"",
+                                            )
+                                        },
+                                        enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
+                                    ) {
+                                        Text("v36")
+                                    }
+                                }
                             },
                         )
 

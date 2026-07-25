@@ -211,11 +211,181 @@ fun BuildToolsSelectionDialog(
 }
 
 @Composable
+fun NdkSelectionDialog(
+    onConfirmSelection: (String) -> Unit,
+    onDismiss: () -> Unit = {}
+) {
+    val versions = remember {
+        listOf(
+            ToolchainItem("30.0.14904198", "Version 30.0.14904198", isRecommended = true, category = "Android NDK")
+        )
+    }
+    var selectedId by remember { mutableStateOf("30.0.14904198") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Ndk",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Bitte wähle die gewünschte Android NDK Version:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                versions.forEach { item ->
+                    val isSelected = selectedId == item.id
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { selectedId = item.id }
+                            .padding(vertical = 8.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { selectedId = item.id }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (item.isRecommended) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Empfohlen",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirmSelection(selectedId) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Installieren")
+            }
+        }
+    )
+}
+
+@Composable
+fun CmakeSelectionDialog(
+    onConfirmSelection: (String) -> Unit,
+    onDismiss: () -> Unit = {}
+) {
+    val versions = remember {
+        listOf(
+            ToolchainItem("3.18", "Version 3.18", isRecommended = false, category = "CMake"),
+            ToolchainItem("3.22", "Version 3.22", isRecommended = true, category = "CMake"),
+            ToolchainItem("4.1.2", "Version 4.1.2", isRecommended = false, category = "CMake")
+        )
+    }
+    var selectedId by remember { mutableStateOf("3.22") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Cmake",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Bitte wähle die gewünschte CMake Version:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(versions) { item ->
+                        val isSelected = selectedId == item.id
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { selectedId = item.id }
+                                .padding(vertical = 6.dp, horizontal = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = { selectedId = item.id }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = item.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (item.isRecommended) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = "Empfohlen",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirmSelection(selectedId) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Installieren")
+            }
+        }
+    )
+}
+
+@Composable
 fun TerminalSetupOverlayWindow(
     setupState: SetupState,
     onClearLogs: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
     val context = LocalContext.current
     val durationText = remember(setupState.startTimeMs) {
         if (setupState.startTimeMs == 0L) ""
@@ -242,16 +412,34 @@ fun TerminalSetupOverlayWindow(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header Row: Title & Action Buttons (Share & Clear)
+            // Header Row: Title & Action Buttons (Expand/Collapse, Share & Clear)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.5.dp,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                if (setupState.isActive) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else if (setupState.isSuccess) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Success",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Status",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -268,6 +456,15 @@ fun TerminalSetupOverlayWindow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                }
+
+                // Expand / Collapse Toggle Button
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Einklappen" else "Ausklappen",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
                 // Share Button
@@ -301,58 +498,62 @@ fun TerminalSetupOverlayWindow(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            AnimatedVisibility(visible = expanded) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(10.dp))
 
-            // Progress Bar
-            if (setupState.percentage >= 0f) {
-                LinearProgressIndicator(
-                    progress = { setupState.percentage },
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp))
-                )
-            } else {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp))
-                )
-            }
+                    // Progress Bar
+                    if (setupState.percentage >= 0f) {
+                        LinearProgressIndicator(
+                            progress = { setupState.percentage },
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp))
+                        )
+                    } else {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp))
+                        )
+                    }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Installation Output Logs:",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Scrollable Log Window
-            val lazyListState = rememberLazyListState()
-            LaunchedEffect(setupState.logs.size) {
-                if (setupState.logs.isNotEmpty()) {
-                    lazyListState.animateScrollToItem(setupState.logs.size - 1)
-                }
-            }
-
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(280.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.9f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(10.dp)
-            ) {
-                items(setupState.logs) { log ->
                     Text(
-                        text = log,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = Color(0xFF00FF66)
+                        text = "Installation Output Logs:",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.secondary
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Scrollable Log Window
+                    val lazyListState = rememberLazyListState()
+                    LaunchedEffect(setupState.logs.size) {
+                        if (setupState.logs.isNotEmpty()) {
+                            lazyListState.animateScrollToItem(setupState.logs.size - 1)
+                        }
+                    }
+
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(280.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.9f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(10.dp)
+                    ) {
+                        items(setupState.logs) { log ->
+                            Text(
+                                text = log,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontFamily = FontFamily.Monospace,
+                                color = Color(0xFF00FF66)
+                            )
+                        }
+                    }
                 }
             }
         }

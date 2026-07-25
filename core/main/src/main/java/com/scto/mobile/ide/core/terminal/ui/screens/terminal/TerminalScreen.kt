@@ -82,6 +82,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.navigation.NavController
 import com.google.android.material.R
 import androidx.compose.ui.res.stringResource
+
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
 import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch

@@ -306,6 +306,20 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                             }
                         )
                     }
+                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingNdkSelection -> {
+                        com.scto.mobile.ide.ui.terminal.NdkSelectionDialog(
+                            onConfirmSelection = { ndk ->
+                                SetupWorker.confirmNdkSelection(context, ndk)
+                            }
+                        )
+                    }
+                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingCmakeSelection -> {
+                        com.scto.mobile.ide.ui.terminal.CmakeSelectionDialog(
+                            onConfirmSelection = { cmake ->
+                                SetupWorker.confirmCmakeSelection(context, cmake)
+                            }
+                        )
+                    }
                     else -> {}
                 }
 

@@ -226,7 +226,7 @@
     {
       "grammar": "textmate/restructuredtext/syntaxes/rst.tmLanguage.json",
       "name": "restructuredtext",
-      "scopeName": "text.restructuredtext",
+      "scopeName": "source.rst",
       "languageConfiguration": "textmate/restructuredtext/language-configuration.json"
     },
     {

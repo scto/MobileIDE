@@ -206,8 +206,6 @@ fun TerminalScreen(navController: NavController) {
         SetupWorker.startSetupIfNeeded(context)
     }
 
-    var isLogBottomSheetExpanded by remember { mutableStateOf(false) }
-
     when (setupState.installState) {
         is InstallState.AwaitingJdkSelection -> {
             JdkSelectionDialog(
@@ -220,6 +218,20 @@ fun TerminalScreen(navController: NavController) {
             BuildToolsSelectionDialog(
                 onConfirmSelection = { buildTools ->
                     SetupWorker.confirmBuildToolsSelection(context, buildTools)
+                }
+            )
+        }
+        is InstallState.AwaitingNdkSelection -> {
+            NdkSelectionDialog(
+                onConfirmSelection = { ndk ->
+                    SetupWorker.confirmNdkSelection(context, ndk)
+                }
+            )
+        }
+        is InstallState.AwaitingCmakeSelection -> {
+            CmakeSelectionDialog(
+                onConfirmSelection = { cmake ->
+                    SetupWorker.confirmCmakeSelection(context, cmake)
                 }
             )
         }

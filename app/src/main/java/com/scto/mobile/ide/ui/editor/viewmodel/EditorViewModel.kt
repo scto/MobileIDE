@@ -859,7 +859,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     "rhistory",
                     "rprofile" -> "source.r"
                     "cshtml" -> "text.html.cshtml"
-                    "rst" -> "text.restructuredtext"
+                    "rst" -> "source.rst"
                     "rb",
                     "rbx",
                     "rjs",

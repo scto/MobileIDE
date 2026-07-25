@@ -66,8 +66,9 @@ object GradleTaskManagerImpl : GradleTaskManager {
     private fun getProotEnv(context: Context): Map<String, String> {
         val env = mutableMapOf<String, String>()
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
-        env["PROOT_TMP_DIR"] = context.cacheDir.absolutePath
-        env["TMPDIR"] = context.cacheDir.absolutePath
+        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+        env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
+        env["TMPDIR"] = prootTmpDir.absolutePath
         val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
         env["LD_LIBRARY_PATH"] = libPath
         if (File(nativeLibDir, "libproot-loader.so").exists()) {

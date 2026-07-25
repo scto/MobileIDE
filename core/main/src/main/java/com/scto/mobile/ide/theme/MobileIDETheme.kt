@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+
 import com.scto.mobile.ide.core.terminal.settings.Settings
 
 val isDarkTheme: Boolean
@@ -15,7 +16,7 @@ val amoled: Boolean
     get() = Settings.amoled
 
 @Composable
-fun XedTheme(
+fun MobileIDETheme(
     darkTheme: Boolean = isDarkTheme,
     content: @Composable () -> Unit
 ) {

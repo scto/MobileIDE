@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
+
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.InputMode
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.LayoutMode
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.ShellType
+
 object Settings {
     //Boolean
     var amoled
