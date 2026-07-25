@@ -1,6 +1,8 @@
-# Typst Xed-Editor Extension
+# Typst Extension for MobileIDE
 
-This extension adds support for the [Typst](https://typst.app/) language in Xed-Editor.
+> **Hinweis zur Herkunft:** Dieses Plugin basiert auf/wurde übernommen von [xed-typst](https://github.com/KonerDev/xed-typst) von Autor **KonerDev** (ursprünglich entwickelt für Xed-Editor) und ist als Third-Party-Erweiterung in MobileIDE integriert unter Beibehaltung der ursprünglichen Lizenz.
+
+This extension adds support for the [Typst](https://typst.app/) language in MobileIDE.
 
 ## Features
 

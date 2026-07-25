@@ -37,7 +37,7 @@ import com.scto.mobile.ide.core.terminal.ui.navHosts.MainActivityNavHost
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalScreen
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.terminalView
-import com.scto.mobile.ide.core.terminal.ui.theme.MobileIDETheme
+import com.scto.mobile.ide.theme.MobileIDETheme
 import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
 
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     // and triggers recomposition of the entire tree when scheme changes
                     val currentColorScheme by ColorSchemeManager.currentScheme
                     
-                    MobileIDETheme(terminalColorScheme = currentColorScheme) {
+                    MobileIDETheme {
                         Surface(modifier = Modifier.fillMaxSize()) {
                             val navController = rememberNavController()
                             MainActivityNavHost(navController = navController, mainActivity = this@MainActivity)

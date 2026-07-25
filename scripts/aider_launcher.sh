@@ -1,15 +1,16 @@
-```bash
 #!/bin/bash
 
 # --- FARBEN ---
 G="\e[0;32m"; C="\e[0;36m"; Y="\e[0;33m"; R="\e[0;31m"; W="\e[0;37m"; M="\e[0;35m"; B="\e[1m"; NC="\033[0m"
 
-# --- PFADE (Vom Setup-Script injiziert) ---
-VENV_PATH_VAL="/data/data/jkas.androidpe/files/home/.venv"
-SECRET_GEMINI="/data/data/jkas.androidpe/files/home/.gemini_api_key.secrets"
-SECRET_ANTHROPIC="/data/data/jkas.androidpe/files/home/.anthropic_api_key.secrets"
-SECRET_OPENAI="/data/data/jkas.androidpe/files/home/.openai_api_key.secrets"
-SECRET_DEEPSEEK="/data/data/jkas.androidpe/files/home/.deepseek_api_key.secrets"
+# --- PFADE ---
+PKG_NAME="${APP_PACKAGE_NAME:-com.scto.mobile.ide}"
+HOME_DIR="/data/data/$PKG_NAME/files/home"
+VENV_PATH_VAL="$HOME_DIR/.venv"
+SECRET_GEMINI="$HOME_DIR/.gemini_api_key.secrets"
+SECRET_ANTHROPIC="$HOME_DIR/.anthropic_api_key.secrets"
+SECRET_OPENAI="$HOME_DIR/.openai_api_key.secrets"
+SECRET_DEEPSEEK="$HOME_DIR/.deepseek_api_key.secrets"
 
 # --- GLOBALE STATUS-VARIABLEN (Start-Konfiguration) ---
 SUBTREE_MODE=false
@@ -65,7 +66,7 @@ run_aider() {
         echo -e "  ${G}✓${NC} Gefunden: .aider.conf.yml"
     fi
 
-    # Aktualisierte Liste basierend auf deinen McsIDE Entwicklungs-Dokumenten
+    # Aktualisierte Liste basierend auf deinen MobileIDE Entwicklungs-Dokumenten
     local context_files=(
         "activeDevelopment.md"
         "progress.md"
@@ -377,6 +378,3 @@ while true; do
         *) echo -e "${R}Ungültige Eingabe!${NC}"; sleep 1 ;;
     esac
 done
-
-
-```
