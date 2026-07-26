@@ -235,9 +235,39 @@ echo "$linesToAdd" | while IFS= read -r line; do
     esac
 done
 
-rm "$TMP_DIR"/sandbox.tar.gz
-# DO NOT REMOVE THIS FILE JUST DON'T, TRUST ME
-touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
+rm -f "$TMP_DIR/sandbox.tar.gz"
+touch "$LOCAL/.terminal_setup_ok_DO_NOT_REMOVE"
+
+# Sorge dafür, dass .bashrc & .profile mobileide-environment.properties laden
+mkdir -p "$SANDBOX_DIR/root" "$SANDBOX_DIR/usr/local/bin"
+
+cat << 'EOF' > "$SANDBOX_DIR/root/.bashrc"
+if [ -f /etc/mobileide-environment.properties ]; then
+    set -a
+    . /etc/mobileide-environment.properties
+    set +a
+fi
+export PATH="/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/cmdline-tools/bin:/root/android-sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+EOF
+
+cat << 'EOF' > "$SANDBOX_DIR/root/.profile"
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+EOF
+
+cat << 'EOF' > "$SANDBOX_DIR/usr/local/bin/sdkmanager"
+#!/bin/sh
+if [ -x /root/android-sdk/cmdline-tools/latest/bin/sdkmanager ]; then
+    exec /root/android-sdk/cmdline-tools/latest/bin/sdkmanager "$@"
+elif [ -x /root/android-sdk/cmdline-tools/bin/sdkmanager ]; then
+    exec /root/android-sdk/cmdline-tools/bin/sdkmanager "$@"
+else
+    echo "ERROR: sdkmanager is not installed yet. Run Android SDK Setup in MobileIDE." >&2
+    exit 1
+fi
+EOF
+chmod +x "$SANDBOX_DIR/usr/local/bin/sdkmanager"
 
 info "Installing Node.js APT hook…"
 

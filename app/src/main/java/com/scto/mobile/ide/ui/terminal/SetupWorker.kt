@@ -114,6 +114,7 @@ object SetupWorker {
     }
 
     fun startSequentialSetup(context: Context) {
+        LogCatcher.init(context)
         if (isTerminalInstalled(context)) {
             _setupState.value = SetupState(isActive = false, installState = InstallState.Success, isSuccess = true)
             return
@@ -814,7 +815,7 @@ object SetupWorker {
             propsMap["ANDROID_NDK_HOME"] = "/root/android-sdk/ndk-bundle"
             propsMap["NDK_HOME"] = "/root/android-sdk/ndk-bundle"
             propsMap["CMAKE_HOME"] = "/usr"
-            propsMap["PATH"] = "/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/$buildToolsVer:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            propsMap["PATH"] = "/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/cmdline-tools/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/$buildToolsVer:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
             propsMap["PROOT_TMP_DIR"] = File(context.filesDir, "usr/tmp").absolutePath
 
             val sb = java.lang.StringBuilder()

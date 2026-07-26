@@ -51,8 +51,12 @@ object LogCatcher {
     }
 
     private fun getOrUpdateLogFile(): File? {
-        val config = logConfig ?: return null
-        if (!config.isLogEnabled || config.logFilePath.isEmpty()) return null
+        val isEnabled = logConfig?.isLogEnabled ?: true
+        if (!isEnabled) return null
+
+        val baseLogPath = logConfig?.logFilePath?.ifEmpty { null }
+            ?: contextRef?.get()?.let { (it.getExternalFilesDir("logs") ?: File(it.filesDir, "logs")).absolutePath }
+            ?: return null
 
         val currentProj = com.scto.mobile.ide.ui.terminal.DistroManager.currentProject
         if (logFile == null || currentProj != cachedProject) {
@@ -62,9 +66,9 @@ object LogCatcher {
                     var logDir =
                         if (!currentProj.isNullOrBlank()) {
                             val projName = File(currentProj).name
-                            File(config.logFilePath, projName)
+                            File(baseLogPath, projName)
                         } else {
-                            File(config.logFilePath)
+                            File(baseLogPath)
                         }
 
                     var success = true
