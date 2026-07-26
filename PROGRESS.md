@@ -2,6 +2,33 @@
 
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
+## [2026-07-26]
+### Feature Roadmap Prompts 01 - 07 Implementation
+*   **01 - Gradle IDE Terminal Bridge (`01-gradle-ide-terminal-bridge.md`)**:
+    *   Created `GradleLogLine.kt` with regex-based log severity parsing (`INFO`, `WARN`, `ERROR`, `TASK`, `SUCCESS`).
+    *   Refactored `GradleTaskManager` to stream logs via `Flow<GradleLogLine>` and execute wrapper scripts in PRoot.
+    *   Added `GradleTasksDialog.kt` with flag chips (`--info`, `--stacktrace`, etc.) and TopAppBar task trigger.
+*   **02 - UI Build APK & Variant Selection (`02-ui-build-apk-assembledebug.md`)**:
+    *   Created `BuildHelper.kt` for scanning output `.apk` files, auto-saving build variants per project, and installing via `FileProvider`.
+    *   Updated `ToolingBottomSheet.kt` with variant selection cards, APK success cards, and auto-scroll to compile errors.
+*   **03 - Android Keystore Signing Tool (`03-android-keystore-signing-tool.md`)**:
+    *   Created `KeystoreManager.kt` for creating `.jks` keystores, extracting SHA-256 fingerprints, and credential management.
+    *   Created `KeystoreConfigStore.kt` & `KeystoreGradleInjector.kt` to auto-inject `signingConfig` into `build.gradle.kts` and update `.gitignore`.
+    *   Added `KeystoreManagerDialog.kt` GUI wizard in the Build tab.
+*   **04 - Compose Layout Preview Module (`04-compose-layout-preview-module.md`)**:
+    *   Created `:features:layout-preview` module with `ComposePreviewScanner.kt`, `LayoutPreviewRenderer.kt` (<10s SLA target), and `LayoutPreviewBottomSheet.kt`.
+    *   Added automatic `@Composable` scanning and TopAppBar preview icon in `CodeEditScreen.kt`.
+*   **05 - Full LSP & Diagnostics Integration (`05-full-lsp-treesitter-integration.md`)**:
+    *   Connected `textDocument/publishDiagnostics` to the Diagnosis/Problems panel in `ToolingBottomSheet.kt` and inline squiggly underlines.
+    *   Added async LSP extensions in `LspEditorExtensions.kt` for Go-to-Definition, Find-References, Hover tooltips, and Signature Help.
+    *   Created `LspRenameDialog.kt` with WorkspaceEdit diff-preview confirmation before applying multi-file rename edits.
+*   **06 - Modularization & Features Consolidation (`06-modularization-features-consolidation.md`)**:
+    *   Consolidated feature modules in `settings.gradle.kts`: `:features:proot`, `:features:exec`, `:features:terminal`, `:features:lsp`.
+    *   Defined public `ProotSandbox` interface and backwards-compatible facades for plugin SDK contracts (`ShellUtils`).
+*   **07 - Xed-Editor Plugins Migration (`07-migrate-xed-editor-plugins.md`)**:
+    *   Migrated 5 additional Xed-Editor plugins (`go-lsp`, `rust-lsp`, `zig-lsp`, `fsharp-lsp`, `prettier-lsp`) to MobileIDE SDK (`com.scto.mobile.ide.*`).
+    *   Registered all 12 plugins in `settings.gradle.kts` and generated `MIGRATION_STATUS.md`.
+
 ---
 
 ## [2026-07-17]
