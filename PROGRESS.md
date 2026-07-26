@@ -28,6 +28,10 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 *   **07 - Xed-Editor Plugins Migration (`07-migrate-xed-editor-plugins.md`)**:
     *   Migrated 5 additional Xed-Editor plugins (`go-lsp`, `rust-lsp`, `zig-lsp`, `fsharp-lsp`, `prettier-lsp`) to MobileIDE SDK (`com.scto.mobile.ide.*`).
     *   Registered all 12 plugins in `settings.gradle.kts` and generated `MIGRATION_STATUS.md`.
+*   **15 - Consolidate Terminal Features Module (`15-consolidate-terminal-features-module.md`)**:
+    *   Consolidated all terminal functionality (Session backend, ANSI/PTY emulator, View widget rendering, TerminalScreen & TerminalSettingsScreen UI, TerminalService) into `:features:terminal`.
+    *   Migrated all sandbox setup assets (`ideenv`, `idesetup`, `init.sh`, `setup.sh`, `colorschemes/*`) to `features/terminal/src/main/assets/terminal/`.
+    *   Centralized navigation route constants in `TerminalRoutes.kt` (`settings/terminal`).
 
 ---
 

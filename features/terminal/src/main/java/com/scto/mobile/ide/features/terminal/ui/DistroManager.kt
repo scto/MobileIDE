@@ -1,0 +1,290 @@
+/*
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  Thomas Schmid  <tschmid35@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+package com.scto.mobile.ide.features.terminal.ui
+
+import android.content.Context
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.stat
+import com.scto.mobile.ide.core.terminal.ui.screens.terminal.vmstat
+import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.utils.WorkspaceManager
+import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalSessionClient
+import java.io.File
+import java.io.FileOutputStream
+
+object DistroManager {
+    var currentProject: String? = null
+
+    private fun getDistroName(context: Context): String {
+        return context
+            .getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+    }
+
+    private fun getPrefixDir(context: Context): File = context.filesDir.parentFile!!
+
+    private fun getLocalDir(context: Context): File = File(getPrefixDir(context), "local").apply { mkdirs() }
+
+    private fun getBinDir(context: Context): File = File(getLocalDir(context), "bin").apply { mkdirs() }
+
+    private fun getLibDir(context: Context): File = File(getLocalDir(context), "lib").apply { mkdirs() }
+
+    fun buildProotCommand(context: Context, command: Array<String>): List<String> {
+        val distroName = getDistroName(context)
+        LogCatcher.i("DistroManager", "buildProotCommand: distro=$distroName, command=${command.joinToString(" ")}")
+        val prefixDir = getPrefixDir(context)
+        val distroDir = File(prefixDir, "local/$distroName")
+
+        val nativeLibDir = context.applicationInfo.nativeLibraryDir
+        val libProot = File(nativeLibDir, "libproot.so")
+
+        val prootExec = if (libProot.exists()) libProot.absolutePath else File(getBinDir(context), "proot").absolutePath
+
+        val args = mutableListOf<String>()
+        args.add(prootExec)
+        args.add("--kill-on-exit")
+        args.add("--link2symlink")
+        args.add("--sysvipc")
+        args.add("-L")
+        args.add("-0")
+
+        val mounts = listOf("/proc", "/sys", "/dev", "/data", "/storage", "/system")
+        mounts.forEach {
+            if (File(it).exists()) {
+                args.add("-b")
+                args.add(it)
+            }
+        }
+
+        val tmpDir = File(distroDir, "tmp").apply { mkdirs() }
+        args.add("-b")
+        args.add("${tmpDir.absolutePath}:/dev/shm")
+
+        val rootHome = File(distroDir, "root")
+        if (!rootHome.exists()) {
+            rootHome.mkdirs()
+        }
+
+        args.add("-b")
+        args.add("${rootHome.absolutePath}:/root")
+
+        args.add("-b")
+        args.add("${rootHome.absolutePath}:/home")
+
+        args.add("-b")
+        args.add(context.filesDir.absolutePath)
+        args.add("-r")
+        args.add(distroDir.absolutePath)
+
+        args.add("-w")
+        args.add("/home")
+
+        args.add("/usr/bin/env")
+        args.add("-i")
+        args.add("HOME=/home")
+        args.add("NODE_PATH=/home/lsp/node_modules")
+        args.add("PATH=/home/lsp/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
+
+        args.add("LANG=C.UTF-8")
+        args.add("TERM=xterm-256color")
+        args.add("TMPDIR=/tmp")
+
+        args.addAll(command)
+
+        return args
+    }
+
+    fun getProotEnv(context: Context): Map<String, String> {
+        val env = mutableMapOf<String, String>()
+        val nativeLibDir = context.applicationInfo.nativeLibraryDir
+
+        val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+        prootTmpDir.setReadable(true, false)
+        prootTmpDir.setWritable(true, false)
+        prootTmpDir.setExecutable(true, false)
+
+        val writeTest = File(prootTmpDir, ".write_test")
+        try {
+            if (writeTest.createNewFile() || writeTest.exists()) writeTest.delete()
+        } catch (e: Exception) {
+            LogCatcher.e("DistroManager", "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}", e)
+        }
+
+        env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
+        env["TMPDIR"] = prootTmpDir.absolutePath
+        env["TMP_DIR"] = prootTmpDir.absolutePath
+
+        val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
+        env["LD_LIBRARY_PATH"] = libPath
+
+        val loader64 = listOf(File(nativeLibDir, "libproot-loader.so"), File(nativeLibDir, "libloader.so")).firstOrNull { it.exists() }
+        val loader32 = listOf(File(nativeLibDir, "libproot-loader32.so"), File(nativeLibDir, "libloader32.so")).firstOrNull { it.exists() }
+
+        if (loader64 != null) {
+            loader64.setExecutable(true, false)
+            env["PROOT_LOADER"] = loader64.absolutePath
+        }
+        if (loader32 != null) {
+            loader32.setExecutable(true, false)
+            env["PROOT_LOADER32"] = loader32.absolutePath
+            env["PROOT_LOADER_32"] = loader32.absolutePath
+        }
+        return env
+    }
+
+    fun createSession(
+        context: Context,
+        client: TerminalSessionClient,
+        projectPath: String? = null,
+        initCommand: String? = null,
+    ): TerminalSession {
+        LogCatcher.i("DistroManager", "createSession starting (projectPath=$projectPath, initCommand=$initCommand)")
+        val binDir = getBinDir(context)
+        val libDir = getLibDir(context)
+        val prefixDir = getPrefixDir(context)
+        val nativeLibDir = context.applicationInfo.nativeLibraryDir
+
+        val initHostScript = File(binDir, "init-host")
+        // Always copy the latest version of terminal scripts so distro/utility changes take effect
+        copyAsset(context, "terminal/init-host.sh", initHostScript)
+        copyAsset(context, "terminal/init.sh", File(binDir, "init"))
+        copyAsset(context, "terminal/utils.sh", File(binDir, "utils"))
+        copyAsset(context, "terminal/setup.sh", File(binDir, "setup"))
+        copyAsset(context, "terminal/sandbox.sh", File(binDir, "sandbox"))
+        copyAsset(context, "terminal/universal_runner.sh", File(binDir, "universal_runner"))
+        copyAsset(context, "terminal/termux-x11.sh", File(binDir, "termux-x11"))
+        copyAsset(context, "terminal/bin/ideenv", File(binDir, "ideenv"))
+        copyAsset(context, "terminal/bin/idesetup", File(binDir, "idesetup"))
+
+        val lspDir = File(binDir, "lsp").apply { mkdirs() }
+        val lspAssets = context.assets.list("terminal/lsp") ?: emptyArray()
+        for (asset in lspAssets) {
+            copyAsset(context, "terminal/lsp/$asset", File(lspDir, asset))
+            File(lspDir, asset).setExecutable(true)
+        }
+
+        initHostScript.setExecutable(true)
+        File(binDir, "init").setExecutable(true)
+        File(binDir, "utils").setExecutable(true)
+        File(binDir, "setup").setExecutable(true)
+        File(binDir, "sandbox").setExecutable(true)
+        File(binDir, "universal_runner").setExecutable(true)
+        File(binDir, "termux-x11").setExecutable(true)
+        File(binDir, "ideenv").setExecutable(true)
+        File(binDir, "idesetup").setExecutable(true)
+        val workspacePath = WorkspaceManager.getWorkspacePath(context)
+        var versionName = "Unknown"
+        var versionCode = 0L
+        try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            versionName = pInfo.versionName ?: "Unknown"
+            versionCode = pInfo.longVersionCode
+        } catch (e: Exception) {
+            LogCatcher.e("DistroManager", "Failed to retrieve package manager package info", e)
+        }
+        val targetProjectPath = projectPath ?: currentProject ?: ""
+
+        val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+        prootTmpDir.setReadable(true, false)
+        prootTmpDir.setWritable(true, false)
+        prootTmpDir.setExecutable(true, false)
+
+        val env =
+            mutableListOf(
+                "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
+                "HOME=/home",
+                "TERM=xterm-256color",
+                "LANG=C.UTF-8",
+                "PREFIX=${prefixDir.absolutePath}",
+                "LOCAL=${prefixDir.absolutePath}/local",
+                "LD_LIBRARY_PATH=${libDir.absolutePath}",
+                "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
+                "PROOT_TMP_DIR=${prootTmpDir.absolutePath}",
+                "TMPDIR=${prootTmpDir.absolutePath}",
+                "TMP_DIR=${prootTmpDir.absolutePath}",
+                "MOBILEIDE_VERSION_NAME=$versionName",
+                "MOBILEIDE_VERSION_CODE=$versionCode",
+                "MOBILEIDE_WORKSPACE=$workspacePath",
+                "MOBILEIDE_PROJECT_DIR=$targetProjectPath",
+                "MOBILEIDE_DISTRO=${getDistroName(context)}",
+                "PROJECTS=$workspacePath",
+                "NATIVE_LIB_DIR=$nativeLibDir",
+            )
+
+        val loader64 = listOf(File(nativeLibDir, "libproot-loader.so"), File(nativeLibDir, "libloader.so")).firstOrNull { it.exists() }
+        val loader32 = listOf(File(nativeLibDir, "libproot-loader32.so"), File(nativeLibDir, "libloader32.so")).firstOrNull { it.exists() }
+
+        if (loader64 != null) {
+            loader64.setExecutable(true, false)
+            env.add("PROOT_LOADER=${loader64.absolutePath}")
+        }
+        if (loader32 != null) {
+            loader32.setExecutable(true, false)
+            env.add("PROOT_LOADER32=${loader32.absolutePath}")
+            env.add("PROOT_LOADER_32=${loader32.absolutePath}")
+        }
+
+        val libProot = File(nativeLibDir, "libproot.so")
+        val prootExec = if (libProot.exists()) libProot.absolutePath else "${prefixDir.absolutePath}/local/bin/proot"
+        env.add("PROOT_EXEC=$prootExec")
+
+        val statFile = File(getLocalDir(context), "stat")
+        if (!statFile.exists()) statFile.writeText(stat)
+        val vmstatFile = File(getLocalDir(context), "vmstat")
+        if (!vmstatFile.exists()) vmstatFile.writeText(vmstat)
+
+        val shell = "/system/bin/sh"
+        val args =
+            if (initCommand != null) {
+                arrayOf(shell, initHostScript.absolutePath, initCommand)
+            } else {
+                arrayOf(shell, initHostScript.absolutePath)
+            }
+        LogCatcher.i(
+            "DistroManager",
+            "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
+        )
+
+        val createSessionAction = {
+            TerminalSession(shell, context.filesDir.absolutePath, args, env.toTypedArray(), 10000, client)
+        }
+
+        return if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            createSessionAction()
+        } else {
+            var session: TerminalSession? = null
+            var exception: Throwable? = null
+            val latch = java.util.concurrent.CountDownLatch(1)
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    session = createSessionAction()
+                } catch (t: Throwable) {
+                    exception = t
+                } finally {
+                    latch.countDown()
+                }
+            }
+            latch.await()
+            exception?.let { throw it }
+            session!!
+        }
+    }
+
+    private fun copyAsset(context: Context, assetName: String, destFile: File) {
+        try {
+            context.assets.open(assetName).use { input ->
+                FileOutputStream(destFile).use { output -> input.copyTo(output) }
+            }
+        } catch (e: Exception) {
+            LogCatcher.e("DistroManager", "Failed to copy asset $assetName", e)
+        }
+    }
+}

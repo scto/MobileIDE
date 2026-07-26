@@ -49,16 +49,15 @@ Das Projekt wurde in eine hochgradig modulare Struktur mit folgenden Kernmodulen
 *   `:editor` - Code-Editor-Logik (basierend auf sora-editor, Verwaltung geöffneter Tabs und Editoraktionen).
 *   `:editor-lsp` - LSP (Language Server Protocol) Integration und Unterstützung für den Editor.
 *   `:language-treesitter` - Syntaxhervorhebungs- und semantische Analyse-Engine via TreeSitter für Java, Kotlin, XML, Log und C++.
-*   `:core:main` - Zentrales Kern-IDE-Modul (Hauptnavigation, Terminal-Sitzungsverwaltung-Backend, Design- und Theme-Konfigurationen).
+*   `:core:main` - Zentrales Kern-IDE-Modul (Hauptnavigation und Theme-Konfigurationen).
 *   `:core:components` - Allgemeine UI-Komponenten, Jetpack Compose Einstellungs-Widgets und BottomSheet-Komponenten.
 *   `:core:resources` - Allgemeine Ressourcen (Symbole, String-Übersetzungen, Bild-Assets).
-*   `:core:terminal-emulator` - Terminal-Parser, ANSI-Steuerzeichen-Interpreter, PTY-Prozess-Starter/Runner.
-*   `:core:terminal-view` - Core-Android-View zur Darstellung der Terminalmatrix und Erfassung von Tastatureingaben.
+*   `:features:terminal` - Vollständig konsolidiertes Terminal-Feature: Session-Backend, ANSI/PTY-Emulator, View-Rendering, Terminal-Screen- und Settings-UI, TerminalService, Sandbox-Setup-Assets (ideenv, idesetup, init.sh, setup.sh, Farbschemata).
 *   `:core:apk-builder` - Eigenes APK-Kompilierungs-Tool (AAPT2-Compiler, DX/D8-Compiler, Signierung, Zipalign und Paketierung).
 *   `:core:tooling:tooling-api` - Schnittstellen für das Logging-Framework und Gradle-Task-Definitionen.
 *   `:core:tooling:tooling-impl` - Kategorisiertes Echtzeit-Logging-Panel (Terminal, Fehler, IDE-Protokoll, Build, LSP) und Gradle-Task-Panel mit Checklisten-UI.
 
-**Wichtige Assets (`app/src/main/assets/`)**:
+**Wichtige Assets (`features/terminal/src/main/assets/`)**:
 *   `textmate/`: TextMate-Grammatiken und Konfigurationen für die Ausweich-Syntaxhervorhebung.
 *   `queries/`: TreeSitter-Abfragen (Query-Dateien).
 *   `terminal/`: Integrierte Terminal-Startskripte (`ideenv`, `idesetup`, `init.sh`, `setup.sh`) sowie integrierte Farbschemata unter `terminal/colorschemes/`.
