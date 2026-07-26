@@ -211,6 +211,88 @@ fun BuildToolsSelectionDialog(
 }
 
 @Composable
+fun PlatformSelectionDialog(
+    onConfirmSelection: (String) -> Unit,
+    onDismiss: () -> Unit = {}
+) {
+    val versions = remember {
+        listOf(
+            ToolchainItem("35", "Android 15 (API 35)", isRecommended = true, category = "Android Platform"),
+            ToolchainItem("34", "Android 14 (API 34)", isRecommended = false, category = "Android Platform"),
+            ToolchainItem("33", "Android 13 (API 33)", isRecommended = false, category = "Android Platform")
+        )
+    }
+    var selectedId by remember { mutableStateOf("35") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Android Platform API auswählen",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Bitte wähle das gewünschte Android Platform SDK (API Level):",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                versions.forEach { item ->
+                    val isSelected = selectedId == item.id
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { selectedId = item.id }
+                            .padding(vertical = 8.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { selectedId = item.id }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (item.isRecommended) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Empfohlen",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirmSelection(selectedId) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Weiter")
+            }
+        }
+    )
+}
+
+@Composable
 fun NdkSelectionDialog(
     onConfirmSelection: (String) -> Unit,
     onDismiss: () -> Unit = {}
@@ -380,6 +462,63 @@ fun CmakeSelectionDialog(
 }
 
 @Composable
+fun SetupProgressOverlay(
+    progress: Float, // 0.0f bis 1.0f
+    elapsedSeconds: Long,
+    estimatedTotalSeconds: Long,
+    title: String = "Linux RootFS wird installiert..."
+) {
+    val remainingSeconds = maxOf(0L, estimatedTotalSeconds - elapsedSeconds)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = title, fontWeight = FontWeight.Bold)
+                Text(text = "${(progress.coerceIn(0f, 1f) * 100).toInt()}%", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Verstrichen: ${formatTime(elapsedSeconds)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Restzeit ca.: ${formatTime(remainingSeconds)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
+
+private fun formatTime(seconds: Long): String {
+    val m = seconds / 60
+    val s = seconds % 60
+    return String.format("%02d:%02d", m, s)
+}
+
+@Composable
 fun TerminalSetupOverlayWindow(
     setupState: SetupState,
     onClearLogs: () -> Unit,
@@ -387,14 +526,17 @@ fun TerminalSetupOverlayWindow(
 ) {
     var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
     val context = LocalContext.current
-    val durationText = remember(setupState.startTimeMs) {
-        if (setupState.startTimeMs == 0L) ""
-        else {
-            val elapsedSec = (System.currentTimeMillis() - setupState.startTimeMs) / 1000
-            val min = elapsedSec / 60
-            val sec = elapsedSec % 60
-            String.format("%02d:%02d verstrichen", min, sec)
-        }
+    val elapsedSeconds = remember(setupState.startTimeMs) {
+        if (setupState.startTimeMs == 0L) 0L
+        else (System.currentTimeMillis() - setupState.startTimeMs) / 1000
+    }
+    val progress = if (setupState.percentage >= 0f) setupState.percentage else 0f
+    val estimatedTotalSeconds = if (progress > 0.05f) (elapsedSeconds / progress).toLong() else 180L
+    val remainingSeconds = maxOf(0L, estimatedTotalSeconds - elapsedSeconds)
+
+    val durationText = remember(elapsedSeconds, remainingSeconds) {
+        if (elapsedSeconds == 0L) ""
+        else "Verstrichen: ${formatTime(elapsedSeconds)} | Restzeit ca.: ${formatTime(remainingSeconds)}"
     }
 
     Card(
@@ -442,13 +584,27 @@ fun TerminalSetupOverlayWindow(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = setupState.status.ifEmpty { "Terminal-Setup läuft..." },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = setupState.status.ifEmpty { "Terminal-Setup läuft..." },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (setupState.percentage >= 0f) {
+                            Text(
+                                text = "${(setupState.percentage * 100).toInt()}%",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                     if (durationText.isNotEmpty()) {
                         Text(
                             text = durationText,

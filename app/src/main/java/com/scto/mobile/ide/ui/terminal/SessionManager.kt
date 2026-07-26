@@ -32,6 +32,10 @@ object SessionManager {
             } else null
 
     fun addNewSession(context: Context, initCommand: String? = null, tabTitle: String? = null) {
+        if (LogCatcher.isLoggingEnabled) {
+            SetupWorker.logTerminalSetup(context)
+        }
+
         val client =
             object : TerminalSessionClient {
                 override fun onTextChanged(changedSession: TerminalSession) {}
@@ -61,22 +65,32 @@ object SessionManager {
 
                 override fun getTerminalCursorStyle(): Int = 0
 
-                override fun logError(tag: String, message: String) {}
+                override fun logError(tag: String, message: String) {
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, message)
+                }
 
-                override fun logWarn(tag: String, message: String) {}
+                override fun logWarn(tag: String, message: String) {
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.w(tag, message)
+                }
 
-                override fun logInfo(tag: String, message: String) {}
+                override fun logInfo(tag: String, message: String) {
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.i(tag, message)
+                }
 
-                override fun logDebug(tag: String, message: String) {}
+                override fun logDebug(tag: String, message: String) {
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.d(tag, message)
+                }
 
-                override fun logVerbose(tag: String, message: String) {}
+                override fun logVerbose(tag: String, message: String) {
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.d(tag, message)
+                }
 
                 override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
-                    e.printStackTrace()
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, message, e)
                 }
 
                 override fun logStackTrace(tag: String, e: Exception) {
-                    e.printStackTrace()
+                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, e.message ?: "Stack trace", e)
                 }
             }
 

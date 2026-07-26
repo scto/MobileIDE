@@ -266,35 +266,6 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
                                         com.scto.mobile.ide.ui.components.UpdateCheckerDialog(context = activityContext)
                                     }
                                 }
-                                
-                                if (setupState.isActive) {
-                                    Card(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .fillMaxWidth()
-                                            .padding(16.dp)
-                                            .navigationBarsPadding(),
-                                        elevation = CardDefaults.cardElevation(8.dp),
-                                        shape = RoundedCornerShape(12.dp)
-                                    ) {
-                                        Column(modifier = Modifier.padding(16.dp)) {
-                                            Text(
-                                                "Terminal Setup: ${setupState.status}", 
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                maxLines = 1
-                                            )
-                                            Spacer(Modifier.height(8.dp))
-                                            if (setupState.percentage >= 0f) {
-                                                LinearProgressIndicator(
-                                                    progress = { setupState.percentage },
-                                                    modifier = Modifier.fillMaxWidth()
-                                                )
-                                            } else {
-                                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }

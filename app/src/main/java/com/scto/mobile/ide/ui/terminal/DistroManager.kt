@@ -106,18 +106,36 @@ object DistroManager {
         val env = mutableMapOf<String, String>()
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
 
-        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+        val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+        prootTmpDir.setReadable(true, false)
+        prootTmpDir.setWritable(true, false)
+        prootTmpDir.setExecutable(true, false)
+
+        val writeTest = File(prootTmpDir, ".write_test")
+        try {
+            if (writeTest.createNewFile() || writeTest.exists()) writeTest.delete()
+        } catch (e: Exception) {
+            LogCatcher.e("DistroManager", "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}", e)
+        }
+
         env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
         env["TMPDIR"] = prootTmpDir.absolutePath
+        env["TMP_DIR"] = prootTmpDir.absolutePath
 
         val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
         env["LD_LIBRARY_PATH"] = libPath
 
-        if (File(nativeLibDir, "libproot-loader.so").exists()) {
-            env["PROOT_LOADER"] = "$nativeLibDir/libproot-loader.so"
+        val loader64 = listOf(File(nativeLibDir, "libproot-loader.so"), File(nativeLibDir, "libloader.so")).firstOrNull { it.exists() }
+        val loader32 = listOf(File(nativeLibDir, "libproot-loader32.so"), File(nativeLibDir, "libloader32.so")).firstOrNull { it.exists() }
+
+        if (loader64 != null) {
+            loader64.setExecutable(true, false)
+            env["PROOT_LOADER"] = loader64.absolutePath
         }
-        if (File(nativeLibDir, "libproot-loader32.so").exists()) {
-            env["PROOT_LOADER32"] = "$nativeLibDir/libproot-loader32.so"
+        if (loader32 != null) {
+            loader32.setExecutable(true, false)
+            env["PROOT_LOADER32"] = loader32.absolutePath
+            env["PROOT_LOADER_32"] = loader32.absolutePath
         }
         return env
     }
@@ -174,7 +192,11 @@ object DistroManager {
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
 
-        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+        val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+        prootTmpDir.setReadable(true, false)
+        prootTmpDir.setWritable(true, false)
+        prootTmpDir.setExecutable(true, false)
+
         val env =
             mutableListOf(
                 "PATH=${System.getenv("PATH")}:/sbin:${binDir.absolutePath}",
@@ -187,6 +209,7 @@ object DistroManager {
                 "LINKER=${if(File("/system/bin/linker64").exists()) "/system/bin/linker64" else "/system/bin/linker"}",
                 "PROOT_TMP_DIR=${prootTmpDir.absolutePath}",
                 "TMPDIR=${prootTmpDir.absolutePath}",
+                "TMP_DIR=${prootTmpDir.absolutePath}",
                 "MOBILEIDE_VERSION_NAME=$versionName",
                 "MOBILEIDE_VERSION_CODE=$versionCode",
                 "MOBILEIDE_WORKSPACE=$workspacePath",
@@ -196,12 +219,17 @@ object DistroManager {
                 "NATIVE_LIB_DIR=$nativeLibDir",
             )
 
-        if (File(nativeLibDir, "libproot-loader.so").exists()) {
-            env.add("PROOT_LOADER=$nativeLibDir/libproot-loader.so")
-        }
+        val loader64 = listOf(File(nativeLibDir, "libproot-loader.so"), File(nativeLibDir, "libloader.so")).firstOrNull { it.exists() }
+        val loader32 = listOf(File(nativeLibDir, "libproot-loader32.so"), File(nativeLibDir, "libloader32.so")).firstOrNull { it.exists() }
 
-        if (File(nativeLibDir, "libproot-loader32.so").exists()) {
-            env.add("PROOT_LOADER32=$nativeLibDir/libproot-loader32.so")
+        if (loader64 != null) {
+            loader64.setExecutable(true, false)
+            env.add("PROOT_LOADER=${loader64.absolutePath}")
+        }
+        if (loader32 != null) {
+            loader32.setExecutable(true, false)
+            env.add("PROOT_LOADER32=${loader32.absolutePath}")
+            env.add("PROOT_LOADER_32=${loader32.absolutePath}")
         }
 
         val libProot = File(nativeLibDir, "libproot.so")

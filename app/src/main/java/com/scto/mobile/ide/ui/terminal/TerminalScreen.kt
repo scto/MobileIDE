@@ -221,6 +221,13 @@ fun TerminalScreen(navController: NavController) {
                 }
             )
         }
+        is InstallState.AwaitingPlatformSelection -> {
+            PlatformSelectionDialog(
+                onConfirmSelection = { platform ->
+                    SetupWorker.confirmPlatformSelection(context, platform)
+                }
+            )
+        }
         is InstallState.AwaitingNdkSelection -> {
             NdkSelectionDialog(
                 onConfirmSelection = { ndk ->

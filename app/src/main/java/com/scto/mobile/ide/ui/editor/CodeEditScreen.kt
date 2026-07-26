@@ -1815,7 +1815,8 @@ private suspend fun performBuild(
         } || File(projectPath, "gradlew").exists()
 
         // 3. Check Android SDK installation
-        val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
+        val appPrefix = context.filesDir.parentFile ?: context.filesDir
+        val hostSdk = File(appPrefix, "local/ubuntu/root/android-sdk")
         val distroSdks = distroDirs.map { File(it, "root/android-sdk") } + distroDirs.map { File(it, "home/android-sdk") }
         val isAndroidSdkInstalled = hostSdk.exists() || distroSdks.any { it.exists() }
 
@@ -1917,7 +1918,8 @@ private suspend fun performBuild(
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")
             if (!localProperties.exists()) {
-                val sdkDir = File("/data/data/com.termux/files/home/android-sdk")
+                val appPrefix = context.filesDir.parentFile ?: context.filesDir
+                val sdkDir = File(appPrefix, "local/ubuntu/root/android-sdk")
                 if (sdkDir.exists()) {
                     localProperties.writeText(
                         "sdk.dir=${sdkDir.absolutePath.replace("\\", "\\\\").replace(":", "\\:")}\n"

@@ -66,16 +66,28 @@ object GradleTaskManagerImpl : GradleTaskManager {
     private fun getProotEnv(context: Context): Map<String, String> {
         val env = mutableMapOf<String, String>()
         val nativeLibDir = context.applicationInfo.nativeLibraryDir
-        val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+        val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+        prootTmpDir.setReadable(true, false)
+        prootTmpDir.setWritable(true, false)
+        prootTmpDir.setExecutable(true, false)
+
         env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
         env["TMPDIR"] = prootTmpDir.absolutePath
+        env["TMP_DIR"] = prootTmpDir.absolutePath
         val libPath = "${context.filesDir.absolutePath}:${context.filesDir.absolutePath}/local/lib:$nativeLibDir"
         env["LD_LIBRARY_PATH"] = libPath
-        if (File(nativeLibDir, "libproot-loader.so").exists()) {
-            env["PROOT_LOADER"] = "$nativeLibDir/libproot-loader.so"
+
+        val loader64 = listOf(File(nativeLibDir, "libproot-loader.so"), File(nativeLibDir, "libloader.so")).firstOrNull { it.exists() }
+        val loader32 = listOf(File(nativeLibDir, "libproot-loader32.so"), File(nativeLibDir, "libloader32.so")).firstOrNull { it.exists() }
+
+        if (loader64 != null) {
+            loader64.setExecutable(true, false)
+            env["PROOT_LOADER"] = loader64.absolutePath
         }
-        if (File(nativeLibDir, "libproot-loader32.so").exists()) {
-            env["PROOT_LOADER32"] = "$nativeLibDir/libproot-loader32.so"
+        if (loader32 != null) {
+            loader32.setExecutable(true, false)
+            env["PROOT_LOADER32"] = loader32.absolutePath
+            env["PROOT_LOADER_32"] = loader32.absolutePath
         }
         return env
     }

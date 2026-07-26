@@ -229,7 +229,8 @@ fun SettingsScreen(
                     getDistroFile("usr/lib/jvm/java-21-openjdk-amd64/bin/java").exists()
             isGradleInstalled = getDistroFile("usr/bin/gradle").exists()
 
-            val hostSdk = File("/data/data/com.termux/files/home/android-sdk")
+            val appPrefix = context.filesDir.parentFile ?: context.filesDir
+            val hostSdk = File(appPrefix, "local/ubuntu/root/android-sdk")
             val distroHome = sandboxHomeDir(context)
             val distroSdk = File(distroHome, "android-sdk")
             isAndroidSdkInstalled = hostSdk.exists() || distroSdk.exists()
@@ -512,46 +513,6 @@ fun SettingsScreen(
                     onClick = {
                         Toast.makeText(context, "Terminal Status: ${if (isTerminalInstalled) "Installiert" else "Nicht installiert"}", Toast.LENGTH_SHORT).show()
                     }
-                )
-            }
-
-            item(key = "openjdk_version_setting") {
-                val installedJdk = generalPrefs.getString("installed_openjdk_version", "Nicht installiert") ?: "Nicht installiert"
-                SimpleSettingsCard(
-                    icon = Icons.Outlined.Code,
-                    title = "OpenJDK Version",
-                    subtitle = installedJdk,
-                    onClick = {
-                        Toast.makeText(context, "Installierte OpenJDK Version: $installedJdk", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-
-            item(key = "buildtools_version_setting") {
-                val installedBuildTools = generalPrefs.getString("installed_build_tools_version", "Nicht installiert") ?: "Nicht installiert"
-                SimpleSettingsCard(
-                    icon = Icons.Outlined.Build,
-                    title = "Buildtools Version",
-                    subtitle = installedBuildTools,
-                    onClick = {
-                        Toast.makeText(context, "Installierte Buildtools Version: $installedBuildTools", Toast.LENGTH_SHORT).show()
-                    }
-                )
-            }
-
-            item(key = "build_settings") {
-                BuildSettingsItem(
-                    isJdk17Installed = isJdk17Installed,
-                    isJdk21Installed = isJdk21Installed,
-                    isAndroidSdkInstalled = isAndroidSdkInstalled,
-                    isPlatform34Installed = isPlatform34Installed,
-                    isPlatform35Installed = isPlatform35Installed,
-                    isBuildTools35Installed = isBuildTools35Installed,
-                    isBuildTools36Installed = isBuildTools36Installed,
-                    isCmakeInstalled = isCmakeInstalled,
-                    isNdkInstalled = isNdkInstalled,
-                    onInstall = ::runInstall,
-                    onInstallWithPrereqs = ::runInstallWithPrereqs,
                 )
             }
 
@@ -1893,224 +1854,51 @@ fun TerminalSettingsItem(
             }
         }
     }
-}
 
 @Composable
-fun BuildSettingsItem(
-    isJdk17Installed: Boolean,
-    isJdk21Installed: Boolean,
-    isAndroidSdkInstalled: Boolean,
-    isPlatform34Installed: Boolean,
-    isPlatform35Installed: Boolean,
-    isBuildTools35Installed: Boolean,
-    isBuildTools36Installed: Boolean,
-    isCmakeInstalled: Boolean,
-    isNdkInstalled: Boolean,
-    onInstall: (String, String) -> Unit,
-    onInstallWithPrereqs: (String, String) -> Unit,
+fun BuildToolRow(
+    name: String,
+    isInstalled: Boolean,
+    infoText: String? = null,
+    onInstall: () -> Unit,
+    customInstallButton: @Composable (() -> Unit)? = null,
 ) {
-    var expanded by rememberSaveable { mutableStateOf(true) }
-    val expandDuration = 200
-    val snappyEasing = LinearOutSlowInEasing
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    Row(
         modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier =
-                Modifier.animateContentSize(
-                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Icon(
+                    imageVector = if (isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                    contentDescription = null,
+                    tint = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                    modifier = Modifier.size(16.dp),
                 )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Outlined.Build, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_build_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    )
-                    if (!expanded)
-                        Text(
-                            text = stringResource(R.string.settings_build_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                }
-                val rotation by
-                    animateFloatAsState(
-                        targetValue = if (expanded) 180f else 0f,
-                        label = "ArrowRotation",
-                        animationSpec = tween(expandDuration),
-                    )
-                Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
+                Text(
+                    text =
+                        if (isInstalled) infoText ?: stringResource(R.string.status_installed)
+                        else stringResource(R.string.status_not_installed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                )
             }
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(tween(expandDuration, easing = snappyEasing)),
-                exit = fadeOut(tween(200)) + shrinkVertically(tween(200, easing = snappyEasing)),
+        }
+        if (customInstallButton != null) {
+            customInstallButton()
+        } else {
+            Button(
+                onClick = onInstall,
+                enabled = !isInstalled,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
             ) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_jdk),
-                            isInstalled = isJdk17Installed || isJdk21Installed,
-                            infoText =
-                                if (isJdk21Installed) "OpenJDK 21" else if (isJdk17Installed) "OpenJDK 17" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "OpenJDK 17",
-                                                "apk add openjdk17 || apt install -y openjdk-17-jdk",
-                                            )
-                                        },
-                                        enabled = !isJdk17Installed,
-                                    ) {
-                                        Text("JDK 17")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "OpenJDK 21",
-                                                "apk add openjdk21 || apt install -y openjdk-21-jdk",
-                                            )
-                                        },
-                                        enabled = !isJdk21Installed,
-                                    ) {
-                                        Text("JDK 21")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_android_sdk),
-                            isInstalled = isAndroidSdkInstalled,
-                            onInstall = {
-                                onInstallWithPrereqs(
-                                    "Android SDK",
-                                    "mkdir -p \$HOME/android-sdk && wget -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d \$HOME/android-sdk && rm /tmp/sdk.zip",
-                                )
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_tools),
-                            isInstalled = isBuildTools35Installed || isBuildTools36Installed,
-                            infoText =
-                                if (isBuildTools35Installed && isBuildTools36Installed) "v35 & v36"
-                                else if (isBuildTools35Installed) "v35"
-                                else if (isBuildTools36Installed) "v36" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstallWithPrereqs(
-                                                "Build-Tools v35",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;35.0.0\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools35Installed,
-                                    ) {
-                                        Text("v35")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstallWithPrereqs(
-                                                "Build-Tools v36",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"build-tools;36.0.0\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isBuildTools36Installed,
-                                    ) {
-                                        Text("v36")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_platforms),
-                            isInstalled = isPlatform34Installed || isPlatform35Installed,
-                            infoText =
-                                if (isPlatform34Installed && isPlatform35Installed) "API 34 & 35"
-                                else if (isPlatform34Installed) "API 34"
-                                else if (isPlatform35Installed) "API 35" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Platform API 34",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"platforms;android-34\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isPlatform34Installed,
-                                    ) {
-                                        Text("API 34")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "Platform API 35",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"platforms;android-35\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isPlatform35Installed,
-                                    ) {
-                                        Text("API 35")
-                                    }
-                                }
-                            },
-                        )
-
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_build_cmake_ndk),
-                            isInstalled = isCmakeInstalled && isNdkInstalled,
-                            infoText =
-                                if (isCmakeInstalled && isNdkInstalled) "Both"
-                                else if (isCmakeInstalled) "CMake Only" else if (isNdkInstalled) "NDK Only" else null,
-                            onInstall = {},
-                            customInstallButton = {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedButton(
-                                        onClick = { onInstall("CMake", "apk add cmake || apt install -y cmake") },
-                                        enabled = !isCmakeInstalled,
-                                    ) {
-                                        Text("CMake")
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            onInstall(
-                                                "NDK",
-                                                "yes | \$HOME/android-sdk/cmdline-tools/bin/sdkmanager --sdk_root=\$HOME/android-sdk \"ndk-bundle\"",
-                                            )
-                                        },
-                                        enabled = isAndroidSdkInstalled && !isNdkInstalled,
-                                    ) {
-                                        Text("NDK")
-                                    }
-                                }
-                            },
-                        )
-                    }
-                }
+                Text(stringResource(R.string.action_install))
             }
         }
     }
@@ -2224,52 +2012,4 @@ fun LspSettingsItem(
         }
     }
 }
-
-@Composable
-fun BuildToolRow(
-    name: String,
-    isInstalled: Boolean,
-    infoText: String? = null,
-    onInstall: () -> Unit,
-    customInstallButton: @Composable (() -> Unit)? = null,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(
-                    imageVector = if (isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
-                    contentDescription = null,
-                    tint = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                    modifier = Modifier.size(16.dp),
-                )
-                Text(
-                    text =
-                        if (isInstalled) infoText ?: stringResource(R.string.status_installed)
-                        else stringResource(R.string.status_not_installed),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                )
-            }
-        }
-        if (customInstallButton != null) {
-            customInstallButton()
-        } else {
-            Button(
-                onClick = onInstall,
-                enabled = !isInstalled,
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-            ) {
-                Text(stringResource(R.string.action_install))
-            }
-        }
-    }
 }

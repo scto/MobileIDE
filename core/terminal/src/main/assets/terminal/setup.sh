@@ -2,6 +2,18 @@ set -e
 
 . "$LOCAL/bin/utils"
 
+PROOT_TMP_DIR="${PROOT_TMP_DIR:-${TMP_DIR:-$PRIVATE_DIR}/usr/tmp}"
+export PROOT_TMP_DIR
+export TMP_DIR="${TMP_DIR:-$PROOT_TMP_DIR}"
+mkdir -p "$PROOT_TMP_DIR"
+chmod 700 "$PROOT_TMP_DIR" 2>/dev/null || chmod 755 "$PROOT_TMP_DIR" 2>/dev/null || true
+
+touch "$PROOT_TMP_DIR/.write_test" 2>/dev/null || {
+    echo "ERROR: PROOT_TMP_DIR ($PROOT_TMP_DIR) is not writable! Cannot continue setup." >&2
+    exit 1
+}
+rm -f "$PROOT_TMP_DIR/.write_test"
+
 info "Extracting the Ubuntu container…"
 
 ARGS="--kill-on-exit"
@@ -31,15 +43,15 @@ if [ -d "/proc/self/fd" ]; then
   ARGS="$ARGS -b /proc/self/fd:/dev/fd"
 fi
 
-if [ -e "$(realpath /proc/self/fd/0 2>/dev/null)" ]; then
+if [ -c "/proc/self/fd/0" ] || [ -f "/proc/self/fd/0" ]; then
   ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
 fi
 
-if [ -e "$(realpath /proc/self/fd/1 2>/dev/null)" ]; then
+if [ -c "/proc/self/fd/1" ] || [ -f "/proc/self/fd/1" ]; then
   ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
 fi
 
-if [ -e "$(realpath /proc/self/fd/2 2>/dev/null)" ]; then
+if [ -c "/proc/self/fd/2" ] || [ -f "/proc/self/fd/2" ]; then
   ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
 fi
 
@@ -52,7 +64,33 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf -)))"
+TAR_PATH=""
+for candidate in "$TMP_DIR/sandbox.tar.gz" "$PROOT_TMP_DIR/sandbox.tar.gz" "$PRIVATE_DIR/ubuntu.tar.gz" "$PRIVATE_DIR/alpine.tar.gz" "$PRIVATE_DIR/${MOBILEIDE_DISTRO:-ubuntu}.tar.gz"; do
+    if [ -f "$candidate" ] && [ -s "$candidate" ]; then
+        TAR_PATH="$candidate"
+        break
+    fi
+done
+
+if [ -z "$TAR_PATH" ]; then
+    error "No valid rootfs tarball found!"
+    exit 1
+fi
+
+TAR_EXCLUDES="--exclude=etc/alternatives/* --exclude=var/run --exclude=var/lock --exclude=etc/rmt --exclude=etc/systemd/system/*.wants/* --exclude=usr/bin/awk --exclude=usr/bin/nawk --exclude=usr/bin/pager --exclude=usr/bin/which --exclude=usr/sbin/rmt"
+TAR_OPTS="--hard-dereference --no-same-owner --no-same-permissions"
+
+COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS 2>/dev/null || (gzip -dc $TAR_PATH | tar -xf - $TAR_EXCLUDES $TAR_OPTS 2>/dev/null) || tar -xf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS 2>/dev/null))"
+
+info "Validating PRoot binary..."
+set +e
+$PROOT $ARGS /system/bin/sh -c "true" 2>/dev/null
+proot_test_ret=$?
+set -e
+
+if [ "$proot_test_ret" -ne 0 ]; then
+    warn "PRoot pre-check test returned exit code $proot_test_ret"
+fi
 
 set +e
 $PROOT $ARGS /system/bin/sh -c "$COMMAND"
@@ -77,11 +115,39 @@ fi
 
 SANDBOX_DIR="$LOCAL/sandbox"
 
+# Post-processing: re-create container-internal symlinks safely
+mkdir -p "$SANDBOX_DIR/var" "$SANDBOX_DIR/etc/alternatives" "$SANDBOX_DIR/usr/bin"
+info "Repariere Container-interne Symlinks..."
+
+if [ -f "$SANDBOX_DIR/usr/bin/mawk" ]; then
+    ln -snf /usr/bin/mawk "$SANDBOX_DIR/etc/alternatives/awk" 2>/dev/null || true
+    ln -snf /etc/alternatives/awk "$SANDBOX_DIR/usr/bin/awk" 2>/dev/null || true
+    info "Symlink awk -> /usr/bin/mawk wiederhergestellt."
+elif [ -f "$SANDBOX_DIR/usr/bin/gawk" ]; then
+    ln -snf /usr/bin/gawk "$SANDBOX_DIR/etc/alternatives/awk" 2>/dev/null || true
+    ln -snf /etc/alternatives/awk "$SANDBOX_DIR/usr/bin/awk" 2>/dev/null || true
+    info "Symlink awk -> /usr/bin/gawk wiederhergestellt."
+fi
+
+ln -snf ../run "$SANDBOX_DIR/var/run" 2>/dev/null || true
+ln -snf ../lock "$SANDBOX_DIR/var/lock" 2>/dev/null || true
+info "Symlinks var/run und var/lock wiederhergestellt."
+
+# Validierung der Vollständigkeit des entpackten RootFS
+info "Prüfe Vollständigkeit des entpackten RootFS..."
+if [ ! -f "$SANDBOX_DIR/bin/sh" ] && [ ! -f "$SANDBOX_DIR/usr/bin/sh" ] && [ ! -f "$SANDBOX_DIR/bin/bash" ] && [ ! -f "$SANDBOX_DIR/usr/bin/bash" ]; then
+    error "FEHLER: Das entpackte RootFS ist unvollständig (Shell /bin/sh oder /usr/bin/bash nicht gefunden). Abbruch!"
+    exit 1
+fi
+info "RootFS-Vollständigkeitsprüfung erfolgreich!"
+
 info "Setting up the Ubuntu container…"
 
 # values you want written
 nameserver="nameserver 8.8.8.8
-nameserver 8.8.4.4"
+nameserver 8.8.4.4
+nameserver 1.1.1.1
+nameserver 9.9.9.9"
 
 hosts="127.0.0.1   localhost.localdomain localhost
 

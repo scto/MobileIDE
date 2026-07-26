@@ -23,14 +23,29 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+data class SetupConfig(
+    val jdkVersion: String? = null,
+    val buildToolsVersion: String? = null,
+    val platformVersion: String? = null,
+    val ndkVersion: String? = null,
+    val cmakeVersion: String? = null
+) {
+    fun isComplete(): Boolean =
+        jdkVersion != null && buildToolsVersion != null &&
+        platformVersion != null && ndkVersion != null && cmakeVersion != null
+}
+
 sealed interface InstallState {
     object Idle : InstallState
     object InstallingRootfs : InstallState
     object InstallingDistribution : InstallState
+    object InstallingBaseTools : InstallState
     object AwaitingJdkSelection : InstallState
     data class InstallingJdk(val version: String) : InstallState
     object AwaitingBuildToolsSelection : InstallState
     data class InstallingBuildTools(val version: String) : InstallState
+    object AwaitingPlatformSelection : InstallState
+    data class InstallingPlatform(val version: String) : InstallState
     object AwaitingNdkSelection : InstallState
     data class InstallingNdk(val version: String) : InstallState
     object AwaitingCmakeSelection : InstallState
@@ -50,9 +65,10 @@ data class SetupState(
     val logs: List<String> = emptyList(),
     val startTimeMs: Long = 0L,
     val currentStep: Int = 0,
-    val totalSteps: Int = 7,
+    val totalSteps: Int = 8,
     val selectedJdk: String = "openjdk-21",
     val selectedBuildTools: String = "build-tools-35.0.1",
+    val selectedPlatform: String = "35",
     val selectedNdk: String = "30.0.14904198",
     val selectedCmake: String = "3.22",
     val showToolchainDialog: Boolean = false
@@ -107,24 +123,36 @@ object SetupWorker {
         setupJob = CoroutineScope(Dispatchers.IO).launch {
             val startTime = System.currentTimeMillis()
             try {
-                // 1. Rootfs Phase
+                // 1. Rootfs & Distribution Phase
                 _setupState.value = SetupState(
                     isActive = true,
                     installState = InstallState.InstallingRootfs,
                     status = "Installiere Rootfs...",
                     currentStep = 1,
-                    totalSteps = 5,
+                    totalSteps = 7,
                     startTimeMs = startTime,
                     logs = listOf("Starte RootFS Download & Installation...")
                 )
 
                 prepareEnvironment(context)
 
+                // 2. Base Development Tools Phase (git, dev tools, box64, cmdline-tools)
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.InstallingBaseTools,
+                    status = "Installiere Git, Dev-Tools, Box64 & Cmdline-Tools...",
+                    currentStep = 3,
+                    totalSteps = 7,
+                    logs = _setupState.value.logs + "Installiere Git, Basis-Entwicklungstools, Box64 & Android Cmdline-Tools..."
+                )
+
+                installSingleToolchainPackage(context, "base-tools")
+
                 // 3. Pause & Prompt JDK Selection
                 _setupState.value = _setupState.value.copy(
                     installState = InstallState.AwaitingJdkSelection,
-                    status = "Warte auf OpenJDK-Auswahl...",
-                    currentStep = 3
+                    status = "Basis-System & Tools installiert. Bitte OpenJDK wählen.",
+                    currentStep = 4,
+                    totalSteps = 7
                 )
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "Sequential setup failed", e)
@@ -359,7 +387,26 @@ object SetupWorker {
             }
 
             // Copy rootfs archive to the cache directory and proot_tmp as sandbox.tar.gz
-            val prootTmpDir = File(context.cacheDir, "proot_tmp").apply { mkdirs() }
+            // App-private PROOT_TMP_DIR inside app files directory
+            val prootTmpDir = File(context.filesDir, "usr/tmp").apply { mkdirs() }
+            prootTmpDir.setReadable(true, false)
+            prootTmpDir.setWritable(true, false)
+            prootTmpDir.setExecutable(true, false)
+
+            // Validate write permission
+            val writeTest = File(prootTmpDir, ".write_test")
+            val isWritable = try {
+                if (writeTest.createNewFile() || writeTest.exists()) {
+                    writeTest.delete()
+                    true
+                } else false
+            } catch (e: Exception) { false }
+
+            if (!isWritable) {
+                LogCatcher.e("SetupWorker", "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
+                throw IllegalStateException("PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
+            }
+
             val sandboxTarCache = File(context.cacheDir, "sandbox.tar.gz")
             val sandboxTarTmp = File(prootTmpDir, "sandbox.tar.gz")
             if (rootfsTar.exists()) {
@@ -396,11 +443,24 @@ object SetupWorker {
             pbEnv["PRIVATE_DIR"] = context.filesDir.absolutePath
             pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
 
-            if (File(nativeLibDir, "libproot-loader.so").exists()) {
-                pbEnv["PROOT_LOADER"] = "${nativeLibDir}/libproot-loader.so"
+            val loader64File = listOf(
+                File(nativeLibDir, "libproot-loader.so"),
+                File(nativeLibDir, "libloader.so")
+            ).firstOrNull { it.exists() }
+
+            val loader32File = listOf(
+                File(nativeLibDir, "libproot-loader32.so"),
+                File(nativeLibDir, "libloader32.so")
+            ).firstOrNull { it.exists() }
+
+            if (loader64File != null) {
+                loader64File.setExecutable(true, false)
+                pbEnv["PROOT_LOADER"] = loader64File.absolutePath
             }
-            if (File(nativeLibDir, "libproot-loader32.so").exists()) {
-                pbEnv["PROOT_LOADER32"] = "${nativeLibDir}/libproot-loader32.so"
+            if (loader32File != null) {
+                loader32File.setExecutable(true, false)
+                pbEnv["PROOT_LOADER32"] = loader32File.absolutePath
+                pbEnv["PROOT_LOADER_32"] = loader32File.absolutePath
             }
 
             pb.redirectErrorStream(true)
@@ -456,39 +516,76 @@ object SetupWorker {
     }
 
     fun generateToolchainCommand(selectedTools: Set<String>, distro: String): String {
-        val packages = mutableListOf<String>()
+        val packages = mutableSetOf<String>()
         val isApk = distro.equals("alpine", ignoreCase = true)
+        val customCmds = mutableListOf<String>()
 
         for (tool in selectedTools) {
             when {
+                tool == "base-tools" -> {
+                    if (isApk) {
+                        packages.addAll(listOf("git", "curl", "wget", "zip", "unzip", "tar", "make", "gcc", "g++", "build-base"))
+                        customCmds.add("apk add --no-cache box64 2>/dev/null || true")
+                    } else {
+                        packages.addAll(listOf("git", "curl", "wget", "zip", "unzip", "tar", "make", "gcc", "g++", "build-essential"))
+                        customCmds.add("(apt-get update && apt-get install -y box64 2>/dev/null || (apt-get install -y wget && wget -O /tmp/box64.deb https://github.com/ptitSeb/box64/releases/download/v0.2.8/box64-debian-arm64.deb 2>/dev/null && dpkg -i /tmp/box64.deb 2>/dev/null || true))")
+                    }
+                    customCmds.add("(mkdir -p /root/android-sdk/cmdline-tools && wget -O /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip 2>/dev/null && unzip -o /tmp/cmdline-tools.zip -d /root/android-sdk/cmdline-tools/latest_tmp 2>/dev/null && mkdir -p /root/android-sdk/cmdline-tools/latest && cp -r /root/android-sdk/cmdline-tools/latest_tmp/*/* /root/android-sdk/cmdline-tools/latest/ 2>/dev/null || cp -r /root/android-sdk/cmdline-tools/latest_tmp/* /root/android-sdk/cmdline-tools/latest/ 2>/dev/null && rm -rf /tmp/cmdline-tools.zip /root/android-sdk/cmdline-tools/latest_tmp || true)")
+                }
                 tool == "openjdk-17" -> packages.add(if (isApk) "openjdk17" else "openjdk-17-jdk")
                 tool == "openjdk-21" -> packages.add(if (isApk) "openjdk21" else "openjdk-21-jdk")
                 tool == "openjdk-24" -> packages.add(if (isApk) "openjdk24" else "openjdk-24-jdk")
-                tool.startsWith("build-tools") -> {
+                tool == "git" -> packages.add("git")
+                tool == "box64" -> {
                     if (isApk) {
-                        packages.add("build-base")
+                        packages.add("box64")
                     } else {
-                        packages.add("build-essential")
+                        customCmds.add("apt-get install -y box64 2>/dev/null || (wget -O /tmp/box64.deb https://github.com/ptitSeb/box64/releases/download/v0.2.8/box64-debian-arm64.deb 2>/dev/null && dpkg -i /tmp/box64.deb 2>/dev/null || true)")
                     }
+                }
+                tool == "cmdline-tools" -> {
+                    packages.addAll(listOf("curl", "wget", "unzip", "zip"))
+                    customCmds.add("mkdir -p /root/android-sdk/cmdline-tools && wget -O /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip 2>/dev/null && unzip -o /tmp/cmdline-tools.zip -d /root/android-sdk/cmdline-tools/latest_tmp 2>/dev/null && mkdir -p /root/android-sdk/cmdline-tools/latest && cp -r /root/android-sdk/cmdline-tools/latest_tmp/*/* /root/android-sdk/cmdline-tools/latest/ 2>/dev/null || cp -r /root/android-sdk/cmdline-tools/latest_tmp/* /root/android-sdk/cmdline-tools/latest/ 2>/dev/null && rm -rf /tmp/cmdline-tools.zip /root/android-sdk/cmdline-tools/latest_tmp || true")
+                }
+                tool.startsWith("build-tools") -> {
+                    val rawVer = tool.removePrefix("build-tools-").replace("-RC", "")
+                    val ver = if (rawVer.startsWith("3")) rawVer else "35.0.1"
+                    customCmds.add("yes | /root/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \"build-tools;$ver\" \"platforms;android-34\" \"platforms;android-35\" || true")
+                }
+                tool.startsWith("platform-") -> {
+                    val apiVer = tool.removePrefix("platform-")
+                    customCmds.add("yes | /root/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-$apiVer\" \"platform-tools\" || true")
+                }
+                tool.startsWith("ndk") -> {
+                    customCmds.add("yes | /root/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \"ndk-bundle\" || true")
                 }
                 tool == "cmake" -> packages.add("cmake")
                 tool == "build-essential" -> {
                     if (isApk) {
-                        packages.add("build-base git")
+                        packages.addAll(listOf("build-base", "git"))
                     } else {
-                        packages.add("build-essential git")
+                        packages.addAll(listOf("build-essential", "git"))
                     }
                 }
             }
         }
 
-        if (packages.isEmpty()) return "echo 'Keine Entwicklungstools ausgewählt.'"
+        val dnsFix = "printf 'nameserver 8.8.8.8\\nnameserver 8.8.4.4\\nnameserver 1.1.1.1\\nnameserver 9.9.9.9\\n' > /etc/resolv.conf"
 
-        return if (isApk) {
-            "apk update && apk add --no-cache ${packages.joinToString(" ")}"
-        } else {
-            "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y ${packages.joinToString(" ")}"
-        }
+        val pkgCmd = if (packages.isNotEmpty()) {
+            if (isApk) {
+                "apk update && apk add --no-cache ${packages.joinToString(" ")}"
+            } else {
+                "DEBIAN_FRONTEND=noninteractive apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=10 || true && DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing ${packages.joinToString(" ")}"
+            }
+        } else ""
+
+        val allCmds = mutableListOf<String>()
+        allCmds.add(dnsFix)
+        if (pkgCmd.isNotEmpty()) allCmds.add(pkgCmd)
+        allCmds.addAll(customCmds)
+
+        return if (allCmds.isEmpty()) "echo 'Keine Entwicklungstools ausgewählt.'" else allCmds.joinToString(" && ")
     }
 
     fun confirmJdkSelection(context: Context, jdkVersion: String) {
@@ -499,16 +596,18 @@ object SetupWorker {
                     selectedJdk = jdkVersion,
                     status = "Installiere OpenJDK...",
                     logs = _setupState.value.logs + "Installiere OpenJDK $jdkVersion...",
-                    currentStep = 3
+                    currentStep = 4,
+                    totalSteps = 8
                 )
 
                 installSingleToolchainPackage(context, jdkVersion)
 
-                // Move to Phase 4: Build Tools Selection
+                // Move to Phase 5: Build Tools Selection
                 _setupState.value = _setupState.value.copy(
                     installState = InstallState.AwaitingBuildToolsSelection,
                     status = "Warte auf Build Tools-Auswahl...",
-                    currentStep = 4
+                    currentStep = 5,
+                    totalSteps = 8
                 )
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "JDK installation failed", e)
@@ -529,18 +628,18 @@ object SetupWorker {
                     selectedBuildTools = buildToolsVersion,
                     status = "Installiere Build Tools...",
                     logs = _setupState.value.logs + "Installiere Build Tools $buildToolsVersion...",
-                    currentStep = 4,
-                    totalSteps = 7
+                    currentStep = 5,
+                    totalSteps = 8
                 )
 
                 installSingleToolchainPackage(context, buildToolsVersion)
 
-                // Move to Phase 5: NDK Selection
+                // Move to Phase 6: Platform Selection
                 _setupState.value = _setupState.value.copy(
-                    installState = InstallState.AwaitingNdkSelection,
-                    status = "Warte auf NDK-Auswahl...",
-                    currentStep = 5,
-                    totalSteps = 7
+                    installState = InstallState.AwaitingPlatformSelection,
+                    status = "Warte auf Platform SDK-Auswahl...",
+                    currentStep = 6,
+                    totalSteps = 8
                 )
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "Build Tools installation failed", e)
@@ -548,6 +647,38 @@ object SetupWorker {
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "Build-Tools-Installation fehlgeschlagen"),
                     error = e.message ?: "Build-Tools-Installation fehlgeschlagen"
+                )
+            }
+        }
+    }
+
+    fun confirmPlatformSelection(context: Context, platformVersion: String) {
+        setupJob = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.InstallingPlatform(platformVersion),
+                    selectedPlatform = platformVersion,
+                    status = "Installiere Android Platform SDK...",
+                    logs = _setupState.value.logs + "Installiere Android Platform SDK android-$platformVersion...",
+                    currentStep = 6,
+                    totalSteps = 8
+                )
+
+                installSingleToolchainPackage(context, "platform-$platformVersion")
+
+                // Move to Phase 7: NDK Selection
+                _setupState.value = _setupState.value.copy(
+                    installState = InstallState.AwaitingNdkSelection,
+                    status = "Warte auf NDK-Auswahl...",
+                    currentStep = 7,
+                    totalSteps = 8
+                )
+            } catch (e: Exception) {
+                LogCatcher.e("SetupWorker", "Platform SDK installation failed", e)
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(e.message ?: "Platform SDK-Installation fehlgeschlagen"),
+                    error = e.message ?: "Platform SDK-Installation fehlgeschlagen"
                 )
             }
         }
@@ -561,18 +692,18 @@ object SetupWorker {
                     selectedNdk = ndkVersion,
                     status = "Installiere NDK...",
                     logs = _setupState.value.logs + "Installiere NDK $ndkVersion...",
-                    currentStep = 5,
-                    totalSteps = 7
+                    currentStep = 7,
+                    totalSteps = 8
                 )
 
                 installSingleToolchainPackage(context, "ndk-$ndkVersion")
 
-                // Move to Phase 6: CMake Selection
+                // Move to Phase 8: CMake Selection
                 _setupState.value = _setupState.value.copy(
                     installState = InstallState.AwaitingCmakeSelection,
                     status = "Warte auf CMake-Auswahl...",
-                    currentStep = 6,
-                    totalSteps = 7
+                    currentStep = 8,
+                    totalSteps = 8
                 )
             } catch (e: Exception) {
                 LogCatcher.e("SetupWorker", "NDK installation failed", e)
@@ -593,15 +724,39 @@ object SetupWorker {
                     selectedCmake = cmakeVersion,
                     status = "Installiere CMake...",
                     logs = _setupState.value.logs + "Installiere CMake $cmakeVersion...",
-                    currentStep = 6,
-                    totalSteps = 7
+                    currentStep = 8,
+                    totalSteps = 8
                 )
 
                 installSingleToolchainPackage(context, "cmake")
 
                 writeEnvironmentProperties(context)
 
-                // Phase 7: Completion & Persistent Settings
+                // Save SetupConfig JSON to cache directory
+                val cfg = SetupConfig(
+                    jdkVersion = _setupState.value.selectedJdk,
+                    buildToolsVersion = _setupState.value.selectedBuildTools,
+                    platformVersion = _setupState.value.selectedPlatform,
+                    ndkVersion = _setupState.value.selectedNdk,
+                    cmakeVersion = _setupState.value.selectedCmake
+                )
+                try {
+                    val configFile = File(context.cacheDir, "antigravity_setup_config.json")
+                    val jsonStr = """
+                        {
+                          "jdkVersion": "${cfg.jdkVersion}",
+                          "buildToolsVersion": "${cfg.buildToolsVersion}",
+                          "platformVersion": "${cfg.platformVersion}",
+                          "ndkVersion": "${cfg.ndkVersion}",
+                          "cmakeVersion": "${cfg.cmakeVersion}"
+                        }
+                    """.trimIndent()
+                    configFile.writeText(jsonStr)
+                } catch (ex: Exception) {
+                    LogCatcher.e("SetupWorker", "Failed to write antigravity_setup_config.json", ex)
+                }
+
+                // Phase 8: Completion & Persistent Settings
                 val filesDir = context.filesDir
                 val prefixDir = filesDir.parentFile!!
                 File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").createNewFile()
@@ -611,6 +766,7 @@ object SetupWorker {
                     .putBoolean("is_terminal_installed", true)
                     .putString("installed_openjdk_version", _setupState.value.selectedJdk)
                     .putString("installed_build_tools_version", _setupState.value.selectedBuildTools)
+                    .putString("installed_platform_version", _setupState.value.selectedPlatform)
                     .putString("installed_ndk_version", _setupState.value.selectedNdk)
                     .putString("installed_cmake_version", _setupState.value.selectedCmake)
                     .apply()
@@ -655,10 +811,13 @@ object SetupWorker {
                 }
             }
 
-            val ndkVer = _setupState.value.selectedNdk
-            propsMap["ANDROID_NDK_HOME"] = "/root/android-sdk/ndk/$ndkVer"
-            propsMap["NDK_HOME"] = "/root/android-sdk/ndk/$ndkVer"
+            val buildToolsVer = _setupState.value.selectedBuildTools.removePrefix("build-tools-").replace("-RC", "")
+            propsMap["ANDROID_HOME"] = "/root/android-sdk"
+            propsMap["ANDROID_SDK_ROOT"] = "/root/android-sdk"
+            propsMap["ANDROID_NDK_HOME"] = "/root/android-sdk/ndk-bundle"
+            propsMap["NDK_HOME"] = "/root/android-sdk/ndk-bundle"
             propsMap["CMAKE_HOME"] = "/usr"
+            propsMap["PATH"] = "/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/$buildToolsVer:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
             val sb = java.lang.StringBuilder()
             for ((k, v) in propsMap) {

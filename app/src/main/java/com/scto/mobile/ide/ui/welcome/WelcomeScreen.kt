@@ -306,6 +306,13 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                             }
                         )
                     }
+                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingPlatformSelection -> {
+                        com.scto.mobile.ide.ui.terminal.PlatformSelectionDialog(
+                            onConfirmSelection = { platform ->
+                                SetupWorker.confirmPlatformSelection(context, platform)
+                            }
+                        )
+                    }
                     is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingNdkSelection -> {
                         com.scto.mobile.ide.ui.terminal.NdkSelectionDialog(
                             onConfirmSelection = { ndk ->
