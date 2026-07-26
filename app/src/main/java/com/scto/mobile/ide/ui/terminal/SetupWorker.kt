@@ -334,6 +334,8 @@ object SetupWorker {
             }
 
             // Copy terminal script assets to local/bin and make them executable
+            forceCopyAsset(context, "terminal/shared_extraction.sh", File(binDir, "shared_extraction.sh"))
+            forceCopyAsset(context, "terminal/shared_extraction.sh", File(prefixDir, "local/shared_extraction.sh"))
             forceCopyAsset(context, "terminal/init-host.sh", File(binDir, "init-host"))
             forceCopyAsset(context, "terminal/init.sh", File(binDir, "init"))
             forceCopyAsset(context, "terminal/utils.sh", File(binDir, "utils"))
@@ -352,6 +354,7 @@ object SetupWorker {
                 setFileExecutable(lspFile)
             }
 
+            setFileExecutable(File(binDir, "shared_extraction.sh"))
             setFileExecutable(File(binDir, "init-host"))
             setFileExecutable(File(binDir, "init"))
             setFileExecutable(File(binDir, "utils"))

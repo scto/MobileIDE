@@ -7,6 +7,21 @@ if [ -f "$SCRIPT_DIR/shared_extraction.sh" ]; then
     . "$SCRIPT_DIR/shared_extraction.sh"
 elif [ -f "$LOCAL/bin/shared_extraction.sh" ]; then
     . "$LOCAL/bin/shared_extraction.sh"
+elif [ -f "$LOCAL/shared_extraction.sh" ]; then
+    . "$LOCAL/shared_extraction.sh"
+elif [ -f "${PRIVATE_DIR:-}/shared_extraction.sh" ]; then
+    . "${PRIVATE_DIR}/shared_extraction.sh"
+fi
+
+if ! type resolve_app_data_dir >/dev/null 2>&1; then
+    resolve_app_data_dir() {
+        local pkg_name="${APP_PACKAGE_NAME:-${MOBILEIDE_PACKAGE_NAME:-com.scto.mobile.ide}}"
+        if [ -d "/data/user/0/${pkg_name}" ]; then
+            echo "/data/user/0/${pkg_name}"
+        else
+            echo "${PRIVATE_DIR:-/data/data/${pkg_name}}"
+        fi
+    }
 fi
 
 # --- 1. Umgebungs- & Verzeichnis-Vorbereitung (Problem 1 & 2) ---
