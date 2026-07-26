@@ -2,20 +2,80 @@ set -e
 
 . "$LOCAL/bin/utils"
 
+# --- 1. Umgebungs- & Verzeichnis-Vorbereitung (Problem 1 & 2) ---
 PROOT_TMP_DIR="${PROOT_TMP_DIR:-${TMP_DIR:-$PRIVATE_DIR}/usr/tmp}"
 export PROOT_TMP_DIR
 export TMP_DIR="${TMP_DIR:-$PROOT_TMP_DIR}"
-mkdir -p "$PROOT_TMP_DIR"
+mkdir -p "$PROOT_TMP_DIR" "$TMP_DIR"
 chmod 700 "$PROOT_TMP_DIR" 2>/dev/null || chmod 755 "$PROOT_TMP_DIR" 2>/dev/null || true
 
+LOGDIR="$LOCAL/logs"
+mkdir -p "$LOGDIR"
+
+# Schreibrechte-Test für PROOT_TMP_DIR
 touch "$PROOT_TMP_DIR/.write_test" 2>/dev/null || {
-    echo "ERROR: PROOT_TMP_DIR ($PROOT_TMP_DIR) is not writable! Cannot continue setup." >&2
+    error "FEHLER: PROOT_TMP_DIR ($PROOT_TMP_DIR) ist nicht beschreibbar!"
+    error "Lösung: Prüfe App-Speicherrechte und stellen Sie sicher, dass ein app-eigenes Verzeichnis genutzt wird."
     exit 1
 }
 rm -f "$PROOT_TMP_DIR/.write_test"
 
-info "Extracting the Ubuntu container…"
+# Prüfe/erzeuge mobileide-environment.properties (Problem 2)
+ENV_PROPS="$LOCAL/mobileide-environment.properties"
+if [ ! -f "$ENV_PROPS" ] && [ -f "$PRIVATE_DIR/mobileide-environment.properties" ]; then
+    cp "$PRIVATE_DIR/mobileide-environment.properties" "$ENV_PROPS" 2>/dev/null || true
+fi
 
+if [ ! -f "$ENV_PROPS" ]; then
+    info "Erzeuge Standard-Umgebungskonfiguration $ENV_PROPS..."
+    cat << EOF > "$ENV_PROPS"
+ANDROID_HOME=/root/android-sdk
+ANDROID_SDK_ROOT=/root/android-sdk
+ANDROID_NDK_HOME=/root/android-sdk/ndk-bundle
+NDK_HOME=/root/android-sdk/ndk-bundle
+CMAKE_HOME=/usr
+PATH=/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/35.0.1:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PROOT_TMP_DIR=$PROOT_TMP_DIR
+EOF
+fi
+
+info "Starte Ubuntu-Container-Setup..."
+
+# --- 2. Vorab-Prüfungen vor Extraktion (Problem 4) ---
+# a) RootFS-Archiv ermitteln und prüfen
+TAR_PATH=""
+for candidate in "$TMP_DIR/sandbox.tar.gz" "$PROOT_TMP_DIR/sandbox.tar.gz" "$PRIVATE_DIR/ubuntu.tar.gz" "$PRIVATE_DIR/alpine.tar.gz" "$PRIVATE_DIR/${MOBILEIDE_DISTRO:-ubuntu}.tar.gz"; do
+    if [ -f "$candidate" ] && [ -s "$candidate" ]; then
+        TAR_PATH="$candidate"
+        break
+    fi
+done
+
+if [ -z "$TAR_PATH" ]; then
+    error "FEHLER: Kein gültiges RootFS-Archiv gefunden!"
+    error "Geprüfte Pfade: $TMP_DIR/sandbox.tar.gz, $PRIVATE_DIR/ubuntu.tar.gz"
+    error "Lösung: Bitte überprüfe deine Internetverbindung und starte den Download erneut."
+    exit 1
+fi
+
+TAR_SIZE=$(wc -c < "$TAR_PATH" 2>/dev/null || echo 0)
+if [ "$TAR_SIZE" -lt 1048576 ]; then
+    error "FEHLER: Das RootFS-Archiv unter $TAR_PATH ist unvollständig oder beschädigt (Größe: ${TAR_SIZE} Bytes)."
+    error "Lösung: Lösche die Datei und lade den Container neu herunter."
+    exit 1
+fi
+info "RootFS-Archiv validiert: $TAR_PATH (${TAR_SIZE} Bytes)"
+
+# b) Zielverzeichnis vorbereiten und Schreibrechte testen
+SANDBOX_DIR="$LOCAL/sandbox"
+mkdir -p "$SANDBOX_DIR"
+touch "$SANDBOX_DIR/.write_test" 2>/dev/null || {
+    error "FEHLER: Zielverzeichnis $SANDBOX_DIR ist nicht beschreibbar!"
+    exit 1
+}
+rm -f "$SANDBOX_DIR/.write_test"
+
+# --- 3. PRoot-Argumente & Befehlsaufbau ---
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
 
@@ -64,51 +124,68 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-TAR_PATH=""
-for candidate in "$TMP_DIR/sandbox.tar.gz" "$PROOT_TMP_DIR/sandbox.tar.gz" "$PRIVATE_DIR/ubuntu.tar.gz" "$PRIVATE_DIR/alpine.tar.gz" "$PRIVATE_DIR/${MOBILEIDE_DISTRO:-ubuntu}.tar.gz"; do
-    if [ -f "$candidate" ] && [ -s "$candidate" ]; then
-        TAR_PATH="$candidate"
-        break
-    fi
-done
-
-if [ -z "$TAR_PATH" ]; then
-    error "No valid rootfs tarball found!"
-    exit 1
-fi
-
 TAR_EXCLUDES="--exclude=etc/alternatives/* --exclude=var/run --exclude=var/lock --exclude=etc/rmt --exclude=etc/systemd/system/*.wants/* --exclude=usr/bin/awk --exclude=usr/bin/nawk --exclude=usr/bin/pager --exclude=usr/bin/which --exclude=usr/sbin/rmt"
 TAR_OPTS="--hard-dereference --no-same-owner --no-same-permissions"
 
-COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS 2>/dev/null || (gzip -dc $TAR_PATH | tar -xf - $TAR_EXCLUDES $TAR_OPTS 2>/dev/null) || tar -xf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS 2>/dev/null))"
+COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS || (gzip -dc $TAR_PATH | tar -xf - $TAR_EXCLUDES $TAR_OPTS) || tar -xf $TAR_PATH $TAR_EXCLUDES $TAR_OPTS))"
 
-info "Validating PRoot binary..."
+# --- 4. PRoot-Funktionstest (Problem 3) ---
+info "Teste PRoot-Ausführbarkeit..."
 set +e
-$PROOT $ARGS /system/bin/sh -c "true" 2>/dev/null
+$PROOT $ARGS /system/bin/sh -c "true" > "$LOGDIR/proot_test.log" 2>&1
 proot_test_ret=$?
 set -e
 
+skip_proot=0
 if [ "$proot_test_ret" -ne 0 ]; then
-    warn "PRoot pre-check test returned exit code $proot_test_ret"
+    warn "PRoot-Funktionstest ist mit Exit-Code $proot_test_ret fehlgeschlagen. Details:"
+    tail -n 20 "$LOGDIR/proot_test.log" | while read -r l; do warn "  [proot-test] $l"; done
+    warn "Überspringe PRoot-Extraktion und wechsle direkt zum Fallback."
+    skip_proot=1
+else
+    info "PRoot-Funktionstest erfolgreich."
 fi
 
-set +e
-$PROOT $ARGS /system/bin/sh -c "$COMMAND"
-ret=$?
-set -e
+# --- 5. Container-Extraktion mit Logging (Problem 1 & 4) ---
+extracted_ok=0
 
-DEGRADED_MARKER="$LOCAL/.sandbox_degraded"
-
-if [ "$ret" -ne 0 ]; then
-    warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
-
+if [ "$skip_proot" -eq 0 ]; then
+    info "Entpacke Container via PRoot..."
     set +e
-    sh -c "$COMMAND"
+    $PROOT $ARGS /system/bin/sh -c "$COMMAND" > "$LOGDIR/proot_extract.log" 2>&1
     ret=$?
     set -e
 
-    if [ "$ret" -ne 0 ]; then
-        error "Extraction failed completely (exit code $ret)! Cannot continue setup."
+    if [ "$ret" -eq 0 ]; then
+        extracted_ok=1
+        info "PRoot-Extraktion erfolgreich abgeschlossen."
+    else
+        warn "PRoot-Extraktion fehlgeschlagen (Exit-Code $ret). Fehler-Details aus $LOGDIR/proot_extract.log:"
+        tail -n 30 "$LOGDIR/proot_extract.log" | while read -r l; do warn "  [proot] $l"; done
+    fi
+fi
+
+if [ "$extracted_ok" -eq 0 ]; then
+    info "Starte direkte Fallback-Extraktion..."
+    set +e
+    sh -c "$COMMAND" > "$LOGDIR/fallback_extract.log" 2>&1
+    ret=$?
+    set -e
+
+    if [ "$ret" -eq 0 ]; then
+        extracted_ok=1
+        info "Fallback-Extraktion erfolgreich abgeschlossen."
+    else
+        error "FEHLER: Auch die Fallback-Extraktion ist fehlgeschlagen (Exit-Code $ret). Fehler-Details:"
+        tail -n 40 "$LOGDIR/fallback_extract.log" | while read -r l; do error "  [tar] $l"; done
+
+        if grep -qi "no space left" "$LOGDIR/fallback_extract.log"; then
+            error "Ursache: Nicht genügend freier Speicherplatz auf dem Gerät!"
+        elif grep -qi "permission denied" "$LOGDIR/fallback_extract.log"; then
+            error "Ursache: Schreibrechte im Zielverzeichnis fehlen!"
+        elif grep -qi "not tar archive\|unexpected end" "$LOGDIR/fallback_extract.log"; then
+            error "Ursache: RootFS-Archiv ist beschädigt!"
+        fi
         exit 1
     fi
 fi

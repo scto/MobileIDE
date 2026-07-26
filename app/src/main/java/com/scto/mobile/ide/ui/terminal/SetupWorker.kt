@@ -414,6 +414,9 @@ object SetupWorker {
                 rootfsTar.copyTo(sandboxTarTmp, overwrite = true)
             }
 
+            // Pre-generate mobileide-environment.properties
+            writeEnvironmentProperties(context)
+
             // Execute setup.sh in the background to extract and install all tools
             _setupState.value = _setupState.value.copy(
                 installState = InstallState.InstallingDistribution,
@@ -797,33 +800,32 @@ object SetupWorker {
             val distroName = getDistroName(context)
             val prefixDir = context.filesDir.parentFile!!
             val distroDir = File(prefixDir, "local/$distroName")
-            val envProps = File(distroDir, "root/etc/mobileide-environment.properties")
-            envProps.parentFile?.mkdirs()
-
-            val existingLines = if (envProps.exists()) envProps.readLines().toMutableList() else mutableListOf()
-            val propsMap = mutableMapOf<String, String>()
-
-            for (line in existingLines) {
-                val trimmed = line.trim()
-                if (trimmed.isNotEmpty() && !trimmed.startsWith("#") && trimmed.contains("=")) {
-                    val parts = trimmed.split("=", limit = 2)
-                    propsMap[parts[0].trim()] = parts[1].trim()
-                }
-            }
+            val envProps1 = File(distroDir, "root/etc/mobileide-environment.properties")
+            val envProps2 = File(prefixDir, "local/mobileide-environment.properties")
+            val envProps3 = File(context.filesDir, "mobileide-environment.properties")
 
             val buildToolsVer = _setupState.value.selectedBuildTools.removePrefix("build-tools-").replace("-RC", "")
+            val propsMap = mutableMapOf<String, String>()
             propsMap["ANDROID_HOME"] = "/root/android-sdk"
             propsMap["ANDROID_SDK_ROOT"] = "/root/android-sdk"
             propsMap["ANDROID_NDK_HOME"] = "/root/android-sdk/ndk-bundle"
             propsMap["NDK_HOME"] = "/root/android-sdk/ndk-bundle"
             propsMap["CMAKE_HOME"] = "/usr"
             propsMap["PATH"] = "/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/$buildToolsVer:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            propsMap["PROOT_TMP_DIR"] = File(context.filesDir, "usr/tmp").absolutePath
 
             val sb = java.lang.StringBuilder()
             for ((k, v) in propsMap) {
                 sb.append("$k=$v\n")
             }
-            envProps.writeText(sb.toString())
+            val content = sb.toString()
+
+            listOf(envProps1, envProps2, envProps3).forEach { file ->
+                try {
+                    file.parentFile?.mkdirs()
+                    file.writeText(content)
+                } catch (_: Exception) {}
+            }
         } catch (e: Exception) {
             LogCatcher.e("SetupWorker", "Failed to write mobileide-environment.properties", e)
         }
