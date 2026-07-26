@@ -42,6 +42,7 @@ fun EditorToolbar(
     onFormat: () -> Unit,
     isBuilding: Boolean,
     hasWebAppConfig: Boolean,
+    isGradleProject: Boolean = false,
 ) {
     Surface {
         Row(
@@ -59,7 +60,7 @@ fun EditorToolbar(
             ToolbarItem(stringResource(R.string.toolbar_format), onFormat)
             ToolbarItem(stringResource(R.string.toolbar_color_scheme), onPalette)
 
-            if (hasWebAppConfig) {
+            if (hasWebAppConfig || isGradleProject) {
                 ToolbarItem(
                     label =
                         if (isBuilding) stringResource(R.string.toolbar_building)
