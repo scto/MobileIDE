@@ -381,6 +381,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.appcompat)
 
+    implementation(project(":features:layout-preview"))
+
     // Core Library Desugaring (translates newer Java APIs for older Android versions)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 

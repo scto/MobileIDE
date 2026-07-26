@@ -44,6 +44,7 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -294,6 +295,16 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var showGradleTasksDialog by remember { mutableStateOf(false) }
     var showToolingBottomSheet by remember { mutableStateOf(false) }
     var cachedGradleTasks by remember { mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList()) }
+
+    val activeContent = activeFile?.let { viewModel.getFileContent(it) } ?: ""
+    val previewTargets = remember(activeFile, activeContent) {
+        if (activeFile?.name?.endsWith(".kt") == true) {
+            com.scto.mobile.ide.features.layoutpreview.ComposePreviewScanner.scan(activeContent)
+        } else {
+            emptyList()
+        }
+    }
+    var showPreviewBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(projectPath) {
         if (isGradleProject) {
@@ -881,6 +892,14 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         com.scto.mobile.ide.core.tooling.impl.ui.ToolingBottomSheet(
             projectPath = projectPath,
             onDismiss = { showToolingBottomSheet = false }
+        )
+    }
+
+    if (showPreviewBottomSheet && previewTargets.isNotEmpty()) {
+        com.scto.mobile.ide.features.layoutpreview.ui.LayoutPreviewBottomSheet(
+            projectPath = projectPath,
+            targets = previewTargets,
+            onDismiss = { showPreviewBottomSheet = false }
         )
     }
 

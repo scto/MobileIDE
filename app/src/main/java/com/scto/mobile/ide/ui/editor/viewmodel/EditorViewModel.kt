@@ -1572,6 +1572,21 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         val data = context.getOrNull<List<Diagnostic>>("data")
                         if (data != null) {
                             state.diagnostics = data
+                            data.forEach { diag ->
+                                val level = when (diag.severity) {
+                                    DiagnosticSeverity.Error -> "ERROR"
+                                    DiagnosticSeverity.Warning -> "WARN"
+                                    else -> "INFO"
+                                }
+                                val line = (diag.range?.start?.line ?: 0) + 1
+                                val col = (diag.range?.start?.character ?: 0) + 1
+                                val msg = "${realFile.name}:$line:$col: ${diag.message}"
+                                com.scto.mobile.ide.core.tooling.impl.ToolingLogManagerImpl.log(
+                                    com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.PROJECT_DIAGNOSIS,
+                                    level,
+                                    msg
+                                )
+                            }
                         }
                     }
                 }

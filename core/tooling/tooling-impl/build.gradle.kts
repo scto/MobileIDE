@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":core:tooling:tooling-api"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
+    implementation(project(":core:apk-builder"))
     
     // Compose & UI
     implementation(libs.activity.compose)
