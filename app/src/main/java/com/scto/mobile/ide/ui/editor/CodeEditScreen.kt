@@ -42,6 +42,7 @@ import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -287,6 +288,21 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
 
+    val isGradleProject = remember(projectPath) {
+        File(projectPath, "build.gradle").exists() || File(projectPath, "build.gradle.kts").exists()
+    }
+    var showGradleTasksDialog by remember { mutableStateOf(false) }
+    var showToolingBottomSheet by remember { mutableStateOf(false) }
+    var cachedGradleTasks by remember { mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList()) }
+
+    LaunchedEffect(projectPath) {
+        if (isGradleProject) {
+            withContext(Dispatchers.IO) {
+                cachedGradleTasks = com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.getTasks(context, projectPath, forceRefresh = false)
+            }
+        }
+    }
+
     LaunchedEffect(currentFolderName) {
         if (viewModel.openFiles.isNotEmpty()) {
             val firstFile = viewModel.openFiles.first().file
@@ -477,6 +493,11 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 )
                             },
                             actions = {
+                                if (isGradleProject) {
+                                    IconButton(onClick = { showGradleTasksDialog = true }) {
+                                        Icon(Icons.Outlined.Checklist, contentDescription = "Gradle Tasks")
+                                    }
+                                }
                                 IconButton(
                                     onClick = {
                                         scope.launch {
@@ -839,6 +860,27 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 clipboardManager.setPrimaryClip(clipData)
                 showColorPicker = false
             },
+        )
+    }
+
+    if (showGradleTasksDialog) {
+        com.scto.mobile.ide.core.tooling.impl.ui.GradleTasksDialog(
+            tasks = cachedGradleTasks,
+            onDismiss = { showGradleTasksDialog = false },
+            onRunTasks = { tasks, flags ->
+                scope.launch {
+                    showGradleTasksDialog = false
+                    showToolingBottomSheet = true
+                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.runTasks(context, projectPath, tasks, flags).collect()
+                }
+            }
+        )
+    }
+
+    if (showToolingBottomSheet) {
+        com.scto.mobile.ide.core.tooling.impl.ui.ToolingBottomSheet(
+            projectPath = projectPath,
+            onDismiss = { showToolingBottomSheet = false }
         )
     }
 

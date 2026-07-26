@@ -10,6 +10,11 @@ data class GradleTask(
 )
 
 interface GradleTaskManager {
-    suspend fun getTasks(context: Context, projectPath: String): List<GradleTask>
-    fun runTasks(context: Context, projectPath: String, taskNames: List<String>): Flow<String>
+    suspend fun getTasks(context: Context, projectPath: String, forceRefresh: Boolean = false): List<GradleTask>
+    fun runTasks(
+        context: Context,
+        projectPath: String,
+        taskNames: List<String>,
+        flags: List<String> = emptyList()
+    ): Flow<GradleLogLine>
 }

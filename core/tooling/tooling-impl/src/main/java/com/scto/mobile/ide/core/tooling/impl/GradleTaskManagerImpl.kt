@@ -4,8 +4,11 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 object GradleTaskManagerImpl : GradleTaskManager {
+
+    private val tasksCache = ConcurrentHashMap<String, List<GradleTask>>()
 
     private fun getPrefixDir(context: Context): File = context.filesDir.parentFile!!
     private fun getLocalDir(context: Context): File = File(getPrefixDir(context), "local").apply { mkdirs() }
@@ -92,7 +95,14 @@ object GradleTaskManagerImpl : GradleTaskManager {
         return env
     }
 
-    override suspend fun getTasks(context: Context, projectPath: String): List<GradleTask> {
+    override suspend fun getTasks(context: Context, projectPath: String, forceRefresh: Boolean): List<GradleTask> {
+        if (!forceRefresh && tasksCache.containsKey(projectPath)) {
+            val cached = tasksCache[projectPath]
+            if (!cached.isNullOrEmpty()) {
+                return cached
+            }
+        }
+
         val tasksList = mutableListOf<GradleTask>()
         val prefixDir = context.filesDir.parentFile!!
         val sandboxDir = File(prefixDir, "local/sandbox")
@@ -108,7 +118,7 @@ object GradleTaskManagerImpl : GradleTaskManager {
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
         val gradlewFile = File(projectPath, "gradlew")
         val compileCmd = if (gradlewFile.exists()) {
-            "${javaHomeExport}cd $projectPath && ./gradlew tasks --all"
+            "${javaHomeExport}cd $projectPath && bash ./gradlew tasks --all"
         } else {
             "${javaHomeExport}cd $projectPath && gradle tasks --all"
         }
@@ -126,7 +136,6 @@ object GradleTaskManagerImpl : GradleTaskManager {
                 lines.forEach { line ->
                     val trimmed = line.trim()
                     if (trimmed.isEmpty()) return@forEach
-                    
                     if (line.startsWith("---")) return@forEach
                     
                     if (trimmed.contains(" - ")) {
@@ -146,16 +155,30 @@ object GradleTaskManagerImpl : GradleTaskManager {
             e.printStackTrace()
         }
         
-        return tasksList.filter { 
+        val result = tasksList.filter { 
             it.name.isNotEmpty() && 
             !it.name.contains(" ") && 
             !it.name.startsWith(":") &&
             it.name != "tasks"
         }.distinctBy { it.name }
+
+        if (result.isNotEmpty()) {
+            tasksCache[projectPath] = result
+        }
+
+        return result
     }
 
-    override fun runTasks(context: Context, projectPath: String, taskNames: List<String>): Flow<String> = flow {
+    override fun runTasks(
+        context: Context,
+        projectPath: String,
+        taskNames: List<String>,
+        flags: List<String>
+    ): Flow<GradleLogLine> = flow {
         val tasksString = taskNames.joinToString(" ")
+        val flagsString = flags.joinToString(" ")
+        val fullArgs = listOf(tasksString, flagsString).filter { it.isNotBlank() }.joinToString(" ")
+
         val prefixDir = context.filesDir.parentFile!!
         val sandboxDir = File(prefixDir, "local/sandbox")
         
@@ -170,15 +193,19 @@ object GradleTaskManagerImpl : GradleTaskManager {
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
         val gradlewFile = File(projectPath, "gradlew")
         val compileCmd = if (gradlewFile.exists()) {
-            "${javaHomeExport}cd $projectPath && ./gradlew $tasksString"
+            "${javaHomeExport}cd $projectPath && bash ./gradlew $fullArgs"
         } else {
-            "${javaHomeExport}cd $projectPath && gradle $tasksString"
+            "${javaHomeExport}cd $projectPath && gradle $fullArgs"
         }
 
         val cmd = buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
         
-        emit("Starting Gradle execution: $tasksString\n")
-        
+        var lineNum = 1
+        val startLine = "Starting Gradle execution: $fullArgs"
+        val startLog = GradleLogLine.parse(lineNum++, startLine)
+        emit(startLog)
+        ToolingLogManagerImpl.log(com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD, "INFO", startLine)
+
         try {
             val processBuilder = ProcessBuilder(cmd)
             processBuilder.directory(File(projectPath))
@@ -189,19 +216,31 @@ object GradleTaskManagerImpl : GradleTaskManager {
             process.inputStream.bufferedReader().use { reader ->
                 var line = reader.readLine()
                 while (line != null) {
-                    emit(line + "\n")
+                    val parsed = GradleLogLine.parse(lineNum++, line)
+                    emit(parsed)
+                    val levelStr = when (parsed.level) {
+                        GradleLogLevel.ERROR -> "ERROR"
+                        GradleLogLevel.WARN -> "WARN"
+                        else -> "INFO"
+                    }
                     ToolingLogManagerImpl.log(
                         com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD,
-                        "INFO",
+                        levelStr,
                         line
                     )
                     line = reader.readLine()
                 }
             }
             val exitCode = process.waitFor()
-            emit("Execution finished with exit code: $exitCode\n")
+            val endLine = "Execution finished with exit code: $exitCode"
+            val endLog = GradleLogLine.parse(lineNum++, endLine)
+            emit(endLog)
+            ToolingLogManagerImpl.log(com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD, if (exitCode == 0) "INFO" else "ERROR", endLine)
         } catch (e: Exception) {
-            emit("Error executing tasks: ${e.message}\n")
+            val errLine = "Error executing tasks: ${e.message}"
+            val errLog = GradleLogLine.parse(lineNum++, errLine)
+            emit(errLog)
+            ToolingLogManagerImpl.log(com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD, "ERROR", errLine)
         }
     }
 }
