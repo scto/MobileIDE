@@ -51,9 +51,14 @@ class ApkBuilder(private val context: Context) {
                 configureProcessBuilder(pb)
             } else {
                 pb.command("bash", "./gradlew", task)
-                val javaHome = "/data/data/com.termux/files/usr/lib/jvm/java-17-openjdk"
-                if (File(javaHome).exists()) {
-                    pb.environment()["JAVA_HOME"] = javaHome
+                val javaHomeCandidates = listOf(
+                    File("/data/user/0/com.scto.mobile.ide/local/ubuntu/usr/lib/jvm/java-17-openjdk-arm64"),
+                    File("/data/user/0/com.scto.mobile.ide/local/ubuntu/usr/lib/jvm/java-17-openjdk-amd64"),
+                    File("/data/user/0/com.scto.mobile.ide/usr/lib/jvm/java-17-openjdk")
+                )
+                val validJavaHome = javaHomeCandidates.firstOrNull { it.exists() }?.absolutePath
+                if (validJavaHome != null) {
+                    pb.environment()["JAVA_HOME"] = validJavaHome
                 }
             }
             

@@ -2,6 +2,13 @@
 
 set -eu
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$SCRIPT_DIR/shared_extraction.sh" ]; then
+    . "$SCRIPT_DIR/shared_extraction.sh"
+elif [ -f "$SCRIPT_DIR/../shared_extraction.sh" ]; then
+    . "$SCRIPT_DIR/../shared_extraction.sh"
+fi
+
 Color_Off='\033[0m'
 Black='\033[0;30m'
 Red='\033[0;31m'
