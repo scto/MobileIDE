@@ -165,6 +165,8 @@ fun BuildAndTasksPanel(
         }
     }
 
+    var showKeystoreDialog by remember { mutableStateOf(false) }
+
     Column(modifier = modifier.fillMaxSize().padding(8.dp)) {
         // Build Variant Card
         Card(
@@ -173,12 +175,21 @@ fun BuildAndTasksPanel(
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
-                Text(
-                    text = "Build Variant (APK / Bundle)",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Build Variant (APK / Bundle)",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    TextButton(onClick = { showKeystoreDialog = true }) {
+                        Text("🔑 Signierung", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -380,6 +391,13 @@ fun BuildAndTasksPanel(
         Box(modifier = Modifier.weight(1f)) {
             GradleLogPanel(buildLogs = buildLogs, autoScrollToError = buildStatus is BuildStatus.Error)
         }
+    }
+
+    if (showKeystoreDialog) {
+        com.scto.mobile.ide.core.apkbuilder.ui.KeystoreManagerDialog(
+            projectPath = projectPath,
+            onDismiss = { showKeystoreDialog = false }
+        )
     }
 }
 
