@@ -92,4 +92,4 @@ lint/tmp/
 .acside/editor/
 #.aider*
 MobileIDE_backup.zip
-assets/
+#assets/

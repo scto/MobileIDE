@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.toml_lsp",
+  "name": "TOML Language Support",
+  "mainClass": "com.rk.extension.languages.TomlLspExtension",
+  "version": "1.0.0",
+  "description": "Provides TOML language intelligence using Taplo.",
+  "author": {
+    "displayName": "MobileIDE"
+  },
+  "repository": "https://github.com/scto/MobileIDE",
+  "license": "GPLv3",
+  "tags": ["lsp", "toml"]
+}

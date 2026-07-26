@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.xml_lsp",
+  "name": "XML Language Support",
+  "mainClass": "com.rk.extension.languages.XmlLspExtension",
+  "version": "1.0.0",
+  "description": "Provides XML language intelligence using LemMinX.",
+  "author": {
+    "displayName": "MobileIDE"
+  },
+  "repository": "https://github.com/scto/MobileIDE",
+  "license": "GPLv3",
+  "tags": ["lsp", "xml"]
+}
