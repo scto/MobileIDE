@@ -12,10 +12,11 @@ suspend fun LspEditor.requestDefinitionAt(line: Int, column: Int): List<Location
             TextDocumentIdentifier(uri.toString()),
             Position(line, column)
         )
-        val result = requestManager.definition(params).await() ?: return@withContext emptyList()
+        val future = requestManager.definition(params) ?: return@withContext emptyList()
+        val result = future.await() ?: return@withContext emptyList()
         when {
-            result.isLeft -> result.left ?: emptyList()
-            result.isRight -> result.right?.map { Location(it.targetUri, it.targetRange) } ?: emptyList()
+            result.isLeft -> result.left?.filterNotNull() ?: emptyList()
+            result.isRight -> result.right?.mapNotNull { it?.let { Location(it.targetUri, it.targetRange) } } ?: emptyList()
             else -> emptyList()
         }
     } catch (e: Exception) {
@@ -30,7 +31,8 @@ suspend fun LspEditor.requestReferencesAt(line: Int, column: Int): List<Location
             Position(line, column),
             ReferenceContext(true)
         )
-        requestManager.references(params).await() ?: emptyList()
+        val future = requestManager.references(params) ?: return@withContext emptyList()
+        future.await()?.filterNotNull() ?: emptyList()
     } catch (e: Exception) {
         emptyList()
     }
@@ -43,7 +45,8 @@ suspend fun LspEditor.requestRenameAt(line: Int, column: Int, newName: String): 
             Position(line, column),
             newName
         )
-        requestManager.rename(params).await()
+        val future = requestManager.rename(params) ?: return@withContext null
+        future.await()
     } catch (e: Exception) {
         null
     }
@@ -55,7 +58,8 @@ suspend fun LspEditor.requestHoverAt(line: Int, column: Int): Hover? = withConte
             TextDocumentIdentifier(uri.toString()),
             Position(line, column)
         )
-        requestManager.hover(params).await()
+        val future = requestManager.hover(params) ?: return@withContext null
+        future.await()
     } catch (e: Exception) {
         null
     }
@@ -67,7 +71,8 @@ suspend fun LspEditor.requestSignatureHelpAt(line: Int, column: Int): SignatureH
             TextDocumentIdentifier(uri.toString()),
             Position(line, column)
         )
-        requestManager.signatureHelp(params).await()
+        val future = requestManager.signatureHelp(params) ?: return@withContext null
+        future.await()
     } catch (e: Exception) {
         null
     }
