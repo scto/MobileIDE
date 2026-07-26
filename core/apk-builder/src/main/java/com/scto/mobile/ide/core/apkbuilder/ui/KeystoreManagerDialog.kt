@@ -38,9 +38,8 @@ fun KeystoreManagerDialog(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var existingKeystores by remember { mutableStateOf<List<File>>(emptyList()) }
-    var selectedTab by remember { mutableStateOf(0) } // 0 = Keystores, 1 = Neu erstellen
+    var selectedTab by remember { mutableStateOf(0) }
 
-    // Form fields
     var name by remember { mutableStateOf("release.jks") }
     var alias by remember { mutableStateOf("key0") }
     var storePass by remember { mutableStateOf("") }
@@ -110,7 +109,6 @@ fun KeystoreManagerDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (selectedTab == 0) {
-                    // TAB 0: List existing keystores
                     if (existingKeystores.isEmpty()) {
                         Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text("Keine Keystores im Projekt gefunden", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -190,7 +188,6 @@ fun KeystoreManagerDialog(
                         }
                     }
                 } else {
-                    // TAB 1: Create Form
                     LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
                         item {
                             OutlinedTextField(
@@ -349,63 +346,64 @@ fun KeystoreManagerDialog(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onDismiss) { Text("Schließen") }
                 }
+
+                // Sub-dialogs rendered inside the Composable scope
+                val currentDetails = selectedDetails
+                if (currentDetails != null) {
+                    AlertDialog(
+                        onDismissRequest = { selectedDetails = null },
+                        title = { Text("Keystore Details: ${currentDetails.file.name}") },
+                        text = {
+                            Column {
+                                Text("Alias: ${currentDetails.firstAlias ?: "-"}", fontWeight = FontWeight.Bold)
+                                Text("Gültig von: ${currentDetails.validFrom ?: "-"}")
+                                Text("Gültig bis: ${currentDetails.validUntil ?: "-"}")
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("SHA-256 Fingerprint:", fontWeight = FontWeight.Bold)
+                                Text(
+                                    currentDetails.sha256Fingerprint ?: "-",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { selectedDetails = null }) { Text("OK") }
+                        }
+                    )
+                }
+
+                val currentInjectConfig = showInjectConfirm
+                if (currentInjectConfig != null) {
+                    val isKotlinDsl = KeystoreGradleInjector.findAppGradleFile(projectPath)?.name?.endsWith(".kts") == true
+                    AlertDialog(
+                        onDismissRequest = { showInjectConfirm = null },
+                        title = { Text("Release SigningConfig eintragen?") },
+                        text = {
+                            Column {
+                                Text("Das Projekt enthält noch keine release-Signierkonfiguration. Soll die Konfiguration automatisch in app/build.gradle.kts eingetragen werden?")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    KeystoreGradleInjector.generateGradleSnippet(isKotlinDsl),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                val success = KeystoreGradleInjector.injectSigningConfig(projectPath)
+                                statusMessage = if (success) "app/build.gradle.kts erfolgreich aktualisiert (Backup erstellt)." else "Fehler beim Eintragen in build.gradle.kts."
+                                showInjectConfirm = null
+                            }) { Text("Jetzt Eintragen") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showInjectConfirm = null }) { Text("Später") }
+                        }
+                    )
+                }
             }
         }
-    }
-
-    // Keystore Details Dialog
-    selectedDetails?.let { details ->
-        AlertDialog(
-            onDismissRequest = { selectedDetails = null },
-            title = { Text("Keystore Details: ${details.file.name}") },
-            text = {
-                Column {
-                    Text("Alias: ${details.firstAlias ?: "-"}", fontWeight = FontWeight.Bold)
-                    Text("Gültig von: ${details.validFrom ?: "-"}")
-                    Text("Gültig bis: ${details.validUntil ?: "-"}")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("SHA-256 Fingerprint:", fontWeight = FontWeight.Bold)
-                    Text(
-                        details.sha256Fingerprint ?: "-",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { selectedDetails = null }) { Text("OK") }
-            }
-        )
-    }
-
-    // Gradle Inject Confirm Dialog
-    showInjectConfirm?.let { config ->
-        val isKotlinDsl = KeystoreGradleInjector.findAppGradleFile(projectPath)?.name?.endsWith(".kts") == true
-        AlertDialog(
-            onDismissRequest = { showInjectConfirm = null },
-            title = { Text("Release SigningConfig eintragen?") },
-            text = {
-                Column {
-                    Text("Das Projekt enthält noch keine release-Signierkonfiguration. Soll die Konfiguration automatisch in app/build.gradle.kts eingetragen werden?")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        KeystoreGradleInjector.generateGradleSnippet(isKotlinDsl),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    val success = KeystoreGradleInjector.injectSigningConfig(projectPath)
-                    statusMessage = if (success) "app/build.gradle.kts erfolgreich aktualisiert (Backup erstellt)." else "Fehler beim Eintragen in build.gradle.kts."
-                    showInjectConfirm = null
-                }) { Text("Jetzt Eintragen") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showInjectConfirm = null }) { Text("Später") }
-            }
-        )
     }
 }

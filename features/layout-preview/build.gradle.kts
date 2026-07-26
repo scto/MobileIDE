@@ -34,6 +34,8 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.ui.graphics)
     implementation(libs.material3)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     
     implementation(project(":core:common"))
     implementation(project(":core:tooling:tooling-impl"))
