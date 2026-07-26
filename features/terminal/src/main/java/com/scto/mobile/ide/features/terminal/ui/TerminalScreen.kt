@@ -54,8 +54,8 @@ import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalBackEnd
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
-import com.scto.mobile.ide.R
-import com.scto.mobile.ide.ui.terminal.TerminalConfig.VIRTUAL_KEYS_JSON
+import com.scto.mobile.ide.core.terminal.resources.R
+import com.scto.mobile.ide.features.terminal.ui.TerminalConfig.VIRTUAL_KEYS_JSON
 import com.termux.view.TerminalView
 import java.io.File
 import java.lang.ref.WeakReference

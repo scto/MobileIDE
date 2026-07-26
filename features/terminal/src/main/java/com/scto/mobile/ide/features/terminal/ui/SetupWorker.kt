@@ -11,7 +11,7 @@
 package com.scto.mobile.ide.features.terminal.ui
 
 import android.content.Context
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
@@ -114,7 +114,7 @@ object SetupWorker {
     }
 
     fun startSequentialSetup(context: Context) {
-        LogCatcher.init(context)
+         // Timber initialized
         if (isTerminalInstalled(context)) {
             _setupState.value = SetupState(isActive = false, installState = InstallState.Success, isSuccess = true)
             return
@@ -156,7 +156,7 @@ object SetupWorker {
                     totalSteps = 7
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Sequential setup failed", e)
+                Timber.tag("SetupWorker").e(e, "Sequential setup failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "Setup-Fehler"),
@@ -170,7 +170,7 @@ object SetupWorker {
         context: Context
     ) {
         withContext(Dispatchers.IO) {
-            LogCatcher.i("SetupWorker", "reinstallTerminal starting...")
+            Timber.tag("SetupWorker").i("reinstallTerminal starting...")
             _setupState.value = _setupState.value.copy(status = "Alte Installation wird gelöscht...", isActive = true)
             val list = ArrayList(SessionManager.sessions)
             list.forEach { SessionManager.removeSession(it) }
@@ -213,7 +213,7 @@ object SetupWorker {
         context: Context
     ) {
         withContext(Dispatchers.IO) {
-            LogCatcher.i("SetupWorker", "prepareEnvironment starting...")
+            Timber.tag("SetupWorker").i("prepareEnvironment starting...")
             logTerminalSetup(context)
             _setupState.value = _setupState.value.copy(status = "Umgebung wird vorbereitet...")
             val distroName = getDistroName(context)
@@ -243,7 +243,7 @@ object SetupWorker {
                         .trimIndent()
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Failed to write setup_options.properties", e)
+                Timber.tag("SetupWorker").e(e, "Failed to write setup_options.properties")
             }
 
             val distroDir = File(prefixDir, "local/$distroName")
@@ -261,24 +261,24 @@ object SetupWorker {
                 val libProot = File(nativeLibDir, "libproot.so")
                 if (libProot.exists()) {
                     try {
-                        LogCatcher.i("SetupWorker", "Copying native libproot.so to proot destination.")
+                        Timber.tag("SetupWorker").i("Copying native libproot.so to proot destination.")
                         libProot.copyTo(prootDest, overwrite = true)
                         prootDest.setExecutable(true)
                         success = true
                     } catch (e: Exception) {
-                        LogCatcher.e("SetupWorker", "Failed to copy native libproot.so", e)
+                        Timber.tag("SetupWorker").e(e, "Failed to copy native libproot.so")
                     }
                 }
 
                 // If copy fails, try downloading
                 if (!success) {
                     try {
-                        LogCatcher.i("SetupWorker", "Downloading proot.")
+                        Timber.tag("SetupWorker").i("Downloading proot.")
                         Downloader.downloadProot(context, onProgress = { downloaded, total ->
                             _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
                         })
                     } catch (e: Exception) {
-                        LogCatcher.e("SetupWorker", "Failed to download proot", e)
+                        Timber.tag("SetupWorker").e(e, "Failed to download proot")
                     }
                 }
             }
@@ -287,12 +287,12 @@ object SetupWorker {
             _setupState.value = _setupState.value.copy(status = "Bibliotheken werden kopiert...")
             val tallocDest = File(filesDir, "libtalloc.so.2")
             try {
-                LogCatcher.i("SetupWorker", "Downloading libtalloc via Downloader.")
+                Timber.tag("SetupWorker").i("Downloading libtalloc via Downloader.")
                 Downloader.downloadTalloc(context, onProgress = { downloaded, total ->
                     _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
                 })
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Failed to download libtalloc", e)
+                Timber.tag("SetupWorker").e(e, "Failed to download libtalloc")
             }
 
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
@@ -300,12 +300,12 @@ object SetupWorker {
             if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
                 _setupState.value = _setupState.value.copy(status = "Linux RootFS wird heruntergeladen...")
                 try {
-                    LogCatcher.i("SetupWorker", "Downloading rootfs archive.")
+                    Timber.tag("SetupWorker").i("Downloading rootfs archive.")
                     Downloader.downloadRootFs(context, distro = distroName, onProgress = { downloaded, total ->
                         _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
                     })
                 } catch (e: Exception) {
-                    LogCatcher.e("SetupWorker", "Rootfs download failed.", e)
+                    Timber.tag("SetupWorker").e(e, "Rootfs download failed.")
                     throw IllegalStateException("RootFS Download fehlgeschlagen. Bitte Internetverbindung prüfen.", e)
                 }
             }
@@ -323,7 +323,7 @@ object SetupWorker {
                 try {
                     tallocFile.copyTo(File(libDir, "libtalloc.so.2"), overwrite = true)
                 } catch (e: Exception) {
-                    LogCatcher.e("SetupWorker", "Failed to copy downloaded libtalloc to libDir", e)
+                    Timber.tag("SetupWorker").e(e, "Failed to copy downloaded libtalloc to libDir")
                 }
             }
 
@@ -377,7 +377,7 @@ object SetupWorker {
                     java.nio.file.Files.createSymbolicLink(sandboxLink.toPath(), distroDir.toPath())
                     symlinkCreated = true
                 } catch (e: Exception) {
-                    LogCatcher.e("SetupWorker", "Failed to create sandbox symlink via Files", e)
+                    Timber.tag("SetupWorker").e(e, "Failed to create sandbox symlink via Files")
                 }
             }
             if (!symlinkCreated) {
@@ -386,7 +386,7 @@ object SetupWorker {
                         .exec(arrayOf("ln", "-snf", distroDir.absolutePath, sandboxLink.absolutePath))
                         .waitFor()
                 } catch (ex: Exception) {
-                    LogCatcher.e("SetupWorker", "Fallback symlink creation failed", ex)
+                    Timber.tag("SetupWorker").e(ex, "Fallback symlink creation failed")
                 }
             }
 
@@ -407,7 +407,7 @@ object SetupWorker {
             } catch (e: Exception) { false }
 
             if (!isWritable) {
-                LogCatcher.e("SetupWorker", "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
+                Timber.tag("SetupWorker").e("PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
                 throw IllegalStateException("PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
             }
 
@@ -480,7 +480,7 @@ object SetupWorker {
                 while (reader.readLine().also { line = it } != null) {
                     val cleanLine = (line ?: "").replace(ansiRegex, "").trim()
                     if (cleanLine.isNotEmpty()) {
-                        LogCatcher.i("SetupWorker", "[setup.sh] $cleanLine")
+                        Timber.tag("SetupWorker").i("[setup.sh] $cleanLine")
                         withContext(Dispatchers.Main) { 
                             val currentLogs = _setupState.value.logs + cleanLine
                             _setupState.value = _setupState.value.copy(status = cleanLine, logs = currentLogs)
@@ -617,7 +617,7 @@ object SetupWorker {
                     totalSteps = 8
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "JDK installation failed", e)
+                Timber.tag("SetupWorker").e(e, "JDK installation failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "JDK-Installation fehlgeschlagen"),
@@ -649,7 +649,7 @@ object SetupWorker {
                     totalSteps = 8
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Build Tools installation failed", e)
+                Timber.tag("SetupWorker").e(e, "Build Tools installation failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "Build-Tools-Installation fehlgeschlagen"),
@@ -681,7 +681,7 @@ object SetupWorker {
                     totalSteps = 8
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Platform SDK installation failed", e)
+                Timber.tag("SetupWorker").e(e, "Platform SDK installation failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "Platform SDK-Installation fehlgeschlagen"),
@@ -713,7 +713,7 @@ object SetupWorker {
                     totalSteps = 8
                 )
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "NDK installation failed", e)
+                Timber.tag("SetupWorker").e(e, "NDK installation failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "NDK-Installation fehlgeschlagen"),
@@ -760,7 +760,7 @@ object SetupWorker {
                     """.trimIndent()
                     configFile.writeText(jsonStr)
                 } catch (ex: Exception) {
-                    LogCatcher.e("SetupWorker", "Failed to write antigravity_setup_config.json", ex)
+                    Timber.tag("SetupWorker").e(ex, "Failed to write antigravity_setup_config.json")
                 }
 
                 // Phase 8: Completion & Persistent Settings
@@ -789,7 +789,7 @@ object SetupWorker {
                     SessionManager.addNewSession(context)
                 }
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "CMake installation failed", e)
+                Timber.tag("SetupWorker").e(e, "CMake installation failed")
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
                     installState = InstallState.Error(e.message ?: "CMake-Installation fehlgeschlagen"),
@@ -831,7 +831,7 @@ object SetupWorker {
                 } catch (_: Exception) {}
             }
         } catch (e: Exception) {
-            LogCatcher.e("SetupWorker", "Failed to write mobileide-environment.properties", e)
+            Timber.tag("SetupWorker").e(e, "Failed to write mobileide-environment.properties")
         }
     }
 
@@ -881,7 +881,7 @@ object SetupWorker {
                 }
                 process.waitFor()
             } catch (e: Exception) {
-                LogCatcher.e("SetupWorker", "Toolchain package installation failed", e)
+                Timber.tag("SetupWorker").e(e, "Toolchain package installation failed")
             }
         }
     }
@@ -905,7 +905,7 @@ object SetupWorker {
                 FileOutputStream(destFile).use { output -> input.copyTo(output) }
             }
         } catch (e: Exception) {
-            LogCatcher.e("SetupWorker", "Failed to force copy asset $assetName", e)
+            Timber.tag("SetupWorker").e(e, "Failed to force copy asset $assetName")
         }
     }
 
@@ -978,9 +978,9 @@ object SetupWorker {
             }
             sb.append("======================================\n")
 
-            LogCatcher.i("SetupWorker", sb.toString())
+            Timber.tag("SetupWorker").i(sb.toString())
         } catch (e: Exception) {
-            LogCatcher.e("SetupWorker", "Error generating terminal setup log", e)
+            Timber.tag("SetupWorker").e(e, "Error generating terminal setup log")
         }
     }
 }

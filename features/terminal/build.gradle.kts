@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
 
+    implementation(libs.timber)
     implementation(project(":core:common"))
     implementation(project(":core:resources"))
     implementation(project(":features:proot"))

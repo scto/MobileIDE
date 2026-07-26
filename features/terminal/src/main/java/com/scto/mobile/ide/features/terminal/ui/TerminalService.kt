@@ -10,9 +10,8 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
-import com.scto.mobile.ide.MainActivity
-import com.scto.mobile.ide.R
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.terminal.resources.R
+import timber.log.Timber
 
 class TerminalService : Service() {
 
@@ -29,18 +28,17 @@ class TerminalService : Service() {
             private set
 
         fun startService(context: Context) {
-            LogCatcher.i("TerminalService", "startService requested")
+            Timber.tag("TerminalService").i("startService requested")
             val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_START }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     context.startForegroundService(intent)
                 } catch (e: Exception) {
-                    LogCatcher.e("TerminalService", "Failed to start foreground service", e)
-                    // Fallback to startService, although it might also fail if not in foreground
+                    Timber.tag("TerminalService").e(e, "Failed to start foreground service")
                     try {
                         context.startService(intent)
                     } catch (e2: Exception) {
-                        LogCatcher.e("TerminalService", "Failed to start service fallback", e2)
+                        Timber.tag("TerminalService").e(e2, "Failed to start service fallback")
                     }
                 }
             } else {
@@ -49,38 +47,39 @@ class TerminalService : Service() {
         }
 
         fun stopService(context: Context) {
-            LogCatcher.i("TerminalService", "stopService requested")
+            Timber.tag("TerminalService").i("stopService requested")
             val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_STOP }
+            context.startService(intent)
+        }
+
+        fun toggleWakeLock(context: Context) {
+            Timber.tag("TerminalService").i("toggleWakeLock requested")
+            val intent = Intent(context, TerminalService::class.java).apply { action = ACTION_TOGGLE_WAKE_LOCK }
             context.startService(intent)
         }
     }
 
     override fun onCreate() {
-        LogCatcher.i("TerminalService", "onCreate called")
         super.onCreate()
+        Timber.tag("TerminalService").i("TerminalService onCreate")
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        LogCatcher.i("TerminalService", "onStartCommand action=$action")
+        Timber.tag("TerminalService").i("onStartCommand action: $action")
+
         when (action) {
             ACTION_START -> {
                 showNotification()
             }
             ACTION_STOP -> {
-                LogCatcher.i(
-                    "TerminalService",
-                    "ACTION_STOP action received. Releasing wake lock and clearing sessions.",
-                )
+                Timber.tag("TerminalService").i("Action STOP received, stopping foreground service.")
                 releaseWakeLock()
-                val list = ArrayList(SessionManager.sessions)
-                list.forEach { SessionManager.removeSession(it) }
                 stopForeground(true)
                 stopSelf()
             }
             ACTION_TOGGLE_WAKE_LOCK -> {
-                LogCatcher.i("TerminalService", "ACTION_TOGGLE_WAKE_LOCK action received.")
                 if (isWakeLockAcquired) {
                     releaseWakeLock()
                 } else {
@@ -88,34 +87,44 @@ class TerminalService : Service() {
                 }
                 showNotification()
             }
+            else -> {
+                showNotification()
+            }
         }
-        return START_NOT_STICKY
+
+        return START_STICKY
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.tag("TerminalService").i("TerminalService onDestroy")
+        releaseWakeLock()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
     private fun acquireWakeLock() {
-        LogCatcher.i("TerminalService", "acquireWakeLock: acquiring CPU wake lock...")
         if (wakeLock == null) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::TerminalWakeLock")
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobileIDE::TerminalServiceWakeLock")
         }
         if (wakeLock?.isHeld == false) {
             wakeLock?.acquire()
             isWakeLockAcquired = true
-            LogCatcher.i("TerminalService", "acquireWakeLock: CPU wake lock successfully acquired.")
+            Timber.tag("TerminalService").i("acquireWakeLock: CPU wake lock acquired.")
         }
     }
 
     private fun releaseWakeLock() {
-        LogCatcher.i("TerminalService", "releaseWakeLock: releasing CPU wake lock...")
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
         isWakeLockAcquired = false
-        LogCatcher.i("TerminalService", "releaseWakeLock: CPU wake lock released.")
+        Timber.tag("TerminalService").i("releaseWakeLock: CPU wake lock released.")
     }
 
     private fun showNotification() {
-        val mainIntent = Intent(this, MainActivity::class.java)
+        val mainIntent = packageManager.getLaunchIntentForPackage(packageName) ?: Intent()
         val mainPendingIntent =
             PendingIntent.getActivity(
                 this,
@@ -159,41 +168,30 @@ class TerminalService : Service() {
                 .setContentIntent(mainPendingIntent)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                // Left button: Exit
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Exit", exitPendingIntent)
-                // Right button: Acquire Wake Lock
                 .addAction(android.R.drawable.ic_lock_lock, wakeLockActionText, wakeLockPendingIntent)
                 .build()
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startForeground(
-                    NOTIFICATION_ID,
-                    notification,
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
-                )
-            } else {
-                startForeground(NOTIFICATION_ID, notification)
-            }
+            startForeground(NOTIFICATION_ID, notification)
         } catch (e: Exception) {
-            LogCatcher.e("TerminalService", "Failed to startForeground: ${e.message}", e)
+            Timber.tag("TerminalService").e(e, "Failed to startForeground in showNotification")
         }
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel =
-                NotificationChannel(CHANNEL_ID, "Terminal Foreground Service", NotificationManager.IMPORTANCE_LOW)
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(channel)
+                NotificationChannel(
+                    CHANNEL_ID,
+                    "Terminal Service",
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = "Hält den Terminal-Dienst im Hintergrund aktiv"
+                }
+
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
-
-    override fun onDestroy() {
-        LogCatcher.i("TerminalService", "onDestroy called")
-        releaseWakeLock()
-        super.onDestroy()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 }
