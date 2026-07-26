@@ -1,0 +1,42 @@
+name: Continuous Integration
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+concurrency:
+  # cancel CI actions running on prior commits to the PR
+  # use of `github.sha` as the backup ensures that every commit to main gets a full run
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+jobs:
+  check-ci:
+    name: Run CI Steps
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - {"runner": "ubuntu-latest", "platform": "linux", "arch": "amd64"}
+          - {"runner": "macos-latest", "platform": "darwin", "arch": "amd64"}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: install
+        shell: bash
+        run: bun install
+      - name: test
+        shell: bash
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+          VERSION: "0.0.0"
+        run: |
+          bun run test
+          ./dist/prettier --version

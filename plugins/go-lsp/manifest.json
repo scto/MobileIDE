@@ -1,0 +1,17 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "io.kiquar.plugin.go",
+  "name": "Go Support",
+  "mainClass": "io.kiquar.plugin.go.Main",
+  "version": "0.2.0",
+  "description": "Extension that provides Go and GoPls (LSP)",
+  "author": {
+    "displayName": "KiquarSL",
+	"github": "KiquarSL"
+  },
+  "license": "MIT",
+  "tags": ["go", "golang", "lsp", "gopls"],
+  "minAppVersion": 95,
+  "maxAppVersion": null,
+  "repository": "https://github.com/KiquarSL/xed-go"
+}

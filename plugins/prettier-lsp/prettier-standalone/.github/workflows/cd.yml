@@ -1,0 +1,45 @@
+name: Continuous Deployment
+on:
+  release:
+    types: [published]
+jobs:
+  publish-linux:
+    name: Publish
+    permissions:
+      id-token: write
+      contents: write
+    strategy:
+      matrix:
+        platform: [linux, mac]
+        arch: [x64, arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: install
+        shell: bash
+        run: bun install
+      - name: build & package
+        shell: bash
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+        run: bun run package --target="bun-${PLATFORM}-${ARCH}"
+      - name: upload artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          PREFIX="prettier-${PLATFORM/mac/darwin}-${ARCH/x64/amd64}-${VERSION}"
+
+          pushd dist/ > /dev/null
+          tar -cvzf "${PREFIX}.tar.gz" prettier
+          popd > /dev/null
+
+          ARTIFACT="dist/${PREFIX}.tar.gz"
+          gh release upload "${VERSION}" "${ARTIFACT}"

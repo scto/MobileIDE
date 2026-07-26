@@ -1,0 +1,17 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "io.kiquar.plugin.fs",
+  "name": "F# Support",
+  "mainClass": "io.kiquar.plugin.fs.Main",
+  "version": "0.1.0",
+  "description": " MobileIDE extension for the F# language.",
+  "author": {
+    "displayName": "KiquarSL",
+    "github": "KiquarSL"
+  },
+  "license": "MIT",
+  "tags": ["fsharp", "F#", ".NET", "dotnet", "highlighting"],
+  "minAppVersion": 95,
+  "maxAppVersion": null,
+  "repository": "https://github.com/KiquarSL/xed-fs"
+}

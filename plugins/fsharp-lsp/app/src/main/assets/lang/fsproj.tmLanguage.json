@@ -1,0 +1,845 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"version": "0.1.0",
+	"name": "F# Project",
+	"scopeName": "source.fsproj",
+	"patterns": [
+		{
+			"include": "#ever_present_context"
+		},
+		{
+			"include": "#project_root"
+		},
+		{
+			"include": "#property_group"
+		},
+		{
+			"include": "#item_group"
+		},
+		{
+			"include": "#target"
+		},
+		{
+			"include": "#import"
+		},
+		{
+			"include": "#using_task"
+		},
+		{
+			"include": "#choose"
+		},
+		{
+			"include": "#error_warning"
+		},
+		{
+			"include": "#xml_processing_instruction"
+		},
+		{
+			"include": "#msbuild_property"
+		},
+		{
+			"include": "#msbuild_item"
+		},
+		{
+			"include": "#msbuild_metadata"
+		},
+		{
+			"include": "#msbuild_condition"
+		},
+		{
+			"include": "#msbuild_task"
+		},
+		{
+			"include": "#inline_task"
+		}
+	],
+	"repository": {
+		"ever_present_context": {
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#xml_string"
+				},
+				{
+					"include": "#entity_reference"
+				},
+				{
+					"include": "#cdata"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"begin": "<!--",
+					"end": "-->",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.begin.fsproj"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.end.fsproj"
+						}
+					},
+					"name": "comment.block.fsproj"
+				}
+			]
+		},
+		"xml_string": {
+			"patterns": [
+				{
+					"begin": "\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsproj"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsproj"
+						}
+					},
+					"name": "string.quoted.double.fsproj",
+					"patterns": [
+						{
+							"include": "#msbuild_property_reference"
+						},
+						{
+							"include": "#entity_reference"
+						}
+					]
+				},
+				{
+					"begin": "'",
+					"end": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsproj"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsproj"
+						}
+					},
+					"name": "string.quoted.single.fsproj",
+					"patterns": [
+						{
+							"include": "#msbuild_property_reference"
+						}
+					]
+				}
+			]
+		},
+		"entity_reference": {
+			"patterns": [
+				{
+					"match": "&[a-zA-Z]+;|&#[0-9]+;|&#x[0-9a-fA-F]+;",
+					"name": "constant.character.entity.fsproj"
+				},
+				{
+					"match": "&amp;|&lt;|&gt;|&quot;|&apos;|&nbsp;",
+					"name": "constant.character.entity.fsproj"
+				}
+			]
+		},
+		"cdata": {
+			"begin": "<!\\[CDATA\\[",
+			"end": "\\]\\]>",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.cdata.begin.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.cdata.end.fsproj"
+				}
+			},
+			"name": "string.cdata.fsproj"
+		},
+		"project_root": {
+			"begin": "<Project\\s+([^>]*)>",
+			"end": "</Project>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.project.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.project.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#project_attributes"
+				},
+				{
+					"include": "#project_children"
+				}
+			]
+		},
+		"project_attributes": {
+			"patterns": [
+				{
+					"match": "\\b(Sdk|InitialTargets|DefaultTargets|ToolsVersion)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				},
+				{
+					"match": "\\bxmlns\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.namespace.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"project_children": {
+			"patterns": [
+				{
+					"include": "#property_group"
+				},
+				{
+					"include": "#item_group"
+				},
+				{
+					"include": "#target"
+				},
+				{
+					"include": "#import"
+				},
+				{
+					"include": "#using_task"
+				},
+				{
+					"include": "#choose"
+				}
+			]
+		},
+		"property_group": {
+			"begin": "<PropertyGroup\\s*([^>]*)>",
+			"end": "</PropertyGroup>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.propertygroup.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.propertygroup.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#property_group_attributes"
+				},
+				{
+					"include": "#msbuild_property"
+				},
+				{
+					"include": "#ever_present_context"
+				}
+			]
+		},
+		"property_group_attributes": {
+			"match": "\\b(Condition|Label)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"item_group": {
+			"begin": "<ItemGroup\\s*([^>]*)>",
+			"end": "</ItemGroup>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.itemgroup.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.itemgroup.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#item_group_attributes"
+				},
+				{
+					"include": "#msbuild_item"
+				}
+			]
+		},
+		"item_group_attributes": {
+			"match": "\\b(Condition|Label)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"msbuild_property": {
+			"begin": "<([a-zA-Z_][a-zA-Z0-9_.-]*)\\s*([^>]*)>",
+			"end": "</\\1>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.property.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.name.tag.property.fsproj"
+				},
+				"2": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.property.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#msbuild_condition"
+				},
+				{
+					"include": "#ever_present_context"
+				},
+				{
+					"match": "[^<]+",
+					"name": "string.unquoted.property.fsproj"
+				},
+				{
+					"include": "#msbuild_property_reference"
+				}
+			]
+		},
+		"msbuild_property_reference": {
+			"patterns": [
+				{
+					"match": "\\$\\(([a-zA-Z_][a-zA-Z0-9_.-]*)\\)",
+					"captures": {
+						"1": {
+							"name": "variable.other.property-reference.fsproj"
+						}
+					}
+				},
+				{
+					"match": "\\$\\(MSBuildProjectDirectory\\)",
+					"name": "variable.other.property-reference.fsproj"
+				},
+				{
+					"match": "\\$\\(MSBuildProjectFile\\)",
+					"name": "variable.other.property-reference.fsproj"
+				},
+				{
+					"match": "\\$\\(MSBuildProjectName\\)",
+					"name": "variable.other.property-reference.fsproj"
+				}
+			]
+		},
+		"msbuild_item": {
+			"begin": "<([a-zA-Z_][a-zA-Z0-9_.-]*)\\s*([^>]*)>",
+			"end": "</\\1>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.item.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.name.tag.item.fsproj"
+				},
+				"2": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.item.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#msbuild_item_attributes"
+				},
+				{
+					"include": "#msbuild_metadata"
+				},
+				{
+					"include": "#ever_present_context"
+				}
+			]
+		},
+		"msbuild_item_attributes": {
+			"patterns": [
+				{
+					"match": "\\b(Include|Update|Remove|Condition)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				},
+				{
+					"match": "\\b(Exclude|KeepDuplicates|KeepMetadata|RemoveMetadata)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"msbuild_metadata": {
+			"begin": "<([a-zA-Z_][a-zA-Z0-9_.-]*)\\s*([^>]*)>",
+			"end": "</\\1>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.metadata.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.name.tag.metadata.fsproj"
+				},
+				"2": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.metadata.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#msbuild_condition"
+				},
+				{
+					"include": "#ever_present_context"
+				},
+				{
+					"match": "[^<]+",
+					"name": "string.unquoted.metadata.fsproj"
+				}
+			]
+		},
+		"msbuild_condition": {
+			"match": "Condition\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "meta.condition.fsproj"
+				}
+			}
+		},
+		"target": {
+			"begin": "<Target\\s*([^>]*)>",
+			"end": "</Target>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.target.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.target.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#target_attributes"
+				},
+				{
+					"include": "#msbuild_task"
+				},
+				{
+					"include": "#error_warning"
+				},
+				{
+					"include": "#property_group"
+				},
+				{
+					"include": "#item_group"
+				},
+				{
+					"include": "#ever_present_context"
+				}
+			]
+		},
+		"target_attributes": {
+			"patterns": [
+				{
+					"match": "\\b(Name|Condition|DependsOnTargets|Inputs|Outputs|BeforeTargets|AfterTargets|Returns|KeepDuplicateOutputs)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"msbuild_task": {
+			"begin": "<([a-zA-Z_][a-zA-Z0-9_.-]*)\\s*([^>]*)>",
+			"end": "</\\1>|/>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.task.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.name.tag.task.fsproj"
+				},
+				"2": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.task.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#task_attributes"
+				},
+				{
+					"include": "#task_parameters"
+				},
+				{
+					"include": "#ever_present_context"
+				}
+			]
+		},
+		"task_attributes": {
+			"patterns": [
+				{
+					"match": "\\b(Condition|ContinueOnError|MSBuildRuntime|MSBuildArchitecture)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"task_parameters": {
+			"patterns": [
+				{
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_.-]*)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "variable.other.task-parameter.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"inline_task": {
+			"begin": "<UsingTask\\s+TaskName=\"([^\"]*)\"\\s+TaskFactory=\"([^\"]*)\"\\s*>",
+			"end": "</UsingTask>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.usertask.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.name.tag.task.fsproj"
+				},
+				"2": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.usertask.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline_task_code"
+				},
+				{
+					"include": "#ever_present_context"
+				}
+			]
+		},
+		"inline_task_code": {
+			"begin": "<Code\\s*([^>]*)>",
+			"end": "</Code>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.code.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.code.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline_code_attributes"
+				},
+				{
+					"include": "source.cs"
+				},
+				{
+					"include": "source.fsharp"
+				}
+			]
+		},
+		"inline_code_attributes": {
+			"match": "\\b(Language|Type)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"import": {
+			"begin": "<Import\\s*([^>]*)>",
+			"end": "/>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.import.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#import_attributes"
+				}
+			]
+		},
+		"import_attributes": {
+			"match": "\\b(Project|Condition|Label)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"using_task": {
+			"begin": "<UsingTask\\s*([^>]*)>",
+			"end": "/>|</UsingTask>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.usingtask.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#using_task_attributes"
+				}
+			]
+		},
+		"using_task_attributes": {
+			"patterns": [
+				{
+					"match": "\\b(AssemblyFile|AssemblyName|TaskName|TaskFactory|Condition)\\s*=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "entity.other.attribute.name.fsproj"
+						},
+						"2": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		},
+		"choose": {
+			"begin": "<Choose\\s*([^>]*)>",
+			"end": "</Choose>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.choose.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.tag.choose.end.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#when"
+				},
+				{
+					"include": "#otherwise"
+				}
+			]
+		},
+		"when": {
+			"begin": "<When\\s*([^>]*)>",
+			"end": "</When>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.when.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#when_attributes"
+				},
+				{
+					"include": "#project_children"
+				}
+			]
+		},
+		"when_attributes": {
+			"match": "\\b(Condition)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"otherwise": {
+			"begin": "<Otherwise\\s*([^>]*)>",
+			"end": "</Otherwise>",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.tag.otherwise.begin.fsproj"
+				},
+				"1": {
+					"name": "entity.other.attribute.fsproj"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#project_children"
+				}
+			]
+		},
+		"error_warning": {
+			"patterns": [
+				{
+					"begin": "<(Error|Warning)\\s*([^>]*)>",
+					"end": "/>",
+					"beginCaptures": {
+						"0": {
+							"name": "meta.tag.errorwarning.begin.fsproj"
+						},
+						"1": {
+							"name": "entity.name.tag.errorwarning.fsproj"
+						},
+						"2": {
+							"name": "entity.other.attribute.fsproj"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#error_warning_attributes"
+						}
+					]
+				}
+			]
+		},
+		"error_warning_attributes": {
+			"match": "\\b(Condition|Text|Code|File|Line|Column|HelpKeyword|HelpLink)\\s*=\\s*\"([^\"]*)\"",
+			"captures": {
+				"1": {
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				"2": {
+					"name": "string.quoted.double.fsproj"
+				}
+			}
+		},
+		"xml_processing_instruction": {
+			"begin": "<\\?",
+			"end": "\\?>",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.processing-instruction.begin.fsproj"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.processing-instruction.end.fsproj"
+				}
+			},
+			"name": "meta.processing-instruction.fsproj",
+			"patterns": [
+				{
+					"match": "\\b(xml|version|encoding|standalone)\\b",
+					"name": "entity.other.attribute.name.fsproj"
+				},
+				{
+					"match": "=\\s*\"([^\"]*)\"",
+					"captures": {
+						"1": {
+							"name": "string.quoted.double.fsproj"
+						}
+					}
+				}
+			]
+		}
+	}
+}
