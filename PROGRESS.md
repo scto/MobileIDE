@@ -2,6 +2,25 @@
 
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
+## [2026-07-27]
+### Crashlog-Fix & Terminal Setup Refactoring (`Crashlog-Fix.md`)
+*   **Share Button Log Fix (`TerminalSetupUI.kt`)**:
+    *   Resolved `TransactionTooLargeException` crash when sharing large terminal setup logs.
+    *   Logs are now saved to `context.cacheDir/shared_logs/` and shared via `FileProvider` + `EXTRA_STREAM` (`content://` URI).
+*   **RootFS Extraction & Exit Code 2 Fix (`setup.sh`)**:
+    *   Added `--exclude` flags for problematic absolute symlinks (`etc/alternatives/awk`, `usr/bin/awk`, `usr/bin/perl`, `var/run`, etc.) during tar extraction.
+    *   Refined tar exit code handling so non-fatal warnings (exit code 2) allow setup to continue normally.
+    *   Re-created critical excluded symlinks inside `$LOCAL/sandbox` relatively (`ln -sf mawk "$LOCAL/sandbox/usr/bin/awk"`).
+*   **Apt Download Retry Loop (`setup.sh`)**:
+    *   Added 3-attempt retry loop with 5s backoff for `apt-get update && apt-get install` to handle transient network resolution failures.
+
+### Feature Roadmap Prompt 16 Implementation (`16-ai-coding-assistant-integration.md`)
+*   **Aider AI Coding Assistant (`AiderModelCatalog.kt`, `AiderBridgeService.kt`, `AiCodingToolingPanel.kt`)**:
+    *   Implemented native AI coding assistant frontend for the existing Aider CLI backend (`scripts/aider_launcher.sh`).
+    *   Added `AiderModelCatalog.kt` supporting Gemini Flash, Gemini Pro, OpenAI, DeepSeek, and Claude models with short descriptions and mode metadata.
+    *   Added `AiderBridgeService.kt` for programmatic execution, live stdout streaming, and secure API key management in `~/*.secrets` files.
+    *   Added "AI" Tab in `ToolingBottomSheet.kt` and "Ask AI (Aider)" menu action in `CodeEditScreen.kt`.
+
 ## [2026-07-26]
 ### Feature Roadmap Prompts 01 - 07 Implementation
 *   **01 - Gradle IDE Terminal Bridge (`01-gradle-ide-terminal-bridge.md`)**:
