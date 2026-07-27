@@ -86,5 +86,6 @@ dependencies {
 //    api(libs.termux.shared)
 
     api(project(":core:resources"))
+    api(project(":core:common"))
     api(project(":core:components"))
 }
