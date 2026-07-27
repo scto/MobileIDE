@@ -3,6 +3,12 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 15 Implementation (`15-consolidate-terminal-features-module.md`)
+*   **Terminal Module Consolidation (`:features:terminal`)**:
+    *   Consolidated all terminal backend sessions, PTY emulator, View matrix rendering, Terminal UI screens, and TerminalService into `:features:terminal`.
+    *   Cleanly removed legacy `:core:terminal`, `:core:terminal-emulator`, and `:core:terminal-view` module declarations from `settings.gradle.kts` and dependencies from `app/build.gradle.kts`.
+    *   Preserved all cross-module interfaces (`DistroManager.buildProotCommand`, `ScriptedLspServer.terminalLauncher`, `"settings/terminal"` navigation route).
+
 ### Feature Roadmap Prompt 14 Implementation (`14-inline-docs-hover-panel.md`)
 *   **Inline Documentation Panel & Sources Extractor (`DocExtractor.kt`, `DocsToolingPanel.kt`)**:
     *   Created `DocExtractor.kt` to extract KDoc/Javadoc documentation from LSP hover responses and local `-sources.jar` archives in Gradle cache.

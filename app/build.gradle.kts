@@ -318,7 +318,6 @@ dependencies {
 
     // Add terminal dependencies
     implementation(project(":core:main"))
-    implementation(project(":core:terminal"))
     implementation(libs.semver)
     implementation(libs.androidsvg)
 
