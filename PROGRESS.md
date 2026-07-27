@@ -3,6 +3,17 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Crashlog-Fix-2 & PRoot Warning Fixes (`Crashlog-Fix-2.md`)
+*   **PRoot `stat` / `vmstat` Binding Warning Fix (`setup.sh`, `sandbox.sh`)**:
+    *   Pre-created `$LOCAL/stat` and `$LOCAL/vmstat` dummy files before PRoot execution.
+    *   Made `stat` and `vmstat` bindings conditional in `sandbox.sh`, completely eliminating PRoot `can't sanitize binding` warnings.
+*   **RootFS Symlink Excludes & Recovery (`setup.sh`)**:
+    *   Expanded `--exclude` rules during container tar extraction for `etc/alternatives/*`, `usr/bin/awk`, `usr/bin/nawk`, `usr/bin/pager`, `usr/bin/which`, `usr/sbin/rmt`, `etc/systemd/system/*.wants/*`, `var/lock`, `var/run`.
+    *   Re-created essential symlinks relatively inside `$LOCAL/sandbox` (`awk`, `nawk`, `pager`, `which`).
+*   **Apt Timeout & Retry Safeguards (`setup.sh`)**:
+    *   Configured `apt-get` with explicit timeouts (`Acquire::http::Timeout=15`) and retries (`Acquire::Retries=3`) to prevent infinite delayed-item loops during DNS glitches.
+    *   Added `$LOCAL/.apt_partial_failure` marker so setup can continue in degraded mode if repository mirrors fail.
+
 ### Crashlog-Fix & Terminal Setup Refactoring (`Crashlog-Fix.md`)
 *   **Share Button Log Fix (`TerminalSetupUI.kt`)**:
     *   Resolved `TransactionTooLargeException` crash when sharing large terminal setup logs.
