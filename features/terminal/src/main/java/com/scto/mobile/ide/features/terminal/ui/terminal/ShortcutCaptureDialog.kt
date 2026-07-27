@@ -37,6 +37,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.platform.LocalWindowInfo
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.ShortcutAction
+import com.scto.mobile.ide.core.terminal.settings.ShortcutBinding
 
 /**
  * Dialog that captures a keyboard shortcut combination from the user.

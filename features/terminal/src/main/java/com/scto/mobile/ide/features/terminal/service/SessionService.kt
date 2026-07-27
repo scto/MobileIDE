@@ -97,7 +97,7 @@ class SessionService : Service() {
             sessionCustomNames.clear()
             updateNotification()
         }
-        fun createSession(id: String, client: TerminalSessionClient, activity: MainActivity,workingMode:Int): TerminalSession {
+        fun createSession(id: String, client: TerminalSessionClient, activity: Activity, workingMode: Int): TerminalSession {
             return MkSession.createSession(activity, client, id, workingMode = workingMode).also {
                 sessions[id] = it
                 sessionOrder.add(id)

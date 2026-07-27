@@ -4,7 +4,9 @@ import android.app.Activity
 import android.view.KeyEvent
 import com.blankj.utilcode.util.ClipboardUtils
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
+import com.scto.mobile.ide.core.terminal.settings.CloseLastSessionBehavior
+import com.scto.mobile.ide.core.terminal.settings.ShortcutAction
+import com.scto.mobile.ide.features.terminal.service.sessionBinder
 
 /**
  * Centralized keyboard shortcut handler for the terminal.
@@ -33,7 +35,7 @@ object KeyShortcutHandler {
         return false
     }
 
-    private fun dispatch(action: ShortcutAction, activity: MainActivity): Boolean {
+    private fun dispatch(action: ShortcutAction, activity: Activity): Boolean {
         return when (action) {
             ShortcutAction.PASTE -> handlePaste()
             ShortcutAction.NEW_SESSION -> handleNewSession(activity)
@@ -51,20 +53,20 @@ object KeyShortcutHandler {
         return true
     }
 
-    private fun handleNewSession(activity: MainActivity): Boolean {
+    private fun handleNewSession(activity: Activity): Boolean {
         val binder = activity.sessionBinder ?: return true
         val service = binder.getService()
 
         val sessionId = generateUniqueSessionId(service.sessionOrder.toList())
         terminalView.get()?.let {
             val client = TerminalBackEnd(it, activity)
-            binder.createSession(sessionId, client, activity, workingMode = Settings.working_Mode)
+            val session = binder.createSession(sessionId, client, activity, workingMode = Settings.working_Mode)
+            service.currentSession.value = Pair(sessionId, session)
         }
-        changeSession(activity, session_id = sessionId)
         return true
     }
 
-    private fun handleCloseSession(activity: MainActivity): Boolean {
+    private fun handleCloseSession(activity: Activity): Boolean {
         val binder = activity.sessionBinder ?: return true
         val service = binder.getService()
         val currentId = service.currentSession.value.first
@@ -77,9 +79,9 @@ object KeyShortcutHandler {
                 val newSessionId = generateUniqueSessionId(service.sessionOrder.toList())
                 terminalView.get()?.let {
                     val client = TerminalBackEnd(it, activity)
-                    binder.createSession(newSessionId, client, activity, workingMode = Settings.working_Mode)
+                    val newSession = binder.createSession(newSessionId, client, activity, workingMode = Settings.working_Mode)
+                    service.currentSession.value = Pair(newSessionId, newSession)
                 }
-                changeSession(activity, session_id = newSessionId)
                 // Now safe to terminate the old session
                 binder.terminateSession(currentId)
             } else {
@@ -96,13 +98,13 @@ object KeyShortcutHandler {
             } else {
                 sessionKeys[currentIndex - 1]
             }
-            changeSession(activity, session_id = nextId)
+            service.currentSession.value = Pair(nextId, binder.getSession(nextId))
             binder.terminateSession(currentId)
         }
         return true
     }
 
-    private fun handleSwitchSession(activity: MainActivity, forward: Boolean): Boolean {
+    private fun handleSwitchSession(activity: Activity, forward: Boolean): Boolean {
         val binder = activity.sessionBinder ?: return true
         val service = binder.getService()
         val sessionKeys = service.sessionOrder.toList()
@@ -118,7 +120,8 @@ object KeyShortcutHandler {
             (currentIndex - 1 + sessionKeys.size) % sessionKeys.size
         }
 
-        changeSession(activity, session_id = sessionKeys[nextIndex])
+        val nextId = sessionKeys[nextIndex]
+        service.currentSession.value = Pair(nextId, binder.getSession(nextId))
         return true
     }
 
@@ -149,7 +152,7 @@ object KeyShortcutHandler {
                 && event.isAltPressed == binding.alt
     }
 
-    private fun handleSwitchToSession(activity: MainActivity, index: Int): Boolean {
+    private fun handleSwitchToSession(activity: Activity, index: Int): Boolean {
         val binder = activity.sessionBinder ?: return true
         val service = binder.getService()
         val sessionKeys = service.sessionOrder.toList()
@@ -163,7 +166,7 @@ object KeyShortcutHandler {
 
         val currentId = service.currentSession.value.first
         if (targetId != currentId) {
-            changeSession(activity, session_id = targetId)
+            service.currentSession.value = Pair(targetId, binder.getSession(targetId))
         }
         return true
     }

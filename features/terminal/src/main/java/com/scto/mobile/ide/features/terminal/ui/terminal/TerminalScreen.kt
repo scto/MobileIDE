@@ -94,7 +94,6 @@ import com.scto.mobile.ide.core.terminal.libcommons.localDir
 import com.scto.mobile.ide.core.terminal.libcommons.pendingCommand
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import android.app.Activity
-import androidx.navigation.NavController
 import com.scto.mobile.ide.features.terminal.service.SessionService
 import com.scto.mobile.ide.features.terminal.service.sessionBinder
 import com.scto.mobile.ide.features.terminal.ui.components.InputDialog

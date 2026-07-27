@@ -13,6 +13,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.CloseLastSessionBehavior
 import android.app.Activity
 import com.scto.mobile.ide.features.terminal.service.sessionBinder
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.SpecialButton

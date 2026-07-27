@@ -7,7 +7,6 @@ import com.scto.mobile.ide.core.terminal.libcommons.ubuntuDir
 import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.App
 import java.io.File
 
 object Rootfs {

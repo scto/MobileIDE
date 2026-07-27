@@ -12,12 +12,10 @@ import com.scto.mobile.ide.core.terminal.libcommons.localDir
 import com.scto.mobile.ide.core.terminal.libcommons.localLibDir
 import com.scto.mobile.ide.core.terminal.libcommons.pendingCommand
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.App
-import com.scto.mobile.ide.core.terminal.App.Companion.getTempDir
-import com.scto.mobile.ide.core.terminal.core.BuildConfig
+import com.scto.mobile.ide.core.common.BuildConfig
 import android.app.Activity
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.ShellType
+import com.scto.mobile.ide.core.terminal.settings.ShellType
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -84,7 +82,8 @@ object MkSession {
             }
 
 
-            val sessionTmpDir = getTempDir().child(session_id).also {
+            val tempDir = File(cacheDir, "tmp").also { it.mkdirs() }
+            val sessionTmpDir = tempDir.child(session_id).also {
                 if (it.exists()) {
                     it.deleteRecursively()
                 }
@@ -108,7 +107,7 @@ object MkSession {
                 "RISH_APPLICATION_ID=${packageName}",
                 "PKG_PATH=${applicationInfo.sourceDir}",
                 "PROOT_TMP_DIR=${sessionTmpDir.absolutePath}",
-                "TMPDIR=${getTempDir().absolutePath}"
+                "TMPDIR=${tempDir.absolutePath}"
             )
 
             // Do NOT set PROOT_LOADER/PROOT_LOADER32 — let proot use its embedded loader.
