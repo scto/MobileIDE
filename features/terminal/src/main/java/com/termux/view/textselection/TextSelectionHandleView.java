@@ -60,11 +60,15 @@ public class TextSelectionHandleView extends View {
         mInitialOrientation = initialOrientation;
 
         int leftResId = getContext().getResources().getIdentifier("text_select_handle_left_material", "drawable", "android");
+        if (leftResId == 0) {
+            leftResId = getContext().getResources().getIdentifier("text_select_handle_left", "drawable", "android");
+        }
         int rightResId = getContext().getResources().getIdentifier("text_select_handle_right_material", "drawable", "android");
-        if (leftResId == 0) leftResId = android.R.drawable.text_select_handle_left;
-        if (rightResId == 0) rightResId = android.R.drawable.text_select_handle_right;
-        mHandleLeftDrawable = getContext().getDrawable(leftResId);
-        mHandleRightDrawable = getContext().getDrawable(rightResId);
+        if (rightResId == 0) {
+            rightResId = getContext().getResources().getIdentifier("text_select_handle_right", "drawable", "android");
+        }
+        mHandleLeftDrawable = leftResId != 0 ? getContext().getDrawable(leftResId) : null;
+        mHandleRightDrawable = rightResId != 0 ? getContext().getDrawable(rightResId) : null;
 
         setOrientation(mInitialOrientation);
     }
