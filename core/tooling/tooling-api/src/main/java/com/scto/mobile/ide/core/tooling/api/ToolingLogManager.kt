@@ -9,7 +9,8 @@ enum class ToolingLogCategory {
     BUILD,
     LSP,
     AI,
-    DEBUG
+    DEBUG,
+    DOCS
 }
 
 data class ToolingLogEntry(

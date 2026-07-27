@@ -3,6 +3,19 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 14 Implementation (`14-inline-docs-hover-panel.md`)
+*   **Inline Documentation Panel & Sources Extractor (`DocExtractor.kt`, `DocsToolingPanel.kt`)**:
+    *   Created `DocExtractor.kt` to extract KDoc/Javadoc documentation from LSP hover responses and local `-sources.jar` archives in Gradle cache.
+    *   Implemented `DocsToolingPanel.kt` with formatted Markdown rendering, `@param` and `@return` sections, symbol search bar, and source package badges.
+    *   Added **Pin** feature to lock documentation while typing and **History** dropdown to navigate recently inspected symbols.
+    *   Added 8th "Docs" Tab in `ToolingBottomSheet.kt`.
+
+### Feature Roadmap Prompt 13 Implementation (`13-gradle-dependency-cache-manager.md`)
+*   **Gradle & Storage Cache Manager (`GradleCacheAnalyzer.kt`, `StorageCacheSettingsDialog.kt`)**:
+    *   Created `GradleCacheAnalyzer.kt` for scanning Gradle cache (`~/.gradle/caches`), Android SDK, and module `build/` output directories.
+    *   Implemented `StorageCacheSettingsDialog.kt` with storage breakdown cards, timestamped refresh, and top 15 largest dependencies list.
+    *   Added action buttons & confirmation dialogs for clearing entire Gradle cache, orphaned entries, or build output directories.
+
 ### Feature Roadmap Prompt 12 Implementation (`12-git-3way-merge-conflict-tool.md`)
 *   **Visual 3-Way Merge & Conflict Resolution Tool (`GitConflictParser.kt`, `GitConflictManager.kt`, `GitConflictResolutionDialog.kt`)**:
     *   Created `GitConflictParser.kt` for parsing conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) into block-by-block chunks.
