@@ -3,6 +3,14 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 16 Implementation (`16-ai-coding-assistant-integration.md`)
+*   **Native AI Coding Assistant & Aider Bridge Integration (`AiderBridgeService.kt`, `AiderModelCatalog.kt`, `AiCodingToolingPanel.kt`, `AiderDiffPreviewDialog.kt`)**:
+    *   Completed `AiderBridgeService` for programmatic non-interactive execution of Aider CLI within the Termux PRoot sandbox context.
+    *   Configured `AiderModelCatalog` with full provider matrix (Gemini Flash, Gemini Pro, OpenAI, DeepSeek, Claude) and descriptions.
+    *   Integrated AI Tab into `ToolingBottomSheet.kt` with model selection, chat modes (auto, code, architect, ask, help), streaming response history, and project context file chips (`activeDevelopment.md`, `progress.md`, etc.).
+    *   Added "Ask AI (Mit KI bearbeiten)" selection menu in `CodeEditScreen.kt` and `AiderDiffPreviewDialog.kt` for visual diff inspection before applying changes.
+    *   Unified API key secrets management (`~/.gemini_api_key.secrets`, `~/.openai_api_key.secrets`, `~/.deepseek_api_key.secrets`, `~/.anthropic_api_key.secrets`).
+
 ### Feature Roadmap Prompt 15 Implementation (`15-consolidate-terminal-features-module.md`)
 *   **Terminal Module Consolidation (`:features:terminal`)**:
     *   Consolidated all terminal backend sessions, PTY emulator, View matrix rendering, Terminal UI screens, and TerminalService into `:features:terminal`.

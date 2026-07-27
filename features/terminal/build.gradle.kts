@@ -42,7 +42,4 @@ dependencies {
     implementation(project(":core:resources"))
     implementation(project(":features:proot"))
     implementation(project(":features:exec"))
-    implementation(project(":core:terminal"))
-    implementation(project(":core:terminal-emulator"))
-    implementation(project(":core:terminal-view"))
 }
