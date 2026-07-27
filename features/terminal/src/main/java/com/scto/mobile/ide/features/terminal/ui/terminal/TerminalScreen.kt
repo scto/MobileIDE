@@ -83,9 +83,9 @@ import androidx.navigation.NavController
 import com.google.android.material.R
 import androidx.compose.ui.res.stringResource
 
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
-import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
+import me.zhanghai.compose.preference.PreferenceGroup
+import me.zhanghai.compose.preference.PreferenceTemplate
+import me.zhanghai.compose.preference.PreferenceSwitch
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.libcommons.child
@@ -106,9 +106,9 @@ import com.scto.mobile.ide.features.terminal.ui.components.terminalEnvironmentFr
 import com.scto.mobile.ide.features.terminal.ui.components.terminalEnvironmentToWorkingMode
 import com.scto.mobile.ide.features.terminal.ui.components.workingModeIsRoot
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.LayoutMode
+import com.scto.mobile.ide.core.terminal.settings.LayoutMode
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
+import com.scto.mobile.ide.core.terminal.settings.CloseLastSessionBehavior
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysConstants
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysInfo
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysListener
