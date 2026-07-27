@@ -78,8 +78,8 @@ ARGS="$ARGS -b /data"
 ARGS="$ARGS -b /dev/urandom:/dev/random"
 ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $PREFIX"
-ARGS="$ARGS -b $PREFIX/local/stat:/proc/stat"
-ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
+[ -f "$PREFIX/local/stat" ] && ARGS="$ARGS -b $PREFIX/local/stat:/proc/stat"
+[ -f "$PREFIX/local/vmstat" ] && ARGS="$ARGS -b $PREFIX/local/vmstat:/proc/vmstat"
 
 
 ARGS="$ARGS -b $PREFIX"
