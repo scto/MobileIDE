@@ -38,7 +38,16 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf -)))"
+EXCLUDES="--exclude=etc/alternatives/awk"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/awk"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/perl5.38.2"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/perl"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/uncompress"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/gunzip"
+EXCLUDES="$EXCLUDES --exclude=var/lock"
+EXCLUDES="$EXCLUDES --exclude=var/run"
+
+COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz $EXCLUDES || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf - $EXCLUDES)))"
 
 set +e
 $PROOT $ARGS /system/bin/sh -c "$COMMAND"
@@ -47,7 +56,7 @@ set -e
 
 DEGRADED_MARKER="$LOCAL/.sandbox_degraded"
 
-if [ "$ret" -ne 0 ]; then
+if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
     warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
 
     set +e
@@ -55,11 +64,23 @@ if [ "$ret" -ne 0 ]; then
     ret=$?
     set -e
 
-    if [ "$ret" -ne 0 ]; then
+    if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
         error "Extraction failed completely (exit code $ret)! Cannot continue setup."
         exit 1
     fi
+elif [ "$ret" -eq 2 ]; then
+    warn "Extraction completed with non-fatal warnings (exit code 2, e.g. skipped symlinks outside sandbox path). Continuing setup..."
 fi
+
+mkdir -p "$LOCAL/sandbox/usr/bin"
+ln -sf mawk "$LOCAL/sandbox/usr/bin/awk" 2>/dev/null || true
+if [ -e "$LOCAL/sandbox/usr/bin/perl5.38.2" ]; then
+    ln -sf perl5.38.2 "$LOCAL/sandbox/usr/bin/perl" 2>/dev/null || true
+fi
+if [ -e "$LOCAL/sandbox/usr/bin/gunzip" ]; then
+    ln -sf gunzip "$LOCAL/sandbox/usr/bin/uncompress" 2>/dev/null || true
+fi
+mkdir -p "$LOCAL/sandbox/var/lock" "$LOCAL/sandbox/var/run"
 
 SANDBOX_DIR="$LOCAL/sandbox"
 
@@ -153,7 +174,17 @@ if [ "$INSTALL_GRADLE" = "apt" ]; then
 fi
 
 info "Installing selected packages inside Ubuntu container: $packages..."
-sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"
+attempt=1
+max_attempts=3
+until sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"; do
+    if [ "$attempt" -ge "$max_attempts" ]; then
+        error "apt-get install fehlgeschlagen nach $max_attempts Versuchen."
+        break
+    fi
+    warn "apt-get fehlgeschlagen (Versuch $attempt/$max_attempts), erneuter Versuch in 5s..."
+    attempt=$((attempt + 1))
+    sleep 5
+done
 
 # Mark packages as ensured to prevent slow startup in init.sh
 mkdir -p "$SANDBOX_DIR/.cache"

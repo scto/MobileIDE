@@ -2,74 +2,8 @@ set -e
 
 . "$LOCAL/bin/utils"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if [ -f "$SCRIPT_DIR/shared_extraction.sh" ]; then
-    . "$SCRIPT_DIR/shared_extraction.sh"
-elif [ -f "$LOCAL/bin/shared_extraction.sh" ]; then
-    . "$LOCAL/bin/shared_extraction.sh"
-elif [ -f "$LOCAL/shared_extraction.sh" ]; then
-    . "$LOCAL/shared_extraction.sh"
-elif [ -f "${PRIVATE_DIR:-}/shared_extraction.sh" ]; then
-    . "${PRIVATE_DIR}/shared_extraction.sh"
-fi
+info "Extracting the Ubuntu container…"
 
-if ! type resolve_app_data_dir >/dev/null 2>&1; then
-    resolve_app_data_dir() {
-        local pkg_name="${APP_PACKAGE_NAME:-${MOBILEIDE_PACKAGE_NAME:-com.scto.mobile.ide}}"
-        if [ -d "/data/user/0/${pkg_name}" ]; then
-            echo "/data/user/0/${pkg_name}"
-        else
-            echo "${PRIVATE_DIR:-/data/data/${pkg_name}}"
-        fi
-    }
-fi
-
-# --- 1. Umgebungs- & Verzeichnis-Vorbereitung (Problem 1 & 2) ---
-APP_DATA_DIR="$(resolve_app_data_dir)"
-PROOT_TMP_DIR="${PROOT_TMP_DIR:-${TMP_DIR:-$APP_DATA_DIR}/usr/tmp}"
-export PROOT_TMP_DIR
-export TMP_DIR="${TMP_DIR:-$PROOT_TMP_DIR}"
-mkdir -p "$PROOT_TMP_DIR" "$TMP_DIR"
-chmod 700 "$PROOT_TMP_DIR" 2>/dev/null || chmod 755 "$PROOT_TMP_DIR" 2>/dev/null || true
-
-LOGDIR="$LOCAL/logs"
-mkdir -p "$LOGDIR"
-
-# Prüfe/erzeuge mobileide-environment.properties
-ENV_PROPS="$LOCAL/mobileide-environment.properties"
-if [ ! -f "$ENV_PROPS" ]; then
-    info "Erstinstallation: mobileide-environment.properties wird vorab erstellt..."
-    cat << EOF > "$ENV_PROPS"
-ANDROID_HOME=/root/android-sdk
-ANDROID_SDK_ROOT=/root/android-sdk
-ANDROID_NDK_HOME=/root/android-sdk/ndk-bundle
-NDK_HOME=/root/android-sdk/ndk-bundle
-CMAKE_HOME=/usr
-PATH=/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/platform-tools:/root/android-sdk/build-tools/35.0.1:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-PROOT_TMP_DIR=$PROOT_TMP_DIR
-EOF
-fi
-
-info "Starte Ubuntu-Container-Setup..."
-
-# --- 2. Vorab-Prüfungen vor Extraktion ---
-TAR_PATH=""
-for candidate in "$TMP_DIR/sandbox.tar.gz" "$PROOT_TMP_DIR/sandbox.tar.gz" "$PRIVATE_DIR/ubuntu.tar.gz" "$PRIVATE_DIR/alpine.tar.gz" "$PRIVATE_DIR/${MOBILEIDE_DISTRO:-ubuntu}.tar.gz"; do
-    if [ -f "$candidate" ] && [ -s "$candidate" ]; then
-        TAR_PATH="$candidate"
-        break
-    fi
-done
-
-SANDBOX_DIR="$LOCAL/sandbox"
-
-if ! preflight_extraction_checks "$SANDBOX_DIR" "$TAR_PATH" 500; then
-    error "FEHLER: Preflight-Extraktionsprüfung fehlgeschlagen!"
-    exit 1
-fi
-info "RootFS-Archiv validiert: $TAR_PATH"
-
-# --- 3. PRoot-Argumente & Befehlsaufbau ---
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
 
@@ -93,21 +27,7 @@ ARGS="$ARGS -b /dev/urandom:/dev/random"
 ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $PRIVATE_DIR"
 
-if [ -d "/proc/self/fd" ]; then
-  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
-fi
 
-if [ -c "/proc/self/fd/0" ] || [ -f "/proc/self/fd/0" ]; then
-  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
-fi
-
-if [ -c "/proc/self/fd/1" ] || [ -f "/proc/self/fd/1" ]; then
-  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
-fi
-
-if [ -c "/proc/self/fd/2" ] || [ -f "/proc/self/fd/2" ]; then
-  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
-fi
 
 ARGS="$ARGS -b $PRIVATE_DIR"
 ARGS="$ARGS -b /sys"
@@ -118,71 +38,57 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-# --- 4. PRoot-Funktionstest & Container-Extraktion ---
-extracted_ok=0
+EXCLUDES="--exclude=etc/alternatives/awk"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/awk"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/perl5.38.2"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/perl"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/uncompress"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/gunzip"
+EXCLUDES="$EXCLUDES --exclude=var/lock"
+EXCLUDES="$EXCLUDES --exclude=var/run"
 
-if validate_proot_binary "$PROOT" "$LOGDIR/proot_version_check.log"; then
-    info "Entpacke Container via PRoot..."
-    if extract_via_proot "$PROOT" "$ARGS" "$TAR_PATH" "$SANDBOX_DIR" "$LOGDIR/proot_extract.log"; then
-        extracted_ok=1
-        info "PRoot-Extraktion erfolgreich abgeschlossen."
-    else
-        warn "PRoot-Extraktion fehlgeschlagen. Wechsle zum Fallback."
-        log_tail_on_failure "$LOGDIR/proot_extract.log" 40
-    fi
-else
-    warn "PRoot-Binary nicht funktionsfähig. Überspringe direkt zum Fallback."
-fi
+COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz $EXCLUDES || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf - $EXCLUDES)))"
 
-if [ "$extracted_ok" -eq 0 ]; then
-    info "Starte direkte Fallback-Extraktion..."
-    if extract_via_tar_fallback "$TAR_PATH" "$SANDBOX_DIR" "$LOGDIR/fallback_extract.log"; then
-        extracted_ok=1
-        info "Fallback-Extraktion erfolgreich abgeschlossen."
-    else
-        error "FEHLER: Direkte Fallback-Extraktion fehlgeschlagen!"
-        log_tail_on_failure "$LOGDIR/fallback_extract.log" 50
+set +e
+$PROOT $ARGS /system/bin/sh -c "$COMMAND"
+ret=$?
+set -e
+
+DEGRADED_MARKER="$LOCAL/.sandbox_degraded"
+
+if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
+    warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
+
+    set +e
+    sh -c "$COMMAND"
+    ret=$?
+    set -e
+
+    if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
+        error "Extraction failed completely (exit code $ret)! Cannot continue setup."
         exit 1
     fi
+elif [ "$ret" -eq 2 ]; then
+    warn "Extraction completed with non-fatal warnings (exit code 2, e.g. skipped symlinks outside sandbox path). Continuing setup..."
 fi
 
-fix_alternatives_symlinks_inside_rootfs "$SANDBOX_DIR"
+mkdir -p "$LOCAL/sandbox/usr/bin"
+ln -sf mawk "$LOCAL/sandbox/usr/bin/awk" 2>/dev/null || true
+if [ -e "$LOCAL/sandbox/usr/bin/perl5.38.2" ]; then
+    ln -sf perl5.38.2 "$LOCAL/sandbox/usr/bin/perl" 2>/dev/null || true
+fi
+if [ -e "$LOCAL/sandbox/usr/bin/gunzip" ]; then
+    ln -sf gunzip "$LOCAL/sandbox/usr/bin/uncompress" 2>/dev/null || true
+fi
+mkdir -p "$LOCAL/sandbox/var/lock" "$LOCAL/sandbox/var/run"
 
 SANDBOX_DIR="$LOCAL/sandbox"
-
-# Post-processing: re-create container-internal symlinks safely
-mkdir -p "$SANDBOX_DIR/var" "$SANDBOX_DIR/etc/alternatives" "$SANDBOX_DIR/usr/bin"
-info "Repariere Container-interne Symlinks..."
-
-if [ -f "$SANDBOX_DIR/usr/bin/mawk" ]; then
-    ln -snf /usr/bin/mawk "$SANDBOX_DIR/etc/alternatives/awk" 2>/dev/null || true
-    ln -snf /etc/alternatives/awk "$SANDBOX_DIR/usr/bin/awk" 2>/dev/null || true
-    info "Symlink awk -> /usr/bin/mawk wiederhergestellt."
-elif [ -f "$SANDBOX_DIR/usr/bin/gawk" ]; then
-    ln -snf /usr/bin/gawk "$SANDBOX_DIR/etc/alternatives/awk" 2>/dev/null || true
-    ln -snf /etc/alternatives/awk "$SANDBOX_DIR/usr/bin/awk" 2>/dev/null || true
-    info "Symlink awk -> /usr/bin/gawk wiederhergestellt."
-fi
-
-ln -snf ../run "$SANDBOX_DIR/var/run" 2>/dev/null || true
-ln -snf ../lock "$SANDBOX_DIR/var/lock" 2>/dev/null || true
-info "Symlinks var/run und var/lock wiederhergestellt."
-
-# Validierung der Vollständigkeit des entpackten RootFS
-info "Prüfe Vollständigkeit des entpackten RootFS..."
-if [ ! -f "$SANDBOX_DIR/bin/sh" ] && [ ! -f "$SANDBOX_DIR/usr/bin/sh" ] && [ ! -f "$SANDBOX_DIR/bin/bash" ] && [ ! -f "$SANDBOX_DIR/usr/bin/bash" ]; then
-    error "FEHLER: Das entpackte RootFS ist unvollständig (Shell /bin/sh oder /usr/bin/bash nicht gefunden). Abbruch!"
-    exit 1
-fi
-info "RootFS-Vollständigkeitsprüfung erfolgreich!"
 
 info "Setting up the Ubuntu container…"
 
 # values you want written
 nameserver="nameserver 8.8.8.8
-nameserver 8.8.4.4
-nameserver 1.1.1.1
-nameserver 9.9.9.9"
+nameserver 8.8.4.4"
 
 hosts="127.0.0.1   localhost.localdomain localhost
 
@@ -235,39 +141,98 @@ echo "$linesToAdd" | while IFS= read -r line; do
     esac
 done
 
-rm -f "$TMP_DIR/sandbox.tar.gz"
-touch "$LOCAL/.terminal_setup_ok_DO_NOT_REMOVE"
+rm "$TMP_DIR"/sandbox.tar.gz
+# DO NOT REMOVE THIS FILE JUST DON'T, TRUST ME
+touch $LOCAL/.terminal_setup_ok_DO_NOT_REMOVE
 
-# Sorge dafür, dass .bashrc & .profile mobileide-environment.properties laden
-mkdir -p "$SANDBOX_DIR/root" "$SANDBOX_DIR/usr/local/bin"
+# Read selected setup options if the file exists
+INSTALL_JDK="17"
+INSTALL_GRADLE="apt"
+INSTALL_SDK="35"
+INSTALL_BUILD_TOOLS="35.0.0"
+INSTALL_CMDLINE_TOOLS="true"
+INSTALL_GIT="true"
 
-cat << 'EOF' > "$SANDBOX_DIR/root/.bashrc"
-if [ -f /etc/mobileide-environment.properties ]; then
-    set -a
-    . /etc/mobileide-environment.properties
-    set +a
+if [ -f "$LOCAL/setup_options.properties" ]; then
+    . "$LOCAL/setup_options.properties"
 fi
-export PATH="/root/android-sdk/cmdline-tools/latest/bin:/root/android-sdk/cmdline-tools/bin:/root/android-sdk/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
-EOF
 
-cat << 'EOF' > "$SANDBOX_DIR/root/.profile"
-if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
+# Build packages list
+packages="bash-completion command-not-found sudo xkb-data libjemalloc-dev"
+if [ "$INSTALL_GIT" = "true" ]; then
+    packages="$packages git"
 fi
-EOF
 
-cat << 'EOF' > "$SANDBOX_DIR/usr/local/bin/sdkmanager"
-#!/bin/sh
-if [ -x /root/android-sdk/cmdline-tools/latest/bin/sdkmanager ]; then
-    exec /root/android-sdk/cmdline-tools/latest/bin/sdkmanager "$@"
-elif [ -x /root/android-sdk/cmdline-tools/bin/sdkmanager ]; then
-    exec /root/android-sdk/cmdline-tools/bin/sdkmanager "$@"
-else
-    echo "ERROR: sdkmanager is not installed yet. Run Android SDK Setup in MobileIDE." >&2
-    exit 1
+if [ "$INSTALL_JDK" = "17" ]; then
+    packages="$packages openjdk-17-jdk"
+elif [ "$INSTALL_JDK" = "21" ]; then
+    packages="$packages openjdk-21-jdk"
 fi
-EOF
-chmod +x "$SANDBOX_DIR/usr/local/bin/sdkmanager"
+
+if [ "$INSTALL_GRADLE" = "apt" ]; then
+    packages="$packages gradle gradle-completion"
+fi
+
+info "Installing selected packages inside Ubuntu container: $packages..."
+attempt=1
+max_attempts=3
+until sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"; do
+    if [ "$attempt" -ge "$max_attempts" ]; then
+        error "apt-get install fehlgeschlagen nach $max_attempts Versuchen."
+        break
+    fi
+    warn "apt-get fehlgeschlagen (Versuch $attempt/$max_attempts), erneuter Versuch in 5s..."
+    attempt=$((attempt + 1))
+    sleep 5
+done
+
+# Mark packages as ensured to prevent slow startup in init.sh
+mkdir -p "$SANDBOX_DIR/.cache"
+touch "$SANDBOX_DIR/.cache/.packages_ensured"
+sh $LOCAL/bin/sandbox "update-command-not-found" >/dev/null 2>&1 || true
+
+if [ "$INSTALL_GRADLE" != "none" ] && [ "$INSTALL_GRADLE" != "apt" ]; then
+    info "Installing custom Gradle version $INSTALL_GRADLE..."
+    sh $LOCAL/bin/sandbox "apt-get install -y wget unzip && wget -q https://services.gradle.org/distributions/gradle-${INSTALL_GRADLE}-bin.zip -O /tmp/gradle.zip && mkdir -p /opt/gradle && unzip -o -d /opt/gradle /tmp/gradle.zip && ln -sf /opt/gradle/gradle-${INSTALL_GRADLE}/bin/gradle /usr/bin/gradle && rm /tmp/gradle.zip"
+fi
+
+if [ "$INSTALL_SDK" != "none" ]; then
+    info "Installing Android SDK Platform $INSTALL_SDK and Build-Tools $INSTALL_BUILD_TOOLS..."
+    sh $LOCAL/bin/sandbox "apt-get install -y wget unzip"
+    
+    if [ "$INSTALL_CMDLINE_TOOLS" = "true" ]; then
+        info "Installing Command-line tools..."
+        sh $LOCAL/bin/sandbox "mkdir -p /root/android-sdk/cmdline-tools && wget -q -O /tmp/sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip && unzip -o /tmp/sdk.zip -d /root/android-sdk/cmdline-tools && rm /tmp/sdk.zip && mv /root/android-sdk/cmdline-tools/cmdline-tools /root/android-sdk/cmdline-tools/latest || true"
+        
+        info "Running sdkmanager to install platforms;android-$INSTALL_SDK and build-tools;$INSTALL_BUILD_TOOLS..."
+        sh $LOCAL/bin/sandbox "yes | /root/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/root/android-sdk \"platforms;android-${INSTALL_SDK}\" \"build-tools;${INSTALL_BUILD_TOOLS}\""
+    fi
+fi
+
+info "Configuring build tools environment automatically..."
+sh $LOCAL/bin/sandbox "mkdir -p /root/etc && (
+  jdk_dir=\"\"
+  if command -v javac >/dev/null 2>&1; then
+      jdk_dir=\$(dirname \$(dirname \$(readlink -f \$(which javac))))
+  else
+      for d in /usr/lib/jvm/java-17-openjdk*; do
+          if [ -d \"\$d\" ]; then
+               jdk_dir=\"\$d\"
+               break
+          fi
+      done
+  fi
+  if [ -z \"\$jdk_dir\" ]; then
+      for d in /usr/lib/jvm/java-21-openjdk*; do
+          if [ -d \"\$d\" ]; then
+               jdk_dir=\"\$d\"
+               break
+          fi
+      done
+  fi
+  printf \"JAVA_HOME=\$jdk_dir\nANDROID_SDK_ROOT=/root/android-sdk\nGRADLE_USER_HOME=/root/.gradle\nAAPT2_HOME=/.mobileide\n\" > /root/etc/mobileide-environment.properties
+)"
+
 
 info "Installing Node.js APT hook…"
 
@@ -342,10 +307,38 @@ chmod +x "$SANDBOX_DIR/usr/local/bin/node-postinstall.sh"
 
 info "Node.js APT hook installed"
 
+info "Configuring bashrc..."
+
+write_bashrc() {
+    cat > "$1" << 'EOF'
+# Load bash completion
+if [ -f /etc/profile.d/bash_completion.sh ]; then
+    . /etc/profile.d/bash_completion.sh
+elif [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+
+# Automatically export the properties to the environment
+if [ -f "/etc/mobileide-environment.properties" ]; then
+    set -a
+    source "/etc/mobileide-environment.properties"
+    set +a
+fi
+EOF
+}
+
+if [ -n "$EXT_HOME" ]; then
+    mkdir -p "$EXT_HOME"
+    write_bashrc "$EXT_HOME/.bashrc"
+fi
+
+if [ -z "$EXT_HOME" ] || [ ! "$EXT_HOME" -ef "$SANDBOX_DIR/root" ]; then
+    mkdir -p "$SANDBOX_DIR/root"
+    write_bashrc "$SANDBOX_DIR/root/.bashrc"
+fi
+
 if [ $# -gt 0 ]; then
-    if [ "$1" != "true" ]; then
-        sh $@
-    fi
+    sh $LOCAL/bin/sandbox "$@"
 else
     clear
     sh $LOCAL/bin/sandbox

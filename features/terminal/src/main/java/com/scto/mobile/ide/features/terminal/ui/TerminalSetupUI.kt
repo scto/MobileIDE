@@ -628,12 +628,24 @@ fun TerminalSetupOverlayWindow(
                     onClick = {
                         val logText = setupState.logs.joinToString("\n")
                         if (logText.isNotEmpty()) {
-                            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, "MobileIDE Terminal Setup Log")
-                                putExtra(android.content.Intent.EXTRA_TEXT, logText)
+                            try {
+                                val cacheDir = java.io.File(context.cacheDir, "shared_logs").apply { mkdirs() }
+                                val logFile = java.io.File(cacheDir, "terminal_setup_log_${System.currentTimeMillis()}.txt")
+                                logFile.writeText(logText)
+
+                                val authority = "${context.packageName}.fileprovider"
+                                val uri = androidx.core.content.FileProvider.getUriForFile(context, authority, logFile)
+
+                                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(android.content.Intent.EXTRA_SUBJECT, "MobileIDE Terminal Setup Log")
+                                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(android.content.Intent.createChooser(intent, "Setup Log teilen"))
+                            } catch (e: Exception) {
+                                android.util.Log.e("TerminalSetupUI", "Fehler beim Teilen der Logs", e)
                             }
-                            context.startActivity(android.content.Intent.createChooser(intent, "Setup Log teilen"))
                         }
                     }
                 ) {
