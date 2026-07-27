@@ -3,6 +3,12 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 17 Implementation (`17-git-credentials-sidepanel-settings.md`)
+*   **Git Credentials & Sidepanel Configuration (`GitConfigDialog.kt`, `GitViewModel.kt`, `GitPanel.kt`)**:
+    *   Implemented `GitConfigDialog` for managing Git committer credentials, remote URLs (HTTPS & SSH format), Personal Access Tokens (PAT), and SSH private keys with optional passphrases.
+    *   Integrated live connectivity test button (`testRemoteConnection`) via JGit `ls-remote`.
+    *   Added sidepanel settings launcher in `GitToolbarCompact` and persisted credentials securely in DataStore/SharedPreferences.
+
 ### Feature Roadmap Prompt 16 Implementation (`16-ai-coding-assistant-integration.md`)
 *   **Native AI Coding Assistant & Aider Bridge Integration (`AiderBridgeService.kt`, `AiderModelCatalog.kt`, `AiCodingToolingPanel.kt`, `AiderDiffPreviewDialog.kt`)**:
     *   Completed `AiderBridgeService` for programmatic non-interactive execution of Aider CLI within the Termux PRoot sandbox context.
