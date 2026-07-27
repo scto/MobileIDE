@@ -1,6 +1,6 @@
 package com.scto.mobile.ide.features.terminal.ui.theme.colorscheme
 
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.TerminalColorScheme.Companion.hex
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.TerminalColorScheme.Companion.hex
 
 /**
  * Collection of bundled terminal color schemes.
