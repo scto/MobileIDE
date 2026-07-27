@@ -11,8 +11,8 @@
 package com.scto.mobile.ide.features.terminal.ui
 
 import android.content.Context
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.stat
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.vmstat
+import com.scto.mobile.ide.features.terminal.ui.terminal.stat
+import com.scto.mobile.ide.features.terminal.ui.terminal.vmstat
 import timber.log.Timber
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.termux.terminal.TerminalSession

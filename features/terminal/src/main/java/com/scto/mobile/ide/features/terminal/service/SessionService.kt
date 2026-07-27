@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.core.terminal.App.Companion.getTempDir
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.features.terminal.ui.terminal.MkSession
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
@@ -33,9 +32,9 @@ class SessionService : Service() {
 
     /**
      * Resolve display title with priority chain:
-     * 1. User custom name (if set)
-     * 2. Terminal OSC title (if non-blank)
-     * 3. Fallback to session ID ("main1", etc.)
+     * 1. User custom name (persisted)
+     * 2. Shell title (from ANSI escape codes)
+     * 3. Default fallback ("android", "alpine", etc.)
      */
     fun getDisplayTitle(sessionId: String): String {
         return sessionCustomNames[sessionId]
@@ -74,7 +73,7 @@ class SessionService : Service() {
     }
     private fun cleanupSessionTemp(sessionId: String) {
         runCatching {
-            val tmpDir = getTempDir().resolve(sessionId)
+            val tmpDir = java.io.File(cacheDir, "tmp").resolve(sessionId)
             if (tmpDir.exists()) {
                 tmpDir.deleteRecursively()
             }
@@ -160,15 +159,13 @@ class SessionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
-        val notification = createNotification()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID, createNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
         } else {
-            startForeground(1, notification)
+            startForeground(NOTIFICATION_ID, createNotification())
         }
     }
 
@@ -176,7 +173,6 @@ class SessionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "ACTION_EXIT" -> {
-                sessions.keys.toList().forEach { cleanupSessionTemp(it) }
                 sessions.forEach { s -> s.value.finishIfRunning() }
                 stopSelf()
             }
@@ -185,7 +181,8 @@ class SessionService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val intent = Intent(this, MainActivity::class.java)
+        val mainActivityClass = Class.forName("com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity")
+        val intent = Intent(this, mainActivityClass)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
