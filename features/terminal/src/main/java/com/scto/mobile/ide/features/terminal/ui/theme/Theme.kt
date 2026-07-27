@@ -19,8 +19,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.scto.mobile.ide.core.terminal.libcommons.isDarkMode
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.TerminalColorScheme
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeManager
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.TerminalColorScheme
 
 /*
  * More Themes

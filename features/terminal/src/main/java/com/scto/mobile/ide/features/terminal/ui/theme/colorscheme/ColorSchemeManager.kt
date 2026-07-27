@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.theme.colorscheme
+package com.scto.mobile.ide.features.terminal.ui.theme.colorscheme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme

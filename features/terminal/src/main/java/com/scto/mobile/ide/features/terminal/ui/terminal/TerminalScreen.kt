@@ -114,8 +114,8 @@ import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.Virtual
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.termux.terminal.TerminalColors
 import com.termux.view.TerminalView
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.TerminalColorScheme
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeManager
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.TerminalColorScheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
