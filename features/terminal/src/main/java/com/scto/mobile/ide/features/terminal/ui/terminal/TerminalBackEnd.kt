@@ -13,7 +13,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
+import android.app.Activity
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.SpecialButton
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
@@ -35,7 +35,7 @@ class TerminalBackEnd(
     val context: Context,
     val onSessionCloseRequested: ((TerminalSession) -> Unit)? = null
 ) : TerminalViewClient, TerminalSessionClient {
-    val activity: MainActivity? = context as? MainActivity
+    val activity: Activity? = context as? Activity
 
     override fun onTextChanged(changedSession: TerminalSession) {
         if (terminal.currentSession == changedSession) {

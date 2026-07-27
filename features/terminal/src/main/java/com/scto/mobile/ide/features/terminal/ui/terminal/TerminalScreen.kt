@@ -93,7 +93,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.libcommons.localDir
 import com.scto.mobile.ide.core.terminal.libcommons.pendingCommand
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
+import android.app.Activity
 import com.scto.mobile.ide.core.terminal.ui.components.InputDialog
 import com.scto.mobile.ide.core.terminal.ui.components.SessionTabBar
 import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentOption
@@ -205,7 +205,7 @@ var showHorizontalToolbar = mutableStateOf(Settings.toolbar)
 @Composable
 fun TerminalScreen(
     modifier: Modifier = Modifier,
-    mainActivityActivity: MainActivity,
+    mainActivityActivity: Activity,
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -631,7 +631,7 @@ fun getSessionTextColor(workingMode: Int?): androidx.compose.ui.graphics.Color {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TerminalContent(
-    mainActivityActivity: MainActivity,
+    mainActivityActivity: Activity,
     navController: NavController,
     showAddDialog: () -> Unit,
     openDrawer: () -> Unit,
@@ -706,7 +706,7 @@ fun TerminalContent(
 
 @Composable
 fun TabBarTerminalContent(
-    mainActivityActivity: MainActivity,
+    mainActivityActivity: Activity,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -728,7 +728,7 @@ fun TabBarTerminalContent(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TerminalPaneContent(
-    mainActivityActivity: MainActivity,
+    mainActivityActivity: Activity,
     modifier: Modifier = Modifier
 ) {
     // Observe color scheme state to trigger recomposition when it changes
@@ -1005,7 +1005,7 @@ fun SelectableCard(
 }
 
 
-fun changeSession(mainActivityActivity: MainActivity, session_id: String) {
+fun changeSession(mainActivityActivity: Activity, session_id: String) {
     terminalView.get()?.apply {
         val client = TerminalBackEnd(this, mainActivityActivity)
         val session =

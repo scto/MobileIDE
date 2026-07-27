@@ -54,7 +54,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
+import android.app.Activity
 import com.scto.mobile.ide.core.terminal.ui.components.SettingsToggle
 import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentOption
 import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentSegmentedSelector

@@ -1,9 +1,9 @@
 package com.scto.mobile.ide.core.terminal.ui.screens.terminal
 
+import android.app.Activity
 import android.view.KeyEvent
 import com.blankj.utilcode.util.ClipboardUtils
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
 
 /**
@@ -15,7 +15,7 @@ object KeyShortcutHandler {
     /**
      * Handle a key event. Returns true if the key was consumed by a shortcut.
      */
-    fun handle(keyCode: Int, event: KeyEvent, activity: MainActivity): Boolean {
+    fun handle(keyCode: Int, event: KeyEvent, activity: Activity): Boolean {
         if (!Settings.shortcuts_enabled) return false
 
         val numberIndex = getNumberKeyIndex(keyCode)

@@ -40,7 +40,6 @@ dependencies {
     implementation(libs.timber)
     implementation(project(":core:common"))
     implementation(project(":core:resources"))
-    implementation(project(":core:main"))
     implementation(project(":features:proot"))
     implementation(project(":features:exec"))
 }

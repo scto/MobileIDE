@@ -15,7 +15,7 @@ import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.terminal.App
 import com.scto.mobile.ide.core.terminal.App.Companion.getTempDir
 import com.scto.mobile.ide.core.terminal.core.BuildConfig
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
+import android.app.Activity
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
 import com.scto.mobile.ide.core.terminal.ui.screens.settings.ShellType
 import com.termux.terminal.TerminalEmulator
@@ -26,7 +26,7 @@ import java.io.FileOutputStream
 
 object MkSession {
     fun createSession(
-        activity: MainActivity, sessionClient: TerminalSessionClient, session_id: String,workingMode:Int
+        activity: Activity, sessionClient: TerminalSessionClient, session_id: String,workingMode:Int
     ): TerminalSession {
         with(activity) {
             val envVariables = mapOf(
