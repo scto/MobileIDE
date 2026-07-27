@@ -42,9 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemes
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.TerminalColorScheme
 
 /**
  * A composable that displays a horizontal scrollable list of color scheme options.
