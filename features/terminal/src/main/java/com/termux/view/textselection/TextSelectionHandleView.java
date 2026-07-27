@@ -59,8 +59,12 @@ public class TextSelectionHandleView extends View {
         mCursorController = cursorController;
         mInitialOrientation = initialOrientation;
 
-        mHandleLeftDrawable = getContext().getDrawable(R.drawable.text_select_handle_left_material);
-        mHandleRightDrawable = getContext().getDrawable(R.drawable.text_select_handle_right_material);
+        int leftResId = getContext().getResources().getIdentifier("text_select_handle_left_material", "drawable", "android");
+        int rightResId = getContext().getResources().getIdentifier("text_select_handle_right_material", "drawable", "android");
+        if (leftResId == 0) leftResId = android.R.drawable.text_select_handle_left;
+        if (rightResId == 0) rightResId = android.R.drawable.text_select_handle_right;
+        mHandleLeftDrawable = getContext().getDrawable(leftResId);
+        mHandleRightDrawable = getContext().getDrawable(rightResId);
 
         setOrientation(mInitialOrientation);
     }
