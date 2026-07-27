@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.components
+package com.scto.mobile.ide.features.terminal.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn

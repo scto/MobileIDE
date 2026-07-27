@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.components
+package com.scto.mobile.ide.features.terminal.ui.components
 
 
 
