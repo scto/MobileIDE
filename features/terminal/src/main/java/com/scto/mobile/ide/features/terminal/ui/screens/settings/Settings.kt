@@ -70,6 +70,7 @@ import com.scto.mobile.ide.features.terminal.ui.terminal.showToolbar
 import com.scto.mobile.ide.features.terminal.ui.terminal.showVirtualKeys
 import com.scto.mobile.ide.features.terminal.ui.terminal.terminalView
 import com.scto.mobile.ide.features.terminal.ui.terminal.wallAlpha
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeSelector
 import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -154,7 +155,7 @@ private fun getFileNameFromUri(context: Context, uri: Uri): String? {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActivity: MainActivity) {
+fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActivity: Activity) {
     val context = LocalContext.current
     val initialTerminalEnvironment = remember {
         terminalEnvironmentFromWorkingMode(Settings.working_Mode)

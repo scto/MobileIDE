@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.customization
+package com.scto.mobile.ide.features.terminal.ui.theme.colorscheme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

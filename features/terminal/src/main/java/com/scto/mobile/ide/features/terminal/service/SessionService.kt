@@ -209,6 +209,7 @@ class SessionService : Service() {
             .build()
     }
 
+    private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "session_service_channel"
 
     @RequiresApi(Build.VERSION_CODES.O)
