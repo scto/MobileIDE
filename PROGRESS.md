@@ -3,6 +3,13 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 10 Implementation (`10-interactive-debugger-jdwp.md`)
+*   **Interactive JDWP Debugger Integration (`DebugSessionManager.kt`, `DebugToolingPanel.kt`)**:
+    *   Created `DebugSessionManager` for controlling JDWP debug sessions via socket handshake and `am start -D`.
+    *   Implemented breakpoint tracking (`addBreakpoint`, `removeBreakpoint`, `toggleBreakpoint`), thread stack frames, variable inspection tree, and execution controls (`resume`, `pause`, `stepOver`, `stepInto`, `stepOut`, `stop`).
+    *   Added interactive expression evaluator ("Watch") for live frame context inspection.
+    *   Added 7th "Debug" Tab in `ToolingBottomSheet.kt` and "Debug App (JDWP)" action in `CodeEditScreen.kt`.
+
 ### Crashlog-Fix-2 & PRoot Warning Fixes (`Crashlog-Fix-2.md`)
 *   **PRoot `stat` / `vmstat` Binding Warning & Job Control Fix (`setup.sh`, `sandbox.sh`, `init.sh`)**:
     *   Pre-created `$LOCAL/stat`, `$LOCAL/vmstat`, `$LOCAL/sandbox/proc/stat`, and `$LOCAL/sandbox/proc/vmstat` dummy files before PRoot execution.

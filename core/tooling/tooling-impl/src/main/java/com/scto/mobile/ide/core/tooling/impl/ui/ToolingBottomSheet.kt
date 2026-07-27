@@ -67,6 +67,7 @@ fun ToolingBottomSheet(
                                 ToolingLogCategory.BUILD -> "Build / Tasks"
                                 ToolingLogCategory.LSP -> "LSP"
                                 ToolingLogCategory.AI -> "AI"
+                                ToolingLogCategory.DEBUG -> "Debug"
                             }
                         )
                     }
@@ -83,6 +84,9 @@ fun ToolingBottomSheet(
                 }
                 ToolingLogCategory.AI -> {
                     AiCodingToolingPanel(projectPath = projectPath)
+                }
+                ToolingLogCategory.DEBUG -> {
+                    DebugToolingPanel(projectPath = projectPath)
                 }
                 else -> {
                     ToolingLogPanel(category = activeCategory)

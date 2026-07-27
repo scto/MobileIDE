@@ -32,6 +32,8 @@ dependencies {
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
     implementation(project(":core:common"))
+    implementation(project(":core:tooling:tooling-api"))
+    implementation(libs.timber)
 
     // Editor dependencies for code runner settings and markdown rendering
     implementation(project(":editor"))
