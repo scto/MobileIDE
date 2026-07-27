@@ -1,13 +1,5 @@
-PROOT_TMP_DIR="${PROOT_TMP_DIR:-$PRIVATE_DIR/usr/tmp}"
-export PROOT_TMP_DIR
-mkdir -p "$PROOT_TMP_DIR"
-chmod 700 "$PROOT_TMP_DIR" 2>/dev/null || chmod 755 "$PROOT_TMP_DIR" 2>/dev/null || true
-
-touch "$PROOT_TMP_DIR/.write_test" 2>/dev/null || {
-    echo "ERROR: PROOT_TMP_DIR ($PROOT_TMP_DIR) is not writable!" >&2
-    exit 1
-}
-rm -f "$PROOT_TMP_DIR/.write_test"
+# shellcheck disable=SC2034
+force_color_prompt=yes
 
 ARGS="--kill-on-exit"
 ARGS="$ARGS -w /"
@@ -33,24 +25,10 @@ ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $EXT_HOME:/home"
 ARGS="$ARGS -b $EXT_HOME:/root"
 ARGS="$ARGS -b $PRIVATE_DIR"
-ARGS="$ARGS -b $LOCAL/stat:/proc/stat"
-ARGS="$ARGS -b $LOCAL/vmstat:/proc/vmstat"
+[ -f "$LOCAL/stat" ] && ARGS="$ARGS -b $LOCAL/stat:/proc/stat"
+[ -f "$LOCAL/vmstat" ] && ARGS="$ARGS -b $LOCAL/vmstat:/proc/vmstat"
 
-if [ -d "/proc/self/fd" ]; then
-  ARGS="$ARGS -b /proc/self/fd:/dev/fd"
-fi
 
-if [ -e "$(realpath /proc/self/fd/0 2>/dev/null)" ]; then
-  ARGS="$ARGS -b /proc/self/fd/0:/dev/stdin"
-fi
-
-if [ -e "$(realpath /proc/self/fd/1 2>/dev/null)" ]; then
-  ARGS="$ARGS -b /proc/self/fd/1:/dev/stdout"
-fi
-
-if [ -e "$(realpath /proc/self/fd/2 2>/dev/null)" ]; then
-  ARGS="$ARGS -b /proc/self/fd/2:/dev/stderr"
-fi
 
 ARGS="$ARGS -b $PRIVATE_DIR"
 ARGS="$ARGS -b /sys"
@@ -58,11 +36,6 @@ ARGS="$ARGS -b /sys"
 if [ ! -d "$LOCAL/sandbox/tmp" ]; then
  mkdir -p "$LOCAL/sandbox/tmp"
  chmod 1777 "$LOCAL/sandbox/tmp"
-fi
-
-if [ -d "$LOCAL/sandbox" ]; then
- mkdir -p "$LOCAL/sandbox/etc"
- printf '%s\n' "nameserver 8.8.8.8" "nameserver 8.8.4.4" "nameserver 1.1.1.1" "nameserver 9.9.9.9" > "$LOCAL/sandbox/etc/resolv.conf"
 fi
 
 ARGS="$ARGS -b $LOCAL/sandbox/tmp:/dev/shm"

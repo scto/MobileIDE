@@ -25,8 +25,8 @@ ARGS="$ARGS -b /proc"
 ARGS="$ARGS -b $EXT_HOME:/home"
 ARGS="$ARGS -b $EXT_HOME:/root"
 ARGS="$ARGS -b $PRIVATE_DIR"
-ARGS="$ARGS -b $LOCAL/stat:/proc/stat"
-ARGS="$ARGS -b $LOCAL/vmstat:/proc/vmstat"
+[ -f "$LOCAL/stat" ] && ARGS="$ARGS -b $LOCAL/stat:/proc/stat"
+[ -f "$LOCAL/vmstat" ] && ARGS="$ARGS -b $LOCAL/vmstat:/proc/vmstat"
 
 
 

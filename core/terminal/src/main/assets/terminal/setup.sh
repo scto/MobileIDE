@@ -2,6 +2,10 @@ set -e
 
 . "$LOCAL/bin/utils"
 
+# Ensure dummy files for proc bindings exist to prevent PRoot warnings
+mkdir -p "$LOCAL"
+touch "$LOCAL/stat" "$LOCAL/vmstat" 2>/dev/null || true
+
 info "Extracting the Ubuntu container…"
 
 ARGS="--kill-on-exit"
@@ -38,14 +42,12 @@ ARGS="$ARGS --link2symlink"
 ARGS="$ARGS --sysvipc"
 ARGS="$ARGS -L"
 
-EXCLUDES="--exclude=etc/alternatives/awk"
-EXCLUDES="$EXCLUDES --exclude=usr/bin/awk"
-EXCLUDES="$EXCLUDES --exclude=usr/bin/perl5.38.2"
-EXCLUDES="$EXCLUDES --exclude=usr/bin/perl"
-EXCLUDES="$EXCLUDES --exclude=usr/bin/uncompress"
-EXCLUDES="$EXCLUDES --exclude=usr/bin/gunzip"
-EXCLUDES="$EXCLUDES --exclude=var/lock"
-EXCLUDES="$EXCLUDES --exclude=var/run"
+EXCLUDES="--exclude=etc/alternatives/*"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/awk --exclude=usr/bin/nawk"
+EXCLUDES="$EXCLUDES --exclude=usr/bin/pager --exclude=usr/bin/which"
+EXCLUDES="$EXCLUDES --exclude=usr/sbin/rmt --exclude=etc/rmt"
+EXCLUDES="$EXCLUDES --exclude=etc/systemd/system/*.wants/*"
+EXCLUDES="$EXCLUDES --exclude=var/lock --exclude=var/run"
 
 COMMAND="(cd $LOCAL/sandbox && (tar -xzf $TMP_DIR/sandbox.tar.gz $EXCLUDES || (gzip -dc $TMP_DIR/sandbox.tar.gz | tar -xf - $EXCLUDES)))"
 
@@ -56,31 +58,29 @@ set -e
 
 DEGRADED_MARKER="$LOCAL/.sandbox_degraded"
 
+# tar exit code 2 = "had errors" (nur Warnungen bei Symlinks/Hardlinks
+# außerhalb der Sandbox, KEIN Totalausfall). Nur ret > 2 oder ein
+# leeres Sandbox-Verzeichnis gilt als echter Fehler.
 if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
     warn "PRoot extraction failed (exit code $ret), falling back to direct extraction..."
-
     set +e
     sh -c "$COMMAND"
     ret=$?
     set -e
-
     if [ "$ret" -gt 2 ] || [ -z "$(ls -A "$LOCAL/sandbox" 2>/dev/null)" ]; then
         error "Extraction failed completely (exit code $ret)! Cannot continue setup."
         exit 1
     fi
 elif [ "$ret" -eq 2 ]; then
-    warn "Extraction completed with non-fatal warnings (exit code 2, e.g. skipped symlinks outside sandbox path). Continuing setup..."
+    warn "Extraction completed with non-fatal tar warnings (exit code 2, skipped absolute symlinks outside sandbox). Continuing..."
 fi
 
-mkdir -p "$LOCAL/sandbox/usr/bin"
+# Ausgeschlossene, essenzielle Symlinks relativ innerhalb der Sandbox neu anlegen
+mkdir -p "$LOCAL/sandbox/usr/bin" "$LOCAL/sandbox/var/lock" "$LOCAL/sandbox/var/run"
 ln -sf mawk "$LOCAL/sandbox/usr/bin/awk" 2>/dev/null || true
-if [ -e "$LOCAL/sandbox/usr/bin/perl5.38.2" ]; then
-    ln -sf perl5.38.2 "$LOCAL/sandbox/usr/bin/perl" 2>/dev/null || true
-fi
-if [ -e "$LOCAL/sandbox/usr/bin/gunzip" ]; then
-    ln -sf gunzip "$LOCAL/sandbox/usr/bin/uncompress" 2>/dev/null || true
-fi
-mkdir -p "$LOCAL/sandbox/var/lock" "$LOCAL/sandbox/var/run"
+ln -sf mawk "$LOCAL/sandbox/usr/bin/nawk" 2>/dev/null || true
+ln -sf less "$LOCAL/sandbox/usr/bin/pager" 2>/dev/null || true
+ln -sf which.debianutils "$LOCAL/sandbox/usr/bin/which" 2>/dev/null || true
 
 SANDBOX_DIR="$LOCAL/sandbox"
 
@@ -174,17 +174,28 @@ if [ "$INSTALL_GRADLE" = "apt" ]; then
 fi
 
 info "Installing selected packages inside Ubuntu container: $packages..."
-attempt=1
-max_attempts=3
-until sh $LOCAL/bin/sandbox "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"; do
-    if [ "$attempt" -ge "$max_attempts" ]; then
-        error "apt-get install fehlgeschlagen nach $max_attempts Versuchen."
+
+apt_attempt=1
+apt_max_attempts=3
+apt_success=0
+
+while [ "$apt_attempt" -le "$apt_max_attempts" ]; do
+    info "apt-get update/install Versuch $apt_attempt/$apt_max_attempts..."
+    if sh $LOCAL/bin/sandbox "apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 update && DEBIAN_FRONTEND=noninteractive apt-get install -y $packages"; then
+        apt_success=1
         break
     fi
-    warn "apt-get fehlgeschlagen (Versuch $attempt/$max_attempts), erneuter Versuch in 5s..."
-    attempt=$((attempt + 1))
+    warn "apt-get fehlgeschlagen (Versuch $apt_attempt/$apt_max_attempts), erneuter Versuch in 5s..."
+    apt_attempt=$((apt_attempt + 1))
     sleep 5
 done
+
+if [ "$apt_success" -ne 1 ]; then
+    error "apt-get install fehlgeschlagen nach $apt_max_attempts Versuchen. Prüfe Netzwerkverbindung/DNS."
+    # Nicht abbrechen (exit 1), da einige Pakete (main-Repo) meist
+    # trotzdem installiert wurden - Setup soll degraded fortlaufen.
+    touch "$LOCAL/.apt_partial_failure"
+fi
 
 # Mark packages as ensured to prevent slow startup in init.sh
 mkdir -p "$SANDBOX_DIR/.cache"
