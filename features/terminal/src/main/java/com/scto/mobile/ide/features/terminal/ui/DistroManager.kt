@@ -13,7 +13,7 @@ package com.scto.mobile.ide.features.terminal.ui
 import android.content.Context
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.stat
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.vmstat
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import timber.log.Timber
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -39,7 +39,7 @@ object DistroManager {
 
     fun buildProotCommand(context: Context, command: Array<String>): List<String> {
         val distroName = getDistroName(context)
-        LogCatcher.i("DistroManager", "buildProotCommand: distro=$distroName, command=${command.joinToString(" ")}")
+        Timber.tag("DistroManager").i("buildProotCommand: distro=$distroName, command=${command.joinToString(" ")}")
         val prefixDir = getPrefixDir(context)
         val distroDir = File(prefixDir, "local/$distroName")
 
@@ -115,7 +115,7 @@ object DistroManager {
         try {
             if (writeTest.createNewFile() || writeTest.exists()) writeTest.delete()
         } catch (e: Exception) {
-            LogCatcher.e("DistroManager", "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}", e)
+            Timber.tag("DistroManager").e(e, "PROOT_TMP_DIR is not writable: ${prootTmpDir.absolutePath}")
         }
 
         env["PROOT_TMP_DIR"] = prootTmpDir.absolutePath
@@ -146,7 +146,7 @@ object DistroManager {
         projectPath: String? = null,
         initCommand: String? = null,
     ): TerminalSession {
-        LogCatcher.i("DistroManager", "createSession starting (projectPath=$projectPath, initCommand=$initCommand)")
+        Timber.tag("DistroManager").i("createSession starting (projectPath=$projectPath, initCommand=$initCommand)")
         val binDir = getBinDir(context)
         val libDir = getLibDir(context)
         val prefixDir = getPrefixDir(context)
@@ -188,7 +188,7 @@ object DistroManager {
             versionName = pInfo.versionName ?: "Unknown"
             versionCode = pInfo.longVersionCode
         } catch (e: Exception) {
-            LogCatcher.e("DistroManager", "Failed to retrieve package manager package info", e)
+            Timber.tag("DistroManager").e(e, "Failed to retrieve package manager package info")
         }
         val targetProjectPath = projectPath ?: currentProject ?: ""
 
@@ -284,7 +284,7 @@ object DistroManager {
                 FileOutputStream(destFile).use { output -> input.copyTo(output) }
             }
         } catch (e: Exception) {
-            LogCatcher.e("DistroManager", "Failed to copy asset $assetName", e)
+            Timber.tag("DistroManager").e(e, "Failed to copy asset $assetName")
         }
     }
 }

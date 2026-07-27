@@ -1,6 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="settings">Settings</string>
+    <string name="terminal_title">Terminal</string>
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <string name="terminal_new_session">New Session</string>
+    <string name="terminal_input_hint">Type command…</string>
     <string name="use_shizuku">Auto Login to shizuku</string>
     <string name="use_shizuku_desc">Automatically execute rish command</string>
     <string name="manage_storage">Manage Storage</string>

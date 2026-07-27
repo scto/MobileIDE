@@ -551,8 +551,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                 isMoreMenuExpanded = false
                                             },
                                         )
-                                        DropdownMenuItem(
-                                            text = { Text(terminalText) },
+                                         DropdownMenuItem(
+                                             text = { Text("Ask AI (Aider)") },
+                                             onClick = {
+                                                 isMoreMenuExpanded = false
+                                                 showLogsBottomSheet = true
+                                             },
+                                         )
+                                         DropdownMenuItem(
+                                             text = { Text(terminalText) },
                                             onClick = {
                                                 isMoreMenuExpanded = false
                                                 navController.navigate("terminal")

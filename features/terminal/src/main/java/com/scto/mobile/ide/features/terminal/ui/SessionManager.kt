@@ -15,7 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import timber.log.Timber
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
 
@@ -32,7 +32,7 @@ object SessionManager {
             } else null
 
     fun addNewSession(context: Context, initCommand: String? = null, tabTitle: String? = null) {
-        if (LogCatcher.isLoggingEnabled) {
+        {
             SetupWorker.logTerminalSetup(context)
         }
 
@@ -66,45 +66,45 @@ object SessionManager {
                 override fun getTerminalCursorStyle(): Int = 0
 
                 override fun logError(tag: String, message: String) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, message)
+                    Timber.tag(tag).e(message)
                 }
 
                 override fun logWarn(tag: String, message: String) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.w(tag, message)
+                    Timber.tag(tag).w(message)
                 }
 
                 override fun logInfo(tag: String, message: String) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.i(tag, message)
+                    Timber.tag(tag).i(message)
                 }
 
                 override fun logDebug(tag: String, message: String) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.d(tag, message)
+                    Timber.tag(tag).d(message)
                 }
 
                 override fun logVerbose(tag: String, message: String) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.d(tag, message)
+                    Timber.tag(tag).d(message)
                 }
 
                 override fun logStackTraceWithMessage(tag: String, message: String, e: Exception) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, message, e)
+                    Timber.tag(tag).e(e, message)
                 }
 
                 override fun logStackTrace(tag: String, e: Exception) {
-                    if (LogCatcher.isLoggingEnabled) LogCatcher.e(tag, e.message ?: "Stack trace", e)
+                    Timber.tag(tag).e(e, e.message ?: "Stack trace")
                 }
             }
 
-        LogCatcher.i("SessionManager", "addNewSession: creating new DistroManager session with command $initCommand.")
+        Timber.tag("SessionManager").i("addNewSession: creating new DistroManager session with command $initCommand.")
         val session = DistroManager.createSession(context, client, initCommand = initCommand)
         val title = tabTitle ?: "Term ${sessions.size + 1}"
         sessions.add(SessionWrapper(session, title))
         currentSessionIndex = sessions.lastIndex
-        LogCatcher.i("SessionManager", "addNewSession completed. Title=$title, index=$currentSessionIndex")
+        Timber.tag("SessionManager").i("addNewSession completed. Title=$title, index=$currentSessionIndex")
         TerminalService.startService(context)
     }
 
     fun removeSession(wrapper: SessionWrapper) {
-        LogCatcher.i("SessionManager", "removeSession wrapper.title=${wrapper.title}")
+        Timber.tag("SessionManager").i("removeSession wrapper.title=${wrapper.title}")
         wrapper.session.finishIfRunning()
         sessions.remove(wrapper)
         if (currentSessionIndex >= sessions.size) {
@@ -117,7 +117,7 @@ object SessionManager {
                     addNewSession(ctx)
                 }
             } else {
-                LogCatcher.i("SessionManager", "All sessions removed. Stopping TerminalService.")
+                Timber.tag("SessionManager").i("All sessions removed. Stopping TerminalService.")
                 val ctx = com.scto.mobile.ide.utils.application
                 if (ctx != null) {
                     TerminalService.stopService(ctx)
@@ -127,7 +127,7 @@ object SessionManager {
     }
 
     fun switchTo(index: Int) {
-        LogCatcher.i("SessionManager", "switchTo index=$index (currentSessionIndex was $currentSessionIndex)")
+        Timber.tag("SessionManager").i("switchTo index=$index (currentSessionIndex was $currentSessionIndex)")
         if (index in sessions.indices) {
             currentSessionIndex = index
         }

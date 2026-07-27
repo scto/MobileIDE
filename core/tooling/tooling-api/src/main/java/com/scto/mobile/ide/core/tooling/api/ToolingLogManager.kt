@@ -7,7 +7,8 @@ enum class ToolingLogCategory {
     PROJECT_DIAGNOSIS,
     IDE_LOG,
     BUILD,
-    LSP
+    LSP,
+    AI
 }
 
 data class ToolingLogEntry(

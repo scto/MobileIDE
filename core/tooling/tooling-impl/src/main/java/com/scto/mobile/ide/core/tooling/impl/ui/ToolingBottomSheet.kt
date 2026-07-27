@@ -66,6 +66,7 @@ fun ToolingBottomSheet(
                                 ToolingLogCategory.IDE_LOG -> "IDE Log"
                                 ToolingLogCategory.BUILD -> "Build / Tasks"
                                 ToolingLogCategory.LSP -> "LSP"
+                                ToolingLogCategory.AI -> "AI"
                             }
                         )
                     }
@@ -79,6 +80,9 @@ fun ToolingBottomSheet(
             when (activeCategory) {
                 ToolingLogCategory.BUILD -> {
                     BuildAndTasksPanel(projectPath = projectPath)
+                }
+                ToolingLogCategory.AI -> {
+                    com.scto.mobile.ide.ui.editor.aicoding.AiCodingToolingPanel(projectPath = projectPath)
                 }
                 else -> {
                     ToolingLogPanel(category = activeCategory)

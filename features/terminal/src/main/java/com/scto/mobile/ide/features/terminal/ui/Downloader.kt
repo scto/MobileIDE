@@ -12,8 +12,8 @@ package com.scto.mobile.ide.features.terminal.ui
 
 import android.content.Context
 import android.os.Build
-import com.scto.mobile.ide.Constants
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.core.common.Constants
+import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -236,10 +236,10 @@ object Downloader {
     fun downloadTalloc(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
         val arch = detectArch()
         val destFile = File(context.filesDir, "libtalloc.so.2")
-        LogCatcher.i("Downloader", "downloadTalloc: arch=$arch, dest=${destFile.absolutePath}, force=$force")
+        Timber.tag("Downloader").i("downloadTalloc: arch=$arch, dest=${destFile.absolutePath}, force=$force")
 
         if (!force && destFile.exists() && destFile.length() > 0L) {
-            LogCatcher.i("Downloader", "downloadTalloc: libtalloc already exists. Skipping.")
+            Timber.tag("Downloader").i("downloadTalloc: libtalloc already exists. Skipping.")
             return
         }
 
@@ -256,10 +256,10 @@ object Downloader {
     fun downloadProot(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
         val arch = detectArch()
         val destFile = File(context.filesDir, "proot")
-        LogCatcher.i("Downloader", "downloadProot: arch=$arch, dest=${destFile.absolutePath}, force=$force")
+        Timber.tag("Downloader").i("downloadProot: arch=$arch, dest=${destFile.absolutePath}, force=$force")
 
         if (!force && destFile.exists() && destFile.length() > 0L) {
-            LogCatcher.i("Downloader", "downloadProot: proot binary already exists. Skipping.")
+            Timber.tag("Downloader").i("downloadProot: proot binary already exists. Skipping.")
             return
         }
 
@@ -296,7 +296,7 @@ object Downloader {
         )
 
         if (!force && destFile.exists() && destFile.length() > 0L) {
-            LogCatcher.i("Downloader", "downloadRootFs: rootfs archive already exists. Skipping.")
+            Timber.tag("Downloader").i("downloadRootFs: rootfs archive already exists. Skipping.")
             return destFile
         }
 
