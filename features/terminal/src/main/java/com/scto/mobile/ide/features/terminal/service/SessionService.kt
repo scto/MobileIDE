@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.service
+package com.scto.mobile.ide.features.terminal.service
 
 import android.app.*
 import android.content.Intent
@@ -13,8 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.App.Companion.getTempDir
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
-import com.scto.mobile.ide.features.terminal.ui.screens.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.features.terminal.ui.terminal.MkSession
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
 import com.termux.terminal.TerminalSession

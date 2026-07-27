@@ -32,7 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-import com.scto.mobile.ide.core.terminal.service.SessionService
+import com.scto.mobile.ide.features.terminal.service.SessionService
 import com.scto.mobile.ide.core.terminal.ui.navHosts.MainActivityNavHost
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
 import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen

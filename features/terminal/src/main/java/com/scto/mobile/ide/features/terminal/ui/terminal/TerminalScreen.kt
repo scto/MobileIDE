@@ -94,6 +94,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.localDir
 import com.scto.mobile.ide.core.terminal.libcommons.pendingCommand
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import android.app.Activity
+import com.scto.mobile.ide.features.terminal.service.SessionService
 import com.scto.mobile.ide.core.terminal.ui.components.InputDialog
 import com.scto.mobile.ide.core.terminal.ui.components.SessionTabBar
 import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentOption

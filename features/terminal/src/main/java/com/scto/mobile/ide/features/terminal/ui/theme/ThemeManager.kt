@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.color.DynamicColors
 import com.scto.mobile.ide.core.terminal.libcommons.isDarkMode
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.terminal.core.R
+import com.scto.mobile.ide.core.terminal.resources.R
 
 /**
  * A basic helper for applying the correct theme in the app. it manage XML Theme.

@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.scto.mobile.ide.core.terminal.core.R
+import com.scto.mobile.ide.core.terminal.resources.R
 
 /*
  * Tipography definition for theming
