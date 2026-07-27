@@ -35,10 +35,10 @@ import androidx.navigation.compose.rememberNavController
 import com.scto.mobile.ide.core.terminal.service.SessionService
 import com.scto.mobile.ide.core.terminal.ui.navHosts.MainActivityNavHost
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalScreen
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.terminalView
+import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
+import com.scto.mobile.ide.features.terminal.ui.terminal.terminalView
 import com.scto.mobile.ide.theme.MobileIDETheme
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeManager
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

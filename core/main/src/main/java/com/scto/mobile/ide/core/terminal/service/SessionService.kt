@@ -14,8 +14,8 @@ import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.App.Companion.getTempDir
 import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.MkSession
+import com.scto.mobile.ide.features.terminal.ui.screens.settings.Settings
+import com.scto.mobile.ide.features.terminal.ui.terminal.MkSession
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient

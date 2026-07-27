@@ -20,9 +20,9 @@ import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
 import com.scto.mobile.ide.core.terminal.ui.animations.NavigationAnimationTransitions
 import com.scto.mobile.ide.core.terminal.ui.routes.MainActivityRoutes
 import com.scto.mobile.ide.core.terminal.ui.screens.downloader.Downloader
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.Settings
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.Rootfs
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalScreen
+import com.scto.mobile.ide.features.terminal.ui.screens.settings.Settings
+import com.scto.mobile.ide.features.terminal.ui.terminal.Rootfs
+import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
 
 var showStatusBar = mutableStateOf(Settings.statusBar)
 var horizontal_statusBar = mutableStateOf(Settings.horizontal_statusBar)

@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.scto.mobile.ide.core.terminal.libcommons.*
 import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.features.terminal.ui.screens.settings.Settings
 import com.scto.mobile.ide.core.terminal.App
 import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.Rootfs
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.TerminalScreen
+import com.scto.mobile.ide.features.terminal.ui.terminal.Rootfs
+import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
