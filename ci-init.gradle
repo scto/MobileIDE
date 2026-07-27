@@ -1,0 +1,10 @@
+// Gradle init script for CI environment (GitHub Actions)
+// Overrides Termux/PRoot-specific properties like aapt2FromMavenOverride
+
+gradle.projectsLoaded {
+    rootProject.allprojects {
+        if (project.hasProperty("android.aapt2FromMavenOverride")) {
+            project.ext.set("android.aapt2FromMavenOverride", null)
+        }
+    }
+}

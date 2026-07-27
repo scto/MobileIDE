@@ -3,6 +3,13 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 11 Implementation (`11-ci-pipeline-main-project.md`)
+*   **Main Project GitHub Actions CI Pipeline (`main-build-test.yml`)**:
+    *   Created `.github/workflows/main-build-test.yml` with 4 jobs: `lint-and-assemble`, `unit-tests`, `module-dependency-check`, and `catalog-consistency`.
+    *   Added `ci-init.gradle` and `gradle-ci.properties` for overriding Termux/PRoot-specific properties (`aapt2FromMavenOverride`) in standard Linux CI runners.
+    *   Registered `verifyCatalogConsistency` task in root `build.gradle.kts`.
+    *   Added CI workflow status badge to `README.md`.
+
 ### Feature Roadmap Prompt 10 Implementation (`10-interactive-debugger-jdwp.md`)
 *   **Interactive JDWP Debugger Integration (`DebugSessionManager.kt`, `DebugToolingPanel.kt`)**:
     *   Created `DebugSessionManager` for controlling JDWP debug sessions via socket handshake and `am start -D`.

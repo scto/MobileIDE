@@ -1,4 +1,5 @@
 # MobileIDE ![Stone Badge](https://stone.professorlee.work/api/stone/scto/MobileIDE)
+[![MobileIDE CI Pipeline](https://github.com/scto/MobileIDE/actions/workflows/main-build-test.yml/badge.svg)](https://github.com/scto/MobileIDE/actions/workflows/main-build-test.yml)
 ![Version](https://img.shields.io/badge/version-0.3.2-blue?style=flat-square)
 [![Language](https://img.shields.io/badge/Language-Kotlin-blue?style=flat-square)](https://kotlinlang.org/)
 [![UI](https://img.shields.io/badge/UI-Jetpack_Compose-green?style=flat-square)](https://developer.android.com/jetpack/compose)

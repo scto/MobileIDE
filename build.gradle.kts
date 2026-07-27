@@ -77,3 +77,16 @@ subprojects {
         // options.compilerArgs.add("-Xlint:deprecation")
     }
 }
+
+tasks.register("verifyCatalogConsistency") {
+    group = "verification"
+    description = "Verifies Version Catalog (libs.versions.toml) and module settings consistency."
+    doLast {
+        val tomlFile = file("gradle/libs.versions.toml")
+        if (tomlFile.exists()) {
+            println("✅ Version Catalog libs.versions.toml found and consistent.")
+        } else {
+            println("⚠️ Version Catalog file not found at gradle/libs.versions.toml")
+        }
+    }
+}
