@@ -222,6 +222,41 @@ fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewMo
     var pushAfter by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
+        val hasConflicts = viewModel.changedFiles.any { it.status == GitFileStatus.CONFLICTING }
+        var showConflictResolverDialog by remember { mutableStateOf(false) }
+
+        if (hasConflicts) {
+            Card(
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.padding(8.dp).fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.padding(8.dp).fillMaxWidth()
+                ) {
+                    Text("🔴 Merge-Konflikte erkannt!", color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = { showConflictResolverDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Konflikte lösen", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+        }
+
+        if (showConflictResolverDialog) {
+            com.scto.mobile.ide.ui.editor.git.conflict.GitConflictResolutionDialog(
+                projectPath = projectPath,
+                onDismiss = { showConflictResolverDialog = false },
+                onMergeCompleted = {
+                    showConflictResolverDialog = false
+                    viewModel.refreshAll()
+                }
+            )
+        }
+
         if (viewModel.remoteUrl.isEmpty()) {
             Card(
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.errorContainer),

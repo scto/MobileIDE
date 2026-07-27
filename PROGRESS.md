@@ -3,6 +3,13 @@
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
 ## [2026-07-27]
+### Feature Roadmap Prompt 12 Implementation (`12-git-3way-merge-conflict-tool.md`)
+*   **Visual 3-Way Merge & Conflict Resolution Tool (`GitConflictParser.kt`, `GitConflictManager.kt`, `GitConflictResolutionDialog.kt`)**:
+    *   Created `GitConflictParser.kt` for parsing conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) into block-by-block chunks.
+    *   Implemented `GitConflictManager.kt` for resolving file conflicts (`git add`), completing merge commits, and aborting merges (`git merge --abort`).
+    *   Added mobile-optimized `GitConflictResolutionDialog.kt` with block actions ("Lokal übernehmen", "Eingehend übernehmen", "Beide übernehmen", custom editing).
+    *   Added automatic conflict detection banner card in `GitPanel.kt`.
+
 ### Feature Roadmap Prompt 11 Implementation (`11-ci-pipeline-main-project.md`)
 *   **Main Project GitHub Actions CI Pipeline (`main-build-test.yml`)**:
     *   Created `.github/workflows/main-build-test.yml` with 4 jobs: `lint-and-assemble`, `unit-tests`, `module-dependency-check`, and `catalog-consistency`.
