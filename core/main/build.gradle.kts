@@ -75,6 +75,7 @@ dependencies {
     api(libs.ui.graphics)
     api(libs.material3)
     api(libs.navigation.compose)
+    api(project(":features:terminal"))
     api(libs.utilcode)
     //api(libs.commons.net)
     api(libs.okhttp)
