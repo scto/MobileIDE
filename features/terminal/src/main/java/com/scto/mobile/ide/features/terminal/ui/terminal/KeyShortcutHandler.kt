@@ -60,8 +60,8 @@ object KeyShortcutHandler {
         val sessionId = generateUniqueSessionId(service.sessionOrder.toList())
         terminalView.get()?.let {
             val client = TerminalBackEnd(it, activity)
-            val session = binder.createSession(sessionId, client, activity, workingMode = Settings.working_Mode)
-            service.currentSession.value = Pair(sessionId, session)
+            binder.createSession(sessionId, client, activity, workingMode = Settings.working_Mode)
+            service.currentSession.value = Pair(sessionId, Settings.working_Mode)
         }
         return true
     }
@@ -79,8 +79,8 @@ object KeyShortcutHandler {
                 val newSessionId = generateUniqueSessionId(service.sessionOrder.toList())
                 terminalView.get()?.let {
                     val client = TerminalBackEnd(it, activity)
-                    val newSession = binder.createSession(newSessionId, client, activity, workingMode = Settings.working_Mode)
-                    service.currentSession.value = Pair(newSessionId, newSession)
+                    binder.createSession(newSessionId, client, activity, workingMode = Settings.working_Mode)
+                    service.currentSession.value = Pair(newSessionId, Settings.working_Mode)
                 }
                 // Now safe to terminate the old session
                 binder.terminateSession(currentId)
@@ -98,7 +98,7 @@ object KeyShortcutHandler {
             } else {
                 sessionKeys[currentIndex - 1]
             }
-            service.currentSession.value = Pair(nextId, binder.getSession(nextId))
+            service.currentSession.value = Pair(nextId, service.getWorkingMode(nextId) ?: Settings.working_Mode)
             binder.terminateSession(currentId)
         }
         return true
@@ -121,7 +121,7 @@ object KeyShortcutHandler {
         }
 
         val nextId = sessionKeys[nextIndex]
-        service.currentSession.value = Pair(nextId, binder.getSession(nextId))
+        service.currentSession.value = Pair(nextId, service.getWorkingMode(nextId) ?: Settings.working_Mode)
         return true
     }
 
@@ -166,7 +166,7 @@ object KeyShortcutHandler {
 
         val currentId = service.currentSession.value.first
         if (targetId != currentId) {
-            service.currentSession.value = Pair(targetId, binder.getSession(targetId))
+            service.currentSession.value = Pair(targetId, service.getWorkingMode(targetId) ?: Settings.working_Mode)
         }
         return true
     }

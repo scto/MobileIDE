@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.settings
+package com.scto.mobile.ide.features.terminal.ui.screens.settings
 
 import android.content.ContentResolver
 import android.content.Context
@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.palette.graphics.Palette
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
@@ -53,29 +54,13 @@ import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.terminal.settings.ShortcutAction
+import com.scto.mobile.ide.core.terminal.settings.ShortcutBinding
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
 import android.app.Activity
-import com.scto.mobile.ide.core.terminal.ui.components.SettingsToggle
-import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentOption
-import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentSegmentedSelector
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentDescriptionRes
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentFromWorkingMode
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentToWorkingMode
-import com.scto.mobile.ide.core.terminal.ui.components.workingModeIsRoot
-import com.scto.mobile.ide.core.terminal.ui.navHosts.horizontal_statusBar
-import com.scto.mobile.ide.core.terminal.ui.navHosts.showStatusBar
-import com.scto.mobile.ide.core.terminal.ui.screens.customization.ColorSchemeSelector
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.bitmap
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.darkText
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.setFont
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showHorizontalToolbar
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showToolbar
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showVirtualKeys
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.terminalView
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.wallAlpha
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutCaptureDialog
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
+import com.scto.mobile.ide.features.terminal.ui.components.*
+import com.scto.mobile.ide.features.terminal.ui.terminal.ShortcutCaptureDialog
+import com.scto.mobile.ide.features.terminal.ui.theme.colorscheme.ColorSchemeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
