@@ -39,6 +39,7 @@ dependencies {
 
     implementation(libs.timber)
     implementation(libs.utilcode)
+    implementation(libs.androidx.palette)
     implementation(libs.navigation.compose)
     implementation(project(":core:common"))
     implementation(project(":core:resources"))
