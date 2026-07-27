@@ -1,10 +1,16 @@
 # shellcheck disable=SC2034
+set +m 2>/dev/null || true
 force_color_prompt=yes
 shopt -s checkwinsize
 
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/games:/usr/local/bin:/usr/local/sbin:$LOCAL/bin:$PATH
 export SHELL="bash"
 export PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\] \\$ "
+export ROOT="/root"
+export HOME="/home"
+export EXTERNAL_STORAGE="/sdcard"
+export PROJECTS="$MOBILEIDE_WORKSPACE"
+export DOTNET_GCHeapHardLimit=1C0000000
 
 source "$LOCAL/bin/utils"
 
@@ -92,10 +98,17 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 	}
 fi
 
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+# Enable colorful output
+if [ -x /usr/bin/dircolors ]; then
+    eval "$(dircolors -b)"
+fi
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+
+alias ls='ls --color=always'
+alias grep='grep --color=always'
+alias egrep='egrep --color=always'
+alias fgrep='fgrep --color=always'
 alias pkg='apt'
 
 if [[ -f /initrc ]]; then
@@ -104,13 +117,20 @@ if [[ -f /initrc ]]; then
 fi
 
 # shellcheck disable=SC2164
-cd "$WKDIR" || cd $HOME
+cd "$HOME"
 
-# Enable arrow up/down history prefix search
-if [ -t 0 ]; then
-    bind '"\e[A": history-search-backward'
-    bind '"\e[B": history-search-forward'
-fi
+# Configure History
+export HISTFILE="$HOME/.bash_history"
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+shopt -s histappend
+PROMPT_COMMAND="history -a; history -n; $PROMPT_COMMAND"
+
+# Enable arrow up/down history prefix search (Normal & Application cursor modes)
+bind '"\e[A": history-search-backward' 2>/dev/null
+bind '"\e[B": history-search-forward' 2>/dev/null
+bind '"\eOA": history-search-backward' 2>/dev/null
+bind '"\eOB": history-search-forward' 2>/dev/null
 
 # Load bash completion
 if [ -f /etc/profile.d/bash_completion.sh ]; then
@@ -128,3 +148,18 @@ echo -e "  \e[1;33mapt upgrade\e[0m  : Upgrade packages"
 echo -e "  \e[1;33mapt install\e[0m  : Install <package>"
 echo -e "\e[1;30m----------------------------------------\e[0m"
 echo ""
+
+if [ ! -f "$ROOT/etc/mobileide-environment.properties" ]; then
+    echo -e "\e[1;33mHint: Please run the '\e[1;32midesetup\e[1;33m' command to configure your Java & Android SDK build tools.\e[0m"
+else
+    # Automatically export the properties to the environment
+    set -a
+    source "$ROOT/etc/mobileide-environment.properties"
+    set +a
+fi
+
+echo ""
+if [ -t 0 ]; then
+    echo -e "\e[1;32mPress any key to continue...\e[0m"
+    read -n 1 -s -r
+fi

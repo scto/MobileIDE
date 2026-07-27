@@ -1,10 +1,11 @@
 set -e
+set +m 2>/dev/null || true
 
 . "$LOCAL/bin/utils"
 
-# Ensure dummy files for proc bindings exist to prevent PRoot warnings
-mkdir -p "$LOCAL"
-touch "$LOCAL/stat" "$LOCAL/vmstat" 2>/dev/null || true
+# Ensure dummy files for proc bindings exist on both host and sandbox to prevent PRoot warnings
+mkdir -p "$LOCAL" "$LOCAL/sandbox/proc"
+touch "$LOCAL/stat" "$LOCAL/vmstat" "$LOCAL/sandbox/proc/stat" "$LOCAL/sandbox/proc/vmstat" 2>/dev/null || true
 
 info "Extracting the Ubuntu container…"
 

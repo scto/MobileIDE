@@ -1,4 +1,5 @@
 # shellcheck disable=SC2034
+set +m 2>/dev/null || true
 force_color_prompt=yes
 shopt -s checkwinsize
 
