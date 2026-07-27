@@ -44,8 +44,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
-class MainActivity : ComponentActivity() {
-    var sessionBinder:SessionService.SessionBinder? = null
+import com.scto.mobile.ide.features.terminal.service.SessionBinderProvider
+
+class MainActivity : ComponentActivity(), SessionBinderProvider {
+    override var sessionBinder: SessionService.SessionBinder? = null
     var isBound = false
 
 
