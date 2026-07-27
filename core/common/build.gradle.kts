@@ -46,4 +46,5 @@ dependencies {
     
     // Add dependencies that the common files might need.
     implementation(project(":core:lsp"))
+    api(project(":core:resources"))
 }
