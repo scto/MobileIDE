@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.ui.editor.aicoding
+package com.scto.mobile.ide.core.tooling.impl.ui
 
 enum class AiderProvider(val displayName: String, val secretFileName: String) {
     GEMINI_FLASH("Gemini Flash", ".gemini_api_key.secrets"),

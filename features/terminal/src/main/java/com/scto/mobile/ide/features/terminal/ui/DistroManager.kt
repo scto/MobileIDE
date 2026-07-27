@@ -248,8 +248,7 @@ object DistroManager {
             } else {
                 arrayOf(shell, initHostScript.absolutePath)
             }
-        LogCatcher.i(
-            "DistroManager",
+        Timber.tag("DistroManager").i(
             "Launching TerminalSession: shell=$shell, args=${args.joinToString(" ")}, envSize=${env.size}",
         )
 

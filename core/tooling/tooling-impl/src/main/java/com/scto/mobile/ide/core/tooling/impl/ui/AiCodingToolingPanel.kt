@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.ui.editor.aicoding
+package com.scto.mobile.ide.core.tooling.impl.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -45,7 +45,6 @@ fun AiCodingToolingPanel(
     val chatOutput = remember { mutableStateListOf<String>() }
     var isRunning by remember { mutableStateOf(false) }
 
-    // Context files
     val defaultContextFiles = listOf("activeDevelopment.md", "progress.md", "systemDesign.md", "testStrategy.md", "uiStrategy.md", "techEnvironment.md")
     val selectedContextFiles = remember { mutableStateListOf<String>().apply { addAll(defaultContextFiles) } }
 
@@ -65,7 +64,6 @@ fun AiCodingToolingPanel(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        // Provider selection chips
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.fillMaxWidth()
@@ -85,7 +83,6 @@ fun AiCodingToolingPanel(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Model Dropdown & Mode Dropdown
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
@@ -159,7 +156,6 @@ fun AiCodingToolingPanel(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Options toggles & context file chips
         Row(verticalAlignment = Alignment.CenterVertically) {
             FilterChip(
                 selected = isSubtreeOnly,
@@ -176,7 +172,6 @@ fun AiCodingToolingPanel(
             }
         }
 
-        // Chat Output Area
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -212,7 +207,6 @@ fun AiCodingToolingPanel(
             }
         }
 
-        // Prompt input row
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -268,7 +262,6 @@ fun AiCodingToolingPanel(
         }
     }
 
-    // API Key Dialog
     if (showApiKeyDialog) {
         AlertDialog(
             onDismissRequest = { showApiKeyDialog = false },

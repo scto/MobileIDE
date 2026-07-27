@@ -82,7 +82,7 @@ fun ToolingBottomSheet(
                     BuildAndTasksPanel(projectPath = projectPath)
                 }
                 ToolingLogCategory.AI -> {
-                    com.scto.mobile.ide.ui.editor.aicoding.AiCodingToolingPanel(projectPath = projectPath)
+                    AiCodingToolingPanel(projectPath = projectPath)
                 }
                 else -> {
                     ToolingLogPanel(category = activeCategory)

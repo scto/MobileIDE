@@ -296,7 +296,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var showToolingBottomSheet by remember { mutableStateOf(false) }
     var cachedGradleTasks by remember { mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList()) }
 
-    val activeContent = activeFile?.let { viewModel.getFileContent(it) } ?: ""
+    val activeContent = activeFile?.let { file -> (viewModel.openFiles.find { it.file == file } as? com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState)?.content ?: runCatching { file.readText() }.getOrDefault("") } ?: ""
     val previewTargets = remember(activeFile, activeContent) {
         if (activeFile?.name?.endsWith(".kt") == true) {
             com.scto.mobile.ide.features.layoutpreview.ComposePreviewScanner.scan(activeContent)
@@ -555,7 +555,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                              text = { Text("Ask AI (Aider)") },
                                              onClick = {
                                                  isMoreMenuExpanded = false
-                                                 showLogsBottomSheet = true
+                                                 showToolingBottomSheet = true
                                              },
                                          )
                                          DropdownMenuItem(
@@ -889,7 +889,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 scope.launch {
                     showGradleTasksDialog = false
                     showToolingBottomSheet = true
-                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.runTasks(context, projectPath, tasks, flags).collect()
+                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.runTasks(context, projectPath, tasks, flags).collect {}
                 }
             }
         )

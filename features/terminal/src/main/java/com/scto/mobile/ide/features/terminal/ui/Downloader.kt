@@ -133,8 +133,7 @@ object Downloader {
      */
     @Throws(IOException::class, SecurityException::class)
     fun download(url: String, destFile: File, expectedSha256: String? = null, onProgress: ProgressCallback? = null) {
-        LogCatcher.i(
-            "Downloader",
+        Timber.tag("Downloader").i(
             "Starting download: URL=$url, Dest=${destFile.absolutePath}, expectedSha256=$expectedSha256",
         )
         destFile.parentFile?.mkdirs()
@@ -197,16 +196,14 @@ object Downloader {
         if (expectedSha256 != null && digest != null) {
             val actual = digest.digest().joinToString("") { "%02x".format(it) }
             if (!actual.equals(expectedSha256, ignoreCase = true)) {
-                LogCatcher.e(
-                    "Downloader",
+                Timber.tag("Downloader").e(
                     "SHA-256 verification failed for $url. Expected: $expectedSha256, Actual: $actual",
                 )
                 destFile.delete()
                 throw SecurityException("SHA-256 mismatch for $url\n  Expected: $expectedSha256\n  Actual:   $actual")
             }
         }
-        LogCatcher.i(
-            "Downloader",
+        Timber.tag("Downloader").i(
             "Download completed successfully: ${destFile.absolutePath} (${destFile.length()} bytes)",
         )
     }
@@ -290,8 +287,7 @@ object Downloader {
         val url = getRootFsUrl(distro, arch)
         // Store as <distro>.tar.gz so SetupWorker / init-host.sh can find it.
         val destFile = File(context.filesDir, "${distro.lowercase()}.tar.gz")
-        LogCatcher.i(
-            "Downloader",
+        Timber.tag("Downloader").i(
             "downloadRootFs: distro=$distro, arch=$arch, URL=$url, dest=${destFile.absolutePath}, force=$force",
         )
 

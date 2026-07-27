@@ -1,7 +1,6 @@
-package com.scto.mobile.ide.ui.editor.aicoding
+package com.scto.mobile.ide.core.tooling.impl.ui
 
 import android.content.Context
-import com.scto.mobile.ide.features.exec.ShellUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -83,13 +82,11 @@ object AiderBridgeService {
             cmdBuilder.append(" --browser")
         }
 
-        // Add config file if exists
         val configFile = File(projectPath, ".aider.conf.yml")
         if (configFile.exists()) {
             cmdBuilder.append(" --config .aider.conf.yml")
         }
 
-        // Add read-only context files
         for (cf in selectedContextFiles) {
             val file = File(projectPath, cf)
             if (file.exists()) {
@@ -97,7 +94,6 @@ object AiderBridgeService {
             }
         }
 
-        // Add non-interactive message prompt if provided
         if (message.isNotBlank()) {
             val safeMsg = message.replace("\"", "\\\"")
             cmdBuilder.append(" --message \"$safeMsg\" --no-auto-commits")
