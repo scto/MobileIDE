@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.terminal
+package com.scto.mobile.ide.features.terminal.ui.terminal
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable

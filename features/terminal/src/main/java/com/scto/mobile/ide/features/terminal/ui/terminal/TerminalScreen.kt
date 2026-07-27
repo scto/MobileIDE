@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.terminal
+package com.scto.mobile.ide.features.terminal.ui.terminal
 
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
@@ -83,9 +83,9 @@ import androidx.navigation.NavController
 import com.google.android.material.R
 import androidx.compose.ui.res.stringResource
 
-import me.zhanghai.compose.preference.PreferenceGroup
-import me.zhanghai.compose.preference.PreferenceTemplate
-import me.zhanghai.compose.preference.PreferenceSwitch
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
+import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
+import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.libcommons.child

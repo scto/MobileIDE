@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.terminal
+package com.scto.mobile.ide.features.terminal.ui.terminal
 
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -14,7 +14,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
 import com.scto.mobile.ide.core.terminal.settings.Settings
 import android.app.Activity
-import com.scto.mobile.ide.core.terminal.ui.screens.settings.CloseLastSessionBehavior
+import com.scto.mobile.ide.features.terminal.service.sessionBinder
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.SpecialButton
 import com.scto.mobile.ide.core.terminal.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.termux.terminal.TerminalEmulator

@@ -38,8 +38,11 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.timber)
+    implementation(libs.utilcode)
+    implementation(libs.navigation.compose)
     implementation(project(":core:common"))
     implementation(project(":core:resources"))
+    implementation(project(":core:components"))
     implementation(project(":features:proot"))
     implementation(project(":features:exec"))
 }

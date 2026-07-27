@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.terminal
+package com.scto.mobile.ide.features.terminal.ui.terminal
 
 const val hosts = """
 127.0.0.1   localhost.localdomain localhost
