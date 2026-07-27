@@ -1,914 +1,393 @@
-package com.scto.mobile.ide.core.terminal.ui.screens.settings
+package com.scto.mobile.ide.core.terminal.settings
 
-import android.content.ContentResolver
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Typeface
-import android.net.Uri
+import android.content.SharedPreferences
 import android.os.Build
-import android.provider.OpenableColumns
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
-import androidx.compose.runtime.*
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.palette.graphics.Palette
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.components.compose.preferences.base.PreferenceTemplate
-import com.scto.mobile.ide.components.compose.preferences.switch.PreferenceSwitch
-import com.scto.mobile.ide.core.terminal.resources.strings
-import com.scto.mobile.ide.core.terminal.libcommons.child
-import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
-import com.scto.mobile.ide.core.terminal.libcommons.dpToPx
-import com.scto.mobile.ide.core.terminal.settings.Settings
+import androidx.appcompat.app.AppCompatDelegate
+
+import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.model.WorkingMode
-import com.scto.mobile.ide.core.terminal.ui.activities.terminal.MainActivity
-import com.scto.mobile.ide.core.terminal.ui.components.SettingsToggle
-import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentOption
-import com.scto.mobile.ide.core.terminal.ui.components.TerminalEnvironmentSegmentedSelector
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentDescriptionRes
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentFromWorkingMode
-import com.scto.mobile.ide.core.terminal.ui.components.terminalEnvironmentToWorkingMode
-import com.scto.mobile.ide.core.terminal.ui.components.workingModeIsRoot
-import com.scto.mobile.ide.core.terminal.ui.navHosts.horizontal_statusBar
-import com.scto.mobile.ide.core.terminal.ui.navHosts.showStatusBar
-import com.scto.mobile.ide.core.terminal.ui.screens.customization.ColorSchemeSelector
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.bitmap
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.darkText
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.setFont
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showHorizontalToolbar
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showToolbar
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.showVirtualKeys
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.terminalView
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.wallAlpha
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction
-import com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutCaptureDialog
-import com.scto.mobile.ide.core.terminal.ui.theme.colorscheme.ColorSchemeManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import androidx.core.net.toUri
-import java.io.File
-import java.math.RoundingMode
-import java.text.DecimalFormat
-import kotlin.math.roundToInt
+
+object Settings {
+    //Boolean
+    var amoled
+        get() = Preference.getBoolean(key = "oled", default = false)
+        set(value) = Preference.setBoolean(key = "oled",value)
+    var monet
+        get() = Preference.getBoolean(
+            key = "monet",
+            default = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        )
+        set(value) = Preference.setBoolean(key = "monet",value)
+    var ignore_storage_permission
+        get() = Preference.getBoolean(key = "ignore_storage_permission",default = false)
+        set(value) = Preference.setBoolean(key = "ignore_storage_permission",value)
+    var github
+        get() = Preference.getBoolean(key = "github", default = true)
+        set(value) = Preference.setBoolean(key = "github",value)
 
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun SettingsCard(
-    modifier: Modifier = Modifier,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    title: @Composable () -> Unit,
-    description: @Composable () -> Unit = {},
-    startWidget: (@Composable () -> Unit)? = null,
-    endWidget: (@Composable () -> Unit)? = null,
-    isEnabled: Boolean = true,
-    onClick: () -> Unit
-) {
-    PreferenceTemplate(
-        modifier = modifier
-            .combinedClickable(
-                enabled = isEnabled,
-                indication = ripple(),
-                interactionSource = interactionSource,
-                onClick = onClick
-            ),
-        contentModifier = Modifier
-            .fillMaxHeight()
-            .padding(vertical = 16.dp)
-            .padding(start = 16.dp),
-        title = title,
-        description = description,
-        startWidget = startWidget,
-        endWidget = endWidget,
-        applyPaddings = false
-    )
+   var default_night_mode
+        get() = Preference.getInt(key = "default_night_mode", default = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        set(value) = Preference.setInt(key = "default_night_mode",value)
 
-}
+    var terminal_font_size
+        get() = Preference.getInt(key = "terminal_font_size", default = 13)
+        set(value) = Preference.setInt(key = "terminal_font_size",value)
 
-object InputMode {
-    const val DEFAULT = 0
-    const val TYPE_NULL = 1
-    const val VISIBLE_PASSWORD = 2
-}
-object LayoutMode {
-    const val CLASSIC = 0   // Original Material drawer + TopAppBar
-    const val TAB_BAR = 1   // Horizontal tab bar mode
-}
+    var scrollback_lines
+        get() = Preference.getInt(key = "scrollback_lines", default = 2000)
+        set(value) = Preference.setInt(key = "scrollback_lines",value)
 
-object CloseLastSessionBehavior {
-    const val EXIT_APP = 0      // Exit the app when last session is closed
-    const val NEW_SESSION = 1   // Create a new session instead of exiting
-}
-object ShellType {
-    const val BASH = 0
-    const val ASH = 1
-    const val ZSH = 2
-}
+    var wallTransparency
+        get() = Preference.getFloat(key = "wallTransparency", default = 0f)
+        set(value) = Preference.setFloat(key = "wallTransparency",value)
 
-private const val min_text_size = 10f
-private const val max_text_size = 20f
+    var working_Mode
+        get() = Preference.getInt(key = "workingMode", default = WorkingMode.ALPINE)
+        set(value) = Preference.setInt(key = "workingMode",value)
 
-private fun getFileNameFromUri(context: Context, uri: Uri): String? {
-    if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            if (cursor.moveToFirst() && nameIndex != -1) {
-                return cursor.getString(nameIndex)
-            }
-        }
-    } else if (uri.scheme == ContentResolver.SCHEME_FILE) {
-        return File(uri.path!!).name
-    }
-    return null
-}
+    var input_mode
+        get() = Preference.getInt(key = "input_mode", default = InputMode.DEFAULT)
+        set(value) = Preference.setInt(key = "input_mode", value)
 
+    var layout_mode
+        get() = Preference.getInt(key = "layout_mode", default = LayoutMode.CLASSIC)
+        set(value) = Preference.setInt(key = "layout_mode", value)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActivity: MainActivity) {
-    val context = LocalContext.current
-    val initialTerminalEnvironment = remember {
-        terminalEnvironmentFromWorkingMode(Settings.working_Mode)
-    }
-    var selectedTerminalEnvironment by remember { mutableStateOf(initialTerminalEnvironment) }
-    var startWithRoot by remember {
-        mutableStateOf(workingModeIsRoot(Settings.working_Mode) && initialTerminalEnvironment.supportsRoot)
-    }
-    var selectedInputMode by remember { mutableIntStateOf(Settings.input_mode) }
-    var selectedLayoutMode by remember { mutableIntStateOf(Settings.layout_mode) }
-    var selectedCloseLastSessionBehavior by remember { mutableIntStateOf(Settings.close_last_session_behavior) }
-    var selectedShellType by remember { mutableIntStateOf(Settings.default_shell) }
+    var close_last_session_behavior
+        get() = Preference.getInt(key = "close_last_session_behavior", default = CloseLastSessionBehavior.EXIT_APP)
+        set(value) = Preference.setInt(key = "close_last_session_behavior", value)
 
-    val applyTerminalEnvironmentSelection: (TerminalEnvironmentOption, Boolean) -> Unit = { environment, rootEnabled ->
-        val normalizedRoot = rootEnabled && environment.supportsRoot
-        selectedTerminalEnvironment = environment
-        startWithRoot = normalizedRoot
-        Settings.working_Mode = terminalEnvironmentToWorkingMode(environment, normalizedRoot)
+    var default_shell
+        get() = Preference.getInt(key = "default_shell", default = ShellType.BASH)
+        set(value) = Preference.setInt(key = "default_shell", value)
+    var custom_background_name
+        get() = Preference.getString(key = "custom_bg_name", default = "No Image Selected")
+        set(value) = Preference.setString(key = "custom_bg_name",value)
+    var custom_font_name
+        get() = Preference.getString(key = "custom_ttf_name", default = "No Font Selected")
+        set(value) = Preference.setString(key = "custom_ttf_name",value)
+
+    var blackTextColor
+        get() = Preference.getBoolean(key = "blackText", default = false)
+        set(value) = Preference.setBoolean(key = "blackText",value)
+
+    var bell
+        get() = Preference.getBoolean(key = "bell", default = false)
+        set(value) = Preference.setBoolean(key = "bell",value)
+
+    var vibrate
+        get() = Preference.getBoolean(key = "vibrate", default = true)
+        set(value) = Preference.setBoolean(key = "vibrate",value)
+
+    var toolbar
+        get() = Preference.getBoolean(key = "toolbar", default = true)
+        set(value) = Preference.setBoolean(key = "toolbar",value)
+
+    var statusBar
+        get() = Preference.getBoolean(key = "statusBar", default = true)
+        set(value) = Preference.setBoolean(key = "statusBar",value)
+
+    var horizontal_statusBar
+        get() = Preference.getBoolean(key = "horizontal_statusBar", default = true)
+        set(value) = Preference.setBoolean(key = "horizontal_statusBar",value)
+
+    var toolbar_in_horizontal
+        get() = Preference.getBoolean(key = "toolbar_h", default = true)
+        set(value) = Preference.setBoolean(key = "toolbar_h",value)
+
+    var virtualKeys
+        get() = Preference.getBoolean(key = "virtualKeys", default = true)
+        set(value) = Preference.setBoolean(key = "virtualKeys",value)
+
+    var hide_soft_keyboard_if_hwd
+        get() = Preference.getBoolean(key = "force_soft_keyboard", default = true)
+        set(value) = Preference.setBoolean(key = "force_soft_keyboard",value)
+
+    var shortcuts_enabled
+        get() = Preference.getBoolean(key = "shortcuts_enabled", default = true)
+        set(value) = Preference.setBoolean(key = "shortcuts_enabled", value)
+
+    /** Default modifier for number shortcuts: Alt+1 (only modifier flags are used) */
+    private val DEFAULT_NUMBER_SHORTCUT = com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding(alt = true, keyCode = android.view.KeyEvent.KEYCODE_1)
+
+    fun getNumberShortcutBinding(): com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding {
+        val raw = Preference.getString(key = "number_shortcut_modifier", default = DEFAULT_NUMBER_SHORTCUT.serialize())
+        return com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding.deserialize(raw)
     }
 
-    PreferenceLayout(label = stringResource(strings.settings)) {
+    fun setNumberShortcutBinding(binding: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding) {
+        Preference.setString(key = "number_shortcut_modifier", value = binding.serialize())
+    }
 
-        // ======================================================
-        // 1. Appearance & Interface
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.appearance_and_interface)) {
-            // -- Text Size --
-            var sliderPosition by remember { mutableFloatStateOf(Settings.terminal_font_size.toFloat()) }
-            PreferenceTemplate(title = { Text(stringResource(strings.text_size)) }) {
-                Text(sliderPosition.toInt().toString())
-            }
-            PreferenceTemplate(title = {}) {
-                Slider(
-                    modifier = modifier,
-                    value = sliderPosition,
-                    onValueChange = {
-                        sliderPosition = it
-                        Settings.terminal_font_size = it.toInt()
-                        terminalView.get()?.setTextSize(dpToPx(it.toFloat(), context))
-                    },
-                    steps = (max_text_size - min_text_size).toInt() - 1,
-                    valueRange = min_text_size..max_text_size,
-                )
-            }
+    // Terminal color scheme
+    var terminal_color_scheme
+        get() = Preference.getString(key = "terminal_color_scheme", default = "default")
+        set(value) = Preference.setString(key = "terminal_color_scheme", value)
+
+    fun getShortcutBinding(action: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction): com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding {
+        val raw = Preference.getString(key = action.prefKey, default = action.default.serialize())
+        return com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding.deserialize(raw)
+    }
+
+    fun setShortcutBinding(action: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction, binding: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding) {
+        Preference.setString(key = action.prefKey, value = binding.serialize())
+    }
+
+    fun getCustomSessionName(sessionId: String): String? {
+        val v = Preference.getString("session_name_$sessionId", "")
+        return v.takeIf { it.isNotBlank() }
+    }
+
+    fun setCustomSessionName(sessionId: String, name: String) {
+        Preference.setString("session_name_$sessionId", name)
+    }
+
+    fun removeCustomSessionName(sessionId: String) {
+        Preference.removeKey("session_name_$sessionId")
+    }
+
+    var seccomp
+        get() = Preference.getBoolean(key = "seccomp", default = false)
+        set(value) = Preference.setBoolean(key = "seccomp", value)
+
+    var sandbox
+        get() = Preference.getBoolean(key = "sandbox", default = true)
+        set(value) = Preference.setBoolean(key = "sandbox", value)
+
+    var verbose_error
+        get() = Preference.getBoolean(key = "verbose_error", default = false)
+        set(value) = Preference.setBoolean(key = "verbose_error", value)
+
+    var git_colorize_names
+        get() = Preference.getBoolean(key = "git_colorize_names", default = true)
+        set(value) = Preference.setBoolean(key = "git_colorize_names", value)
+
+    var icon_pack
+        get() = Preference.getString(key = "icon_pack", default = "default")
+        set(value) = Preference.setString(key = "icon_pack", value)
+
+    var terminal_virus_notice
+        get() = Preference.getBoolean(key = "terminal_virus_notice", default = false)
+        set(value) = Preference.setBoolean(key = "terminal_virus_notice", value)
+
+    var terminal_scrollback_lines
+        get() = scrollback_lines
+        set(value) { scrollback_lines = value }
+
+    var terminal_close_behavior
+        get() = Preference.getString(key = "terminal_close_behavior", default = "new_session")
+        set(value) = Preference.setString(key = "terminal_close_behavior", value)
+
+    var terminal_colorscheme
+        get() = Preference.getString(key = "terminal_colorscheme", default = "default")
+        set(value) = Preference.setString(key = "terminal_colorscheme", value)
+
+    var terminal_extra_keys: String
+        get() = Preference.getString(key = "terminal_extra_keys", default = "[[\"ESC\",\"/\",\"-\",\"HOME\",\"UP\",\"END\",\"PGUP\"],[\"TAB\",\"CTRL\",\"ALT\",\"LEFT\",\"DOWN\",\"RIGHT\",\"PGDN\"]]")
+        set(value) = Preference.setString(key = "terminal_extra_keys", value)
+
+    var terminal_cursor_style: String
+        get() = Preference.getString(key = "terminal_cursor_style", default = "BLOCK")
+        set(value) = Preference.setString(key = "terminal_cursor_style", value)
+
+    var terminate_sessions_on_exit: Boolean
+        get() = Preference.getBoolean(key = "terminate_sessions_on_exit", default = true)
+        set(value) = Preference.setBoolean(key = "terminate_sessions_on_exit", value)
+
+    var expose_home_dir: Boolean
+        get() = Preference.getBoolean(key = "expose_home_dir", default = false)
+        set(value) = Preference.setBoolean(key = "expose_home_dir", value)
+
+    var project_as_pwd: Boolean
+        get() = Preference.getBoolean(key = "project_as_pwd", default = true)
+        set(value) = Preference.setBoolean(key = "project_as_pwd", value)
+
+    var terminal_clipboard_keybindings: Boolean
+        get() = Preference.getBoolean(key = "terminal_clipboard_keybindings", default = true)
+        set(value) = Preference.setBoolean(key = "terminal_clipboard_keybindings", value)
+
+    var http_server_port
+        get() = Preference.getInt(key = "http_server_port", default = 8080)
+        set(value) = Preference.setInt(key = "http_server_port", value)
+
+    var launch_in_browser
+        get() = Preference.getBoolean(key = "launch_in_browser", default = false)
+        set(value) = Preference.setBoolean(key = "launch_in_browser", value)
+
+    var auto_close_tags: Boolean
+        get() = Preference.getBoolean(key = "auto_close_tags", default = true)
+        set(value) = Preference.setBoolean(key = "auto_close_tags", value)
+
+    var bullet_continuation: Boolean
+        get() = Preference.getBoolean(key = "bullet_continuation", default = true)
+        set(value) = Preference.setBoolean(key = "bullet_continuation", value)
+
+    var inject_eruda
+        get() = Preference.getBoolean(key = "inject_eruda", default = false)
+        set(value) = Preference.setBoolean(key = "inject_eruda", value)
+}
+
+
+object Preference {
+    private var sharedPreferences: SharedPreferences = application!!.getSharedPreferences("Settings", Context.MODE_PRIVATE)
+
+    //store the result into memory for faster access
+    private val stringCache = hashMapOf<String, String?>()
+    private val boolCache = hashMapOf<String, Boolean>()
+    private val intCache = hashMapOf<String, Int>()
+    private val longCache = hashMapOf<String, Long>()
+    private val floatCache = hashMapOf<String, Float>()
+
+    @SuppressLint("ApplySharedPref")
+    fun clearData(){
+        sharedPreferences.edit().clear().commit()
+    }
+
+    fun removeKey(key: String){
+        if (sharedPreferences.contains(key).not()){
+            return
         }
 
-        // -- Scrollback Lines --
-        PreferenceGroup {
-            val scrollbackSteps = remember {
-                listOf(500, 1000, 2000, 3000, 5000, 8000, 10000, 20000, 50000)
-            }
-            val savedValue = Settings.scrollback_lines
-            val initialIndex = remember {
-                scrollbackSteps.indexOfFirst { it >= savedValue }
-                    .let { if (it == -1) scrollbackSteps.lastIndex else it }
-            }
-            var sliderIndex by remember { mutableFloatStateOf(initialIndex.toFloat()) }
-            val currentValue = scrollbackSteps[sliderIndex.roundToInt().coerceIn(0, scrollbackSteps.lastIndex)]
-            PreferenceTemplate(title = { Text(stringResource(strings.scrollback_lines)) }) {
-                Text(
-                    if (currentValue >= 1000) "${currentValue / 1000}K" else currentValue.toString(),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            PreferenceTemplate(title = {}) {
-                Slider(
-                    modifier = modifier,
-                    value = sliderIndex,
-                    onValueChange = {
-                        sliderIndex = it
-                        Settings.scrollback_lines = scrollbackSteps[it.roundToInt().coerceIn(0, scrollbackSteps.lastIndex)]
-                    },
-                    steps = scrollbackSteps.size - 2,
-                    valueRange = 0f..(scrollbackSteps.size - 1).toFloat(),
-                )
-            }
-            // Min / Max labels
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                Text("500", style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(modifier = Modifier.weight(1f))
-                Text("50K", style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        sharedPreferences.edit().remove(key).apply()
+
+        if (stringCache.containsKey(key)){
+            stringCache.remove(key)
+            return
         }
 
-        // -- Color Scheme --
-        PreferenceGroup {
-            PreferenceTemplate(
-                title = { Text(stringResource(strings.color_scheme)) },
-                description = { Text(stringResource(strings.color_scheme_desc)) }
-            ) {}
-            ColorSchemeSelector(
-                onSchemeSelected = { scheme ->
-                    terminalView.get()?.let { tv ->
-                        ColorSchemeManager.setTerminalView(tv)
-                        ColorSchemeManager.applyCurrentSchemeToTerminal()
-                        tv.invalidate()
-                    }
-                    darkText.value = if (bitmap.value != null) {
-                        Settings.blackTextColor
-                    } else {
-                        ColorSchemeManager.shouldUseDarkUiText(ColorSchemeManager.getCurrentScheme())
-                    }
-                }
-            )
+        if (boolCache.containsKey(key)){
+            boolCache.remove(key)
+            return
         }
 
-        // -- Custom Font --
-        PreferenceGroup {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(15.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(imageVector = Icons.Outlined.Info, contentDescription = null)
-                }
-                Text(
-                    text = stringResource(strings.font_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            val scope = rememberCoroutineScope()
-            val font by remember { mutableStateOf<File>(context.filesDir.child("font.ttf")) }
-            var fontExists by remember { mutableStateOf(font.exists()) }
-
-            val noFontSelected = stringResource(strings.no_font_selected)
-            var fontName by remember { mutableStateOf(if (!fontExists || !font.canRead()){
-                noFontSelected
-            }else{
-                Settings.custom_font_name
-            }) }
-
-            val fontLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent()
-            ) { uri: Uri? ->
-                uri?.let {
-                    scope.launch(Dispatchers.IO){
-                        font.createFileIfNot()
-                        context.contentResolver.openInputStream(it)?.use { inputStream ->
-                            font.outputStream().use { outputStream ->
-                                inputStream.copyTo(outputStream)
-                            }
-                        }
-
-                        val name = getFileNameFromUri(context,uri).toString()
-                        Settings.custom_font_name = name
-                        fontName = name
-                        fontExists = font.exists()
-                        setFont(Typeface.createFromFile(font))
-                    }
-                }
-
-            }
-
-            PreferenceTemplate(
-                modifier = Modifier.clickable(onClick = {
-                    scope.launch{
-                        fontLauncher.launch("font/ttf")
-                    }
-                }),
-                title = {
-                    Text(stringResource(strings.custom_font))
-                },
-                description = {
-                    Text(fontName)
-                },
-                endWidget = {
-                    if (fontExists){
-                        IconButton(onClick = {
-                            scope.launch{
-                                font.delete()
-                                fontName = noFontSelected
-                                Settings.custom_font_name = noFontSelected
-                                setFont(Typeface.MONOSPACE)
-                                fontExists = font.exists()
-                            }
-                        }) {
-                            Icon(imageVector = Icons.Outlined.Delete,contentDescription = "delete")
-                        }
-                    }
-                }
-            )
+        if (intCache.containsKey(key)){
+            intCache.remove(key)
+            return
         }
 
-        // -- Custom Background --
-        PreferenceGroup {
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-            val image by remember { mutableStateOf<File>(context.filesDir.child("background")) }
-
-            var imageExists by remember { mutableStateOf(image.exists()) }
-
-            val noImageSelected = stringResource(strings.no_image_selected)
-            var backgroundName by remember { mutableStateOf(if (!imageExists || !image.canRead()){
-                noImageSelected
-            }else{
-                Settings.custom_background_name
-            }) }
-
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent()
-            ) { uri: Uri? ->
-                uri?.let {
-                    scope.launch(Dispatchers.IO){
-                        image.createFileIfNot()
-                        context.contentResolver.openInputStream(it)?.use { inputStream ->
-                            image.outputStream().use { outputStream ->
-                                inputStream.copyTo(outputStream)
-                            }
-                        }
-
-                        val name = getFileNameFromUri(context,uri).toString()
-                        Settings.custom_background_name = name
-                        backgroundName = name
-
-                        withContext(Dispatchers.IO) {
-                            val file = context.filesDir.child("background")
-                            if (!file.exists()) return@withContext
-                            bitmap.value = BitmapFactory.decodeFile(file.absolutePath)?.asImageBitmap()
-                            bitmap.value?.apply {
-                                val androidBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                                val buffer = IntArray(width * height)
-                                readPixels(buffer, 0, 0, width, height)
-                                androidBitmap.setPixels(buffer, 0, width, 0, 0, width, height)
-                                Palette.from(androidBitmap).generate { palette ->
-                                    val dominantColor = palette?.getDominantColor(android.graphics.Color.WHITE)
-                                    val luminance = androidx.core.graphics.ColorUtils.calculateLuminance(dominantColor ?: android.graphics.Color.WHITE)
-                                    val blackText = luminance > 0.5f
-                                    Settings.blackTextColor = blackText
-                                    darkText.value = blackText
-                                }
-                            }
-
-                        }
-                        imageExists = image.exists()
-                    }
-
-                }
-
-            }
-
-            PreferenceTemplate(
-                modifier = Modifier.clickable(onClick = {
-                    scope.launch{
-                        launcher.launch("image/*")
-                    }
-                }),
-                title = {
-                    Text(stringResource(strings.custom_background))
-                },
-                description = {
-                    Text(backgroundName)
-                },
-                endWidget = {
-                    if (imageExists){
-                        IconButton(onClick = {
-                            scope.launch{
-                                image.delete()
-                                Settings.custom_background_name = noImageSelected
-                                backgroundName = noImageSelected
-                                darkText.value = ColorSchemeManager.shouldUseDarkUiText(ColorSchemeManager.getCurrentScheme())
-                                imageExists = image.exists()
-                                bitmap.value = null
-                            }
-                        }) {
-                            Icon(imageVector = Icons.Outlined.Delete,contentDescription = "delete")
-                        }
-                    }
-
-                }
-            )
-
+        if (longCache.containsKey(key)){
+            longCache.remove(key)
+            return
         }
 
-        // -- Wallpaper Alpha --
-        PreferenceGroup {
-            PreferenceTemplate(title = {
-                Text(stringResource(strings.wallpaper_alpha))
-            }) { Text(
-                DecimalFormat("0.##")
-                .apply { roundingMode = RoundingMode.HALF_UP }
-                .format(wallAlpha)) }
-            PreferenceTemplate(title = {}){
-                Slider(
-                    value = wallAlpha,
-                    onValueChange = {
-                        wallAlpha = it
-                    },
-                    onValueChangeFinished = {
-                        Settings.wallTransparency = wallAlpha
-                    }
-                )
-            }
-        }
-
-        // -- UI Elements (StatusBar, TitleBar, Virtual Keys, Keyboard) --
-        PreferenceGroup {
-            SettingsToggle(
-                label = stringResource(strings.statusbar),
-                description = stringResource(strings.statusbar_desc),
-                showSwitch = true,
-                default = Settings.statusBar, sideEffect = {
-                    Settings.statusBar = it
-                    showStatusBar.value = it
-                })
-
-            SettingsToggle(
-                label = stringResource(strings.horizontal_statusbar),
-                description = stringResource(strings.horizontal_statusbar_desc),
-                showSwitch = true,
-                default = Settings.horizontal_statusBar, sideEffect = {
-                    Settings.horizontal_statusBar = it
-                    horizontal_statusBar.value = it
-                })
-
-
-            val attentionTitle = stringResource(strings.attention)
-            val toolbarWarning = stringResource(strings.toolbar_warning)
-            val cancelStr = stringResource(strings.cancel)
-            val sideEffect:(Boolean)-> Unit = {
-                if (!it && showToolbar.value){
-                    MaterialAlertDialogBuilder(context).apply {
-                        setTitle(attentionTitle)
-                        setMessage(toolbarWarning)
-                        setPositiveButton("OK"){_,_ ->
-                            Settings.toolbar = it
-                            showToolbar.value = it
-                        }
-                        setNegativeButton(cancelStr,null)
-                        show()
-                    }
-                }else{
-                    Settings.toolbar = it
-                    showToolbar.value = it
-                }
-
-            }
-
-
-            PreferenceSwitch(checked = showToolbar.value,
-                onCheckedChange = {
-                    sideEffect.invoke(it)
-                },
-                label = stringResource(strings.titlebar),
-                modifier = modifier,
-                description = stringResource(strings.titlebar_desc),
-                onClick = {
-                    sideEffect.invoke(!showToolbar.value)
-                })
-
-            SettingsToggle(
-                isEnabled = showToolbar.value,
-                label = stringResource(strings.horizontal_titlebar),
-                description = stringResource(strings.horizontal_titlebar_desc),
-                showSwitch = true,
-                default = Settings.toolbar_in_horizontal, sideEffect = {
-                    Settings.toolbar_in_horizontal = it
-                    showHorizontalToolbar.value = it
-                })
-            SettingsToggle(
-                label = stringResource(strings.virtual_keys),
-                description = stringResource(strings.virtual_keys_desc),
-                showSwitch = true,
-                default = Settings.virtualKeys, sideEffect = {
-                    Settings.virtualKeys = it
-                    showVirtualKeys.value = it
-                })
-
-            SettingsToggle(
-                label = stringResource(strings.hide_soft_keyboard),
-                description = stringResource(strings.hide_soft_keyboard_desc),
-                showSwitch = true,
-                default = Settings.hide_soft_keyboard_if_hwd, sideEffect = {
-                    Settings.hide_soft_keyboard_if_hwd = it
-                })
-
-        }
-
-        // ======================================================
-        // 2. Input & Feedback
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.input_and_feedback)) {
-
-            SettingsCard(
-                title = { Text(stringResource(strings.input_mode_default)) },
-                description = { Text(stringResource(strings.input_mode_default_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedInputMode == InputMode.DEFAULT,
-                        onClick = {
-                            selectedInputMode = InputMode.DEFAULT
-                            Settings.input_mode = selectedInputMode
-                        })
-                },
-                onClick = {
-                    selectedInputMode = InputMode.DEFAULT
-                    Settings.input_mode = selectedInputMode
-                })
-
-            SettingsCard(
-                title = { Text(stringResource(strings.input_mode_type_null)) },
-                description = { Text(stringResource(strings.input_mode_type_null_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedInputMode == InputMode.TYPE_NULL,
-                        onClick = {
-                            selectedInputMode = InputMode.TYPE_NULL
-                            Settings.input_mode = selectedInputMode
-                        })
-                },
-                onClick = {
-                    selectedInputMode = InputMode.TYPE_NULL
-                    Settings.input_mode = selectedInputMode
-                })
-
-            SettingsCard(
-                title = { Text(stringResource(strings.input_mode_visible_password)) },
-                description = { Text(stringResource(strings.input_mode_visible_password_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedInputMode == InputMode.VISIBLE_PASSWORD,
-                        onClick = {
-                            selectedInputMode = InputMode.VISIBLE_PASSWORD
-                            Settings.input_mode = selectedInputMode
-                        })
-                },
-                onClick = {
-                    selectedInputMode = InputMode.VISIBLE_PASSWORD
-                    Settings.input_mode = selectedInputMode
-                })
-        }
-
-        PreferenceGroup {
-            SettingsToggle(label = stringResource(strings.bell), description = stringResource(strings.bell_desc), showSwitch = true, default = Settings.bell, sideEffect = {
-                Settings.bell = it
-            })
-
-            SettingsToggle(label = stringResource(strings.vibrate), description = stringResource(strings.vibrate_desc), showSwitch = true, default = Settings.vibrate, sideEffect = {
-                Settings.vibrate = it
-            })
-        }
-
-        // ======================================================
-        // 3. Terminal Environment
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.terminal_environment)) {
-
-            PreferenceTemplate(
-                title = { Text(stringResource(strings.default_working_mode)) },
-                description = {
-                    Text(
-                        stringResource(
-                            terminalEnvironmentDescriptionRes(
-                                selectedTerminalEnvironment,
-                                startWithRoot,
-                            )
-                        )
-                    )
-                },
-            ) {}
-
-            TerminalEnvironmentSegmentedSelector(
-                selectedEnvironment = selectedTerminalEnvironment,
-                onSelected = { environment ->
-                    applyTerminalEnvironmentSelection(environment, startWithRoot)
-                },
-            )
-
-            if (selectedTerminalEnvironment.supportsRoot) {
-                PreferenceSwitch(
-                    checked = startWithRoot,
-                    onCheckedChange = {
-                        applyTerminalEnvironmentSelection(selectedTerminalEnvironment, it)
-                    },
-                    label = stringResource(strings.terminal_env_root_toggle),
-                    modifier = modifier,
-                    description = stringResource(
-                        strings.terminal_env_root_toggle_desc,
-                        stringResource(selectedTerminalEnvironment.labelRes),
-                    ),
-                    onClick = {
-                        applyTerminalEnvironmentSelection(selectedTerminalEnvironment, !startWithRoot)
-                    },
-                )
-            } else {
-                PreferenceTemplate(
-                    title = { Text(stringResource(strings.terminal_env_android_root_unavailable_title)) },
-                    description = { Text(stringResource(strings.terminal_env_android_root_unavailable_desc)) },
-                ) {}
-            }
-        }
-
-        PreferenceGroup(heading = stringResource(strings.default_shell)) {
-
-            SettingsCard(
-                title = { Text("Bash") },
-                description = { Text(stringResource(strings.shell_bash_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedShellType == ShellType.BASH,
-                        onClick = {
-                            selectedShellType = ShellType.BASH
-                            Settings.default_shell = selectedShellType
-                        })
-                },
-                onClick = {
-                    selectedShellType = ShellType.BASH
-                    Settings.default_shell = selectedShellType
-                })
-
-            SettingsCard(
-                title = { Text("Ash") },
-                description = { Text(stringResource(strings.shell_ash_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedShellType == ShellType.ASH,
-                        onClick = {
-                            selectedShellType = ShellType.ASH
-                            Settings.default_shell = selectedShellType
-                        })
-                },
-                onClick = {
-                    selectedShellType = ShellType.ASH
-                    Settings.default_shell = selectedShellType
-                })
-
-            SettingsCard(
-                title = { Text("Zsh") },
-                description = { Text(stringResource(strings.shell_zsh_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedShellType == ShellType.ZSH,
-                        onClick = {
-                            selectedShellType = ShellType.ZSH
-                            Settings.default_shell = selectedShellType
-                        })
-                },
-                onClick = {
-                    selectedShellType = ShellType.ZSH
-                    Settings.default_shell = selectedShellType
-                })
-        }
-
-        // ======================================================
-        // 4. Session Behavior
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.session_behavior)) {
-            SettingsCard(
-                title = { Text(stringResource(strings.layout_mode_classic)) },
-                description = { Text(stringResource(strings.layout_mode_classic_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedLayoutMode == LayoutMode.CLASSIC,
-                        onClick = {
-                            selectedLayoutMode = LayoutMode.CLASSIC
-                            Settings.layout_mode = selectedLayoutMode
-                        })
-                },
-                onClick = {
-                    selectedLayoutMode = LayoutMode.CLASSIC
-                    Settings.layout_mode = selectedLayoutMode
-                })
-
-            SettingsCard(
-                title = { Text(stringResource(strings.layout_mode_tab_bar)) },
-                description = { Text(stringResource(strings.layout_mode_tab_bar_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedLayoutMode == LayoutMode.TAB_BAR,
-                        onClick = {
-                            selectedLayoutMode = LayoutMode.TAB_BAR
-                            Settings.layout_mode = selectedLayoutMode
-                        })
-                },
-                onClick = {
-                    selectedLayoutMode = LayoutMode.TAB_BAR
-                    Settings.layout_mode = selectedLayoutMode
-                })
-        }
-
-        PreferenceGroup(heading = stringResource(strings.close_last_session)) {
-            SettingsCard(
-                title = { Text(stringResource(strings.close_last_session_exit)) },
-                description = { Text(stringResource(strings.close_last_session_exit_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedCloseLastSessionBehavior == CloseLastSessionBehavior.EXIT_APP,
-                        onClick = {
-                            selectedCloseLastSessionBehavior = CloseLastSessionBehavior.EXIT_APP
-                            Settings.close_last_session_behavior = selectedCloseLastSessionBehavior
-                        })
-                },
-                onClick = {
-                    selectedCloseLastSessionBehavior = CloseLastSessionBehavior.EXIT_APP
-                    Settings.close_last_session_behavior = selectedCloseLastSessionBehavior
-                })
-
-            SettingsCard(
-                title = { Text(stringResource(strings.close_last_session_new)) },
-                description = { Text(stringResource(strings.close_last_session_new_desc)) },
-                startWidget = {
-                    RadioButton(
-                        modifier = Modifier.padding(start = 8.dp),
-                        selected = selectedCloseLastSessionBehavior == CloseLastSessionBehavior.NEW_SESSION,
-                        onClick = {
-                            selectedCloseLastSessionBehavior = CloseLastSessionBehavior.NEW_SESSION
-                            Settings.close_last_session_behavior = selectedCloseLastSessionBehavior
-                        })
-                },
-                onClick = {
-                    selectedCloseLastSessionBehavior = CloseLastSessionBehavior.NEW_SESSION
-                    Settings.close_last_session_behavior = selectedCloseLastSessionBehavior
-                })
-        }
-
-        // ======================================================
-        // 5. Keyboard Shortcuts
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.keyboard_shortcuts)) {
-            var shortcutsEnabled by remember { mutableStateOf(Settings.shortcuts_enabled) }
-            var showCaptureFor by remember { mutableStateOf<ShortcutAction?>(null) }
-
-            SettingsToggle(
-                label = stringResource(strings.keyboard_shortcuts),
-                description = stringResource(strings.keyboard_shortcuts_desc),
-                showSwitch = true,
-                default = Settings.shortcuts_enabled,
-                sideEffect = {
-                    Settings.shortcuts_enabled = it
-                    shortcutsEnabled = it
-                })
-
-
-            for (action in ShortcutAction.entries) {
-                val binding = Settings.getShortcutBinding(action)
-                val labelRes = when (action) {
-                    ShortcutAction.PASTE -> strings.shortcut_paste
-                    ShortcutAction.NEW_SESSION -> strings.shortcut_new_session
-                    ShortcutAction.CLOSE_SESSION -> strings.shortcut_close_session
-                    ShortcutAction.SWITCH_SESSION_PREV -> strings.shortcut_switch_prev
-                    ShortcutAction.SWITCH_SESSION_NEXT -> strings.shortcut_switch_next
-                }
-                val descRes = when (action) {
-                    ShortcutAction.PASTE -> strings.shortcut_paste_desc
-                    ShortcutAction.NEW_SESSION -> strings.shortcut_new_session_desc
-                    ShortcutAction.CLOSE_SESSION -> strings.shortcut_close_session_desc
-                    ShortcutAction.SWITCH_SESSION_PREV -> strings.shortcut_switch_prev_desc
-                    ShortcutAction.SWITCH_SESSION_NEXT -> strings.shortcut_switch_next_desc
-                }
-                SettingsToggle(
-                    isEnabled = shortcutsEnabled,
-                    label = stringResource(labelRes),
-                    description = "${stringResource(descRes)} (${binding.toDisplayString()})",
-                    showSwitch = false,
-                    default = false,
-                    sideEffect = { showCaptureFor = action },
-                )
-            }
-
-            if (showCaptureFor != null) {
-                ShortcutCaptureDialog(
-                    action = showCaptureFor!!,
-                    onDismiss = { showCaptureFor = null },
-                    onConfirm = { binding ->
-                        Settings.setShortcutBinding(showCaptureFor!!, binding)
-                        showCaptureFor = null
-                    },
-                )
-            }
-
-            // Number shortcut modifier — user records a key combo, only modifier flags are used
-            var numberBinding by remember { mutableStateOf(Settings.getNumberShortcutBinding()) }
-            var showNumberCapture by remember { mutableStateOf(false) }
-
-            SettingsToggle(
-                isEnabled = shortcutsEnabled,
-                label = stringResource(strings.shortcut_switch_by_number),
-                description = "${stringResource(strings.shortcut_switch_by_number_desc)} (${numberBinding.toModifierDisplayString()})",
-                showSwitch = false,
-                default = false,
-                sideEffect = { showNumberCapture = true },
-            )
-
-            if (showNumberCapture) {
-                ShortcutCaptureDialog(
-                    action = ShortcutAction.PASTE, // dummy — dialog only captures keys
-                    onDismiss = { showNumberCapture = false },
-                    onConfirm = { binding ->
-                        // Only store modifier flags; require at least one modifier
-                        if (binding.ctrl || binding.shift || binding.alt) {
-                            Settings.setNumberShortcutBinding(binding)
-                            numberBinding = binding
-                        }
-                        showNumberCapture = false
-                    },
-                )
-            }
-        }
-
-        // ======================================================
-        // 6. Permissions
-        // ======================================================
-        PreferenceGroup(heading = stringResource(strings.permissions)) {
-
-            SettingsToggle(
-                label = stringResource(strings.all_file_access),
-                description = stringResource(strings.all_file_access_desc),
-                showSwitch = false,
-                default = false,
-                sideEffect = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        runCatching {
-                            val intent = Intent(
-                                android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                                "package:${context.packageName}".toUri()
-                            )
-                            context.startActivity(intent)
-                        }.onFailure {
-                            val intent = Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                            context.startActivity(intent)
-                        }
-                    }else{
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            "package:${context.packageName}".toUri()
-                        )
-                        context.startActivity(intent)
-                    }
-
-                })
-
+        if (floatCache.containsKey(key)){
+            floatCache.remove(key)
+            return
         }
     }
+
+    fun getBoolean(key: String, default: Boolean): Boolean {
+        runCatching {
+            return boolCache[key] ?: sharedPreferences.getBoolean(key, default)
+                .also { boolCache[key] = it }
+        }.onFailure {
+            it.printStackTrace()
+            setBoolean(key, default)
+        }
+        return default
+    }
+
+    fun setBoolean(key: String, value: Boolean) {
+        boolCache[key] = value
+        runCatching {
+            val editor = sharedPreferences.edit()
+            editor.putBoolean(key, value)
+            editor.apply()
+        }.onFailure { it.printStackTrace() }
+    }
+
+
+
+    fun getString(key: String, default: String): String {
+        runCatching {
+            return stringCache[key] ?: sharedPreferences.getString(key, default)!!
+                .also { stringCache[key] = it }
+        }.onFailure {
+            it.printStackTrace()
+            setString(key, default)
+        }
+        return default
+    }
+    fun setString(key: String, value: String?) {
+        stringCache[key] = value
+        runCatching {
+            val editor = sharedPreferences.edit()
+            editor.putString(key, value)
+            editor.apply()
+        }.onFailure {
+            it.printStackTrace()
+        }
+
+    }
+
+    fun getInt(key: String, default: Int): Int {
+        runCatching {
+            return intCache[key] ?: sharedPreferences.getInt(key, default)
+                .also { intCache[key] = it }
+        }.onFailure {
+            it.printStackTrace()
+            setInt(key, default)
+        }
+        return default
+    }
+
+    fun setInt(key: String, value: Int) {
+        intCache[key] = value
+        runCatching {
+            val editor = sharedPreferences.edit()
+            editor.putInt(key, value)
+            editor.apply()
+        }.onFailure {
+            it.printStackTrace()
+        }
+
+    }
+
+    fun getLong(key: String, default: Long): Long {
+        runCatching {
+            return longCache[key] ?: sharedPreferences.getLong(key, default)
+                .also { longCache[key] = it }
+        }.onFailure {
+            it.printStackTrace()
+            setLong(key, default)
+        }
+        return default
+    }
+
+    fun setLong(key: String, value: Long) {
+        longCache[key] = value
+        runCatching {
+            val editor = sharedPreferences.edit()
+            editor.putLong(key,value)
+            editor.apply()
+        }.onFailure {
+            it.printStackTrace()
+        }
+    }
+
+    fun getFloat(key: String, default: Float): Float {
+        runCatching {
+            return floatCache[key] ?: sharedPreferences.getFloat(key, default)
+                .also { floatCache[key] = it }
+        }.onFailure {
+            it.printStackTrace()
+            setFloat(key, default)
+        }
+        return default
+    }
+
+    fun setFloat(key: String, value: Float) {
+        floatCache[key] = value
+        runCatching {
+            val editor = sharedPreferences.edit()
+            editor.putFloat(key,value)
+            editor.apply()
+        }.onFailure {
+            it.printStackTrace()
+        }
+    }
+
 }
