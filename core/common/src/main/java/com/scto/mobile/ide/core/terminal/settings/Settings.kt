@@ -111,14 +111,14 @@ object Settings {
         set(value) = Preference.setBoolean(key = "shortcuts_enabled", value)
 
     /** Default modifier for number shortcuts: Alt+1 (only modifier flags are used) */
-    private val DEFAULT_NUMBER_SHORTCUT = com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding(alt = true, keyCode = android.view.KeyEvent.KEYCODE_1)
+    private val DEFAULT_NUMBER_SHORTCUT = ShortcutBinding(alt = true, keyCode = android.view.KeyEvent.KEYCODE_1)
 
-    fun getNumberShortcutBinding(): com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding {
+    fun getNumberShortcutBinding(): ShortcutBinding {
         val raw = Preference.getString(key = "number_shortcut_modifier", default = DEFAULT_NUMBER_SHORTCUT.serialize())
-        return com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding.deserialize(raw)
+        return ShortcutBinding.deserialize(raw)
     }
 
-    fun setNumberShortcutBinding(binding: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding) {
+    fun setNumberShortcutBinding(binding: ShortcutBinding) {
         Preference.setString(key = "number_shortcut_modifier", value = binding.serialize())
     }
 
@@ -127,12 +127,12 @@ object Settings {
         get() = Preference.getString(key = "terminal_color_scheme", default = "default")
         set(value) = Preference.setString(key = "terminal_color_scheme", value)
 
-    fun getShortcutBinding(action: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction): com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding {
+    fun getShortcutBinding(action: ShortcutAction): ShortcutBinding {
         val raw = Preference.getString(key = action.prefKey, default = action.default.serialize())
-        return com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding.deserialize(raw)
+        return ShortcutBinding.deserialize(raw)
     }
 
-    fun setShortcutBinding(action: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutAction, binding: com.scto.mobile.ide.core.terminal.ui.screens.terminal.ShortcutBinding) {
+    fun setShortcutBinding(action: ShortcutAction, binding: ShortcutBinding) {
         Preference.setString(key = action.prefKey, value = binding.serialize())
     }
 
