@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import com.scto.mobile.ide.core.terminal.resources.getString
-import com.scto.mobile.ide.core.terminal.core.BuildConfig
+import com.scto.mobile.ide.core.common.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers

@@ -2,7 +2,7 @@ package com.scto.mobile.ide.core.terminal.libcommons
 
 import android.content.Context
 import java.io.File
-import com.scto.mobile.ide.core.terminal.core.BuildConfig
+import com.scto.mobile.ide.core.common.BuildConfig
 
 private fun getFilesDir(): File{
     return if (application == null){
