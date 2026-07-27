@@ -47,6 +47,5 @@ dependencies {
     // Add dependencies that the common files might need.
     implementation(project(":core:lsp"))
     api(project(":core:resources"))
-    api(project(":core:main"))
     implementation("androidx.documentfile:documentfile:1.0.1")
 }
