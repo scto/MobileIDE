@@ -4,9 +4,10 @@ This file tracks the timeline of all features, bug fixes, and refactoring effort
 
 ## [2026-07-27]
 ### Crashlog-Fix-2 & PRoot Warning Fixes (`Crashlog-Fix-2.md`)
-*   **PRoot `stat` / `vmstat` Binding Warning Fix (`setup.sh`, `sandbox.sh`)**:
-    *   Pre-created `$LOCAL/stat` and `$LOCAL/vmstat` dummy files before PRoot execution.
-    *   Made `stat` and `vmstat` bindings conditional in `sandbox.sh`, completely eliminating PRoot `can't sanitize binding` warnings.
+*   **PRoot `stat` / `vmstat` Binding Warning & Job Control Fix (`setup.sh`, `sandbox.sh`, `init.sh`)**:
+    *   Pre-created `$LOCAL/stat`, `$LOCAL/vmstat`, `$LOCAL/sandbox/proc/stat`, and `$LOCAL/sandbox/proc/vmstat` dummy files before PRoot execution.
+    *   Made `stat` and `vmstat` bindings conditional across all terminal scripts, completely eliminating PRoot `can't sanitize binding` warnings.
+    *   Added `set +m 2>/dev/null || true` in `setup.sh` and `init.sh` to suppress harmless Bash job control warnings (`cannot set terminal process group` / `no job control in this shell`).
 *   **RootFS Symlink Excludes & Recovery (`setup.sh`)**:
     *   Expanded `--exclude` rules during container tar extraction for `etc/alternatives/*`, `usr/bin/awk`, `usr/bin/nawk`, `usr/bin/pager`, `usr/bin/which`, `usr/sbin/rmt`, `etc/systemd/system/*.wants/*`, `var/lock`, `var/run`.
     *   Re-created essential symlinks relatively inside `$LOCAL/sandbox` (`awk`, `nawk`, `pager`, `which`).
