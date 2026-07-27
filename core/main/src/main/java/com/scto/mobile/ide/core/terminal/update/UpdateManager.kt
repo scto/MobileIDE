@@ -5,6 +5,7 @@ import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
 import com.scto.mobile.ide.core.terminal.libcommons.localBinDir
 import java.io.File
+import java.io.InputStreamReader
 
 class UpdateManager {
     fun onUpdate(){
@@ -15,7 +16,7 @@ class UpdateManager {
                 file.delete()
             }
             file.createFileIfNot()
-            file.writeText(application!!.assets.open("terminal/$script.sh").bufferedReader().use { it.readText() })
+            file.writeText(InputStreamReader(application!!.assets.open("terminal/$script.sh")).use { it.readText() })
         }
     }
 }
