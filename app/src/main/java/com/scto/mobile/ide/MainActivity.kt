@@ -159,8 +159,8 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
 
         com.scto.mobile.ide.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
-                com.scto.mobile.ide.exec.pendingCommand =
-                    com.scto.mobile.ide.exec.TerminalCommand(
+                com.scto.mobile.ide.core.terminal.libcommons.pendingCommand =
+                    com.scto.mobile.ide.core.terminal.libcommons.TerminalCommand(
                         exe = "bash",
                         args = (listOf(scriptFile.absolutePath) + flags).toTypedArray(),
                         id = "lsp_installer_${scriptFile.name}",
