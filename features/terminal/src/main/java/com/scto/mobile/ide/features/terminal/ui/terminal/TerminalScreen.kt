@@ -308,8 +308,16 @@ fun TerminalScreen(
         fun createNewSession(workingMode: Int) {
             if (!Rootfs.isFilesDownloaded(workingMode)) {
                 Settings.working_Mode = workingMode
-                navController.navigate(MainActivityRoutes.MainScreen.route) {
-                    popUpTo(MainActivityRoutes.MainScreen.route) { inclusive = true }
+                // Navigate to trigger download screen - use the current route as fallback
+                // since TerminalScreen may be hosted in different NavGraphs
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                val targetRoute = try {
+                    navController.graph.findNode(MainActivityRoutes.MainScreen.route)
+                        ?.let { MainActivityRoutes.MainScreen.route }
+                } catch (_: Exception) { null }
+                val route = targetRoute ?: currentRoute ?: return
+                navController.navigate(route) {
+                    popUpTo(route) { inclusive = true }
                     launchSingleTop = true
                 }
                 return
