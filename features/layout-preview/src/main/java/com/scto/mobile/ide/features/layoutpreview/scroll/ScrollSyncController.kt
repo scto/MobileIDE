@@ -1,4 +1,4 @@
-package com.example.layoutpreview.scroll
+package com.scto.mobile.ide.features.layoutpreview.scroll
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.*

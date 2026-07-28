@@ -72,7 +72,7 @@ import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
 import androidx.compose.runtime.mutableLongStateOf
-import com.scto.mobile.ide.ui.terminal.DistroManager
+import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import com.scto.mobile.ide.ui.welcome.themeColors
 import java.io.File
 import kotlin.concurrent.thread
@@ -209,7 +209,7 @@ fun SettingsScreen(
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    val setupState by com.scto.mobile.ide.ui.terminal.SetupWorker.setupState.collectAsState()
+    val setupState by com.scto.mobile.ide.features.terminal.ui.SetupWorker.setupState.collectAsState()
     val reinstallDownloadedBytes = setupState.downloadedBytes
     val reinstallTotalBytes = setupState.totalBytes
     val reinstallStatus = setupState.status
@@ -471,7 +471,7 @@ fun SettingsScreen(
                             .show()
                     },
                     onReset = {
-                        com.scto.mobile.ide.ui.terminal.SetupWorker.resetTerminal(context)
+                        com.scto.mobile.ide.features.terminal.ui.SetupWorker.resetTerminal(context)
                         Toast.makeText(context, R.string.toast_terminal_reset_success, Toast.LENGTH_SHORT).show()
                     },
                     isReinstalling = isReinstalling,
@@ -482,7 +482,7 @@ fun SettingsScreen(
                         isReinstalling = true
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
-                            com.scto.mobile.ide.ui.terminal.SetupWorker.reinstallTerminal(
+                            com.scto.mobile.ide.features.terminal.ui.SetupWorker.reinstallTerminal(
                                 context = context
                             )
                             isReinstalling = false

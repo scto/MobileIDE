@@ -1,4 +1,4 @@
-package com.example.layoutpreview
+package com.scto.mobile.ide.features.layoutpreview.sync
 
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.lazy.LazyListState

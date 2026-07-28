@@ -1,5 +1,6 @@
 package com.scto.mobile.ide.features.layoutpreview
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.annotation.LayoutRes
+import com.scto.mobile.ide.features.layoutpreview.diff.*
+import com.scto.mobile.ide.features.layoutpreview.sync.*
 
 /**
  * Hauptkomponente: zeigt Compose-Vorschau und XML-Vorschau
@@ -56,6 +59,11 @@ fun LayoutPreviewScreen(
                 )
                 SplitPreviewMode.SWIPE_COMPARE -> SwipeCompare(
                     state, containerWidthPx, composeContent, xmlLayoutRes
+                )
+                SplitPreviewMode.DIFF -> DiffMode(
+                    xmlLayoutRes = xmlLayoutRes,
+                    threshold = 10,
+                    composeContent = composeContent
                 )
             }
         }
@@ -319,4 +327,3 @@ private fun IconToggle(
         )
     }
 }
-```

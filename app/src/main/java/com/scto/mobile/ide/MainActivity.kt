@@ -62,7 +62,7 @@ import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
-import com.scto.mobile.ide.ui.terminal.SetupWorker
+import com.scto.mobile.ide.features.terminal.ui.SetupWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -161,10 +161,11 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity() {
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
                 com.scto.mobile.ide.core.terminal.libcommons.pendingCommand =
                     com.scto.mobile.ide.core.terminal.libcommons.TerminalCommand(
-                        exe = "bash",
+                        shell = "bash",
                         args = (listOf(scriptFile.absolutePath) + flags).toTypedArray(),
                         id = "lsp_installer_${scriptFile.name}",
-                        workingDir = scriptFile.parentFile?.absolutePath,
+                        workingMode = 0,
+                        workingDir = scriptFile.parentFile?.absolutePath ?: "/",
                     )
                 // Note: Since this requires navigating to the terminal screen, ideally we would broadcast an event or
                 // navigate via NavController.

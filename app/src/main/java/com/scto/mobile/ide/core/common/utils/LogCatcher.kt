@@ -58,7 +58,7 @@ object LogCatcher {
             ?: contextRef?.get()?.let { (it.getExternalFilesDir("logs") ?: File(it.filesDir, "logs")).absolutePath }
             ?: return null
 
-        val currentProj = com.scto.mobile.ide.ui.terminal.DistroManager.currentProject
+        val currentProj = com.scto.mobile.ide.features.terminal.ui.DistroManager.currentProject
         if (logFile == null || currentProj != cachedProject) {
             synchronized(this) {
                 if (logFile == null || currentProj != cachedProject) {

@@ -19,7 +19,7 @@ package com.scto.mobile.ide.lsp
 
 import android.content.Context
 import android.util.Log
-import com.scto.mobile.ide.ui.terminal.DistroManager
+import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import io.github.rosemoe.sora.lsp.client.connection.StreamConnectionProvider
 import java.io.FilterInputStream
 import java.io.FilterOutputStream

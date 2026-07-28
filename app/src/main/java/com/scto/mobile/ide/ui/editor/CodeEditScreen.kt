@@ -88,7 +88,7 @@ import com.scto.mobile.ide.ui.editor.git.GitPanel
 import com.scto.mobile.ide.ui.editor.git.GitViewModel
 import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
-import com.scto.mobile.ide.ui.terminal.DistroManager
+import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import android.app.Activity
 import com.scto.mobile.ide.lsp.LspRegistry
 import com.scto.mobile.ide.lsp.LspServer
@@ -1972,7 +1972,7 @@ private suspend fun performBuild(
 
         // Run command inside Alpine container via PRoot
         val cmd =
-            com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+            com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
 
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
 
@@ -1982,7 +1982,7 @@ private suspend fun performBuild(
 
             // Set PRoot environment variables so native loader works properly
             val env = processBuilder.environment()
-            env.putAll(com.scto.mobile.ide.ui.terminal.DistroManager.getProotEnv(context))
+            env.putAll(com.scto.mobile.ide.features.terminal.ui.DistroManager.getProotEnv(context))
 
             // Auto-configure local.properties if missing
             val localProperties = File(projectPath, "local.properties")
@@ -2110,12 +2110,12 @@ private suspend fun handleRunApk(
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
                     val compileCmd = "${javaHomeExport}cd $projectPath && bash ./gradlew assembleDebug"
                     val cmd =
-                        com.scto.mobile.ide.ui.terminal.DistroManager.buildProotCommand(
+                        com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
                             context,
                             arrayOf("sh", "-c", compileCmd),
                         )
                     pb.command(cmd)
-                    pb.environment().putAll(com.scto.mobile.ide.ui.terminal.DistroManager.getProotEnv(context))
+                    pb.environment().putAll(com.scto.mobile.ide.features.terminal.ui.DistroManager.getProotEnv(context))
                 },
             ) { progress ->
                 when (progress) {

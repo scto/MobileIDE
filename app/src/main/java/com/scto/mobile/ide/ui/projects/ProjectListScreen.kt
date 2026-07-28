@@ -63,7 +63,7 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.core.common.utils.safeNavigate
-import com.scto.mobile.ide.ui.terminal.SetupWorker
+import com.scto.mobile.ide.features.terminal.ui.SetupWorker
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

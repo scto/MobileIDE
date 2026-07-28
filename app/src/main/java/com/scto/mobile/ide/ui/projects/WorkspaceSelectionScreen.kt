@@ -184,7 +184,7 @@ private fun saveAndNavigate(
     }
 
     // Start terminal setup after selecting workspace
-    com.scto.mobile.ide.ui.terminal.SetupWorker.startSetupIfNeeded(context)
+    com.scto.mobile.ide.features.terminal.ui.SetupWorker.startSetupIfNeeded(context)
 
     navController.navigate("project_list") { popUpTo("workspace_selection") { inclusive = true } }
 }

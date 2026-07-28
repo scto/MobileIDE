@@ -45,7 +45,7 @@ import com.scto.mobile.ide.ui.settings.EditorScreen
 import com.scto.mobile.ide.ui.settings.LspSettingsScreen
 import com.scto.mobile.ide.ui.settings.SettingsScreen
 import com.scto.mobile.ide.ui.settings.ThemeSettingsScreen
-import com.scto.mobile.ide.ui.terminal.TerminalScreen
+import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
@@ -170,7 +170,10 @@ fun MainScreen(
 
         composable("about") { AboutScreen(navController = navController) }
 
-        composable("terminal") { TerminalScreen(navController = navController) }
+        composable("terminal") {
+            val activity = LocalContext.current as android.app.Activity
+            TerminalScreen(mainActivityActivity = activity, navController = navController)
+        }
     }
 }
 

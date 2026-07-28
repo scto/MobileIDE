@@ -63,7 +63,6 @@ import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
-import com.scto.mobile.ide.ui.terminal.SetupWorker
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -293,36 +292,36 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
 
                 // Dialogs & Progress Overlay for Sequential Terminal Setup
                 when (setupState.installState) {
-                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingJdkSelection -> {
-                        com.scto.mobile.ide.ui.terminal.JdkSelectionDialog(
+                    is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingJdkSelection -> {
+                        com.scto.mobile.ide.features.terminal.ui.JdkSelectionDialog(
                             onConfirmSelection = { jdk ->
                                 SetupWorker.confirmJdkSelection(context, jdk)
                             }
                         )
                     }
-                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingBuildToolsSelection -> {
-                        com.scto.mobile.ide.ui.terminal.BuildToolsSelectionDialog(
+                    is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingBuildToolsSelection -> {
+                        com.scto.mobile.ide.features.terminal.ui.BuildToolsSelectionDialog(
                             onConfirmSelection = { buildTools ->
                                 SetupWorker.confirmBuildToolsSelection(context, buildTools)
                             }
                         )
                     }
-                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingPlatformSelection -> {
-                        com.scto.mobile.ide.ui.terminal.PlatformSelectionDialog(
+                    is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingPlatformSelection -> {
+                        com.scto.mobile.ide.features.terminal.ui.PlatformSelectionDialog(
                             onConfirmSelection = { platform ->
                                 SetupWorker.confirmPlatformSelection(context, platform)
                             }
                         )
                     }
-                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingNdkSelection -> {
-                        com.scto.mobile.ide.ui.terminal.NdkSelectionDialog(
+                    is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingNdkSelection -> {
+                        com.scto.mobile.ide.features.terminal.ui.NdkSelectionDialog(
                             onConfirmSelection = { ndk ->
                                 SetupWorker.confirmNdkSelection(context, ndk)
                             }
                         )
                     }
-                    is com.scto.mobile.ide.ui.terminal.InstallState.AwaitingCmakeSelection -> {
-                        com.scto.mobile.ide.ui.terminal.CmakeSelectionDialog(
+                    is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingCmakeSelection -> {
+                        com.scto.mobile.ide.features.terminal.ui.CmakeSelectionDialog(
                             onConfirmSelection = { cmake ->
                                 SetupWorker.confirmCmakeSelection(context, cmake)
                             }
@@ -332,7 +331,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                 }
 
                 if (setupState.isActive) {
-                    com.scto.mobile.ide.ui.terminal.TerminalSetupOverlayWindow(
+                    com.scto.mobile.ide.features.terminal.ui.TerminalSetupOverlayWindow(
                         setupState = setupState,
                         onClearLogs = { SetupWorker.clearLogs() },
                         modifier = Modifier.align(Alignment.Center)

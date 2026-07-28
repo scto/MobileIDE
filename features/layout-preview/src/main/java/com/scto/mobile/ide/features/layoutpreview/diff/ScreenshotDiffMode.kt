@@ -1,4 +1,4 @@
-package com.example.layoutpreview
+package com.scto.mobile.ide.features.layoutpreview.diff
 
 import android.graphics.Bitmap
 import android.graphics.Canvas

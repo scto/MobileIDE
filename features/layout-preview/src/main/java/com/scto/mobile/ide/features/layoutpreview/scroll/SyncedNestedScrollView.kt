@@ -1,4 +1,4 @@
-package com.example.layoutpreview
+package com.scto.mobile.ide.features.layoutpreview.scroll
 
 import android.content.Context
 import android.widget.ScrollView
@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.scto.mobile.ide.features.layoutpreview.sync.ScrollSyncState
 
 /**
  * Wie [XmlLayoutHost], aber zusätzlich an [ScrollSyncState] gekoppelt:
@@ -30,7 +31,7 @@ fun SyncedScrollViewHost(
 
             val scrollView = findScrollView(root)
             scrollView?.setOnScrollChangeListener { v, _, scrollY, _, _ ->
-                val maxScroll = (v.getChildAt(0)?.height ?: 0) - v.height
+                val maxScroll = ((v as? android.view.ViewGroup)?.getChildAt(0)?.height ?: 0) - v.height
                 syncState.reportXmlScroll(scrollY, maxOf(maxScroll, 1))
             }
 
