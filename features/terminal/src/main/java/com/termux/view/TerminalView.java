@@ -312,7 +312,7 @@ public final class TerminalView extends View {
         // an alternate view is not selected, like an EditText. This is necessary if an activity is
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
-        if (mClient.isTerminalViewSelected()) {
+        if (mClient != null && mClient.isTerminalViewSelected()) {
             int mode = mClient.getInputMode();
             switch (mode) {
                 case 1: // TYPE_NULL - Strict Terminal
