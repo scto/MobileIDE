@@ -250,8 +250,34 @@ fun TerminalScreen(
                 // Colors are managed by ColorSchemeManager
             }
         }
+    }
 
-
+    val currentBinder = mainActivityActivity.sessionBinder
+    LaunchedEffect(currentBinder) {
+        val binder = currentBinder ?: return@LaunchedEffect
+        val service = binder.getService()
+        if (service.sessionOrder.isEmpty()) {
+            val sessionId = "main"
+            val view = terminalView.get()
+            if (view != null) {
+                val client = TerminalBackEnd(view, mainActivityActivity)
+                val session = binder.createSession(
+                    sessionId,
+                    client,
+                    mainActivityActivity,
+                    workingMode = Settings.working_Mode
+                )
+                session.updateTerminalSessionClient(client)
+                view.attachSession(session)
+                view.setTerminalViewClient(client)
+                service.currentSession.value = Pair(sessionId, Settings.working_Mode)
+            } else {
+                changeSession(mainActivityActivity, sessionId)
+            }
+        } else {
+            val currentId = service.currentSession.value.first.ifEmpty { service.sessionOrder.first() }
+            changeSession(mainActivityActivity, currentId)
+        }
     }
 
     Box {
@@ -290,16 +316,19 @@ fun TerminalScreen(
             }
 
             val sessionId = generateUniqueSessionId()
-            terminalView.get()?.let {
-                val client = TerminalBackEnd(it, mainActivityActivity)
-                mainActivityActivity.sessionBinder!!.createSession(
-                    sessionId,
-                    client,
-                    mainActivityActivity,
-                    workingMode = workingMode
-                )
+            val binder = mainActivityActivity.sessionBinder
+            if (binder != null) {
+                terminalView.get()?.let {
+                    val client = TerminalBackEnd(it, mainActivityActivity)
+                    binder.createSession(
+                        sessionId,
+                        client,
+                        mainActivityActivity,
+                        workingMode = workingMode
+                    )
+                }
+                changeSession(mainActivityActivity, session_id = sessionId)
             }
-            changeSession(mainActivityActivity, session_id = sessionId)
         }
 
         fun openAddSessionDialog() {
@@ -819,6 +848,22 @@ private fun TerminalPaneContent(
                 .fillMaxWidth()
                 .weight(1f),
             update = { terminalView ->
+                val binder = mainActivityActivity.sessionBinder
+                if (binder != null && terminalView.mTermSession == null) {
+                    val service = binder.getService()
+                    val currentId = service.currentSession.value.first.ifEmpty { "main" }
+                    val client = TerminalBackEnd(terminalView, mainActivityActivity)
+                    val session = binder.getSession(currentId) ?: binder.createSession(
+                        currentId,
+                        client,
+                        mainActivityActivity,
+                        workingMode = Settings.working_Mode
+                    )
+                    session.updateTerminalSessionClient(client)
+                    terminalView.attachSession(session)
+                    terminalView.setTerminalViewClient(client)
+                }
+
                 // Apply color scheme background - this runs when currentScheme changes
                 // If a background image is set, make terminal view transparent
                 // so the image shows through; otherwise use scheme background
@@ -1009,14 +1054,15 @@ fun SelectableCard(
 
 
 fun changeSession(mainActivityActivity: Activity, session_id: String) {
+    val binder = mainActivityActivity.sessionBinder ?: return
     terminalView.get()?.apply {
         val client = TerminalBackEnd(this, mainActivityActivity)
         val session =
-            mainActivityActivity.sessionBinder!!.getSession(session_id)
-                ?: mainActivityActivity.sessionBinder!!.createSession(
+            binder.getSession(session_id)
+                ?: binder.createSession(
                     session_id,
                     client,
-                    mainActivityActivity,workingMode = Settings.working_Mode
+                    mainActivityActivity, workingMode = Settings.working_Mode
                 )
         session.updateTerminalSessionClient(client)
         attachSession(session)
@@ -1047,8 +1093,9 @@ fun changeSession(mainActivityActivity: Activity, session_id: String) {
         }
 
     }
-    mainActivityActivity.sessionBinder!!.getService().currentSession.value = Pair(session_id,mainActivityActivity.sessionBinder!!.getService().sessionList[session_id]!!)
-
+    val service = binder.getService()
+    val mode = service.sessionList[session_id] ?: Settings.working_Mode
+    service.currentSession.value = Pair(session_id, mode)
 }
 
 
