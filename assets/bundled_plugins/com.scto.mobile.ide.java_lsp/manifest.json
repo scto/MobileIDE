@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.java_lsp",
   "name": "Java Language Support (JDTLS)",
-  "mainClass": "com.rk.extension.languages.JavaLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.JavaLspExtension",
   "version": "1.0.0",
   "description": "Provides Java language intelligence utilizing Eclipse JDTLS and OpenJDK 17.",
   "author": {

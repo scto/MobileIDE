@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import com.koner.rust.utils.GithubReleasesApi
 import com.rk.exec.isTerminalInstalled
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.child
 import com.rk.file.sandboxHomeDir
 import com.rk.icons.Icon

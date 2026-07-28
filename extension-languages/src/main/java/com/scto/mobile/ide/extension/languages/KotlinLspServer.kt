@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.extension.languages
+package com.scto.mobile.ide.features.extensions.languages
 
 import android.content.Context
 import com.scto.mobile.ide.lsp.LspConnectionConfig

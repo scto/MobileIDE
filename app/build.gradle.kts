@@ -349,7 +349,7 @@ dependencies {
     implementation(project(":core:tooling:tooling-impl"))
     implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
-    implementation(project(":core:extension"))
+    implementation(project(":features:extensions"))
     implementation(project(":core:common"))
     implementation(project(":extension-languages"))
     implementation(libs.timber)

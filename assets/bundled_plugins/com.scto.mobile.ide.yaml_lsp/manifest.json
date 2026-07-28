@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.yaml_lsp",
   "name": "YAML Language Support",
-  "mainClass": "com.rk.extension.languages.YamlLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.YamlLspExtension",
   "version": "1.0.0",
   "description": "Provides YAML language intelligence using yaml-language-server.",
   "author": {

@@ -1,6 +1,6 @@
 package com.koner.prettier
 
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 
 class PrettierSettings(context: ExtensionContext) {
 

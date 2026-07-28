@@ -65,7 +65,7 @@ include(":core:apk-builder")
 include(":core:tooling:tooling-api")
 include(":core:tooling:tooling-impl")
 include(":core:tooling:tooling-server")
-include(":core:extension")
+include(":features:extensions")
 include(":core:lsp")
 include(":core:commands")
 

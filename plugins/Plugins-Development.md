@@ -1,7 +1,7 @@
 # MobileIDE Plugin & Extension Development Guide
 
 ## 1. Introduction
-MobileIDE features an extensible plugin system allowing developers to integrate custom Language Server Protocol (LSP) servers, syntax highlighters, task runners, developer tools, and UI extensions. Plugins are dynamically loaded at runtime using a specified `mainClass` that implements extension lifecycle methods (based on interfaces in `com.scto.mobile.ide.extension.*` or `com.rk.extension.*`).
+MobileIDE features an extensible plugin system allowing developers to integrate custom Language Server Protocol (LSP) servers, syntax highlighters, task runners, developer tools, and UI extensions. Plugins are dynamically loaded at runtime using a specified `mainClass` that implements extension lifecycle methods (based on interfaces in `com.scto.mobile.ide.extension.*` or `com.scto.mobile.ide.features.extensions.*`).
 
 ---
 

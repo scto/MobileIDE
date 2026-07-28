@@ -32,5 +32,5 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.gson)
     implementation(libs.lsp4j)
-    implementation(project(":core:extension")) // lsp might depend on extension
+    implementation(project(":features:extensions")) // lsp might depend on extension
 }

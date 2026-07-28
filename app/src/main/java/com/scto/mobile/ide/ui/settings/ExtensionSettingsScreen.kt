@@ -21,9 +21,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.scto.mobile.ide.extension.InstallResult
-import com.scto.mobile.ide.extension.LocalExtension
-import com.scto.mobile.ide.extension.extensionManager
+import com.scto.mobile.ide.features.extensions.InstallResult
+import com.scto.mobile.ide.features.extensions.LocalExtension
+import com.scto.mobile.ide.features.extensions.extensionManager
 import java.io.File
 import kotlinx.coroutines.launch
 

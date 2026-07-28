@@ -2,7 +2,7 @@ package com.koner.prettier
 
 import com.koner.prettier.utils.buildArgs
 import com.rk.exec.ubuntuProcess
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.FileObject
 import io.github.rosemoe.sora.lang.format.Formatter
 import io.github.rosemoe.sora.text.Content

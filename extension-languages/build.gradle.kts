@@ -24,7 +24,7 @@ android {
 
 dependencies {
     // Compile against the MobileIDE APIs
-    compileOnly(project(":core:extension"))
+    compileOnly(project(":features:extensions"))
     compileOnly(project(":core:lsp"))
     compileOnly(project(":core:commands"))
     

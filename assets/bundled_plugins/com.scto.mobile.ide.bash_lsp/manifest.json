@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.bash_lsp",
   "name": "Bash Language Support",
-  "mainClass": "com.rk.extension.languages.BashLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.BashLspExtension",
   "version": "1.0.0",
   "description": "Provides Bash language intelligence using bash-language-server.",
   "author": {

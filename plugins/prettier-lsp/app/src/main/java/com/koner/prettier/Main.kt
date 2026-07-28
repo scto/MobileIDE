@@ -23,9 +23,9 @@ import com.rk.events.EditorTabEvent
 import com.rk.events.EventSubscription
 import com.rk.events.Events
 import com.rk.exec.ShellUtils
-import com.rk.extension.ActivityProvider
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ActivityProvider
+import com.scto.mobile.ide.features.extensions.ExtensionAPI
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.child
 import com.rk.settings.Settings
 import com.rk.tabs.editor.EditorTab

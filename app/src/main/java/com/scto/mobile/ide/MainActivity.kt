@@ -51,9 +51,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.scto.mobile.ide.extension.extensionManager
-import com.scto.mobile.ide.extension.loader.loadAllExtensions
-import com.scto.mobile.ide.extension.manager.ExtensionManager
+import com.scto.mobile.ide.features.extensions.extensionManager
+import com.scto.mobile.ide.features.extensions.loader.loadAllExtensions
+import com.scto.mobile.ide.features.extensions.manager.ExtensionManager
 import com.scto.mobile.ide.core.common.utils.*
 import com.scto.mobile.ide.utils.*
 import com.scto.mobile.ide.core.common.utils.LogCatcher

@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.cpp_lsp",
   "name": "C/C++ Language Support",
-  "mainClass": "com.rk.extension.languages.CppLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.CppLspExtension",
   "version": "1.0.0",
   "description": "Provides C/C++ language intelligence using Clangd.",
   "author": {

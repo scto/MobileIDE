@@ -1,7 +1,7 @@
-package com.scto.mobile.ide.extension.languages
+package com.scto.mobile.ide.features.extensions.languages
 
-import com.scto.mobile.ide.extension.ExtensionAPI
-import com.scto.mobile.ide.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionAPI
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.scto.mobile.ide.lsp.LspRegistry
 
 class XmlLspExtension(context: ExtensionContext) : ExtensionAPI(context) {

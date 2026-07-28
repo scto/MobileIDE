@@ -3,8 +3,8 @@ package io.kiquar.plugin.zig
 import android.app.Activity
 import android.os.Bundle
 import androidx.annotation.Keep
-import com.rk.extension.ExtensionAPI
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionAPI
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.BuiltinFileType
 import com.rk.file.child
 import com.rk.icons.Icon

@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.python_lsp",
   "name": "Python Language Support",
-  "mainClass": "com.rk.extension.languages.PythonLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.PythonLspExtension",
   "version": "1.0.0",
   "description": "Provides Python language intelligence using Pyright.",
   "author": {

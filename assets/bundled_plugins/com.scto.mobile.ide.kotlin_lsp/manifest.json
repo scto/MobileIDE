@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.kotlin_lsp",
   "name": "Kotlin Language Support",
-  "mainClass": "com.rk.extension.languages.KotlinLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.KotlinLspExtension",
   "version": "1.0.0",
   "description": "Provides Kotlin language intelligence.",
   "author": {

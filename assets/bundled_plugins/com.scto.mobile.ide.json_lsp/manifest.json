@@ -1,7 +1,7 @@
 {
   "id": "com.scto.mobile.ide.json_lsp",
   "name": "JSON Language Support",
-  "mainClass": "com.rk.extension.languages.JsonLspExtension",
+  "mainClass": "com.scto.mobile.ide.extension.languages.JsonLspExtension",
   "version": "1.0.0",
   "description": "Provides JSON language intelligence using vscode-json-language-server.",
   "author": {

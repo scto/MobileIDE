@@ -1,7 +1,7 @@
 package com.koner.prettier.utils
 
 import com.koner.prettier.R
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.BuiltinFileType
 import com.rk.icons.Icon
 import com.rk.utils.isDarkTheme

@@ -4,7 +4,7 @@ import com.koner.prettier.utils.getPrettierIcon
 import com.rk.commands.EditorActionContext
 import com.rk.commands.EditorCommand
 import com.rk.editor.Editor
-import com.rk.extension.ExtensionContext
+import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.tabs.editor.EditorTab
 import io.github.rosemoe.sora.text.TextRange
 
