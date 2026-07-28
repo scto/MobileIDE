@@ -85,6 +85,7 @@ include(":plugins:zig-lsp")
 include(":plugins:fsharp-lsp")
 include(":plugins:prettier-lsp")
 include(":core:common")
+// include(":core:layout-preview") // TODO: entfernen nach Freigabe Phase 2
 include(":features:layout-preview")
 include(":features:proot")
 include(":features:exec")

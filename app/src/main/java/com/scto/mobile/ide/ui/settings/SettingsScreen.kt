@@ -377,12 +377,10 @@ fun SettingsScreen(
             val env = DistroManager.getProotEnv(context)
 
             try {
-                val process = ProcessBuilder(fullCommand)
-                    .apply {
-                        environment().putAll(env)
-                        redirectErrorStream(true)
-                    }
-                    .start()
+                val pb = java.lang.ProcessBuilder(fullCommand.toList())
+                pb.environment().putAll(env)
+                pb.redirectErrorStream(true)
+                val process = pb.start()
                 process.waitFor()
                 val success = process.exitValue() == 0
 
@@ -408,6 +406,7 @@ fun SettingsScreen(
                     refreshTrigger++
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 (context as? android.app.Activity)?.runOnUiThread {
                     activeInstallJobName = null
                     Toast.makeText(context, "Installationsfehler: ${e.message}", Toast.LENGTH_LONG).show()
