@@ -758,32 +758,33 @@ private fun TerminalPaneContent(
                     )
                     val client = TerminalBackEnd(this, mainActivityActivity)
 
-                    val session = if (pendingCommand != null) {
-                        mainActivityActivity.sessionBinder!!.getService().currentSession.value = Pair(
-                            pendingCommand!!.id, pendingCommand!!.workingMode
-                        )
-                        mainActivityActivity.sessionBinder!!.getSession(
-                            pendingCommand!!.id
-                        )
-                            ?: mainActivityActivity.sessionBinder!!.createSession(
-                                pendingCommand!!.id,
-                                client,
-                                mainActivityActivity, workingMode = Settings.working_Mode
+                    val binder = mainActivityActivity.sessionBinder
+                    if (binder != null) {
+                        val currentSessionPair = binder.getService().currentSession.value
+                        val currentSessionId = currentSessionPair?.first ?: "1"
+                        val session = if (pendingCommand != null) {
+                            binder.getService().currentSession.value = Pair(
+                                pendingCommand!!.id, pendingCommand!!.workingMode
                             )
-                    } else {
-                        mainActivityActivity.sessionBinder!!.getSession(
-                            mainActivityActivity.sessionBinder!!.getService().currentSession.value.first
-                        )
-                            ?: mainActivityActivity.sessionBinder!!.createSession(
-                                mainActivityActivity.sessionBinder!!.getService().currentSession.value.first,
-                                client,
-                                mainActivityActivity, workingMode = Settings.working_Mode
-                            )
-                    }
+                            binder.getSession(pendingCommand!!.id)
+                                ?: binder.createSession(
+                                    pendingCommand!!.id,
+                                    client,
+                                    mainActivityActivity, workingMode = Settings.working_Mode
+                                )
+                        } else {
+                            binder.getSession(currentSessionId)
+                                ?: binder.createSession(
+                                    currentSessionId,
+                                    client,
+                                    mainActivityActivity, workingMode = Settings.working_Mode
+                                )
+                        }
 
-                    session.updateTerminalSessionClient(client)
-                    attachSession(session)
-                    setTerminalViewClient(client)
+                        session.updateTerminalSessionClient(client)
+                        attachSession(session)
+                        setTerminalViewClient(client)
+                    }
                     setTypeface(font)
 
                     isFocusable = true

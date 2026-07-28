@@ -62,11 +62,57 @@ import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
-import com.scto.mobile.ide.features.terminal.ui.SetupWorker
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.scto.mobile.ide.features.terminal.service.SessionBinderProvider
+import com.scto.mobile.ide.features.terminal.service.SessionService
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import android.os.Build
 
-class MainActivity : androidx.appcompat.app.AppCompatActivity() {
+class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderProvider {
+    override var sessionBinder: SessionService.SessionBinder? = null
+    private var isBound = false
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as? SessionService.SessionBinder
+            sessionBinder = binder
+            isBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBound = false
+            sessionBinder = null
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        try {
+            val serviceIntent = Intent(this, SessionService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+            bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (isBound) {
+            try {
+                unbindService(serviceConnection)
+            } catch (_: Exception) {}
+            isBound = false
+        }
+    }
+
     val fileManager = com.scto.mobile.ide.core.common.files.FileManager(this)
 
     companion object {
