@@ -1,10 +1,10 @@
 set -e
 
-source "$(dirname "$0")/../utils"
+source "$LOCAL/bin/utils"
 
 
 info 'Preparing...'
-apt-get update && apt-get upgrade -y
+apt update && apt upgrade -y
 
 LLEMINX_VERSION="0.31.0"
 INSTALL_DIR="$HOME/.lsp/lemminx"
@@ -14,11 +14,11 @@ install() {
 
   mkdir -p "$INSTALL_DIR"
   cd "$INSTALL_DIR"
-  apt-get install -y curl ca-certificates default-jdk
+  apt install -y curl ca-certificates default-jdk
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -28,11 +28,11 @@ uninstall() {
 
   if ask "Do you want to uninstall OpenJDK? It was installed as a dependency of this language server."; then
     info "Uninstalling OpenJDK..."
-    apt-get remove -y default-jdk
-    apt-get autoremove -y
+    apt remove -y default-jdk
+    apt autoremove -y
     info "OpenJDK uninstalled successfully."
   fi
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
@@ -42,7 +42,7 @@ update() {
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in

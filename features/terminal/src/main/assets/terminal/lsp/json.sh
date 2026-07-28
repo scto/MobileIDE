@@ -13,8 +13,7 @@ install() {
 
   info 'Installing extracted VSCode language servers...'
   npm install -g --prefix /usr vscode-langservers-extracted
-
-  info 'Markdown language server installed successfully.'
+  info 'JSON language server installed successfully.'
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 

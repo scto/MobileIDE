@@ -1,10 +1,10 @@
 set -e
 
-source "$(dirname "$0")/../utils"
+source "$LOCAL/bin/utils"
 
 
 info 'Preparing...'
-apt-get update && apt-get upgrade -y
+apt update && apt upgrade -y
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -15,10 +15,10 @@ install() {
   npm install -g --prefix /usr bash-language-server
 
   info 'Installing ShellCheck...'
-  apt-get install -y shellcheck
+  apt install -y shellcheck
 
   info 'Bash language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
@@ -26,14 +26,14 @@ uninstall() {
   npm uninstall -g --prefix /usr bash-language-server
   info 'Bash language server uninstalled successfully.'
   uninstall_nodejs
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
   info 'Updating Bash language server...'
   npm update -g --prefix /usr bash-language-server
   info 'Bash language server updated successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 case "$1" in

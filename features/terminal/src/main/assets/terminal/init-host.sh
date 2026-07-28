@@ -32,16 +32,20 @@ ln -snf "$DISTRO_DIR" "$LOCAL/sandbox"
 # Set up required variables for setup.sh & sandbox.sh
 export LOCAL
 export TMP_DIR="${TMPDIR:-$PREFIX/cache}"
+export PROOT_TMP_DIR="${PROOT_TMP_DIR:-$TMP_DIR/proot_tmp}"
 export PRIVATE_DIR="$PREFIX/files"
 export PROOT="${PROOT_EXEC:-$LOCAL/bin/proot}"
 export EXT_HOME="$DISTRO_DIR/root"
 
+mkdir -p "$TMP_DIR" "$PROOT_TMP_DIR"
+
 # Check if setup was already performed successfully AND the container directory exists
 if [ ! -f "$LOCAL/.terminal_setup_ok_DO_NOT_REMOVE" ] || [ ! -d "$LOCAL/sandbox/etc" ]; then
     # Prepare the tarball for setup.sh
+    mkdir -p "$TMP_DIR" "$PROOT_TMP_DIR"
     if [ -f "$PREFIX/files/$DISTRO.tar.gz" ]; then
-        mkdir -p "$TMP_DIR"
         cp "$PREFIX/files/$DISTRO.tar.gz" "$TMP_DIR/sandbox.tar.gz"
+        cp "$PREFIX/files/$DISTRO.tar.gz" "$PROOT_TMP_DIR/sandbox.tar.gz"
     fi
     
     # Run the setup script which will extract and configure the container, 
