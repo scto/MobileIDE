@@ -11,9 +11,12 @@
 package com.scto.mobile.ide.features.terminal.ui
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +25,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+sealed class RootFsSetupException(message: String, cause: Throwable? = null) : Exception(message, cause) {
+    class NetworkError(message: String, cause: Throwable? = null) : RootFsSetupException(message, cause)
+    class IncompleteDownloadError(message: String, cause: Throwable? = null) : RootFsSetupException(message, cause)
+    class StorageError(message: String, cause: Throwable? = null) : RootFsSetupException(message, cause)
+    class ScriptExecutionError(message: String, cause: Throwable? = null) : RootFsSetupException(message, cause)
+}
 
 data class SetupConfig(
     val jdkVersion: String? = null,
@@ -51,7 +61,7 @@ sealed interface InstallState {
     object AwaitingCmakeSelection : InstallState
     data class InstallingCmake(val version: String) : InstallState
     object Success : InstallState
-    data class Error(val message: String) : InstallState
+    data class Error(val message: String, val isRetryable: Boolean = true) : InstallState
 }
 
 data class SetupState(
@@ -85,6 +95,13 @@ object SetupWorker {
     private val _setupState = MutableStateFlow(SetupState())
     val setupState: StateFlow<SetupState> = _setupState.asStateFlow()
     private var setupJob: Job? = null
+
+    fun isNetworkConnected(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return true
+        val network = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(network) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 
     private fun getDistroName(context: Context): String {
         return context
@@ -124,6 +141,10 @@ object SetupWorker {
         setupJob = CoroutineScope(Dispatchers.IO).launch {
             val startTime = System.currentTimeMillis()
             try {
+                if (!isNetworkConnected(context)) {
+                    throw RootFsSetupException.NetworkError("Keine Internetverbindung verfügbar. Bitte Netzwerkeinstellungen prüfen.")
+                }
+
                 // 1. Rootfs & Distribution Phase
                 _setupState.value = SetupState(
                     isActive = true,
@@ -156,11 +177,14 @@ object SetupWorker {
                     totalSteps = 7
                 )
             } catch (e: Exception) {
+                Timber.tag("SetupWorker").e("Setup-Fehler: ${e.message}", e)
                 Timber.tag("SetupWorker").e(e, "Sequential setup failed")
+                val userMsg = e.message ?: "Setup-Fehler aufgetreten"
                 _setupState.value = _setupState.value.copy(
                     isActive = false,
-                    installState = InstallState.Error(e.message ?: "Setup-Fehler"),
-                    error = e.message ?: "Setup-Fehler"
+                    installState = InstallState.Error(userMsg, isRetryable = true),
+                    error = userMsg,
+                    logs = _setupState.value.logs + "FEHLER: $userMsg"
                 )
             }
         }
@@ -185,10 +209,25 @@ object SetupWorker {
             rootfsTar.delete()
             File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
 
-            prepareEnvironment(context)
-            withContext(Dispatchers.Main) {
-                _setupState.value = SetupState(isActive = false, isSuccess = true)
-                SessionManager.addNewSession(context)
+            try {
+                if (!isNetworkConnected(context)) {
+                    throw RootFsSetupException.NetworkError("Keine Internetverbindung verfügbar. Bitte Netzwerkeinstellungen prüfen.")
+                }
+                prepareEnvironment(context)
+                withContext(Dispatchers.Main) {
+                    _setupState.value = SetupState(isActive = false, isSuccess = true)
+                    SessionManager.addNewSession(context)
+                }
+            } catch (e: Exception) {
+                Timber.tag("SetupWorker").e("Reinstallation fehlgeschlagen: ${e.message}", e)
+                Timber.tag("SetupWorker").e(e, "Reinstallation failed")
+                val userMsg = e.message ?: "Reinstallation fehlgeschlagen"
+                _setupState.value = _setupState.value.copy(
+                    isActive = false,
+                    installState = InstallState.Error(userMsg, isRetryable = true),
+                    error = userMsg,
+                    logs = _setupState.value.logs + "FEHLER: $userMsg"
+                )
             }
         }
     }
@@ -297,7 +336,7 @@ object SetupWorker {
 
             // 3. Download rootfs archive (from GitHub Releases, arch-aware).
             val rootfsTar = File(filesDir, "$distroName.tar.gz")
-            if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
+            if (!rootfsTar.exists() || rootfsTar.length() < 1_000_000L) {
                 _setupState.value = _setupState.value.copy(status = "Linux RootFS wird heruntergeladen...")
                 try {
                     Timber.tag("SetupWorker").i("Downloading rootfs archive.")
@@ -305,12 +344,17 @@ object SetupWorker {
                         _setupState.value = _setupState.value.copy(downloadedBytes = downloaded, totalBytes = total)
                     })
                 } catch (e: Exception) {
+                    Timber.tag("SetupWorker").e("RootFS Download fehlgeschlagen: ${e.message}", e)
                     Timber.tag("SetupWorker").e(e, "Rootfs download failed.")
-                    throw IllegalStateException("RootFS Download fehlgeschlagen. Bitte Internetverbindung prüfen.", e)
+                    if (rootfsTar.exists() && rootfsTar.length() < 1_000_000L) {
+                        rootfsTar.delete()
+                    }
+                    throw RootFsSetupException.NetworkError("RootFS Download fehlgeschlagen: ${e.message}", e)
                 }
             }
-            if (!rootfsTar.exists() || rootfsTar.length() == 0L) {
-                throw IllegalStateException("RootFS Datei fehlt nach dem Download.")
+            if (!rootfsTar.exists() || rootfsTar.length() < 1_000_000L) {
+                rootfsTar.delete()
+                throw RootFsSetupException.IncompleteDownloadError("RootFS Datei fehlt oder ist unvollständig nach dem Download.")
             }
 
             // 4. Place proot + libs in local/bin and local/lib.

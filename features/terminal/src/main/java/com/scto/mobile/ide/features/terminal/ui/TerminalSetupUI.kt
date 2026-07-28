@@ -670,6 +670,39 @@ fun TerminalSetupOverlayWindow(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(10.dp))
 
+                    if (setupState.installState is InstallState.Error || setupState.error != null) {
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "Fehler beim Terminal-Setup",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = setupState.error ?: (setupState.installState as? InstallState.Error)?.message ?: "Unbekannter Fehler",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = { SetupWorker.startSequentialSetup(context) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    modifier = Modifier.align(Alignment.End)
+                                ) {
+                                    Text("Erneut versuchen", color = MaterialTheme.colorScheme.onError)
+                                }
+                            }
+                        }
+                    }
+
                     // Progress Bar
                     if (setupState.percentage >= 0f) {
                         LinearProgressIndicator(

@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.timber)
+    implementation(libs.okhttp)
     implementation(libs.utilcode)
     implementation(libs.androidx.palette)
     implementation(libs.navigation.compose)

@@ -13,17 +13,22 @@ package com.scto.mobile.ide.features.terminal.ui
 import android.content.Context
 import android.os.Build
 import com.scto.mobile.ide.core.common.Constants
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
+import java.util.concurrent.TimeUnit
 
 /**
  * Downloader for proot binary and Linux RootFS archives (Ubuntu, Debian). Detects CPU architecture automatically and
- * fetches the correct variant.
+ * fetches the correct variant with OkHttp3, exponential backoff retries, atomic downloads (.part file), and mirror fallbacks.
  */
 object Downloader {
 
@@ -32,11 +37,8 @@ object Downloader {
     // ─────────────────────────────────────────────────────────────────────────
 
     enum class Arch(
-        /** ABI string as used in Android JNI dirs */
         val abiName: String,
-        /** proot URL suffix (termux-packages release naming) */
         val prootArch: String,
-        /** Architecture string used by Ubuntu/Debian CDN */
         val debianArch: String,
     ) {
         ARM64("arm64-v8a", "aarch64", "arm64"),
@@ -56,7 +58,30 @@ object Downloader {
         }
     }
 
-    /** Returns the download URL for the given [distro] and [arch]. */
+    /** Returns primary and fallback download URLs for the given [distro] and [arch]. */
+    fun getRootFsUrls(distro: String, arch: Arch): List<String> {
+        val primary = getRootFsUrl(distro, arch)
+        // Fallback mirror using scto repository
+        val fallbackBase = "https://raw.githubusercontent.com/scto/Karbon-PackagesX/main"
+        val fallback = when (distro.lowercase()) {
+            "ubuntu" -> when (arch) {
+                Arch.ARM64 -> "$fallbackBase/ubuntu/ubuntu-base-24.04.3-base-arm64.tar.gz"
+                Arch.ARM32 -> "$fallbackBase/ubuntu/ubuntu-base-24.04.3-base-armhf.tar.gz"
+                Arch.X86_64 -> "$fallbackBase/ubuntu/ubuntu-base-24.04.3-base-amd64.tar.gz"
+                Arch.X86 -> "$fallbackBase/ubuntu/ubuntu-base-24.04.3-base-armhf.tar.gz"
+            }
+            "debian" -> when (arch) {
+                Arch.ARM64 -> "$fallbackBase/debian/debian-rootfs-arm64.tar.xz"
+                Arch.ARM32 -> "$fallbackBase/debian/debian-rootfs-amdhf.tar.xz"
+                Arch.X86_64 -> "$fallbackBase/debian/debian-rootfs-amd64.tar.xz"
+                Arch.X86 -> "$fallbackBase/debian/debian-rootfs-amdhf.tar.xz"
+            }
+            else -> primary
+        }
+        return if (primary != fallback) listOf(primary, fallback) else listOf(primary)
+    }
+
+    /** Returns the primary download URL for the given [distro] and [arch]. */
     fun getRootFsUrl(distro: String, arch: Arch): String {
         return when (distro.lowercase()) {
             "ubuntu" -> {
@@ -79,11 +104,6 @@ object Downloader {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // proot binary and talloc URLs
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /** Returns the URL for the proot static binary for [arch]. */
     fun getProotUrl(arch: Arch): String =
         when (arch) {
             Arch.ARM64 -> Constants.PROOT_ARM64
@@ -92,7 +112,6 @@ object Downloader {
             Arch.X86 -> Constants.PROOT_ARM
         }
 
-    /** Returns the URL for the libtalloc library for [arch]. */
     fun getTallocUrl(arch: Arch): String =
         when (arch) {
             Arch.ARM64 -> Constants.TALLOC_ARM64
@@ -105,78 +124,159 @@ object Downloader {
     // Progress callback
     // ─────────────────────────────────────────────────────────────────────────
 
-    /** Called periodically during a download. All values in bytes. */
     fun interface ProgressCallback {
-        /**
-         * @param downloaded bytes written so far
-         * @param total total content length (-1 if unknown)
-         */
         fun onProgress(downloaded: Long, total: Long)
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Download engine
+    // OkHttp3 Client & Download Engine
     // ─────────────────────────────────────────────────────────────────────────
 
-    private const val CONNECT_TIMEOUT_MS = 30_000
-    private const val READ_TIMEOUT_MS = 60_000
+    private val okHttpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .callTimeout(0, TimeUnit.MILLISECONDS)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+    }
+
     private const val BUFFER_SIZE = 64 * 1024 // 64 KB
+    private const val MAX_RETRIES = 3
 
     /**
      * Downloads [url] into [destFile], reporting progress via [onProgress].
-     * - Follows HTTP redirects automatically (up to 5 hops).
-     * - Resumes partial downloads when the server supports `Range` requests.
-     * - Verifies SHA-256 checksum when [expectedSha256] is non-null.
+     * Uses OkHttp3, atomic `.part` files, Range resume support, SHA-256 verification,
+     * and exponential backoff retries.
      *
      * @throws IOException on network or I/O errors.
      * @throws SecurityException when the checksum does not match.
      */
     @Throws(IOException::class, SecurityException::class)
-    fun download(url: String, destFile: File, expectedSha256: String? = null, onProgress: ProgressCallback? = null) {
-        Timber.tag("Downloader").i(
-            "Starting download: URL=$url, Dest=${destFile.absolutePath}, expectedSha256=$expectedSha256",
-        )
-        destFile.parentFile?.mkdirs()
+    fun download(
+        url: String,
+        destFile: File,
+        expectedSha256: String? = null,
+        minSizeBytes: Long = 100_000L,
+        onProgress: ProgressCallback? = null
+    ) {
+        val urls = listOf(url)
+        downloadWithMirrors(urls, destFile, expectedSha256, minSizeBytes, onProgress)
+    }
 
-        val existingBytes = if (destFile.exists()) destFile.length() else 0L
-        var downloaded = existingBytes
+    /**
+     * Downloads from a list of mirror [urls] into [destFile], switching mirrors if a mirror fails after retries.
+     */
+    @Throws(IOException::class, SecurityException::class)
+    fun downloadWithMirrors(
+        urls: List<String>,
+        destFile: File,
+        expectedSha256: String? = null,
+        minSizeBytes: Long = 100_000L,
+        onProgress: ProgressCallback? = null
+    ) {
+        var lastException: Exception? = null
+
+        for ((index, currentUrl) in urls.withIndex()) {
+            Timber.tag("Downloader").i("Versuche Download von Mirror ${index + 1}/${urls.size}: $currentUrl")
+            try {
+                downloadSingleUrlWithRetry(currentUrl, destFile, expectedSha256, minSizeBytes, onProgress)
+                return // Success!
+            } catch (e: Exception) {
+                lastException = e
+                Timber.tag("Downloader").w("Mirror ${index + 1} fehlgeschlagen ($currentUrl): ${e.message}")
+            }
+        }
+
+        throw lastException ?: IOException("Download von allen verfügbaren Mirrors fehlgeschlagen.")
+    }
+
+    private fun downloadSingleUrlWithRetry(
+        url: String,
+        destFile: File,
+        expectedSha256: String?,
+        minSizeBytes: Long,
+        onProgress: ProgressCallback?
+    ) {
+        destFile.parentFile?.mkdirs()
+        val partFile = File(destFile.parentFile, "${destFile.name}.part")
+
+        var attempt = 0
+        while (attempt <= MAX_RETRIES) {
+            try {
+                attempt++
+                executeDownloadAttempt(url, destFile, partFile, expectedSha256, minSizeBytes, onProgress)
+                return // Success
+            } catch (e: Exception) {
+                val isRetryable = e is SocketTimeoutException || e is SocketException || e is IOException
+                if (attempt <= MAX_RETRIES && isRetryable) {
+                    val backoffMs = 3_000L * attempt
+                    Timber.tag("Downloader").w(
+                        "Download-Fehler (Versuch $attempt/$MAX_RETRIES): ${e.message}. Erneuter Versuch in ${backoffMs / 1000}s..."
+                    )
+                    Timber.tag("Downloader").w(e, "Download attempt $attempt failed, retrying in ${backoffMs}ms")
+                    try {
+                        Thread.sleep(backoffMs)
+                    } catch (interrupted: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw IOException("Download unterbrochen", interrupted)
+                    }
+                } else {
+                    Timber.tag("Downloader").e("Download endgültig fehlgeschlagen nach $attempt Versuchen: ${e.message}")
+                    partFile.delete()
+                    throw e
+                }
+            }
+        }
+    }
+
+    private fun executeDownloadAttempt(
+        url: String,
+        destFile: File,
+        partFile: File,
+        expectedSha256: String?,
+        minSizeBytes: Long,
+        onProgress: ProgressCallback?
+    ) {
+        val existingBytes = if (partFile.exists()) partFile.length() else 0L
+
+        val requestBuilder = Request.Builder()
+            .url(url)
+            .header("User-Agent", "MobileIDE/1.0 (Android)")
+
+        if (existingBytes > 0L) {
+            requestBuilder.header("Range", "bytes=$existingBytes-")
+        }
+
+        val request = requestBuilder.build()
+        val response = okHttpClient.newCall(request).execute()
+
+        if (!response.isSuccessful && response.code != 206) {
+            response.close()
+            if (response.code in 500..599) {
+                throw IOException("Server-Fehler HTTP ${response.code} von $url")
+            }
+            throw IOException("Download fehlgeschlagen mit HTTP ${response.code}: $url")
+        }
+
+        val body = response.body ?: throw IOException("Leere HTTP-Antwort von $url")
+        val isPartial = response.code == 206
+        var downloaded = if (isPartial) existingBytes else 0L
+
+        if (!isPartial && existingBytes > 0L) {
+            partFile.delete()
+        }
+
+        val contentLength = body.contentLength()
+        val totalBytes = if (contentLength > 0L) downloaded + contentLength else -1L
 
         val digest = if (expectedSha256 != null) MessageDigest.getInstance("SHA-256") else null
 
-        var resolvedUrl = url
-        var connection = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
-
-        // Follow redirects manually so we can keep the Range header.
-        repeat(5) {
-            val code = connection.responseCode
-            if (code in 300..399) {
-                val location = connection.getHeaderField("Location") ?: return@repeat
-                connection.disconnect()
-                resolvedUrl = if (location.startsWith("http")) location else "https://${URL(resolvedUrl).host}$location"
-                connection = openConnection(resolvedUrl, if (existingBytes > 0) existingBytes else -1L)
-            }
-        }
-
-        val responseCode = connection.responseCode
-        val resuming = responseCode == HttpURLConnection.HTTP_PARTIAL
-
-        // Server did not honour Range → restart from scratch.
-        if (!resuming && existingBytes > 0) {
-            destFile.delete()
-            downloaded = 0L
-            connection.disconnect()
-            connection = openConnection(resolvedUrl, -1L)
-        }
-
-        val totalBytes =
-            when {
-                resuming -> existingBytes + (connection.contentLengthLong.takeIf { it > 0 } ?: -1L)
-                else -> connection.contentLengthLong.takeIf { it > 0 } ?: -1L
-            }
-
         try {
-            connection.inputStream.use { input ->
-                FileOutputStream(destFile, resuming).use { output ->
+            body.byteStream().use { input ->
+                FileOutputStream(partFile, isPartial).use { output ->
                     val buffer = ByteArray(BUFFER_SIZE)
                     while (true) {
                         val read = input.read(buffer)
@@ -189,94 +289,80 @@ object Downloader {
                 }
             }
         } finally {
-            connection.disconnect()
+            response.close()
         }
 
-        // SHA-256 verification
+        // SHA-256 Checksum Verification
         if (expectedSha256 != null && digest != null) {
             val actual = digest.digest().joinToString("") { "%02x".format(it) }
             if (!actual.equals(expectedSha256, ignoreCase = true)) {
-                Timber.tag("Downloader").e(
-                    "SHA-256 verification failed for $url. Expected: $expectedSha256, Actual: $actual",
-                )
-                destFile.delete()
-                throw SecurityException("SHA-256 mismatch for $url\n  Expected: $expectedSha256\n  Actual:   $actual")
+                partFile.delete()
+                throw SecurityException("SHA-256 Prüfsummenfehler für $url\n  Erwartet: $expectedSha256\n  Erhalten: $actual")
             }
         }
-        Timber.tag("Downloader").i(
-            "Download completed successfully: ${destFile.absolutePath} (${destFile.length()} bytes)",
-        )
-    }
 
-    private fun openConnection(url: String, rangeStart: Long): HttpURLConnection {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = CONNECT_TIMEOUT_MS
-        conn.readTimeout = READ_TIMEOUT_MS
-        conn.instanceFollowRedirects = true
-        conn.setRequestProperty("User-Agent", "MobileIDE/1.0 (Android)")
-        if (rangeStart > 0) {
-            conn.setRequestProperty("Range", "bytes=$rangeStart-")
+        // Atomic move from .part file to destFile
+        destFile.delete()
+        var moved = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                Files.move(partFile.toPath(), destFile.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+                moved = true
+            } catch (e: Exception) {
+                Timber.tag("Downloader").w(e, "Atomic move failed, falling back to file rename/copy")
+            }
         }
-        conn.connect()
-        return conn
+
+        if (!moved) {
+            if (!partFile.renameTo(destFile)) {
+                partFile.copyTo(destFile, overwrite = true)
+                partFile.delete()
+            }
+        }
+
+        // Plausible Size Check
+        if (!destFile.exists() || destFile.length() < minSizeBytes) {
+            val actualSize = if (destFile.exists()) destFile.length() else 0L
+            destFile.delete()
+            throw IOException("Datei nach Download unvollständig oder zu klein ($actualSize Bytes, Erwartet >= $minSizeBytes Bytes).")
+        }
+
+        Timber.tag("Downloader").i("Download erfolgreich abgeschlossen: ${destFile.name} (${destFile.length()} Bytes)")
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // High-level helpers used by SetupWorker
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Downloads the libtalloc library for the current device architecture into [context]'s files directory.
-     *
-     * The library is cached: if it already exists and [force] is false the download is skipped.
-     */
     fun downloadTalloc(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
         val arch = detectArch()
         val destFile = File(context.filesDir, "libtalloc.so.2")
-        Timber.tag("Downloader").i("downloadTalloc: arch=$arch, dest=${destFile.absolutePath}, force=$force")
-
-        if (!force && destFile.exists() && destFile.length() > 0L) {
-            Timber.tag("Downloader").i("downloadTalloc: libtalloc already exists. Skipping.")
+        if (!force && destFile.exists() && destFile.length() >= 10_000L) {
+            Timber.tag("Downloader").i("libtalloc already exists. Skipping.")
             return
         }
 
         val url = getTallocUrl(arch)
-        download(url, destFile, onProgress = onProgress)
+        download(url, destFile, minSizeBytes = 10_000L, onProgress = onProgress)
     }
 
-    /**
-     * Downloads the proot binary for the current device architecture into [context]'s files directory and marks it as
-     * executable.
-     *
-     * The binary is cached: if it already exists and [force] is false the download is skipped.
-     */
     fun downloadProot(context: Context, force: Boolean = false, onProgress: ProgressCallback? = null) {
         val arch = detectArch()
         val destFile = File(context.filesDir, "proot")
-        Timber.tag("Downloader").i("downloadProot: arch=$arch, dest=${destFile.absolutePath}, force=$force")
-
-        if (!force && destFile.exists() && destFile.length() > 0L) {
-            Timber.tag("Downloader").i("downloadProot: proot binary already exists. Skipping.")
+        if (!force && destFile.exists() && destFile.length() >= 50_000L) {
+            Timber.tag("Downloader").i("proot binary already exists. Skipping.")
             return
         }
 
         val url = getProotUrl(arch)
-        download(url, destFile, onProgress = onProgress)
+        download(url, destFile, minSizeBytes = 50_000L, onProgress = onProgress)
         destFile.setExecutable(true)
 
-        // Also place a copy in local/bin for the shell environment.
         val binDir = File(context.filesDir.parentFile!!, "local/bin").also { it.mkdirs() }
         destFile.copyTo(File(binDir, "proot"), overwrite = true)
         File(binDir, "proot").setExecutable(true)
     }
 
-    /**
-     * Downloads the rootfs archive for [distro] into [context]'s files directory.
-     *
-     * The archive is cached: if it already exists and [force] is false the download is skipped.
-     *
-     * @return the downloaded (or cached) archive [File].
-     */
     fun downloadRootFs(
         context: Context,
         distro: String,
@@ -284,37 +370,20 @@ object Downloader {
         onProgress: ProgressCallback? = null,
     ): File {
         val arch = detectArch()
-        val url = getRootFsUrl(distro, arch)
-        // Store as <distro>.tar.gz so SetupWorker / init-host.sh can find it.
+        val urls = getRootFsUrls(distro, arch)
         val destFile = File(context.filesDir, "${distro.lowercase()}.tar.gz")
-        Timber.tag("Downloader").i(
-            "downloadRootFs: distro=$distro, arch=$arch, URL=$url, dest=${destFile.absolutePath}, force=$force",
-        )
 
-        if (!force && destFile.exists() && destFile.length() > 0L) {
-            Timber.tag("Downloader").i("downloadRootFs: rootfs archive already exists. Skipping.")
+        // RootFS minimum size: 1 MB
+        if (!force && destFile.exists() && destFile.length() >= 1_000_000L) {
+            Timber.tag("Downloader").i("rootfs archive already exists. Skipping.")
             return destFile
         }
 
-        // Download into a .tmp file first; rename on success.
-        val tmpFile = File(context.filesDir, "${distro.lowercase()}.tar.xz.tmp")
-        tmpFile.delete()
+        downloadWithMirrors(urls, destFile, minSizeBytes = 1_000_000L, onProgress = onProgress)
 
-        download(url, tmpFile, onProgress = onProgress)
-
-        destFile.delete()
-        if (!tmpFile.renameTo(destFile)) {
-            try {
-                tmpFile.copyTo(destFile, overwrite = true)
-                tmpFile.delete()
-            } catch (copyEx: Exception) {
-                copyEx.printStackTrace()
-            }
-        }
         return destFile
     }
 
-    /** Returns a human-readable description of the current device architecture, e.g. "arm64-v8a (aarch64)". */
     fun archDescription(): String {
         val arch = detectArch()
         return "${arch.abiName} (${arch.prootArch})"

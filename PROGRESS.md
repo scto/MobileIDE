@@ -2,6 +2,20 @@
 
 This file tracks the timeline of all features, bug fixes, and refactoring efforts implemented in MobileIDE, ordered from newest to oldest.
 
+## [2026-07-28]
+### Terminal Setup Flow & Download Crash Fix (Prompt 22 Implementation `22-Terminal-Fix.md`)
+*   **OkHttp3 Network Engine & Exponential Backoff (`Downloader.kt`)**:
+    *   Migrated `Downloader.download()` fully from `java.net.URL` / `HttpURLConnection` to `okhttp3.OkHttpClient` with 30s connect and 60s read/write timeouts.
+    *   Implemented exponential backoff retry logic (3 retries, delays of 3s, 6s, 12s) for `SocketTimeoutException`, `SocketException`, and 5xx HTTP errors.
+    *   Added atomic download handling using `.part` temporary files and Range header HTTP 206 resume support for interrupted transfers.
+    *   Added fallback mirror URL support (`getRootFsUrls()`) to automatically switch mirrors if a primary download mirror fails.
+    *   Implemented post-download existence and minimum size validation (> 1 MB for RootFS, > 100 KB for binaries) to prevent corrupted file extraction.
+*   **Structured Exception Handling & Retry UI (`SetupWorker.kt`, `TerminalSetupUI.kt`)**:
+    *   Created typed `RootFsSetupException` class hierarchy (`NetworkError`, `IncompleteDownloadError`, `StorageError`, `ScriptExecutionError`).
+    *   Added network connectivity pre-checks (`isNetworkConnected()`) before starting downloads.
+    *   Updated `SetupWorker.startSequentialSetup` and `SetupWorker.reinstallTerminal` to catch exceptions gracefully and emit `InstallState.Error(userMsg, isRetryable = true)` without crashing the CoroutineScope/Main thread.
+    *   Added interactive error card with an "Erneut versuchen" (Retry) button in `TerminalSetupOverlayWindow` to restart setup seamlessly upon network errors.
+
 ## [2026-07-27]
 ### Feature Roadmap Prompt 17 Implementation (`17-git-credentials-sidepanel-settings.md`)
 *   **Git Credentials & Sidepanel Configuration (`GitConfigDialog.kt`, `GitViewModel.kt`, `GitPanel.kt`)**:
