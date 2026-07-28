@@ -64,6 +64,9 @@ import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
 import com.scto.mobile.ide.features.terminal.service.SessionBinderProvider
 import com.scto.mobile.ide.features.terminal.service.SessionService
+import com.scto.mobile.ide.features.terminal.ui.SetupWorker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
