@@ -1,24 +1,17 @@
 package com.scto.mobile.ide.commands.editor
-
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import io.github.rosemoe.sora.widget.CodeEditor
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.EditorCommand
-import com.scto.mobile.ide.commands.KeyCombination
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ToggleWordWrapCommand : EditorCommand() {
-    override val id: String = "editor.toggle_word_wrap"
-
-    override val title: String = "toggle_word_wrap"
-
+    override val id: String = "editor.togglewordwrap"
+    override val title: String = "togglewordwrap"
     override suspend fun executeEditorCommand(context: MobileIDECommandContext, tab: CodeEditorState, editor: CodeEditor) {
-        val editor = context.editor
-        editor.setWordwrap(!editor.isWordwrap, true, true)
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context.androidContext, "ToggleWordWrapCommand not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.edit_note)
-
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_Z, alt = true)
 }

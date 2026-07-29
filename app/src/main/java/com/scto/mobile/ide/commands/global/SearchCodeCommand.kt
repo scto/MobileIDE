@@ -1,28 +1,16 @@
 package com.scto.mobile.ide.commands.global
-
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.ActionContext
-import com.scto.mobile.ide.commands.GlobalCommand
-import com.scto.mobile.ide.commands.KeyCombination
-import com.scto.mobile.ide.components.codeSearchDialog
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class SearchCodeCommand : GlobalCommand() {
-    override val id: String = "global.search_code"
-
-    override val title: String = "search_code"
-
+    override val id: String = "global.searchcode"
+    override val title: String = "searchcode"
     override suspend fun execute(context: CommandContext) {
-        codeSearchDialog = true
+        val ideContext = context as? MobileIDECommandContext ?: return
+        withContext(Dispatchers.Main) {
+            Toast.makeText(ideContext.androidContext, "SearchCodeCommand not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
-
-    fun isEnabled(): Boolean {
-        return commandContext.drawerViewModel.currentDrawerTab != null
-    }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.search)
-
-    override val defaultKeybinds: KeyCombination =
-        KeyCombination(keyCode = KeyEvent.KEYCODE_F, ctrl = true, shift = true)
 }

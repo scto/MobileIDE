@@ -1,23 +1,16 @@
 package com.scto.mobile.ide.commands.global
-
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.ActionContext
-import com.scto.mobile.ide.commands.GlobalCommand
-import com.scto.mobile.ide.commands.KeyCombination
-import com.scto.mobile.ide.components.addDialog
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class NewFileCommand : GlobalCommand() {
-    override val id: String = "global.new_file"
-
-    override val title: String = "new_file"
-
+    override val id: String = "global.newfile"
+    override val title: String = "newfile"
     override suspend fun execute(context: CommandContext) {
-        addDialog = true
+        val ideContext = context as? MobileIDECommandContext ?: return
+        withContext(Dispatchers.Main) {
+            Toast.makeText(ideContext.androidContext, "NewFileCommand not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.add)
-
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_N, ctrl = true)
 }

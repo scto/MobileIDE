@@ -1,32 +1,16 @@
 package com.scto.mobile.ide.commands.global
-
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.DefaultScope
-import com.scto.mobile.ide.commands.ActionContext
-import com.scto.mobile.ide.commands.GlobalCommand
-import com.scto.mobile.ide.commands.KeyCombination
-import com.scto.mobile.ide.settings.Settings
+import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SaveAllCommand : GlobalCommand() {
-    override val id: String = "global.save_all"
-
-    override val title: String = "save_all"
-
+    override val id: String = "global.saveall"
+    override val title: String = "saveall"
     override suspend fun execute(context: CommandContext) {
-        commandContext.mainViewModel.editorTabs.forEach {
-            DefaultScope.launch(Dispatchers.IO) { it.save() }
+        val ideContext = context as? MobileIDECommandContext ?: return
+        withContext(Dispatchers.Main) {
+            Toast.makeText(ideContext.androidContext, "SaveAllCommand not implemented yet", Toast.LENGTH_SHORT).show()
         }
     }
-
-    fun isEnabled(): Boolean {
-        return commandContext.mainViewModel.editorTabs.any { it.editorState.isDirty } || Settings.auto_save
-    }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.save)
-
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_S, ctrl = true, alt = true)
 }
