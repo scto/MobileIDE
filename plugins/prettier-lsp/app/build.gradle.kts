@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.koner.prettier"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.koner.prettier"

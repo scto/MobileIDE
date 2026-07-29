@@ -40,7 +40,7 @@ abstract class WebActivity : ComponentActivity() {
         webSettings.javaScriptCanOpenWindowsAutomatically = true
         webSettings.loadWithOverviewMode = true
         webSettings.useWideViewPort = true
-        webSettings.mimobileideContentMode = WebSettings.MIMOBILEIDE_CONTENT_ALWAYS_ALLOW
+        webSettings.mixedContentMode = WebSettings.MIMOBILEIDE_CONTENT_ALWAYS_ALLOW
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         webView.webChromeClient = WebChromeClient()
     }

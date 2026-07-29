@@ -25,11 +25,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.safeNavigate
 import com.scto.mobile.ide.lsp.ExternalLspServer
 import com.scto.mobile.ide.lsp.LspRegistry
 import com.scto.mobile.ide.lsp.LspServer
-import com.scto.mobile.ide.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -316,7 +316,9 @@ fun LspServerRow(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = if (item.isInstalled) stringResource(R.string.lsp_status_installed) else stringResource(R.string.lsp_status_not_installed),
+                text =
+                    if (item.isInstalled) stringResource(R.string.lsp_status_installed)
+                    else stringResource(R.string.lsp_status_not_installed),
                 style = MaterialTheme.typography.labelSmall,
                 color = if (item.isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
             )
@@ -331,12 +333,14 @@ fun LspServerRow(
                         navController.safeNavigate("terminal")
                         onRefresh()
                     },
-                    enabled = !item.isInstalled
+                    enabled = !item.isInstalled,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Download,
                         contentDescription = stringResource(R.string.action_install),
-                        tint = if (!item.isInstalled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        tint =
+                            if (!item.isInstalled) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                     )
                 }
 
@@ -347,12 +351,14 @@ fun LspServerRow(
                         navController.safeNavigate("terminal")
                         onRefresh()
                     },
-                    enabled = item.isInstalled
+                    enabled = item.isInstalled,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = stringResource(R.string.action_update),
-                        tint = if (item.isInstalled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        tint =
+                            if (item.isInstalled) MaterialTheme.colorScheme.secondary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                     )
                 }
 
@@ -367,12 +373,14 @@ fun LspServerRow(
                         }
                         onRefresh()
                     },
-                    enabled = item.isInstalled && item.server.canBeUninstalled
+                    enabled = item.isInstalled && item.server.canBeUninstalled,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = stringResource(R.string.action_uninstall),
-                        tint = if (item.isInstalled && item.server.canBeUninstalled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        tint =
+                            if (item.isInstalled && item.server.canBeUninstalled) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                     )
                 }
             }

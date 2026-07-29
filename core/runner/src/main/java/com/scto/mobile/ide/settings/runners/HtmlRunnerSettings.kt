@@ -10,13 +10,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
-import com.scto.mobile.ide.core.terminal.ui.components.SingleInputDialog
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.R
+import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
+import com.scto.mobile.ide.core.terminal.ui.components.SingleInputDialog
 
 @Composable
 fun HtmlRunnerSettings(modifier: Modifier = Modifier) {

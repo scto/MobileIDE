@@ -1317,7 +1317,7 @@ static size_t scatter_fake_netlink_reply(Tracee *tracee, word_t iov_ptr,
  * behaviour, so nothing regresses).
  *
  * Only touch the ifr_name (read) and ifr_ifindex (write) fields,
- * both at fimobileide offsets — sizeof(struct ifreq) differs between
+ * both at fixed offsets — sizeof(struct ifreq) differs between
  * 32- and 64-bit ABIs (the trailing union contains pointer-sized
  * members), and reading/writing the whole struct from PRoot would
  * overrun the tracee's buffer when the two ABIs disagree.

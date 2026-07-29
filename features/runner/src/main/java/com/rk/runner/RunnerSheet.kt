@@ -14,9 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.scto.mobile.ide.components.AddDialogItem
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

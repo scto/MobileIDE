@@ -5,7 +5,7 @@ import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 
-@XedExtensionPoint
+@MobileIDEExtensionPoint
 data class DynamicRoute(
     val route: String,
     val arguments: List<NamedNavArgument> = emptyList(),

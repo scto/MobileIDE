@@ -33,15 +33,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.utils.BackupUtils
 import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.core.common.utils.PermissionManager
-import org.eclipse.lsp4j.DiagnosticSeverity
 import com.scto.mobile.ide.lsp.ProotStreamConnectionProvider
 import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.editor.components.MediaType
 import com.scto.mobile.ide.ui.editor.git.GitManager
+import com.scto.mobile.ide.utils.BackupUtils
 import com.tom.rv2ide.treesitter.TSLanguage
 import com.tom.rv2ide.treesitter.java.TSLanguageJava
 import com.tom.rv2ide.treesitter.json.TSLanguageJson
@@ -58,7 +57,6 @@ import io.github.rosemoe.sora.lang.Language
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
-import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
 import io.github.rosemoe.sora.lsp.client.languageserver.serverdefinition.CustomLanguageServerDefinition
 import io.github.rosemoe.sora.lsp.editor.LspEditor
@@ -77,6 +75,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.DiagnosticSeverity
 
 // ================== 核心数据结构 ==================
 
@@ -180,7 +179,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     var lastBuiltApk: File? by mutableStateOf(null)
         private set
 
-    private val editorInstances = mutableMapOf<String, CodeEditor>()
+    val editorInstances = mutableMapOf<String, CodeEditor>()
     private var hasPermissions = false
     private lateinit var appContext: Context
 
@@ -340,8 +339,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     subscribeAlways(io.github.rosemoe.sora.event.ContentChangeEvent::class.java) { event ->
                         intelligentFeatures.forEach { feature ->
                             when (event.action) {
-                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT -> feature.handleInsert(this)
-                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE -> feature.handleDelete(this)
+                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT ->
+                                    feature.handleInsert(this)
+                                io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE ->
+                                    feature.handleDelete(this)
                             }
                         }
 
@@ -350,8 +351,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                             intelligentFeatures.forEach { feature ->
                                 if (feature.triggerCharacters.contains(character)) {
                                     when (event.action) {
-                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT -> feature.handleInsertChar(character, this)
-                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE -> feature.handleDeleteChar(character, this)
+                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_INSERT ->
+                                            feature.handleInsertChar(character, this)
+                                        io.github.rosemoe.sora.event.ContentChangeEvent.ACTION_DELETE ->
+                                            feature.handleDeleteChar(character, this)
                                     }
                                 }
                             }
@@ -899,21 +902,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 }
                 tmLang
             } catch (e: Exception) {
-                val fallbackScope = when (scopeName) {
-                    "source.yaml", "text.html.basic" -> null
-                    else -> "source.yaml"
-                }
+                val fallbackScope =
+                    when (scopeName) {
+                        "source.yaml",
+                        "text.html.basic" -> null
+                        else -> "source.yaml"
+                    }
                 if (fallbackScope != null) {
                     try {
                         val fallbackLang = TextMateLanguage.create(fallbackScope, !lspEnabled)
                         if (LogCatcher.isLoggingEnabled) {
-                            LogCatcher.i("TextMateLanguage", "Fallback TextMateLanguage created for $extension using scope: $fallbackScope")
+                            LogCatcher.i(
+                                "TextMateLanguage",
+                                "Fallback TextMateLanguage created for $extension using scope: $fallbackScope",
+                            )
                         }
                         return fallbackLang
                     } catch (_: Exception) {}
                 }
                 if (LogCatcher.isLoggingEnabled) {
-                    LogCatcher.i("TextMateLanguage", "TextMate scope $scopeName not available for extension: $extension")
+                    LogCatcher.i(
+                        "TextMateLanguage",
+                        "TextMate scope $scopeName not available for extension: $extension",
+                    )
                 }
                 null
             }
@@ -1437,9 +1448,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
             if (!addedLspDefinitions.contains(fileExtension)) {
                 val matchingServer =
-                    (com.scto.mobile.ide.lsp.LspRegistry.extensionServers + com.scto.mobile.ide.lsp.LspRegistry.externalServers).find {
-                        it.isSupported(realFile)
-                    }
+                    (com.scto.mobile.ide.lsp.LspRegistry.extensionServers +
+                            com.scto.mobile.ide.lsp.LspRegistry.externalServers)
+                        .find { it.isSupported(realFile) }
 
                 val def =
                     if (
@@ -1574,18 +1585,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         if (data != null) {
                             state.diagnostics = data
                             data.forEach { diag ->
-                                val level = when (diag.severity) {
-                                    DiagnosticSeverity.Error -> "ERROR"
-                                    DiagnosticSeverity.Warning -> "WARN"
-                                    else -> "INFO"
-                                }
+                                val level =
+                                    when (diag.severity) {
+                                        DiagnosticSeverity.Error -> "ERROR"
+                                        DiagnosticSeverity.Warning -> "WARN"
+                                        else -> "INFO"
+                                    }
                                 val line = (diag.range?.start?.line ?: 0) + 1
                                 val col = (diag.range?.start?.character ?: 0) + 1
                                 val msg = "${realFile.name}:$line:$col: ${diag.message}"
                                 com.scto.mobile.ide.core.tooling.impl.ToolingLogManagerImpl.log(
                                     com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.PROJECT_DIAGNOSIS,
                                     level,
-                                    msg
+                                    msg,
                                 )
                             }
                         }

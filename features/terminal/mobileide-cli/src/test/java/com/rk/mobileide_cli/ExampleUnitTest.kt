@@ -1,8 +1,7 @@
 package com.scto.mobile.ide.features.terminal.mobileide_cli
 
-import org.junit.Test
-
 import org.junit.Assert.*
+import org.junit.Test
 
 /**
  * Example local unit test, which will execute on the development machine (host).

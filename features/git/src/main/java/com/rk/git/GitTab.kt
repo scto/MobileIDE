@@ -1,5 +1,7 @@
 package com.scto.mobile.ide.features.git
 
+import com.scto.mobile.ide.feature.FeatureRegistry
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.combinedClickable
@@ -60,31 +62,31 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.scto.mobile.ide.activities.main.MainActivity
+import com.scto.mobile.ide.activities.main.filesByTab
 import com.scto.mobile.ide.activities.main.ui.drawerStateRef
 import com.scto.mobile.ide.activities.main.ui.fileTreeViewModel
-import com.scto.mobile.ide.activities.main.filesByTab
-import com.scto.mobile.ide.components.SingleInputDialog
 import com.scto.mobile.ide.components.MobileIDEDropdownMenuItem
+import com.scto.mobile.ide.components.SingleInputDialog
 import com.scto.mobile.ide.components.compose.utils.addIf
 import com.scto.mobile.ide.components.getDrawerWidth
 import com.scto.mobile.ide.drawer.DrawerTab
-import com.scto.mobile.ide.feature.FeatureRegistry
+
 import com.scto.mobile.ide.file.toFileWrapper
 import com.scto.mobile.ide.filetree.FileNameIcon
 import com.scto.mobile.ide.filetree.FileTreeTab
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.theme.gitAdded
 import com.scto.mobile.ide.theme.gitConflicted
 import com.scto.mobile.ide.theme.gitDeleted
 import com.scto.mobile.ide.theme.gitModified
 import com.scto.mobile.ide.utils.drawErrorUnderline
 import com.scto.mobile.ide.utils.getUnderlineColor
+import java.io.File
 import kotlinx.coroutines.launch
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import java.io.File
 
 class GitTab(val viewModel: GitViewModel) : DrawerTab() {
     @Composable
@@ -204,9 +206,7 @@ class GitTab(val viewModel: GitViewModel) : DrawerTab() {
 
                                 val mainViewModel = MainActivity.instance?.viewModel ?: return@launch
                                 mainViewModel.editorTabs.filesByTab().forEach { (tab, file) ->
-                                    findGitRoot(file.getAbsolutePath())?.let {
-                                        tab.refresh()
-                                    }
+                                    findGitRoot(file.getAbsolutePath())?.let { tab.refresh() }
                                 }
                             }
                         },
@@ -638,11 +638,7 @@ class GitTab(val viewModel: GitViewModel) : DrawerTab() {
                                         MainActivity.instance
                                             ?.viewModel
                                             ?.editorManager
-                                            ?.addPreviewTab(
-                                                title = fileName,
-                                                content = diff,
-                                                extension = "diff",
-                                            )
+                                            ?.addPreviewTab(title = fileName, content = diff, extension = "diff")
                                         scope.launch { drawerStateRef.get()?.close() }
                                     }
                                 },

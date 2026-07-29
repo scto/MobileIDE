@@ -1,17 +1,17 @@
 package com.scto.mobile.ide.features.runner.runners.web
 
 import android.content.Context
-import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.file.resolve
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.theme.amoled
 import com.scto.mobile.ide.utils.isDarkTheme
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
-import kotlinx.coroutines.runBlocking
 import java.net.URLConnection
+import kotlinx.coroutines.runBlocking
 
 class HttpServer(
     val context: Context,
@@ -86,7 +86,7 @@ class HttpServer(
                     erudaScript + html
                 }
 
-            newFimobileideLengthResponse(Status.OK, mime, injected)
+            newFixedLengthResponse(Status.OK, mime, injected)
         } catch (_: SecurityException) {
             forbiddenError(file)
         } catch (e: Exception) {
@@ -96,7 +96,7 @@ class HttpServer(
 
     private suspend fun serveFileWithoutEruda(file: FileObject): Response {
         return try {
-            newFimobileideLengthResponse(
+            newFixedLengthResponse(
                 Status.OK,
                 URLConnection.guessContentTypeFromName(file.getName()) ?: "application/octet-stream",
                 file.getInputStream(),
@@ -109,13 +109,18 @@ class HttpServer(
         }
     }
 
-    private fun notFoundError(): Response = newFimobileideLengthResponse(Status.NOT_FOUND, "text/plain", "404 Not found")
+    private fun notFoundError(): Response =
+        newFixedLengthResponse(Status.NOT_FOUND, "text/plain", "404 Not found")
 
     private fun forbiddenError(file: FileObject): Response =
-        newFimobileideLengthResponse(Status.FORBIDDEN, "text/plain", "403 Forbidden: Cannot read file ${file.getName()}")
+        newFixedLengthResponse(
+            Status.FORBIDDEN,
+            "text/plain",
+            "403 Forbidden: Cannot read file ${file.getName()}",
+        )
 
     private fun internalError(e: Exception): Response =
-        newFimobileideLengthResponse(
+        newFixedLengthResponse(
             Status.INTERNAL_ERROR,
             "text/plain",
             "500 Internal server error: ${e.localizedMessage ?: strings.unknown.getString()}",

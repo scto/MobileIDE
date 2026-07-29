@@ -5,13 +5,13 @@ import com.scto.mobile.ide.commands.ActionContext
 import com.scto.mobile.ide.commands.Command
 import com.scto.mobile.ide.commands.CommandProvider
 import com.scto.mobile.ide.commands.KeyCombination
-import com.scto.mobile.ide.filetree.FileTreeTab
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.features.runner.RunnerManager
 import com.scto.mobile.ide.features.runner.RunnerUI
+import com.scto.mobile.ide.filetree.FileTreeTab
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.tabs.editor.EditorTab
 import kotlinx.coroutines.DelicateCoroutinesApi
 

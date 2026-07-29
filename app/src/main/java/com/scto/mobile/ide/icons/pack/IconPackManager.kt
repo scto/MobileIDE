@@ -22,13 +22,12 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.pm.PackageInfoCompat
+import com.scto.mobile.ide.core.common.utils.child
+import com.scto.mobile.ide.core.common.utils.createDirIfNot
+import com.scto.mobile.ide.core.common.utils.dialogRes
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.settings.Settings
-
-import com.scto.mobile.ide.core.common.utils.dialogRes
-import com.scto.mobile.ide.core.common.utils.child
-import com.scto.mobile.ide.core.common.utils.createDirIfNot
 import com.scto.mobile.ide.utils.application
 import java.io.File
 import java.util.zip.ZipFile
@@ -97,7 +96,10 @@ fun parseIconPackManifest(jsonStr: String): IconPackManifest {
 }
 
 val currentIconPack = mutableStateOf<IconPack?>(null)
-val iconPackDir = File(com.scto.mobile.ide.utils.application!!.filesDir.parentFile, "mobileide/local/icon_pack").also { it.createDirIfNot() }
+val iconPackDir =
+    File(com.scto.mobile.ide.utils.application!!.filesDir.parentFile, "mobileide/local/icon_pack").also {
+        it.createDirIfNot()
+    }
 
 class IconPackManager(private val context: Application) {
     val iconPacks = mutableStateMapOf<IconPackId, IconPack>()

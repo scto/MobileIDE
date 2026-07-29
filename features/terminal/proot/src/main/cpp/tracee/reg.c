@@ -230,7 +230,7 @@ void poke_reg(Tracee *tracee, Reg reg, word_t value)
 
 /**
  * Print the value of the current @tracee's registers according
- * to the @verbose_level.  Note: @message is mimobileide to the output.
+ * to the @verbose_level.  Note: @message is mixed to the output.
  */
 void print_current_regs(Tracee *tracee, int verbose_level, const char *message)
 {

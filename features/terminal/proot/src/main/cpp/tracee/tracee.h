@@ -333,7 +333,7 @@ typedef struct tracee {
 	 * Shared but read-only resources                                     *
 	 **********************************************************************/
 
-	/* For the mimobileide-mode, the guest LD_LIBRARY_PATH is saved
+	/* For the mixed-mode, the guest LD_LIBRARY_PATH is saved
 	 * during the "guest -> host" transition, in order to be
 	 * restored during the "host -> guest" transition (only if the
 	 * host LD_LIBRARY_PATH hasn't changed).  */

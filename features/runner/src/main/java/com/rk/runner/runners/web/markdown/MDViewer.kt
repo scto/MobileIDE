@@ -5,19 +5,19 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.resources.getFilledString
-import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.features.runner.runners.web.HttpServer
 import com.scto.mobile.ide.features.runner.runners.web.WebActivity
 import com.scto.mobile.ide.features.runner.runners.web.WebScreen
 import com.scto.mobile.ide.features.runner.runners.web.html.HtmlRunner
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.resources.getFilledString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.theme.MobileIDETheme
 import com.scto.mobile.ide.utils.isDarkTheme
 import com.scto.mobile.ide.utils.toast
 import fi.iki.elonen.NanoHTTPD
-import fi.iki.elonen.NanoHTTPD.newFimobileideLengthResponse
+import fi.iki.elonen.NanoHTTPD.newFixedLengthResponse
 import java.lang.ref.WeakReference
 import java.net.BindException
 import java.net.HttpURLConnection
@@ -119,7 +119,11 @@ class MDViewer : WebActivity() {
                         """
                             .trimIndent()
 
-                    return@runBlocking newFimobileideLengthResponse(NanoHTTPD.Response.Status.OK, "text/html", htmlString)
+                    return@runBlocking newFixedLengthResponse(
+                        NanoHTTPD.Response.Status.OK,
+                        "text/html",
+                        htmlString,
+                    )
                 }
                 return@runBlocking null
             }

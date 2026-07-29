@@ -1,8 +1,8 @@
 package com.scto.mobile.ide.ui.editor.intelligent
 
-import io.github.rosemoe.sora.widget.CodeEditor
 import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import io.github.rosemoe.sora.widget.CodeEditor
 
 object AutoCloseTag : IntelligentFeature() {
     override val id: String = "html.auto_close_tag"

@@ -1,5 +1,6 @@
 package com.scto.mobile.ide.settings.runners
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,19 +36,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import android.widget.Toast
-import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
-import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.R
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.ui.components.InfoBlock
+import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
 import com.scto.mobile.ide.runner.RunnerManager
 import com.scto.mobile.ide.runner.ShellBasedRunner
 import com.scto.mobile.ide.runner.ShellBasedRunners
-import com.scto.mobile.ide.core.common.utils.openDocs
 import kotlinx.coroutines.launch
 
 @Composable

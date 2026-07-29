@@ -1,6 +1,5 @@
 package com.scto.mobile.ide.ui.editor.git.conflict
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,16 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import java.io.File
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GitConflictResolutionDialog(
-    projectPath: String,
-    onDismiss: () -> Unit,
-    onMergeCompleted: () -> Unit
-) {
+fun GitConflictResolutionDialog(projectPath: String, onDismiss: () -> Unit, onMergeCompleted: () -> Unit) {
     val scope = rememberCoroutineScope()
     var conflictingFiles by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedFilePath by remember { mutableStateOf<String?>(null) }
@@ -64,29 +59,24 @@ fun GitConflictResolutionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
-        modifier = Modifier
-            .fillMaxWidth(0.95f)
-            .fillMaxHeight(0.9f),
+        modifier = Modifier.fillMaxWidth(0.95f).fillMaxHeight(0.9f),
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CallMerge, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("3-Wege Merge Konfliktlösung", style = MaterialTheme.typography.titleMedium)
                 }
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+                Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(12.dp)) {
                     Text(
                         text = "${conflictingFiles.size} Konflikt-Dateien",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                 }
             }
@@ -105,29 +95,27 @@ fun GitConflictResolutionDialog(
                     // File Selector Dropdown
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     ) {
                         Text("Datei: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
                         var expandedDropdown by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(
                             expanded = expandedDropdown,
                             onExpandedChange = { expandedDropdown = !expandedDropdown },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             OutlinedTextField(
                                 value = selectedFilePath ?: "",
                                 onValueChange = {},
                                 readOnly = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropdown) },
-                                modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth()
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropdown)
+                                },
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
                             )
                             ExposedDropdownMenu(
                                 expanded = expandedDropdown,
-                                onDismissRequest = { expandedDropdown = false }
+                                onDismissRequest = { expandedDropdown = false },
                             ) {
                                 conflictingFiles.forEach { file ->
                                     DropdownMenuItem(
@@ -135,7 +123,7 @@ fun GitConflictResolutionDialog(
                                         onClick = {
                                             selectedFilePath = file
                                             expandedDropdown = false
-                                        }
+                                        },
                                     )
                                 }
                             }
@@ -148,41 +136,47 @@ fun GitConflictResolutionDialog(
                     val chunks = parsedConflictFile?.chunks ?: emptyList()
                     if (chunks.isEmpty()) {
                         Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("Keine Konflikt-Marker in dieser Datei gefunden.", style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                "Keine Konflikt-Marker in dieser Datei gefunden.",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
                     } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                        ) {
+                        LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().padding(vertical = 8.dp)) {
                             items(chunks.size) { index ->
                                 val chunk = chunks[index]
                                 var customText by remember { mutableStateOf("") }
                                 var isCustomMode by remember { mutableStateOf(false) }
 
                                 Card(
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 6.dp)
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                        ),
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp)) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth(),
                                         ) {
                                             Text(
                                                 text = "Konflikt Block ${chunk.id} von ${chunks.size}",
                                                 style = MaterialTheme.typography.labelMedium,
                                                 fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.tertiary
+                                                color = MaterialTheme.colorScheme.tertiary,
                                             )
                                             if (chunkResolutions.containsKey(chunk.id)) {
-                                                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(4.dp)) {
-                                                    Text("Gelöst", style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                                                Surface(
+                                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                                    shape = RoundedCornerShape(4.dp),
+                                                ) {
+                                                    Text(
+                                                        "Gelöst",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                    )
                                                 }
                                             }
                                         }
@@ -190,40 +184,50 @@ fun GitConflictResolutionDialog(
                                         Spacer(modifier = Modifier.height(6.dp))
 
                                         // Local / HEAD block
-                                        Text("Lokal (HEAD):", style = MaterialTheme.typography.labelSmall, color = Color(0xFF64B5F6), fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "Lokal (HEAD):",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color(0xFF64B5F6),
+                                            fontWeight = FontWeight.Bold,
+                                        )
                                         Surface(
                                             color = Color(0xFF1E293B),
                                             shape = RoundedCornerShape(4.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .border(1.dp, Color(0xFF334155), RoundedCornerShape(4.dp))
-                                                .padding(6.dp)
+                                            modifier =
+                                                Modifier.fillMaxWidth()
+                                                    .border(1.dp, Color(0xFF334155), RoundedCornerShape(4.dp))
+                                                    .padding(6.dp),
                                         ) {
                                             Text(
                                                 text = chunk.localText.ifBlank { "<Leer>" },
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontFamily = FontFamily.Monospace,
-                                                color = Color(0xFF93C5FD)
+                                                color = Color(0xFF93C5FD),
                                             )
                                         }
 
                                         Spacer(modifier = Modifier.height(6.dp))
 
                                         // Incoming / MERGE_HEAD block
-                                        Text("Eingehend (MERGE_HEAD):", style = MaterialTheme.typography.labelSmall, color = Color(0xFF81C784), fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "Eingehend (MERGE_HEAD):",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Color(0xFF81C784),
+                                            fontWeight = FontWeight.Bold,
+                                        )
                                         Surface(
                                             color = Color(0xFF14532D).copy(alpha = 0.3f),
                                             shape = RoundedCornerShape(4.dp),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .border(1.dp, Color(0xFF166534), RoundedCornerShape(4.dp))
-                                                .padding(6.dp)
+                                            modifier =
+                                                Modifier.fillMaxWidth()
+                                                    .border(1.dp, Color(0xFF166534), RoundedCornerShape(4.dp))
+                                                    .padding(6.dp),
                                         ) {
                                             Text(
                                                 text = chunk.incomingText.ifBlank { "<Leer>" },
                                                 style = MaterialTheme.typography.bodySmall,
                                                 fontFamily = FontFamily.Monospace,
-                                                color = Color(0xFFA7F3D0)
+                                                color = Color(0xFFA7F3D0),
                                             )
                                         }
 
@@ -232,27 +236,32 @@ fun GitConflictResolutionDialog(
                                         // Action buttons
                                         Row(
                                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth(),
                                         ) {
                                             Button(
                                                 onClick = { chunkResolutions[chunk.id] = chunk.localText },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                                                modifier = Modifier.weight(1f)
+                                                colors =
+                                                    ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                                                modifier = Modifier.weight(1f),
                                             ) {
                                                 Text("Lokal", style = MaterialTheme.typography.labelSmall)
                                             }
 
                                             Button(
                                                 onClick = { chunkResolutions[chunk.id] = chunk.incomingText },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
-                                                modifier = Modifier.weight(1f)
+                                                colors =
+                                                    ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A)),
+                                                modifier = Modifier.weight(1f),
                                             ) {
                                                 Text("Eingehend", style = MaterialTheme.typography.labelSmall)
                                             }
 
                                             OutlinedButton(
-                                                onClick = { chunkResolutions[chunk.id] = "${chunk.localText}\n${chunk.incomingText}" },
-                                                modifier = Modifier.weight(1f)
+                                                onClick = {
+                                                    chunkResolutions[chunk.id] =
+                                                        "${chunk.localText}\n${chunk.incomingText}"
+                                                },
+                                                modifier = Modifier.weight(1f),
                                             ) {
                                                 Text("Beide", style = MaterialTheme.typography.labelSmall)
                                             }
@@ -273,7 +282,8 @@ fun GitConflictResolutionDialog(
                         val relPath = selectedFilePath ?: return@Button
                         scope.launch {
                             isProcessing = true
-                            val resolvedContent = GitConflictParser.rebuildResolvedFileContent(currentFileContent, chunkResolutions)
+                            val resolvedContent =
+                                GitConflictParser.rebuildResolvedFileContent(currentFileContent, chunkResolutions)
                             val success = GitConflictManager.resolveFileConflict(projectPath, relPath, resolvedContent)
                             if (success) {
                                 conflictingFiles = GitConflictManager.getConflictingFiles(projectPath)
@@ -282,16 +292,14 @@ fun GitConflictResolutionDialog(
                             isProcessing = false
                         }
                     },
-                    enabled = selectedFilePath != null && chunkResolutions.size == (parsedConflictFile?.chunks?.size ?: -1)
+                    enabled =
+                        selectedFilePath != null && chunkResolutions.size == (parsedConflictFile?.chunks?.size ?: -1),
                 ) {
                     Text("Datei als gelöst markieren (git add)")
                 }
 
                 // Complete Merge commit button
-                Button(
-                    onClick = { showCommitDialog = true },
-                    enabled = conflictingFiles.isEmpty()
-                ) {
+                Button(onClick = { showCommitDialog = true }, enabled = conflictingFiles.isEmpty()) {
                     Text("Merge abschließen")
                 }
             }
@@ -300,7 +308,7 @@ fun GitConflictResolutionDialog(
             TextButton(onClick = { showAbortConfirmDialog = true }) {
                 Text("Merge abbrechen", color = MaterialTheme.colorScheme.error)
             }
-        }
+        },
     )
 
     // Abort Confirmation Dialog
@@ -318,16 +326,12 @@ fun GitConflictResolutionDialog(
                             onDismiss()
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text("Abbrechen bestätigen")
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showAbortConfirmDialog = false }) {
-                    Text("Abbrechen")
-                }
-            }
+            dismissButton = { TextButton(onClick = { showAbortConfirmDialog = false }) { Text("Abbrechen") } },
         )
     }
 
@@ -343,7 +347,7 @@ fun GitConflictResolutionDialog(
                     OutlinedTextField(
                         value = mergeCommitMessage,
                         onValueChange = { mergeCommitMessage = it },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             },
@@ -361,11 +365,7 @@ fun GitConflictResolutionDialog(
                     Text("Commit & Fertigstellen")
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showCommitDialog = false }) {
-                    Text("Abbrechen")
-                }
-            }
+            dismissButton = { TextButton(onClick = { showCommitDialog = false }) { Text("Abbrechen") } },
         )
     }
 }

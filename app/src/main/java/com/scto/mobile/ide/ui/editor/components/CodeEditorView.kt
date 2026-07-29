@@ -46,7 +46,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer

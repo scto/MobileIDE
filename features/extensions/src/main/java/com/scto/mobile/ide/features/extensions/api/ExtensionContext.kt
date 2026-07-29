@@ -9,14 +9,14 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.content.res.Resources
 import androidx.annotation.Keep
-import com.scto.mobile.ide.features.extensions.api.XedExtensionPoint
+import com.scto.mobile.ide.features.extensions.api.MobileIDEExtensionPoint
 import com.scto.mobile.ide.features.extensions.api.logDebug
 import com.scto.mobile.ide.features.extensions.api.logError
 import com.scto.mobile.ide.features.extensions.api.logInfo
 import com.scto.mobile.ide.features.extensions.api.logWarn
 import kotlinx.coroutines.CoroutineScope
 
-@XedExtensionPoint
+@MobileIDEExtensionPoint
 @Keep
 class ExtensionContext(val extension: LocalExtension, val appContext: Context, val scope: CoroutineScope) {
     val settings = SharedPrefExtensionSettings(extension.id)

@@ -165,6 +165,30 @@ object Settings {
         get() = Preference.getBoolean(key = "git_colorize_names", default = true)
         set(value) = Preference.setBoolean(key = "git_colorize_names", value)
 
+    var git_username
+        get() = Preference.getString(key = "git_username", default = "")
+        set(value) = Preference.setString(key = "git_username", value)
+
+    var git_password
+        get() = Preference.getString(key = "git_password", default = "")
+        set(value) = Preference.setString(key = "git_password", value)
+
+    var git_name
+        get() = Preference.getString(key = "git_name", default = "")
+        set(value) = Preference.setString(key = "git_name", value)
+
+    var git_email
+        get() = Preference.getString(key = "git_email", default = "")
+        set(value) = Preference.setString(key = "git_email", value)
+
+    var git_submodules
+        get() = Preference.getBoolean(key = "git_submodules", default = true)
+        set(value) = Preference.setBoolean(key = "git_submodules", value)
+
+    var git_recursive_submodules
+        get() = Preference.getBoolean(key = "git_recursive_submodules", default = true)
+        set(value) = Preference.setBoolean(key = "git_recursive_submodules", value)
+
     var icon_pack
         get() = Preference.getString(key = "icon_pack", default = "default")
         set(value) = Preference.setString(key = "icon_pack", value)

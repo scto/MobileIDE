@@ -7,11 +7,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.scto.mobile.ide.components.DoubleInputDialog
-import com.scto.mobile.ide.components.SettingsItem
+import com.scto.mobile.ide.core.terminal.ui.components.SettingsItem
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceGroup
 import com.scto.mobile.ide.components.compose.preferences.base.PreferenceLayout
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 
 @Composable
 fun GitSettings() {

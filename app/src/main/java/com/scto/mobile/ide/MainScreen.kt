@@ -24,15 +24,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.scto.mobile.ide.utils.LogConfigRepository
-import com.scto.mobile.ide.utils.LogConfigState
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
+import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.editor.CodeEditScreen
 import com.scto.mobile.ide.ui.editor.doc.JsInterfaceDocScreen
@@ -45,8 +43,9 @@ import com.scto.mobile.ide.ui.settings.EditorScreen
 import com.scto.mobile.ide.ui.settings.LspSettingsScreen
 import com.scto.mobile.ide.ui.settings.SettingsScreen
 import com.scto.mobile.ide.ui.settings.ThemeSettingsScreen
-import com.scto.mobile.ide.features.terminal.ui.terminal.TerminalScreen
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
+import com.scto.mobile.ide.utils.LogConfigRepository
+import com.scto.mobile.ide.utils.LogConfigState
 import kotlinx.coroutines.launch
 
 @Composable

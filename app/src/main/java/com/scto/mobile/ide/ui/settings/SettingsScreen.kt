@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,20 +61,17 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
-import com.scto.mobile.ide.utils.AppLanguageManager
-import com.scto.mobile.ide.utils.AppLanguageOption
-import com.scto.mobile.ide.utils.LogConfigRepository
-import com.scto.mobile.ide.utils.LogConfigState
-import com.scto.mobile.ide.core.common.utils.safeNavigate
-import com.scto.mobile.ide.core.common.utils.PermissionManager
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.safeNavigate
+import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import com.scto.mobile.ide.files.sandboxHomeDir
-import com.scto.mobile.ide.utils.ThemeState
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.DirectorySelector
-import androidx.compose.runtime.mutableLongStateOf
-import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import com.scto.mobile.ide.ui.welcome.themeColors
+import com.scto.mobile.ide.utils.AppLanguageManager
+import com.scto.mobile.ide.utils.AppLanguageOption
+import com.scto.mobile.ide.utils.LogConfigState
+import com.scto.mobile.ide.utils.ThemeState
 import java.io.File
 import kotlin.concurrent.thread
 import kotlinx.coroutines.Dispatchers
@@ -194,8 +192,12 @@ fun SettingsScreen(
     var scrollbackLines by remember {
         mutableFloatStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_scrollback_lines.toFloat())
     }
-    var closeBehavior by remember { mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior) }
-    var colorscheme by remember { mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme) }
+    var closeBehavior by remember {
+        mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior)
+    }
+    var colorscheme by remember {
+        mutableStateOf(com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme)
+    }
 
     LaunchedEffect(terminalFontSize) {
         com.scto.mobile.ide.core.terminal.settings.Settings.terminal_font_size = terminalFontSize.toInt()
@@ -203,8 +205,12 @@ fun SettingsScreen(
     LaunchedEffect(scrollbackLines) {
         com.scto.mobile.ide.core.terminal.settings.Settings.terminal_scrollback_lines = scrollbackLines.toInt()
     }
-    LaunchedEffect(closeBehavior) { com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior = closeBehavior }
-    LaunchedEffect(colorscheme) { com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme = colorscheme }
+    LaunchedEffect(closeBehavior) {
+        com.scto.mobile.ide.core.terminal.settings.Settings.terminal_close_behavior = closeBehavior
+    }
+    LaunchedEffect(colorscheme) {
+        com.scto.mobile.ide.core.terminal.settings.Settings.terminal_colorscheme = colorscheme
+    }
 
     var activeInstallJobName by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
@@ -241,11 +247,15 @@ fun SettingsScreen(
                 File(hostSdk, "platforms/android-35").exists() || File(distroSdk, "platforms/android-35").exists()
 
             isBuildTools35Installed =
-                File(hostSdk, "build-tools/35.0.0").exists() || File(distroSdk, "build-tools/35.0.0").exists() ||
-                    File(hostSdk, "build-tools/35.0.1").exists() || File(distroSdk, "build-tools/35.0.1").exists()
+                File(hostSdk, "build-tools/35.0.0").exists() ||
+                    File(distroSdk, "build-tools/35.0.0").exists() ||
+                    File(hostSdk, "build-tools/35.0.1").exists() ||
+                    File(distroSdk, "build-tools/35.0.1").exists()
             isBuildTools36Installed =
-                File(hostSdk, "build-tools/36.0.0").exists() || File(distroSdk, "build-tools/36.0.0").exists() ||
-                    File(hostSdk, "build-tools/36.0.1").exists() || File(distroSdk, "build-tools/36.0.1").exists()
+                File(hostSdk, "build-tools/36.0.0").exists() ||
+                    File(distroSdk, "build-tools/36.0.0").exists() ||
+                    File(hostSdk, "build-tools/36.0.1").exists() ||
+                    File(distroSdk, "build-tools/36.0.1").exists()
 
             isCmakeInstalled = getDistroFile("usr/bin/cmake").exists()
             isNdkInstalled =
@@ -331,12 +341,13 @@ fun SettingsScreen(
         val fullCommand = DistroManager.buildProotCommand(context, arrayOf("sh", "-c", command))
         val env = DistroManager.getProotEnv(context)
         return try {
-            val process = ProcessBuilder(fullCommand)
-                .apply {
-                    environment().putAll(env)
-                    redirectErrorStream(true)
-                }
-                .start()
+            val process =
+                ProcessBuilder(fullCommand)
+                    .apply {
+                        environment().putAll(env)
+                        redirectErrorStream(true)
+                    }
+                    .start()
             val output = process.inputStream.bufferedReader().readText()
             process.waitFor()
             com.scto.mobile.ide.core.terminal.exec.ProcessResult(process.exitValue(), output)
@@ -352,16 +363,19 @@ fun SettingsScreen(
         }
 
         thread {
-            val prereqResult = kotlinx.coroutines.runBlocking {
-                com.scto.mobile.ide.core.terminal.exec.CommandLineToolsPrerequisites.ensureCommandLineToolsPrerequisites(
-                    context = context,
-                    distroName = selectedDistro,
-                    executeInContainer = ::executeInContainerSync
-                )
-            }
+            val prereqResult =
+                kotlinx.coroutines.runBlocking {
+                    com.scto.mobile.ide.core.terminal.exec.CommandLineToolsPrerequisites
+                        .ensureCommandLineToolsPrerequisites(
+                            context = context,
+                            distroName = selectedDistro,
+                            executeInContainer = ::executeInContainerSync,
+                        )
+                }
 
             if (prereqResult.isFailure) {
-                val errorMsg = prereqResult.exceptionOrNull()?.message ?: "Voraussetzungen konnten nicht installiert werden"
+                val errorMsg =
+                    prereqResult.exceptionOrNull()?.message ?: "Voraussetzungen konnten nicht installiert werden"
                 (context as? android.app.Activity)?.runOnUiThread {
                     activeInstallJobName = null
                     Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
@@ -388,20 +402,22 @@ fun SettingsScreen(
                     activeInstallJobName = null
                     if (success) {
                         Toast.makeText(
-                            context,
-                            context.getString(R.string.toast_install_success, jobName),
-                            Toast.LENGTH_LONG,
-                        ).show()
+                                context,
+                                context.getString(R.string.toast_install_success, jobName),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     } else {
                         Toast.makeText(
-                            context,
-                            context.getString(
-                                R.string.toast_install_failed,
-                                jobName,
-                                "Exit code " + process.exitValue(),
-                            ),
-                            Toast.LENGTH_LONG,
-                        ).show()
+                                context,
+                                context.getString(
+                                    R.string.toast_install_failed,
+                                    jobName,
+                                    "Exit code " + process.exitValue(),
+                                ),
+                                Toast.LENGTH_LONG,
+                            )
+                            .show()
                     }
                     refreshTrigger++
                 }
@@ -482,9 +498,7 @@ fun SettingsScreen(
                         isReinstalling = true
                         Toast.makeText(context, R.string.toast_terminal_reinstall_start, Toast.LENGTH_SHORT).show()
                         coroutineScope.launch {
-                            com.scto.mobile.ide.features.terminal.ui.SetupWorker.reinstallTerminal(
-                                context = context
-                            )
+                            com.scto.mobile.ide.features.terminal.ui.SetupWorker.reinstallTerminal(context = context)
                             isReinstalling = false
                             Toast.makeText(context, R.string.toast_terminal_reinstall_success, Toast.LENGTH_SHORT)
                                 .show()
@@ -508,10 +522,17 @@ fun SettingsScreen(
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Terminal,
                     title = "Terminal Installed",
-                    subtitle = if (isTerminalInstalled) "Ja (is_terminal_installed = true)" else "Nein (is_terminal_installed = false)",
+                    subtitle =
+                        if (isTerminalInstalled) "Ja (is_terminal_installed = true)"
+                        else "Nein (is_terminal_installed = false)",
                     onClick = {
-                        Toast.makeText(context, "Terminal Status: ${if (isTerminalInstalled) "Installiert" else "Nicht installiert"}", Toast.LENGTH_SHORT).show()
-                    }
+                        Toast.makeText(
+                                context,
+                                "Terminal Status: ${if (isTerminalInstalled) "Installiert" else "Nicht installiert"}",
+                                Toast.LENGTH_SHORT,
+                            )
+                            .show()
+                    },
                 )
             }
 
@@ -1854,161 +1875,165 @@ fun TerminalSettingsItem(
         }
     }
 
-@Composable
-fun BuildToolRow(
-    name: String,
-    isInstalled: Boolean,
-    infoText: String? = null,
-    onInstall: () -> Unit,
-    customInstallButton: @Composable (() -> Unit)? = null,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+    @Composable
+    fun BuildToolRow(
+        name: String,
+        isInstalled: Boolean,
+        infoText: String? = null,
+        onInstall: () -> Unit,
+        customInstallButton: @Composable (() -> Unit)? = null,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Icon(
-                    imageVector = if (isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
-                    contentDescription = null,
-                    tint = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                    modifier = Modifier.size(16.dp),
-                )
-                Text(
-                    text =
-                        if (isInstalled) infoText ?: stringResource(R.string.status_installed)
-                        else stringResource(R.string.status_not_installed),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Icon(
+                        imageVector = if (isInstalled) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                        contentDescription = null,
+                        tint = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        text =
+                            if (isInstalled) infoText ?: stringResource(R.string.status_installed)
+                            else stringResource(R.string.status_not_installed),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isInstalled) Color(0xFF4CAF50) else Color(0xFFF44336),
+                    )
+                }
             }
-        }
-        if (customInstallButton != null) {
-            customInstallButton()
-        } else {
-            Button(
-                onClick = onInstall,
-                enabled = !isInstalled,
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-            ) {
-                Text(stringResource(R.string.action_install))
+            if (customInstallButton != null) {
+                customInstallButton()
+            } else {
+                Button(
+                    onClick = onInstall,
+                    enabled = !isInstalled,
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
+                ) {
+                    Text(stringResource(R.string.action_install))
+                }
             }
         }
     }
-}
 
-@Composable
-fun LspSettingsItem(
-    isJdtlsInstalled: Boolean,
-    isKotlinLsInstalled: Boolean,
-    isTsLsInstalled: Boolean,
-    isWebLsInstalled: Boolean,
-    onInstall: (String, String) -> Unit,
-) {
-    var expanded by rememberSaveable { mutableStateOf(true) }
-    val expandDuration = 200
-    val snappyEasing = LinearOutSlowInEasing
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth(),
+    @Composable
+    fun LspSettingsItem(
+        isJdtlsInstalled: Boolean,
+        isKotlinLsInstalled: Boolean,
+        isTsLsInstalled: Boolean,
+        isWebLsInstalled: Boolean,
+        onInstall: (String, String) -> Unit,
     ) {
-        Column(
-            modifier =
-                Modifier.animateContentSize(
-                    animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
-                )
+        var expanded by rememberSaveable { mutableStateOf(true) }
+        val expandDuration = 200
+        val snappyEasing = LinearOutSlowInEasing
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Outlined.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.settings_lsp_title),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            Column(
+                modifier =
+                    Modifier.animateContentSize(
+                        animationSpec = tween(durationMillis = expandDuration, easing = snappyEasing)
                     )
-                    if (!expanded)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Outlined.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(R.string.settings_lsp_summary),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            text = stringResource(R.string.settings_lsp_title),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         )
+                        if (!expanded)
+                            Text(
+                                text = stringResource(R.string.settings_lsp_summary),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 2.dp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                    }
+                    val rotation by
+                        animateFloatAsState(
+                            targetValue = if (expanded) 180f else 0f,
+                            label = "ArrowRotation",
+                            animationSpec = tween(expandDuration),
+                        )
+                    Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
                 }
-                val rotation by
-                    animateFloatAsState(
-                        targetValue = if (expanded) 180f else 0f,
-                        label = "ArrowRotation",
-                        animationSpec = tween(expandDuration),
-                    )
-                Icon(Icons.Filled.ExpandMore, contentDescription = null, modifier = Modifier.rotate(rotation))
-            }
 
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn(tween(expandDuration)) + expandVertically(tween(expandDuration, easing = snappyEasing)),
-                exit = fadeOut(tween(200)) + shrinkVertically(tween(200, easing = snappyEasing)),
-            ) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(16.dp))
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter =
+                        fadeIn(tween(expandDuration)) + expandVertically(tween(expandDuration, easing = snappyEasing)),
+                    exit = fadeOut(tween(200)) + shrinkVertically(tween(200, easing = snappyEasing)),
+                ) {
+                    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_java),
-                            isInstalled = isJdtlsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Java LSP (jdtls)",
-                                    "apk add openjdk17 jdtls || apt install -y openjdk-17-jdk jdtls",
-                                )
-                            },
-                        )
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_kotlin),
-                            isInstalled = isKotlinLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Kotlin LSP",
-                                    "apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server || apt install -y kotlin-language-server",
-                                )
-                            },
-                        )
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_typescript),
-                            isInstalled = isTsLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "TypeScript LSP",
-                                    "apk add nodejs npm || apt install -y nodejs npm && npm install -g typescript typescript-language-server",
-                                )
-                            },
-                        )
-                        BuildToolRow(
-                            name = stringResource(R.string.settings_lsp_web),
-                            isInstalled = isWebLsInstalled,
-                            onInstall = {
-                                onInstall(
-                                    "Web LSPs",
-                                    "apk add nodejs npm || apt install -y nodejs npm && npm install -g vscode-langservers-extracted",
-                                )
-                            },
-                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            BuildToolRow(
+                                name = stringResource(R.string.settings_lsp_java),
+                                isInstalled = isJdtlsInstalled,
+                                onInstall = {
+                                    onInstall(
+                                        "Java LSP (jdtls)",
+                                        "apk add openjdk17 jdtls || apt install -y openjdk-17-jdk jdtls",
+                                    )
+                                },
+                            )
+                            BuildToolRow(
+                                name = stringResource(R.string.settings_lsp_kotlin),
+                                isInstalled = isKotlinLsInstalled,
+                                onInstall = {
+                                    onInstall(
+                                        "Kotlin LSP",
+                                        "apk add -X http://dl-cdn.alpinelinux.org/alpine/edge/testing kotlin-language-server || apt install -y kotlin-language-server",
+                                    )
+                                },
+                            )
+                            BuildToolRow(
+                                name = stringResource(R.string.settings_lsp_typescript),
+                                isInstalled = isTsLsInstalled,
+                                onInstall = {
+                                    onInstall(
+                                        "TypeScript LSP",
+                                        "apk add nodejs npm || apt install -y nodejs npm && npm install -g typescript typescript-language-server",
+                                    )
+                                },
+                            )
+                            BuildToolRow(
+                                name = stringResource(R.string.settings_lsp_web),
+                                isInstalled = isWebLsInstalled,
+                                onInstall = {
+                                    onInstall(
+                                        "Web LSPs",
+                                        "apk add nodejs npm || apt install -y nodejs npm && npm install -g vscode-langservers-extracted",
+                                    )
+                                },
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }

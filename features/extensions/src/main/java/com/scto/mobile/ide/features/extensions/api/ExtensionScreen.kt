@@ -13,7 +13,7 @@ import androidx.compose.runtime.CompositionContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 
-@XedExtensionPoint
+@MobileIDEExtensionPoint
 abstract class ExtensionScreen {
     /**
      * The [ComponentActivity] that hosts this extension screen. This property provides access to the activity context

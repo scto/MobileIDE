@@ -12,7 +12,7 @@ public final class TerminalColors {
      * The current terminal colors, which are normally set from the color theme, but may be set dynamically with the OSC
      * 4 control sequence.
      */
-    public final int[] mCurrentColors = new int[TextStyle.NUM_INDEXED_COLORS];
+    public final int[] mCurrentColors = new int[TextStyle.NUM_INDEMOBILEIDE_COLORS];
 
     /** Create a new instance with default colors from the theme. */
     public TerminalColors() {
@@ -26,7 +26,7 @@ public final class TerminalColors {
 
     /** Reset all indexed colors with the default color from the color theme. */
     public void reset() {
-        System.arraycopy(COLOR_SCHEME.mDefaultColors, 0, mCurrentColors, 0, TextStyle.NUM_INDEXED_COLORS);
+        System.arraycopy(COLOR_SCHEME.mDefaultColors, 0, mCurrentColors, 0, TextStyle.NUM_INDEMOBILEIDE_COLORS);
     }
 
     /**

@@ -104,7 +104,7 @@ struct SysVIpcSharedMem {
 
 struct SysVIpcNamespace {
 	/** Array of Message Queues
-	 * Since arrays are 0-indemobileide and queues are 1-indemobileide,
+	 * Since arrays are 0-indexed and queues are 1-indexed,
 	 * queues with id is at queues[id-1] */
 	struct SysVIpcMsgQueue *queues;
 	struct SysVIpcSemaphore *semaphores;

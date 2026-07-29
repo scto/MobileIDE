@@ -18,8 +18,6 @@
 
 package com.scto.mobile.ide.utils
 
-import com.scto.mobile.ide.core.common.utils.LogCatcher
-
 import android.content.Context
 import android.os.Build
 import androidx.compose.ui.graphics.Color
@@ -33,6 +31,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.materialkolor.PaletteStyle
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

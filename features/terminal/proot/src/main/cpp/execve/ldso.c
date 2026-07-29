@@ -118,7 +118,7 @@ int ldso_env_passthru(const Tracee *tracee, ArrayOfXPointers *envp, ArrayOfXPoin
 
 		/* When a host program executes a guest program, use
 		 * the value of LD_LIBRARY_PATH as it was before being
-		 * swapped by the mimobileide-mode support.  */
+		 * swapped by the mixed-mode support.  */
 		if (   tracee->host_ldso_paths != NULL
 		    && tracee->guest_ldso_paths != NULL
 		    && is_env_name(env, "LD_LIBRARY_PATH")
@@ -177,7 +177,7 @@ int ldso_env_passthru(const Tracee *tracee, ArrayOfXPointers *envp, ArrayOfXPoin
 }
 
 /**
- * Add to @host_ldso_paths the list of @paths prefimobileide with the path
+ * Add to @host_ldso_paths the list of @paths prefixed with the path
  * to the host rootfs.
  */
 static int add_host_ldso_paths(char host_ldso_paths[ARG_MAX], const char *paths)

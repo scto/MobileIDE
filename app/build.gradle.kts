@@ -62,7 +62,7 @@ val acsProps =
 
 android {
     namespace = libs.versions.applicationId.get()
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = 36 // libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = libs.versions.applicationId.get()
@@ -347,7 +347,7 @@ dependencies {
     implementation(project(":core:apk-builder"))
     implementation(project(":core:tooling:tooling-api"))
     implementation(project(":core:tooling:tooling-impl"))
-    implementation(project(":core:commands"))
+    // // implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
     implementation(project(":features:extensions"))
     implementation(project(":core:common"))

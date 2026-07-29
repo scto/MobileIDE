@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateListOf
 import com.scto.mobile.ide.DefaultScope
 import com.scto.mobile.ide.events.Events
 import com.scto.mobile.ide.features.extensions.api.MobileIDEExtensionPoint
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
 import com.scto.mobile.ide.features.runner.runners.MobileIDEProjectRunner
 import com.scto.mobile.ide.features.runner.runners.web.html.HtmlRunner
 import com.scto.mobile.ide.features.runner.runners.web.markdown.MarkdownRunner
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.utils.errorDialog
 import kotlinx.coroutines.launch
@@ -104,26 +104,27 @@ object RunnerManager {
                 Events.publish(RunnerEvent.RunnerRun(runner))
             }
         } else {
-            val options = availableRunners.map { runner ->
-                object : RunnableOption {
-                    override val label: String = runner.label
+            val options =
+                availableRunners.map { runner ->
+                    object : RunnableOption {
+                        override val label: String = runner.label
 
-                    override fun getIcon(context: Context): Icon? = runner.getIcon(context)
+                        override fun getIcon(context: Context): Icon? = runner.getIcon(context)
 
-                    override fun run(activity: Activity) {
-                        DefaultScope.launch {
-                            beforeRun()
-                            if (runner is FileRunner && fileObject != null) {
-                                runner.run(activity, fileObject)
-                            } else if (runner is ProjectRunner && projectRoot != null) {
-                                runner.run(activity, projectRoot)
+                        override fun run(activity: Activity) {
+                            DefaultScope.launch {
+                                beforeRun()
+                                if (runner is FileRunner && fileObject != null) {
+                                    runner.run(activity, fileObject)
+                                } else if (runner is ProjectRunner && projectRoot != null) {
+                                    runner.run(activity, projectRoot)
+                                }
+                                Settings.runs += 1
+                                Events.publish(RunnerEvent.RunnerRun(runner))
                             }
-                            Settings.runs += 1
-                            Events.publish(RunnerEvent.RunnerRun(runner))
                         }
                     }
                 }
-            }
             onMultipleRunners.invoke(options)
         }
     }

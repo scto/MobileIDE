@@ -1,10 +1,10 @@
 package com.scto.mobile.ide.ui.editor.intelligent
 
 import android.view.KeyEvent
-import io.github.rosemoe.sora.widget.CodeEditor
-import io.github.rosemoe.sora.event.EditorKeyEvent
 import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.terminal.settings.Settings
+import io.github.rosemoe.sora.event.EditorKeyEvent
+import io.github.rosemoe.sora.widget.CodeEditor
 
 object BulletContinuation : IntelligentFeature() {
     override val id: String = "md.bullet_continuation"

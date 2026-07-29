@@ -18,11 +18,10 @@
 
 package com.scto.mobile.ide.utils
 
-import com.scto.mobile.ide.core.common.utils.LogCatcher
-
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 
 object WelcomePreferences {
     private const val PREFS_NAME = "welcome_prefs"

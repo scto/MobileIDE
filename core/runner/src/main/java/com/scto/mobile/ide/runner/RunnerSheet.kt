@@ -1,8 +1,10 @@
 package com.scto.mobile.ide.runner
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -13,10 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import com.scto.mobile.ide.core.common.icons.Icon
-import com.scto.mobile.ide.core.terminal.resources.drawables
 import com.scto.mobile.ide.core.terminal.resources.strings
 
 @Composable
@@ -39,7 +37,17 @@ fun RunnerSheet() {
                 RunnerUI.runnersToShow.forEach { runner ->
                     val activity = LocalActivity.current
 
-                    Text(text = runner.label, modifier = Modifier.fillMaxWidth().clickable { activity?.let { runner.run(it) }; RunnerUI.showRunnerDialog = false; RunnerUI.runnersToShow = emptyList() }.padding(16.dp))
+                    Text(
+                        text = runner.label,
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    activity?.let { runner.run(it) }
+                                    RunnerUI.showRunnerDialog = false
+                                    RunnerUI.runnersToShow = emptyList()
+                                }
+                                .padding(16.dp),
+                    )
                 }
             }
         }

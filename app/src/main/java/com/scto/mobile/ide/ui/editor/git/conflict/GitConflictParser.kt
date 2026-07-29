@@ -1,14 +1,12 @@
 package com.scto.mobile.ide.ui.editor.git.conflict
 
-import java.io.File
-
 data class ConflictChunk(
     val id: Int,
     val localText: String,
     val incomingText: String,
     val baseText: String? = null,
     var resolvedText: String? = null,
-    var isResolved: Boolean = false
+    var isResolved: Boolean = false,
 )
 
 data class ParsedConflictFile(
@@ -16,7 +14,7 @@ data class ParsedConflictFile(
     val totalChunksCount: Int,
     val resolvedChunksCount: Int,
     val isFullyResolved: Boolean,
-    val chunks: List<ConflictChunk>
+    val chunks: List<ConflictChunk>,
 )
 
 object GitConflictParser {
@@ -57,13 +55,12 @@ object GitConflictParser {
                         ConflictChunk(
                             id = chunkId++,
                             localText = localLines.joinToString("\n"),
-                            incomingText = incomingLines.joinToString("\n")
+                            incomingText = incomingLines.joinToString("\n"),
                         )
                     )
                 }
                 inConflict -> {
-                    if (inLocal) localLines.add(line)
-                    else if (inIncoming) incomingLines.add(line)
+                    if (inLocal) localLines.add(line) else if (inIncoming) incomingLines.add(line)
                 }
             }
         }
@@ -74,7 +71,7 @@ object GitConflictParser {
             totalChunksCount = chunks.size,
             resolvedChunksCount = resolvedCount,
             isFullyResolved = chunks.isNotEmpty() && resolvedCount == chunks.size,
-            chunks = chunks
+            chunks = chunks,
         )
     }
 

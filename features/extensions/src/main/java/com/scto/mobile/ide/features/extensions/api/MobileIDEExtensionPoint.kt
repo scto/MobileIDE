@@ -5,4 +5,4 @@ package com.scto.mobile.ide.features.extensions.api
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
 @Retention(AnnotationRetention.SOURCE)
-annotation class XedExtensionPoint
+annotation class MobileIDEExtensionPoint

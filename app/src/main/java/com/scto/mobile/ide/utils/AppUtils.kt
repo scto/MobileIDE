@@ -2,10 +2,10 @@ package com.scto.mobile.ide.core.common.utils
 
 import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.common.files.FileObject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private val binaryExtensions: Set<String> =
     (BuiltinFileType.IMAGE.extensions +

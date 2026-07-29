@@ -3,7 +3,7 @@ package com.scto.mobile.ide.lsp
 import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
-import com.scto.mobile.ide.features.extensions.api.XedExtensionPoint
+import com.scto.mobile.ide.features.extensions.api.MobileIDEExtensionPoint
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
@@ -205,14 +205,14 @@ object LspRegistry {
             ?: _extensionServers.find { it.id == id }
     }
 
-    @XedExtensionPoint
+    @MobileIDEExtensionPoint
     fun registerServer(server: LspServer) {
         if (!_extensionServers.contains(server)) {
             _extensionServers.add(server)
         }
     }
 
-    @XedExtensionPoint
+    @MobileIDEExtensionPoint
     fun unregisterServer(server: LspServer) {
         _extensionServers.remove(server)
     }

@@ -7,14 +7,14 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import com.scto.mobile.ide.activities.settings.SettingsRoutes
 import com.scto.mobile.ide.activities.settings.settingsNavController
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.getFilledString
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.features.runner.FileRunner
 import com.scto.mobile.ide.features.runner.runners.web.HttpServer
+import com.scto.mobile.ide.file.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.resources.getFilledString
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.utils.toast
 import java.net.BindException

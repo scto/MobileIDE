@@ -67,7 +67,7 @@ include(":core:tooling:tooling-impl")
 include(":core:tooling:tooling-server")
 include(":features:extensions")
 include(":core:lsp")
-include(":core:commands")
+// include(":core:commands")
 
 include(":extension-languages")
 

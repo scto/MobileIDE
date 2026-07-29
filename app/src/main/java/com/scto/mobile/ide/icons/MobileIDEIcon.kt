@@ -18,7 +18,6 @@
 
 package com.scto.mobile.ide.icons
 
-import com.scto.mobile.ide.core.common.icons.Icon as CoreIcon
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
+import com.scto.mobile.ide.core.common.icons.Icon as CoreIcon
 
 @Composable
 fun MobileIDEIcon(

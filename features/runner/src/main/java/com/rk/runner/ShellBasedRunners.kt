@@ -7,12 +7,12 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.scto.mobile.ide.DefaultScope
 import com.scto.mobile.ide.TerminalLauncher
-import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.file.child
 import com.scto.mobile.ide.file.createFileIfNot
 import com.scto.mobile.ide.file.localDir
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
 import java.io.File
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers

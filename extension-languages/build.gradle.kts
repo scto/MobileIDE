@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.scto.mobile.ide.extension.languages"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -26,7 +26,7 @@ dependencies {
     // Compile against the MobileIDE APIs
     compileOnly(project(":features:extensions"))
     compileOnly(project(":core:lsp"))
-    compileOnly(project(":core:commands"))
+    // compileOnly(project(":core:commands"))
     
     // Additional dependencies if needed
     implementation("org.eclipse.lsp4j:org.eclipse.lsp4j:0.21.1") // Or whatever version MobileIDE uses

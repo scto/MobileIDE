@@ -18,7 +18,6 @@
 
 package com.scto.mobile.ide.ui.welcome
 
-import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -31,22 +30,18 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BatteryAlert
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.scto.mobile.ide.features.terminal.ui.SetupWorker
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +54,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.PermissionManager
-import com.scto.mobile.ide.utils.ThemeState
+import com.scto.mobile.ide.features.terminal.ui.SetupWorker
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.MobileIDE_Icon
@@ -91,8 +86,6 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
         mutableIntStateOf(if (themeState.isCustomTheme) themeColors.size else themeState.selectedThemeIndex)
     }
     var isMonetEnabled by remember { mutableStateOf<Boolean>(themeState.isMonetEnabled) }
-
-
 
     val systemDark = isSystemInDarkTheme()
     val isDarkTheme =
@@ -294,9 +287,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                 when (setupState.installState) {
                     is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingJdkSelection -> {
                         com.scto.mobile.ide.features.terminal.ui.JdkSelectionDialog(
-                            onConfirmSelection = { jdk ->
-                                SetupWorker.confirmJdkSelection(context, jdk)
-                            }
+                            onConfirmSelection = { jdk -> SetupWorker.confirmJdkSelection(context, jdk) }
                         )
                     }
                     is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingBuildToolsSelection -> {
@@ -308,23 +299,17 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                     }
                     is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingPlatformSelection -> {
                         com.scto.mobile.ide.features.terminal.ui.PlatformSelectionDialog(
-                            onConfirmSelection = { platform ->
-                                SetupWorker.confirmPlatformSelection(context, platform)
-                            }
+                            onConfirmSelection = { platform -> SetupWorker.confirmPlatformSelection(context, platform) }
                         )
                     }
                     is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingNdkSelection -> {
                         com.scto.mobile.ide.features.terminal.ui.NdkSelectionDialog(
-                            onConfirmSelection = { ndk ->
-                                SetupWorker.confirmNdkSelection(context, ndk)
-                            }
+                            onConfirmSelection = { ndk -> SetupWorker.confirmNdkSelection(context, ndk) }
                         )
                     }
                     is com.scto.mobile.ide.features.terminal.ui.InstallState.AwaitingCmakeSelection -> {
                         com.scto.mobile.ide.features.terminal.ui.CmakeSelectionDialog(
-                            onConfirmSelection = { cmake ->
-                                SetupWorker.confirmCmakeSelection(context, cmake)
-                            }
+                            onConfirmSelection = { cmake -> SetupWorker.confirmCmakeSelection(context, cmake) }
                         )
                     }
                     else -> {}
@@ -334,7 +319,7 @@ fun WelcomeScreen(themeViewModel: ThemeViewModel, onWelcomeFinished: () -> Unit)
                     com.scto.mobile.ide.features.terminal.ui.TerminalSetupOverlayWindow(
                         setupState = setupState,
                         onClearLogs = { SetupWorker.clearLogs() },
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
             }
@@ -562,5 +547,3 @@ private fun ThemeSetupContent(
         }
     }
 }
-
-

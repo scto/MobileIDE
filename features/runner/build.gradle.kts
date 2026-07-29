@@ -30,11 +30,11 @@ dependencies {
     implementation(project(":core:main"))
     implementation(project(":core:components"))
     implementation(project(":core:resources"))
-    
+
     // Editor dependencies for code runner settings and markdown rendering
     implementation(project(":editor"))
     implementation(project(":editor-lsp"))
-    
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.utilcode)
@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.nanohttpd)
     implementation(libs.androidx.browser)
     implementation(libs.gson)
-    
+
     implementation(platform(libs.compose.bom))
     implementation(libs.ui)
     implementation(libs.ui.graphics)

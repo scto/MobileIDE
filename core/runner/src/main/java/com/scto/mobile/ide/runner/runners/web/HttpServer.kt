@@ -2,10 +2,10 @@ package com.scto.mobile.ide.runner.runners.web
 
 import android.content.Context
 import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.utils.isDarkTheme
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
 import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.common.utils.isDarkTheme
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.Response.Status
 import java.net.URLConnection

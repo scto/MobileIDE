@@ -97,7 +97,11 @@ object TextMateInitializer {
                     // Load grammars
                     try {
                         LogCatcher.i("TextMate", "Loading grammars from textmate/languages.json...")
-                        copyAssetsToInternalStorage(appContext, "textmate/languages.json", appContext.filesDir.absolutePath)
+                        copyAssetsToInternalStorage(
+                            appContext,
+                            "textmate/languages.json",
+                            appContext.filesDir.absolutePath,
+                        )
                         GrammarRegistry.getInstance().loadGrammars("textmate/languages.json")
                         LogCatcher.i("TextMate", "Grammars loaded successfully.")
                     } catch (e: Exception) {
@@ -126,9 +130,7 @@ object TextMateInitializer {
             file.parentFile?.mkdirs()
             try {
                 context.assets.open(assetName).use { inputStream ->
-                    java.io.FileOutputStream(file).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+                    java.io.FileOutputStream(file).use { outputStream -> inputStream.copyTo(outputStream) }
                 }
             } catch (e: Exception) {
                 LogCatcher.e("TextMate", "Failed to copy asset $assetName", e)

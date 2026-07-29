@@ -21,12 +21,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.scto.mobile.ide.components.DoubleInputDialog
-import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.file.toFileObject
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
-import kotlinx.coroutines.launch
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import java.io.File
+import kotlinx.coroutines.launch
 
 private fun validateValue(value: String): String? {
     return when {
@@ -51,10 +51,7 @@ private fun normalizeRepoUrl(url: String): String {
 }
 
 @Composable
-fun GitCloneDialog(
-    onDismiss: () -> Unit,
-    onCloneComplete: (FileObject) -> Unit,
-) {
+fun GitCloneDialog(onDismiss: () -> Unit, onCloneComplete: (FileObject) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -113,19 +110,16 @@ fun GitCloneDialog(
             onResult = { uri ->
                 uri?.let {
                     runCatching {
-                        context.contentResolver.takePersistableUriPermission(
-                            it,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                        )
-                    }
+                            context.contentResolver.takePersistableUriPermission(
+                                it,
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                            )
+                        }
                         .onFailure { it.printStackTrace() }
                     scope.launch {
                         val fileObject =
                             it.toFileObject(expectedIsFile = false)
-                                .createChild(
-                                    false,
-                                    repoURL.substringAfterLast("/").substringBeforeLast("."),
-                                )
+                                .createChild(false, repoURL.substringAfterLast("/").substringBeforeLast("."))
                         gitViewModel
                             .get()
                             ?.cloneRepository(
@@ -145,10 +139,7 @@ fun GitCloneDialog(
                                 },
                             )
                     }
-                }
-                    ?: run {
-                        onDismiss()
-                    }
+                } ?: run { onDismiss() }
             },
         )
 
@@ -171,9 +162,7 @@ fun GitCloneDialog(
             },
             firstErrorMessage = repoURLError,
             secondErrorMessage = repoBranchError,
-            onConfirm = {
-                cloneGitRepo.launch(null)
-            },
+            onConfirm = { cloneGitRepo.launch(null) },
             onDismiss = {
                 onDismiss()
                 repoURL = ""
@@ -199,10 +188,7 @@ private fun GitCloneProgressDialog(
         title = { Text(stringResource(strings.cloning)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(
-                    text = "$progressMessage ($progress/$maxProgress)",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Text(text = "$progressMessage ($progress/$maxProgress)", style = MaterialTheme.typography.bodyMedium)
                 LinearProgressIndicator(progress = { if (maxProgress > 0) progress.toFloat() / maxProgress else 0f })
             }
         },

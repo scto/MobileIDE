@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.core.common.utils.PermissionManager
-import com.scto.mobile.ide.utils.LogConfigRepository
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
 import com.scto.mobile.ide.ui.components.DirectorySelector
+import com.scto.mobile.ide.utils.LogConfigRepository
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

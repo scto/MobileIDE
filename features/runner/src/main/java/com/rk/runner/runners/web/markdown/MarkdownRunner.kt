@@ -3,13 +3,13 @@ package com.scto.mobile.ide.features.runner.runners.web.markdown
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import com.scto.mobile.ide.file.BuiltinFileType
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.features.runner.FileRunner
 import com.scto.mobile.ide.features.runner.runners.web.html.HtmlRunner
+import com.scto.mobile.ide.file.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import java.lang.ref.WeakReference
 
 var mdViewerRef = WeakReference<MDViewer?>(null)

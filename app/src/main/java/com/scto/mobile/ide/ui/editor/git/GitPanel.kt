@@ -228,17 +228,22 @@ fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewMo
         if (hasConflicts) {
             Card(
                 colors = CardDefaults.cardColors(MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.padding(8.dp).fillMaxWidth()
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.padding(8.dp).fillMaxWidth()
+                    modifier = Modifier.padding(8.dp).fillMaxWidth(),
                 ) {
-                    Text("🔴 Merge-Konflikte erkannt!", color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        "🔴 Merge-Konflikte erkannt!",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Button(
                         onClick = { showConflictResolverDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     ) {
                         Text("Konflikte lösen", style = MaterialTheme.typography.labelSmall)
                     }
@@ -253,7 +258,7 @@ fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewMo
                 onMergeCompleted = {
                     showConflictResolverDialog = false
                     viewModel.refreshAll()
-                }
+                },
             )
         }
 

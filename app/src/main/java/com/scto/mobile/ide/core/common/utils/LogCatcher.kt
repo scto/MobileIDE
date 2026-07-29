@@ -3,18 +3,18 @@ package com.scto.mobile.ide.core.common.utils
 import android.content.Context
 import com.scto.mobile.ide.utils.LogConfigState
 import com.scto.mobile.ide.utils.LogEntry
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import java.io.File
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.Collections
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 object LogCatcher {
     private var logConfig: LogConfigState? = null
@@ -54,9 +54,10 @@ object LogCatcher {
         val isEnabled = logConfig?.isLogEnabled ?: true
         if (!isEnabled) return null
 
-        val baseLogPath = logConfig?.logFilePath?.ifEmpty { null }
-            ?: contextRef?.get()?.let { (it.getExternalFilesDir("logs") ?: File(it.filesDir, "logs")).absolutePath }
-            ?: return null
+        val baseLogPath =
+            logConfig?.logFilePath?.ifEmpty { null }
+                ?: contextRef?.get()?.let { (it.getExternalFilesDir("logs") ?: File(it.filesDir, "logs")).absolutePath }
+                ?: return null
 
         val currentProj = com.scto.mobile.ide.features.terminal.ui.DistroManager.currentProject
         if (logFile == null || currentProj != cachedProject) {
@@ -92,12 +93,13 @@ object LogCatcher {
                         val context = contextRef?.get()
                         if (context != null) {
                             val fallbackDir = context.getExternalFilesDir("logs") ?: File(context.filesDir, "logs")
-                            logDir = if (!currentProj.isNullOrBlank()) {
-                                val projName = File(currentProj).name
-                                File(fallbackDir, projName)
-                            } else {
-                                fallbackDir
-                            }
+                            logDir =
+                                if (!currentProj.isNullOrBlank()) {
+                                    val projName = File(currentProj).name
+                                    File(fallbackDir, projName)
+                                } else {
+                                    fallbackDir
+                                }
                             logDir.mkdirs()
                         }
                     }

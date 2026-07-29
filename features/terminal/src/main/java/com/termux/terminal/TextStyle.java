@@ -41,7 +41,7 @@ public final class TextStyle {
     public final static int COLOR_INDEX_CURSOR = 258;
 
     /** The 256 standard color entries and the three special (foreground, background and cursor) ones. */
-    public final static int NUM_INDEXED_COLORS = 259;
+    public final static int NUM_INDEMOBILEIDE_COLORS = 259;
 
     /** Normal foreground and background colors and no effects. */
     final static long NORMAL = encode(COLOR_INDEX_FOREGROUND, COLOR_INDEX_BACKGROUND, 0);

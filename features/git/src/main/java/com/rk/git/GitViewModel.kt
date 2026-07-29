@@ -9,12 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.scto.mobile.ide.DefaultScope
 import com.scto.mobile.ide.events.Events
 import com.scto.mobile.ide.feature.FeatureRegistry
-import com.scto.mobile.ide.file.FileWrapper
+import com.scto.mobile.ide.core.common.files.FileWrapper
 import com.scto.mobile.ide.resources.getFilledString
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
-import com.scto.mobile.ide.settings.Settings
-import com.scto.mobile.ide.utils.toast
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
+import com.scto.mobile.ide.feature.FeatureRegistry
+import com.scto.mobile.ide.core.common.utils.toast
+import java.io.ByteArrayOutputStream
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -35,8 +38,6 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser
 import org.eclipse.jgit.treewalk.EmptyTreeIterator
 import org.eclipse.jgit.treewalk.FileTreeIterator
 import org.eclipse.jgit.treewalk.filter.PathFilter
-import java.io.ByteArrayOutputStream
-import java.io.File
 
 class GitViewModel : ViewModel() {
     var currentRoot = mutableStateOf<File?>(null)
@@ -159,13 +160,7 @@ class GitViewModel : ViewModel() {
                         .call()
                     done = true
                     DefaultScope.launch {
-                        Events.publish(
-                            GitEvent.RepositoryCloned(
-                                repoURL,
-                                repoBranch,
-                                FileWrapper(targetDir),
-                            )
-                        )
+                        Events.publish(GitEvent.RepositoryCloned(repoURL, repoBranch, FileWrapper(targetDir)))
                     }
                 } catch (e: TransportException) {
                     if (
@@ -211,12 +206,7 @@ class GitViewModel : ViewModel() {
                     }
                     withContext(Dispatchers.Main) { currentBranch = git.repository.branch }
                 }
-                Events.publish(
-                    GitEvent.BranchCheckedOut(
-                        root = FileWrapper(currentRoot.value!!),
-                        name = branchName,
-                    )
-                )
+                Events.publish(GitEvent.BranchCheckedOut(root = FileWrapper(currentRoot.value!!), name = branchName))
             } catch (e: Exception) {
                 toast(e.message)
             } finally {
@@ -385,9 +375,7 @@ class GitViewModel : ViewModel() {
                         newChanges
                     }
                 changes[gitRoot] = mergedChanges
-                viewModelScope.launch {
-                    Events.publish(GitEvent.WorkingTreeUpdated(FileWrapper(root), mergedChanges))
-                }
+                viewModelScope.launch { Events.publish(GitEvent.WorkingTreeUpdated(FileWrapper(root), mergedChanges)) }
             } catch (e: Exception) {
                 toast(e.message)
             } finally {
@@ -425,19 +413,9 @@ class GitViewModel : ViewModel() {
                     toast(strings.commit_complete)
                 }
                 if (amend) {
-                    Events.publish(
-                        GitEvent.CommitAmended(
-                            root = FileWrapper(currentRoot),
-                            message = message.orEmpty(),
-                        )
-                    )
+                    Events.publish(GitEvent.CommitAmended(root = FileWrapper(currentRoot), message = message.orEmpty()))
                 } else {
-                    Events.publish(
-                        GitEvent.CommitCreated(
-                            root = FileWrapper(currentRoot),
-                            message = message.orEmpty(),
-                        )
-                    )
+                    Events.publish(GitEvent.CommitCreated(root = FileWrapper(currentRoot), message = message.orEmpty()))
                 }
             } catch (e: Exception) {
                 toast(e.message)
@@ -582,9 +560,7 @@ class GitViewModel : ViewModel() {
                             val headId = repo.resolve(Constants.HEAD + "^{" + Constants.TYPE_TREE + "}")
                             val oldTree =
                                 if (headId != null) {
-                                    CanonicalTreeParser().apply {
-                                        reset(repo.newObjectReader(), headId)
-                                    }
+                                    CanonicalTreeParser().apply { reset(repo.newObjectReader(), headId) }
                                 } else {
                                     EmptyTreeIterator()
                                 }

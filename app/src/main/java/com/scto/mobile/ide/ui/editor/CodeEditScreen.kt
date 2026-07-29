@@ -19,10 +19,10 @@
 package com.scto.mobile.ide.ui.editor
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import com.scto.mobile.ide.core.tooling.impl.debugger.DebugSessionManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -45,7 +45,6 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -73,10 +72,13 @@ import androidx.navigation.NavController
 import com.scto.mobile.ide.R
 import com.scto.mobile.ide.build.ApkInstaller
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
+import com.scto.mobile.ide.core.common.utils.safeNavigate
+import com.scto.mobile.ide.features.terminal.ui.DistroManager
 import com.scto.mobile.ide.files.FileTree
 import com.scto.mobile.ide.files.FileTreeConfig
 import com.scto.mobile.ide.files.SortBy
-import com.scto.mobile.ide.core.common.utils.safeNavigate
+import com.scto.mobile.ide.lsp.LspRegistry
+import com.scto.mobile.ide.lsp.LspServer
 import com.scto.mobile.ide.ui.components.ColorPickerDialog
 import com.scto.mobile.ide.ui.components.colorToHex
 import com.scto.mobile.ide.ui.editor.aicoding.AICodingPanel
@@ -88,10 +90,6 @@ import com.scto.mobile.ide.ui.editor.git.GitPanel
 import com.scto.mobile.ide.ui.editor.git.GitViewModel
 import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
-import com.scto.mobile.ide.features.terminal.ui.DistroManager
-import android.app.Activity
-import com.scto.mobile.ide.lsp.LspRegistry
-import com.scto.mobile.ide.lsp.LspServer
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -121,14 +119,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     val snackbarHostState = remember { SnackbarHostState() }
     val gitViewModel: GitViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
-    val activity = remember(context) {
-        var ctx = context
-        while (ctx is android.content.ContextWrapper) {
-            if (ctx is Activity) return@remember ctx
-            ctx = ctx.baseContext
+    val activity =
+        remember(context) {
+            var ctx = context
+            while (ctx is android.content.ContextWrapper) {
+                if (ctx is Activity) return@remember ctx
+                ctx = ctx.baseContext
+            }
+            null
         }
-        null
-    }
 
     val activeTab = viewModel.openFiles.getOrNull(viewModel.activeFileIndex)
     val activeFile = activeTab?.file
@@ -142,9 +141,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 val fileExt = activeFile.extension.lowercase()
                 if (fileExt.isNotEmpty()) {
                     val allServers = LspRegistry.extensionServers + LspRegistry.externalServers
-                    val matchingServer = allServers.find { server ->
-                        server.supportedExtensions.contains(fileExt)
-                    }
+                    val matchingServer = allServers.find { server -> server.supportedExtensions.contains(fileExt) }
                     val isInstalled = matchingServer?.isInstalled(context) ?: true
                     withContext(Dispatchers.Main) {
                         if (matchingServer != null && !isInstalled) {
@@ -154,9 +151,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                         }
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        missingLspServer = null
-                    }
+                    withContext(Dispatchers.Main) { missingLspServer = null }
                 }
             }
         } else {
@@ -290,27 +285,40 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
 
-    val isGradleProject = remember(projectPath) {
-        File(projectPath, "build.gradle").exists() || File(projectPath, "build.gradle.kts").exists()
-    }
+    val isGradleProject =
+        remember(projectPath) {
+            File(projectPath, "build.gradle").exists() || File(projectPath, "build.gradle.kts").exists()
+        }
     var showGradleTasksDialog by remember { mutableStateOf(false) }
     var showToolingBottomSheet by remember { mutableStateOf(false) }
-    var cachedGradleTasks by remember { mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList()) }
-
-    val activeContent = activeFile?.let { file -> (viewModel.openFiles.find { it.file == file } as? com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState)?.content ?: runCatching { file.readText() }.getOrDefault("") } ?: ""
-    val previewTargets = remember(activeFile, activeContent) {
-        if (activeFile?.name?.endsWith(".kt") == true) {
-            com.scto.mobile.ide.features.layoutpreview.ComposePreviewScanner.scan(activeContent)
-        } else {
-            emptyList()
-        }
+    var cachedGradleTasks by remember {
+        mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList())
     }
+
+    val activeContent =
+        activeFile?.let { file ->
+            (viewModel.openFiles.find { it.file == file } as? com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState)
+                ?.content ?: runCatching { file.readText() }.getOrDefault("")
+        } ?: ""
+    val previewTargets =
+        remember(activeFile, activeContent) {
+            if (activeFile?.name?.endsWith(".kt") == true) {
+                com.scto.mobile.ide.features.layoutpreview.ComposePreviewScanner.scan(activeContent)
+            } else {
+                emptyList()
+            }
+        }
     var showPreviewBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(projectPath) {
         if (isGradleProject) {
             withContext(Dispatchers.IO) {
-                cachedGradleTasks = com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.getTasks(context, projectPath, forceRefresh = false)
+                cachedGradleTasks =
+                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.getTasks(
+                        context,
+                        projectPath,
+                        forceRefresh = false,
+                    )
             }
         }
     }
@@ -552,15 +560,15 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                                 isMoreMenuExpanded = false
                                             },
                                         )
-                                         DropdownMenuItem(
-                                             text = { Text("Ask AI (Aider)") },
-                                             onClick = {
-                                                 isMoreMenuExpanded = false
-                                                 showToolingBottomSheet = true
-                                             },
-                                         )
-                                         DropdownMenuItem(
-                                             text = { Text(terminalText) },
+                                        DropdownMenuItem(
+                                            text = { Text("Ask AI (Aider)") },
+                                            onClick = {
+                                                isMoreMenuExpanded = false
+                                                showToolingBottomSheet = true
+                                            },
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(terminalText) },
                                             onClick = {
                                                 isMoreMenuExpanded = false
                                                 navController.navigate("terminal")
@@ -790,9 +798,8 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     dismissedLspFile = activeFile?.absolutePath
                                     missingLspServer = null
                                 },
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .padding(top = 8.dp, start = 12.dp, end = 12.dp)
+                                modifier =
+                                    Modifier.align(Alignment.TopCenter).padding(top = 8.dp, start = 12.dp, end = 12.dp),
                             )
                         }
                     }
@@ -890,16 +897,22 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                 scope.launch {
                     showGradleTasksDialog = false
                     showToolingBottomSheet = true
-                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.runTasks(context, projectPath, tasks, flags).collect {}
+                    com.scto.mobile.ide.core.tooling.impl.GradleTaskManagerImpl.runTasks(
+                            context,
+                            projectPath,
+                            tasks,
+                            flags,
+                        )
+                        .collect {}
                 }
-            }
+            },
         )
     }
 
     if (showToolingBottomSheet) {
         com.scto.mobile.ide.core.tooling.impl.ui.ToolingBottomSheet(
             projectPath = projectPath,
-            onDismiss = { showToolingBottomSheet = false }
+            onDismiss = { showToolingBottomSheet = false },
         )
     }
 
@@ -907,7 +920,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         com.scto.mobile.ide.features.layoutpreview.ui.LayoutPreviewBottomSheet(
             projectPath = projectPath,
             targets = previewTargets,
-            onDismiss = { showPreviewBottomSheet = false }
+            onDismiss = { showPreviewBottomSheet = false },
         )
     }
 
@@ -1848,45 +1861,65 @@ private suspend fun performBuild(
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Starting build for project: $folderName")
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Project Path: $projectPath")
 
-        val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
-            .getString("selected_distro", "ubuntu") ?: "ubuntu"
+        val distroName =
+            context
+                .getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+                .getString("selected_distro", "ubuntu") ?: "ubuntu"
         val prefixDir = context.filesDir.parentFile!!
         val activeDistroDir = File(prefixDir, "local/$distroName")
         val sandboxDir = File(prefixDir, "local/sandbox")
         val distroDirs = listOf(activeDistroDir, sandboxDir).distinct().filter { it.exists() }
 
         // 1. Check OpenJDK installation
-        val isJdk17Installed = distroDirs.any { d ->
-            val jvm = File(d, "usr/lib/jvm")
-            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
-                it.name.startsWith("java-17-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
-            } ?: false)
-        }
-        val isJdk21Installed = distroDirs.any { d ->
-            val jvm = File(d, "usr/lib/jvm")
-            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
-                it.name.startsWith("java-21-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
-            } ?: false)
-        }
-        val isJdk24Installed = distroDirs.any { d ->
-            val jvm = File(d, "usr/lib/jvm")
-            jvm.exists() && jvm.isDirectory && (jvm.listFiles()?.any {
-                it.name.startsWith("java-24-openjdk") && (File(it, "bin/java").exists() || File(it, "java").exists())
-            } ?: false)
-        }
-        val isJdkInstalled = isJdk17Installed || isJdk21Installed || isJdk24Installed || distroDirs.any { d ->
-            File(d, "usr/bin/java").exists() || File(d, "usr/lib/jvm/default-java").exists()
-        }
+        val isJdk17Installed =
+            distroDirs.any { d ->
+                val jvm = File(d, "usr/lib/jvm")
+                jvm.exists() &&
+                    jvm.isDirectory &&
+                    (jvm.listFiles()?.any {
+                        it.name.startsWith("java-17-openjdk") &&
+                            (File(it, "bin/java").exists() || File(it, "java").exists())
+                    } ?: false)
+            }
+        val isJdk21Installed =
+            distroDirs.any { d ->
+                val jvm = File(d, "usr/lib/jvm")
+                jvm.exists() &&
+                    jvm.isDirectory &&
+                    (jvm.listFiles()?.any {
+                        it.name.startsWith("java-21-openjdk") &&
+                            (File(it, "bin/java").exists() || File(it, "java").exists())
+                    } ?: false)
+            }
+        val isJdk24Installed =
+            distroDirs.any { d ->
+                val jvm = File(d, "usr/lib/jvm")
+                jvm.exists() &&
+                    jvm.isDirectory &&
+                    (jvm.listFiles()?.any {
+                        it.name.startsWith("java-24-openjdk") &&
+                            (File(it, "bin/java").exists() || File(it, "java").exists())
+                    } ?: false)
+            }
+        val isJdkInstalled =
+            isJdk17Installed ||
+                isJdk21Installed ||
+                isJdk24Installed ||
+                distroDirs.any { d -> File(d, "usr/bin/java").exists() || File(d, "usr/lib/jvm/default-java").exists() }
 
         // 2. Check Gradle installation
-        val isGradleInstalled = distroDirs.any { d ->
-            File(d, "usr/bin/gradle").exists() || File(d, "usr/local/bin/gradle").exists() || File(d, "bin/gradle").exists()
-        } || File(projectPath, "gradlew").exists()
+        val isGradleInstalled =
+            distroDirs.any { d ->
+                File(d, "usr/bin/gradle").exists() ||
+                    File(d, "usr/local/bin/gradle").exists() ||
+                    File(d, "bin/gradle").exists()
+            } || File(projectPath, "gradlew").exists()
 
         // 3. Check Android SDK installation
         val appPrefix = context.filesDir.parentFile ?: context.filesDir
         val hostSdk = File(appPrefix, "local/ubuntu/root/android-sdk")
-        val distroSdks = distroDirs.map { File(it, "root/android-sdk") } + distroDirs.map { File(it, "home/android-sdk") }
+        val distroSdks =
+            distroDirs.map { File(it, "root/android-sdk") } + distroDirs.map { File(it, "home/android-sdk") }
         val isAndroidSdkInstalled = hostSdk.exists() || distroSdks.any { it.exists() }
 
         // 4. Optional: Check NDK and CMake if project has native files
@@ -1896,9 +1929,12 @@ private suspend fun performBuild(
                 File(projectPath, "CMakeLists.txt").exists() ||
                 File(projectPath, "app/CMakeLists.txt").exists()
 
-        val isCmakeInstalled = distroDirs.any { d ->
-            File(d, "usr/bin/cmake").exists() || File(d, "usr/local/bin/cmake").exists() || File(d, "bin/cmake").exists()
-        } || hostSdk.let { File(it, "cmake").exists() } || distroSdks.any { File(it, "cmake").exists() }
+        val isCmakeInstalled =
+            distroDirs.any { d ->
+                File(d, "usr/bin/cmake").exists() ||
+                    File(d, "usr/local/bin/cmake").exists() ||
+                    File(d, "bin/cmake").exists()
+            } || hostSdk.let { File(it, "cmake").exists() } || distroSdks.any { File(it, "cmake").exists() }
 
         val isNdkInstalled =
             (hostSdk.exists() && (File(hostSdk, "ndk").exists() || File(hostSdk, "ndk-bundle").exists())) ||
@@ -1972,7 +2008,10 @@ private suspend fun performBuild(
 
         // Run command inside Alpine container via PRoot
         val cmd =
-            com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+            com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
+                context,
+                arrayOf("sh", "-c", compileCmd),
+            )
 
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
 
@@ -2025,7 +2064,10 @@ private suspend fun performBuild(
             jobInput.join()
             jobError.join()
 
-            com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Build process finished with exit code: $exitCode")
+            com.scto.mobile.ide.core.common.utils.LogCatcher.i(
+                "Build",
+                "Build process finished with exit code: $exitCode",
+            )
 
             if (exitCode == 0) {
                 val apkPaths =
@@ -2044,7 +2086,10 @@ private suspend fun performBuild(
                 }
 
                 if (foundApk != null) {
-                    com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Found built APK: ${foundApk.absolutePath}")
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i(
+                        "Build",
+                        "Found built APK: ${foundApk.absolutePath}",
+                    )
                     com.scto.mobile.ide.core.common.utils.LogCatcher.i(
                         "Build",
                         "Sign/Align verification via ApkAligner/ApkSigner is ready.",
@@ -2153,8 +2198,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
     val scope = rememberCoroutineScope()
 
     val allCommands = remember {
-        (com.scto.mobile.ide.commands.CommandManager.getCommands() +
-                com.scto.mobile.ide.commands.MobileIDECommandManager.getAllCommands())
+        com.scto.mobile.ide.commands.MobileIDECommandManager.getAllCommands()
             .distinctBy { it.id }
     }
 
@@ -2209,7 +2253,7 @@ fun CommandPaletteDialog(onDismissRequest: () -> Unit, viewModel: EditorViewMode
                                     scope.launch {
                                         try {
                                             val cmdContext =
-                                                com.scto.mobile.ide.commands.MobileIDECommandContext(viewModel)
+                                                com.scto.mobile.ide.commands.MobileIDECommandContext(viewModel, context)
                                             cmd.execute(cmdContext)
                                         } catch (e: Exception) {
                                             e.printStackTrace()
@@ -2252,72 +2296,51 @@ fun LspOverlayView(
     fileExtension: String,
     onInstall: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             com.scto.mobile.ide.ui.settings.LspLogoBadge(languageName = server.languageName)
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(
-                        R.string.lsp_overlay_title,
-                        server.languageName
-                    ),
+                    text = stringResource(R.string.lsp_overlay_title, server.languageName),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = stringResource(
-                        R.string.lsp_overlay_message,
-                        server.serverName,
-                        fileExtension
-                    ),
+                    text = stringResource(R.string.lsp_overlay_message, server.serverName, fileExtension),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = onInstall,
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-            ) {
+            Button(onClick = onInstall, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
                 Icon(
                     imageVector = Icons.Default.Download,
                     contentDescription = stringResource(R.string.action_install),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = stringResource(R.string.action_install),
-                    style = MaterialTheme.typography.labelSmall
-                )
+                Text(text = stringResource(R.string.action_install), style = MaterialTheme.typography.labelSmall)
             }
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier.size(32.dp)
-            ) {
+            IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = stringResource(R.string.action_close),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }
     }
 }
-

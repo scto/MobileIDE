@@ -198,11 +198,11 @@ open class ExtensionManager(val context: Application) : CoroutineScope by Corout
             }
 
             val pm = context.packageManager
-            val xedVersionCode = PackageInfoCompat.getLongVersionCode(pm.getPackageInfo(context.packageName, 0))
+            val mobileideVersionCode = PackageInfoCompat.getLongVersionCode(pm.getPackageInfo(context.packageName, 0))
 
-            if (extensionInfo.minAppVersion != null && xedVersionCode < extensionInfo.minAppVersion) {
+            if (extensionInfo.minAppVersion != null && mobileideVersionCode < extensionInfo.minAppVersion) {
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_CLIENT)
-            } else if (extensionInfo.maxAppVersion != null && xedVersionCode > extensionInfo.maxAppVersion) {
+            } else if (extensionInfo.maxAppVersion != null && mobileideVersionCode > extensionInfo.maxAppVersion) {
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_EXTENSION)
             }
 

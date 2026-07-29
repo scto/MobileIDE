@@ -30,7 +30,7 @@ plugins {
 
 android {
     namespace = "io.github.rosemoe.sora"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = 36 // libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         multiDexEnabled = true

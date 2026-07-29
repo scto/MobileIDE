@@ -388,7 +388,7 @@ private fun TabSection(extension: Extension, scope: CoroutineScope, refreshKey: 
     val pagerState = rememberPagerState(initialPage = 0) { ExtensionRoutes.entries.size }
 
     PrimaryScrollableTabRow(edgePadding = 16.dp, selectedTabIndex = pagerState.currentPage) {
-        ExtensionRoutes.entries.forEachIndemobileide { index, destination ->
+        ExtensionRoutes.entries.forEachIndexed { index, destination ->
             LeadingIconTab(
                 icon = { MobileIDEIcon(destination.icon) },
                 selected = pagerState.currentPage == index,

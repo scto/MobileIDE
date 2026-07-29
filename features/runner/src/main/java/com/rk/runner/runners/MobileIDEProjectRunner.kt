@@ -3,13 +3,13 @@ package com.scto.mobile.ide.features.runner.runners
 import android.app.Activity
 import android.content.Context
 import com.scto.mobile.ide.TerminalLauncher
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
 import com.scto.mobile.ide.features.runner.ProjectRunner
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.mobileide.MobileIDEManager
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import kotlinx.coroutines.runBlocking
 
 object MobileIDEProjectRunner : ProjectRunner() {

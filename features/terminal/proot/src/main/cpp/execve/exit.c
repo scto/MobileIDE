@@ -208,7 +208,7 @@ static int transfer_load_script(Tracee *tracee)
 	/* Capture argv[0]'s address from the initial stack as the correct
 	 * AT_EXECFN value. The kernel sets AT_EXECFN to the loader temp file
 	 * path; argv[0] holds the actual program name. This is stored so that
-	 * prctl(PR_GET_AUXV) can be fimobileide up later in the syscall exit handler,
+	 * prctl(PR_GET_AUXV) can be fixed up later in the syscall exit handler,
 	 * since PR_GET_AUXV reads from kernel memory and bypasses the loader's
 	 * in-memory auxv patch. */
 	tracee->execfn_addr = peek_word(tracee, stack_pointer + sizeof_word(tracee));

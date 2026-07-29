@@ -18,7 +18,13 @@
 
 package com.scto.mobile.ide
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContent
@@ -27,69 +33,52 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.scto.mobile.ide.core.common.utils.*
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.features.extensions.extensionManager
 import com.scto.mobile.ide.features.extensions.loader.loadAllExtensions
 import com.scto.mobile.ide.features.extensions.manager.ExtensionManager
-import com.scto.mobile.ide.core.common.utils.*
-import com.scto.mobile.ide.utils.*
-import com.scto.mobile.ide.core.common.utils.LogCatcher
+import com.scto.mobile.ide.features.terminal.service.SessionBinderProvider
+import com.scto.mobile.ide.features.terminal.service.SessionService
+import com.scto.mobile.ide.features.terminal.ui.SetupWorker
 import com.scto.mobile.ide.ui.ThemeViewModel
 import com.scto.mobile.ide.ui.ThemeViewModelFactory
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.theme.AppTheme
 import com.scto.mobile.ide.ui.welcome.WelcomeScreen
-import com.scto.mobile.ide.features.terminal.service.SessionBinderProvider
-import com.scto.mobile.ide.features.terminal.service.SessionService
-import com.scto.mobile.ide.features.terminal.ui.SetupWorker
+import com.scto.mobile.ide.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
-import android.os.Build
 
 class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderProvider {
     override var sessionBinder: SessionService.SessionBinder? = null
     private var isBound = false
 
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as? SessionService.SessionBinder
-            sessionBinder = binder
-            isBound = true
-        }
+    private val serviceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val binder = service as? SessionService.SessionBinder
+                sessionBinder = binder
+                isBound = true
+            }
 
-        override fun onServiceDisconnected(name: ComponentName?) {
-            isBound = false
-            sessionBinder = null
+            override fun onServiceDisconnected(name: ComponentName?) {
+                isBound = false
+                sessionBinder = null
+            }
         }
-    }
 
     override fun onStart() {
         super.onStart()
@@ -173,7 +162,8 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
         extensionManager = ExtensionManager(application)
 
         // Setup a dummy extension for user testing
-        val testExtDir = java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.test_extension")
+        val testExtDir =
+            java.io.File(application.filesDir.parentFile, "local/extensions/com.scto.mobile.ide.test_extension")
         if (!testExtDir.exists()) {
             testExtDir.mkdirs()
             val manifestJson =
@@ -280,12 +270,14 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
 
                             val setupState by SetupWorker.setupState.collectAsState()
 
-                             LaunchedEffect(Unit) {
-                                 if (WelcomePreferences.isWelcomeCompleted(context) &&
-                                     WorkspaceManager.isWorkspaceConfigured(context)) {
-                                     SetupWorker.startSetupIfNeeded(context)
-                                 }
-                             }
+                            LaunchedEffect(Unit) {
+                                if (
+                                    WelcomePreferences.isWelcomeCompleted(context) &&
+                                        WorkspaceManager.isWorkspaceConfigured(context)
+                                ) {
+                                    SetupWorker.startSetupIfNeeded(context)
+                                }
+                            }
 
                             Box(modifier = Modifier.fillMaxSize()) {
                                 AnimatedContent(
@@ -302,7 +294,10 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
                                             onWelcomeFinished = {
                                                 // ✅ Core change 3: Mark as completed at the end of the welcome flow
                                                 WelcomePreferences.setWelcomeCompleted(context)
-                                                LogCatcher.i("MainActivity", "Welcome flow completed, entering main app")
+                                                LogCatcher.i(
+                                                    "MainActivity",
+                                                    "Welcome flow completed, entering main app",
+                                                )
                                                 showWelcomeScreen = false
                                             },
                                         )

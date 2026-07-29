@@ -461,34 +461,34 @@ private fun extractTemplate(
                             outputStream.write(buffer, 0, len)
                         }
                         val bytes = outputStream.toByteArray()
-                    if (isTextFile(resolvedRelativePath)) {
-                        var content = String(bytes, Charsets.UTF_8)
-                        content = content.replace("\$packageName", packageName)
-                        content = content.replace("\$packagename", packageName)
-                        content = content.replace("\$projectName", projectName)
+                        if (isTextFile(resolvedRelativePath)) {
+                            var content = String(bytes, Charsets.UTF_8)
+                            content = content.replace("\$packageName", packageName)
+                            content = content.replace("\$packagename", packageName)
+                            content = content.replace("\$projectName", projectName)
 
-                        val jniPackageName = packageName.replace(".", "_")
-                        content = content.replace("\$jniPackageName", jniPackageName)
+                            val jniPackageName = packageName.replace(".", "_")
+                            content = content.replace("\$jniPackageName", jniPackageName)
 
-                        if (targetFile.name == "gradle.properties") {
-                            content += "\nandroid.aapt2FromMavenOverride=/.mobileide/aapt2\n"
+                            if (targetFile.name == "gradle.properties") {
+                                content += "\nandroid.aapt2FromMavenOverride=/.mobileide/aapt2\n"
+                            }
+
+                            targetFile.writeText(content)
+                        } else {
+                            targetFile.writeBytes(bytes)
                         }
 
-                        targetFile.writeText(content)
-                    } else {
-                        targetFile.writeBytes(bytes)
+                        if (targetFile.name == "gradlew") {
+                            targetFile.setExecutable(true)
+                        }
                     }
-
-                    if (targetFile.name == "gradlew") {
-                        targetFile.setExecutable(true)
-                    }
+                    zipInputStream.closeEntry()
+                    entry = zipInputStream.nextEntry
                 }
-                zipInputStream.closeEntry()
-                entry = zipInputStream.nextEntry
             }
         }
     }
-}
 }
 
 private fun isTextFile(fileName: String): Boolean {

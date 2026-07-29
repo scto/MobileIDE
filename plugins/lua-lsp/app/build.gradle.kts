@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.scto.mobile.ide.demo"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.scto.mobile.ide.demo"

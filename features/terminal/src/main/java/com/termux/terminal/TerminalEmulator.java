@@ -1950,7 +1950,7 @@ public final class TerminalEmulator {
                 } else if (firstArg == 5) {
                     int color = getArg(i + 2, 0, false);
                     i += 2; // "5;P_s"
-                    if (color >= 0 && color < TextStyle.NUM_INDEXED_COLORS) {
+                    if (color >= 0 && color < TextStyle.NUM_INDEMOBILEIDE_COLORS) {
                         switch (code) {
                             case 38: mForeColor = color; break;
                             case 48: mBackColor = color; break;

@@ -10,13 +10,13 @@ import com.scto.mobile.ide.activities.settings.settingsNavController
 import com.scto.mobile.ide.core.common.files.BuiltinFileType
 import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.common.utils.toast
 import com.scto.mobile.ide.core.terminal.resources.getFilledString
 import com.scto.mobile.ide.core.terminal.resources.getString
 import com.scto.mobile.ide.core.terminal.resources.strings
+import com.scto.mobile.ide.core.terminal.settings.Settings
 import com.scto.mobile.ide.runner.Runner
 import com.scto.mobile.ide.runner.runners.web.HttpServer
-import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.core.common.utils.toast
 import java.net.BindException
 
 object HtmlRunner : Runner() {

@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.scto.mobile.ide.features.extensions"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

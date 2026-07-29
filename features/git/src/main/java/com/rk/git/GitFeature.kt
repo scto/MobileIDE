@@ -1,5 +1,7 @@
 package com.scto.mobile.ide.features.git
 
+import com.scto.mobile.ide.feature.FeatureRegistry
+
 import android.app.Application
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -21,26 +23,23 @@ import com.scto.mobile.ide.events.EditorTabEvent
 import com.scto.mobile.ide.events.EventSubscription
 import com.scto.mobile.ide.events.Events
 import com.scto.mobile.ide.events.FileTreeEvent
-import com.scto.mobile.ide.features.extensions.api.DynamicRoute
 import com.scto.mobile.ide.feature.Feature
-import com.scto.mobile.ide.feature.FeatureRegistry
+
 import com.scto.mobile.ide.feature.FeatureToggle
+import com.scto.mobile.ide.features.extensions.api.DynamicRoute
+
 import com.scto.mobile.ide.file.FileDecoration
 import com.scto.mobile.ide.file.FileDecorationProvider
 import com.scto.mobile.ide.file.FileDecorationRegistry
-import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import com.scto.mobile.ide.file.FilePropertiesProvider
 import com.scto.mobile.ide.file.FilePropertiesRegistry
 import com.scto.mobile.ide.file.FileProperty
-import com.scto.mobile.ide.features.git.template.ExtensionTemplate
-import com.scto.mobile.ide.features.git.template.IconPackTemplate
-import com.scto.mobile.ide.features.git.template.ThemeTemplate
-import com.scto.mobile.ide.icons.Icon
-import com.scto.mobile.ide.project.ProjectCategory
-import com.scto.mobile.ide.project.ProjectTemplateRegistry
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.getString
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.core.common.icons.Icon
+
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.getString
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.settings.SettingsCategory
 import com.scto.mobile.ide.settings.SettingsRegistry
@@ -56,19 +55,14 @@ var gitViewModel = WeakReference<GitViewModel?>(null)
 
 class GitFeature : Feature {
     override val toggle =
-        FeatureToggle(
-            nameRes = strings.git,
-            key = "enable_git",
-            default = true,
-            iconRes = drawables.git,
-        )
+        FeatureToggle(nameRes = strings.git, key = "enable_git", default = true, iconRes = drawables.git)
 
     private var settingsCategory: SettingsCategory? = null
     private var settingsRoute: DynamicRoute? = null
     private var serviceTabProvider: ServiceTabProvider? = null
     private var addProjectOption: AddProjectOption? = null
     private var dialogProvider: DialogProvider? = null
-    private var projectCategory: ProjectCategory? = null
+
     private val subscriptions = mutableListOf<EventSubscription>()
 
     override fun init(application: Application) {
@@ -84,20 +78,17 @@ class GitFeature : Feature {
 
         // Register Git settings route
         settingsRoute =
-            DynamicRoute(SettingsRoutes.Git.route) { _, _ -> GitSettings() }
-                .also {
-                    SettingsRegistry.registerRoute(it)
-                }
+            DynamicRoute(SettingsRoutes.Git.route) { _, _ -> GitSettings() }.also { SettingsRegistry.registerRoute(it) }
 
         FileDecorationRegistry.register(GitFileDecorationProvider)
         FilePropertiesRegistry.register(GitProperty)
 
         serviceTabProvider =
             ServiceTabProvider { owner ->
-                val viewModel = ViewModelProvider(owner)[GitViewModel::class.java]
-                gitViewModel = WeakReference(viewModel)
-                GitTab(viewModel)
-            }
+                    val viewModel = ViewModelProvider(owner)[GitViewModel::class.java]
+                    gitViewModel = WeakReference(viewModel)
+                    GitTab(viewModel)
+                }
                 .also { ServiceTabRegistry.register(it) }
 
         // Register file change notification listeners
@@ -141,32 +132,19 @@ class GitFeature : Feature {
 
         dialogProvider =
             DialogProvider {
-                if (showCloneDialog) {
-                    GitCloneDialog(
-                        onDismiss = { showCloneDialog = false },
-                        onCloneComplete = { destination ->
-                            // Add file tree tab on success
-                            MainActivity.instance?.drawerViewModel?.addFileTreeTab(destination)
-                        },
-                    )
-                }
-            }
-                .also { DialogRegistry.register(it) }
-
-        // Register MobileIDE project templates
-        projectCategory =
-            ProjectCategory(
-                    id = "mobileide_editor",
-                    label = strings.app_name.getString(),
-                    icon = Icon.ResourceIcon(drawables.mobileide_editor),
-                )
-                .also {
-                    ProjectTemplateRegistry.registerCategory(it)
-                    val templates = listOf(ExtensionTemplate, ThemeTemplate, IconPackTemplate)
-                    templates.forEach { template ->
-                        ProjectTemplateRegistry.registerTemplate(it, template)
+                    if (showCloneDialog) {
+                        GitCloneDialog(
+                            onDismiss = { showCloneDialog = false },
+                            onCloneComplete = { destination ->
+                                // Add file tree tab on success
+                                MainActivity.instance?.drawerViewModel?.addFileTreeTab(destination)
+                            },
+                        )
                     }
                 }
+                .also { DialogRegistry.register(it) }
+
+
     }
 
     override fun dispose(application: Application) {
@@ -179,11 +157,7 @@ class GitFeature : Feature {
         subscriptions.clear()
         addProjectOption?.let { AddProjectRegistry.unregister(it) }
         dialogProvider?.let { DialogRegistry.unregister(it) }
-        projectCategory?.let {
-            val templates = listOf(ExtensionTemplate, ThemeTemplate, IconPackTemplate)
-            templates.forEach { template -> ProjectTemplateRegistry.unregisterTemplate(it, template) }
-            ProjectTemplateRegistry.unregisterCategory(it)
-        }
+
     }
 }
 
@@ -201,13 +175,7 @@ object GitProperty : FilePropertiesProvider {
                 ChangeType.MODIFIED -> MaterialTheme.colorScheme.gitModified
                 ChangeType.RENAMED -> MaterialTheme.colorScheme.gitModified
             }
-        return listOf(
-            FileProperty(
-                label = stringResource(strings.git_status),
-                value = gitStatus,
-                valueColor = color,
-            )
-        )
+        return listOf(FileProperty(label = stringResource(strings.git_status), value = gitStatus, valueColor = color))
     }
 }
 

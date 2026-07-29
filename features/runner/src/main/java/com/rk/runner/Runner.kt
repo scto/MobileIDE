@@ -2,8 +2,8 @@ package com.scto.mobile.ide.features.runner
 
 import android.app.Activity
 import android.content.Context
-import com.scto.mobile.ide.file.FileObject
-import com.scto.mobile.ide.icons.Icon
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.settings.Preference
 
 abstract class Runner {

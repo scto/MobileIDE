@@ -34,7 +34,7 @@ typedef int (*write_xpointee_t)(ArrayOfXPointers *array, size_t index, const voi
 typedef int (*compare_xpointee_t)(ArrayOfXPointers *array, size_t index, const void *reference);
 typedef int (*sizeof_xpointee_t)(ArrayOfXPointers *array, size_t index);
 
-typedef struct mimobileide_pointer XPointer;
+typedef struct mixed_pointer XPointer;
 struct array_of_xpointers {
 	XPointer *_xpointers;
 	size_t length;

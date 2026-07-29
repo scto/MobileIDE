@@ -26,18 +26,11 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.combine
 import com.scto.mobile.ide.core.common.utils.WorkspaceManager
-import kotlinx.coroutines.launch
+import java.io.File
+import java.util.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mobileide_log_config")
 
@@ -100,5 +93,3 @@ class LogConfigRepository(private val context: Context) {
         context.dataStore.edit { preferences -> preferences.remove(PreferencesKeys.LOG_FILE_PATH) }
     }
 }
-
-

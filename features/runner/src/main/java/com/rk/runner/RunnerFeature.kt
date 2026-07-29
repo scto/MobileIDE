@@ -7,10 +7,10 @@ import com.scto.mobile.ide.commands.ToolbarConfiguration
 import com.scto.mobile.ide.commands.editor.RunCommand
 import com.scto.mobile.ide.components.DialogProvider
 import com.scto.mobile.ide.components.DialogRegistry
-import com.scto.mobile.ide.features.extensions.api.DynamicRoute
 import com.scto.mobile.ide.feature.Feature
-import com.scto.mobile.ide.resources.drawables
-import com.scto.mobile.ide.resources.strings
+import com.scto.mobile.ide.features.extensions.api.DynamicRoute
+import com.scto.mobile.ide.core.terminal.resources.R.drawable as drawables
+import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.SettingsCategory
 import com.scto.mobile.ide.settings.SettingsRegistry
 import com.scto.mobile.ide.settings.runners.HtmlRunnerSettings
@@ -26,10 +26,10 @@ class RunnerFeature : Feature {
         // Register RunnerSheet overlay
         dialogProvider =
             DialogProvider {
-                if (RunnerUI.showRunnerDialog) {
-                    RunnerSheet()
+                    if (RunnerUI.showRunnerDialog) {
+                        RunnerSheet()
+                    }
                 }
-            }
                 .also { DialogRegistry.register(it) }
 
         // Register settings category
@@ -51,9 +51,7 @@ class RunnerFeature : Feature {
 
         htmlRunnersRoute =
             DynamicRoute(SettingsRoutes.HtmlRunner.route) { _, _ -> HtmlRunnerSettings() }
-                .also {
-                    SettingsRegistry.registerRoute(it)
-                }
+                .also { SettingsRegistry.registerRoute(it) }
 
         // Register Run command
         CommandProvider.registerCommand(RunCommand)

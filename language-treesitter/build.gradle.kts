@@ -30,7 +30,7 @@ plugins {
 
 android {
     namespace = "io.github.rosemoe.sora.ts"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = 36 // libs.versions.compileSdk.get().toInt()
 
     //ndkVersion = "27.3.13750724" // Ersetze dies ggf. durch deine exakte NDK 27 Patch-Version
     

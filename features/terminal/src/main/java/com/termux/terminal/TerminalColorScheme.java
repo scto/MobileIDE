@@ -59,14 +59,14 @@ public final class TerminalColorScheme {
         // COLOR_INDEX_DEFAULT_FOREGROUND, COLOR_INDEX_DEFAULT_BACKGROUND and COLOR_INDEX_DEFAULT_CURSOR:
         0xffffffff, 0xff000000, 0xffffffff};
 
-    public final int[] mDefaultColors = new int[TextStyle.NUM_INDEXED_COLORS];
+    public final int[] mDefaultColors = new int[TextStyle.NUM_INDEMOBILEIDE_COLORS];
 
     public TerminalColorScheme() {
         reset();
     }
 
     private void reset() {
-        System.arraycopy(DEFAULT_COLORSCHEME, 0, mDefaultColors, 0, TextStyle.NUM_INDEXED_COLORS);
+        System.arraycopy(DEFAULT_COLORSCHEME, 0, mDefaultColors, 0, TextStyle.NUM_INDEMOBILEIDE_COLORS);
     }
 
     public void updateWith(Properties props) {

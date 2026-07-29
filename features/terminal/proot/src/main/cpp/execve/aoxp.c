@@ -36,7 +36,7 @@
 #include "tracee/abi.h"
 #include "build.h"
 
-struct mimobileide_pointer {
+struct mixed_pointer {
 	/* Pointer -- in tracee's address space -- to the current
 	 * object, if local == NULL.  */
 	word_t remote;

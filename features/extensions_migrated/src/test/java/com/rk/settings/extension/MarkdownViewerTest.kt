@@ -88,7 +88,7 @@ class MarkdownViewerTest {
     }
 
     @Test
-    fun `removeUnsupportedHtmlTags should handle mimobileide content`() {
+    fun `removeUnsupportedHtmlTags should handle mixed content`() {
         val markdown =
             """
             <p>Supported</p>
