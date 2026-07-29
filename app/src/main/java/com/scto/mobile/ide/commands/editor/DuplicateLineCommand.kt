@@ -1,26 +1,17 @@
 package com.scto.mobile.ide.commands.editor
-
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import io.github.rosemoe.sora.widget.CodeEditor
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.EditorCommand
-import com.scto.mobile.ide.commands.KeyCombination
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DuplicateLineCommand : EditorCommand() {
-    override val id: String = "editor.duplicate_line"
-
-    override val title: String = "duplicate_line"
-
+    override val id: String = "editor.duplicateline"
+    override val title: String = "duplicateline"
     override suspend fun executeEditorCommand(context: MobileIDECommandContext, tab: CodeEditorState, editor: CodeEditor) {
-        editor.duplicateLine()
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context.androidContext, "DuplicateLineCommand not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
-
-    fun isEnabled(context: EditorNonActionContext): Boolean {
-        return tab.editorState.editable
-    }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.duplicate_line)
-
-    }
+}

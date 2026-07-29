@@ -1,25 +1,17 @@
 package com.scto.mobile.ide.commands.editor
-
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import io.github.rosemoe.sora.widget.CodeEditor
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.EditorCommand
-import com.scto.mobile.ide.commands.KeyCombination
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class JumpToLineCommand : EditorCommand() {
-    override val id: String = "editor.jump_to_line"
-
-    override val title: String = "jump_to_line"
-
+    override val id: String = "editor.jumptoline"
+    override val title: String = "jumptoline"
     override suspend fun executeEditorCommand(context: MobileIDECommandContext, tab: CodeEditorState, editor: CodeEditor) {
-        tab.editorState.apply {
-            showJumpToLineDialog = true
-            jumpToLineValue = "${editor.cursor.leftLine}:${editor.cursor.leftColumn}"
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context.androidContext, "JumpToLineCommand not implemented yet", Toast.LENGTH_SHORT).show()
         }
     }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.arrow_outward)
-
-    }
+}
