@@ -37,7 +37,7 @@ dependencies {
     implementation(project(":core:tooling:tooling-api"))
     implementation(project(":core:components"))
     implementation(project(":core:apk-builder"))
-    implementation(project(":features:exec"))
+    // implementation(project(":features:exec"))
     implementation(libs.timber)
     
     // Compose & UI
