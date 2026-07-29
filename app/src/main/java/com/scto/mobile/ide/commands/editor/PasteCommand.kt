@@ -17,9 +17,7 @@ class PasteCommand : EditorCommand() {
         editor.pasteText()
     }
 
-    fun isEnabled(context: EditorNonActionContext): Boolean {
-        return tab.editorState.editable
-    }
+    
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.paste)
 

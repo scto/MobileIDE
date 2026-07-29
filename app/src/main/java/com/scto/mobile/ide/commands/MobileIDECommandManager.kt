@@ -2,7 +2,6 @@ package com.scto.mobile.ide.commands
 
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 
-data class MobileIDECommandContext(val editorViewModel: EditorViewModel) : CommandContext
 
 object MobileIDECommandManager {
     private val commands = mutableMapOf<String, Command>()
