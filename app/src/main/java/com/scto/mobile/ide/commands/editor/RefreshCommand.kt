@@ -46,6 +46,5 @@ class RefreshCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.refresh)
 
-    override val defaultKeybinds: KeyCombination =
-        KeyCombination(keyCode = KeyEvent.KEYCODE_R, ctrl = true, shift = true)
+            KeyCombination(keyCode = KeyEvent.KEYCODE_R, ctrl = true, shift = true)
 }

@@ -1,23 +1,17 @@
 package com.scto.mobile.ide.commands.editor
-
 import com.scto.mobile.ide.ui.editor.viewmodel.CodeEditorState
 import io.github.rosemoe.sora.widget.CodeEditor
 import com.scto.mobile.ide.commands.*
-
-import android.view.KeyEvent
-import com.scto.mobile.ide.commands.EditorCommand
-import com.scto.mobile.ide.commands.KeyCombination
+import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class SelectWordCommand : EditorCommand() {
-    override val id: String = "editor.select_word"
-
-    override val title: String = "select_word"
-
+    override val id: String = "editor.selectword"
+    override val title: String = "selectword"
     override suspend fun executeEditorCommand(context: MobileIDECommandContext, tab: CodeEditorState, editor: CodeEditor) {
-        editor.selectCurrentWord()
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context.androidContext, "SelectWordCommand not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
-
-    override val icon: Any? = null // Icon.ResourceIcon(drawables.select)
-
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_W, ctrl = true)
 }

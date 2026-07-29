@@ -22,5 +22,4 @@ class JumpToLineCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.arrow_outward)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_G, ctrl = true)
-}
+    }

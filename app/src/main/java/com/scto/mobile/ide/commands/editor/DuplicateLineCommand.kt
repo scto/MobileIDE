@@ -23,5 +23,4 @@ class DuplicateLineCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.duplicate_line)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_D, ctrl = true)
-}
+    }

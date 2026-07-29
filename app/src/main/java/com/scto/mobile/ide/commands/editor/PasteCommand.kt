@@ -23,5 +23,4 @@ class PasteCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.paste)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_V, ctrl = true)
-}
+    }

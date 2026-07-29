@@ -30,5 +30,4 @@ class ReplaceCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.find_replace)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_H, ctrl = true)
-}
+    }

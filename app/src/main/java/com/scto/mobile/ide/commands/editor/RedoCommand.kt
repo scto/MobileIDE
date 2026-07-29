@@ -28,5 +28,4 @@ class RedoCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.redo)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_Y, ctrl = true)
-}
+    }

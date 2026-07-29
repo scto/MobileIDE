@@ -23,5 +23,4 @@ class CutCommand : EditorCommand() {
 
     override val icon: Any? = null // Icon.ResourceIcon(drawables.cut)
 
-    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_X, ctrl = true)
-}
+    }
