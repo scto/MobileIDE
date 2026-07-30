@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -16,17 +16,16 @@ android {
         compose = true
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
 dependencies {
-    implementation(projects.core.common)
+    implementation(project(":core:common"))
     
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+        implementation(libs.material)
     
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
