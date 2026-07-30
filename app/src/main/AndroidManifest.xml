@@ -87,7 +87,7 @@
         </provider>
 
         <service
-            android:name=".ui.terminal.TerminalService"
+            android:name="com.scto.mobile.ide.features.terminal.service.SessionService"
             android:foregroundServiceType="specialUse"
             android:exported="false">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"

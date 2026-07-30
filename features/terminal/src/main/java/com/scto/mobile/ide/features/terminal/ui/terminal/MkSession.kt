@@ -46,40 +46,19 @@ object MkSession {
             }
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
 
-            val initFile: File = localBinDir().child("init-alpine-host")
-            initFile.createFileIfNot()
-            initFile.writeText(assets.open("terminal/init-alpine-host.sh").bufferedReader().use { it.readText() })
-            initFile.setExecutable(true)
-
-            localBinDir().child("init-alpine").apply {
-                createFileIfNot()
-                writeText(assets.open("terminal/init-alpine.sh").bufferedReader().use { it.readText() })
-                setExecutable(true)
+            fun copyAsset(name: String, dest: File) {
+                dest.createFileIfNot()
+                dest.writeText(assets.open("terminal/$name").bufferedReader().use { it.readText() })
+                dest.setExecutable(true)
             }
 
-            localBinDir().child("init-alpine-root").apply {
-                createFileIfNot()
-                writeText(assets.open("terminal/init-alpine-root.sh").bufferedReader().use { it.readText() })
-                setExecutable(true)
-            }
-
-            localBinDir().child("init-ubuntu").apply {
-                createFileIfNot()
-                writeText(assets.open("terminal/init-ubuntu.sh").bufferedReader().use { it.readText() })
-                setExecutable(true)
-            }
-
-            localBinDir().child("init-ubuntu-host").apply {
-                createFileIfNot()
-                writeText(assets.open("terminal/init-ubuntu-host.sh").bufferedReader().use { it.readText() })
-                setExecutable(true)
-            }
-
-            localBinDir().child("init-ubuntu-root").apply {
-                createFileIfNot()
-                writeText(assets.open("terminal/init-ubuntu-root.sh").bufferedReader().use { it.readText() })
-                setExecutable(true)
-            }
+            val initFile = localBinDir().child("init-host")
+            copyAsset("init-host.sh", initFile)
+            copyAsset("init.sh", localBinDir().child("init"))
+            copyAsset("setup.sh", localBinDir().child("setup"))
+            copyAsset("sandbox.sh", localBinDir().child("sandbox"))
+            copyAsset("utils.sh", localBinDir().child("utils"))
+            copyAsset("universal_runner.sh", localBinDir().child("universal_runner"))
 
 
             val tempDir = File(cacheDir, "tmp").also { it.mkdirs() }
@@ -107,7 +86,8 @@ object MkSession {
                 "RISH_APPLICATION_ID=${packageName}",
                 "PKG_PATH=${applicationInfo.sourceDir}",
                 "PROOT_TMP_DIR=${sessionTmpDir.absolutePath}",
-                "TMPDIR=${tempDir.absolutePath}"
+                "TMPDIR=${tempDir.absolutePath}",
+                "MOBILEIDE_DISTRO=${if (workingMode == WorkingMode.UBUNTU || workingMode == WorkingMode.UBUNTU_ROOT) "ubuntu" else "alpine"}"
             )
 
             // Do NOT set PROOT_LOADER/PROOT_LOADER32 — let proot use its embedded loader.
@@ -143,13 +123,7 @@ object MkSession {
             val args: Array<String>
 
             val shell = if (pendingCommand == null) {
-                args = when (workingMode) {
-                    WorkingMode.ALPINE -> arrayOf("-c", initFile.absolutePath)
-                    WorkingMode.ALPINE_ROOT -> arrayOf("-c", localBinDir().child("init-alpine-root").absolutePath)
-                    WorkingMode.UBUNTU -> arrayOf("-c", localBinDir().child("init-ubuntu-host").absolutePath)
-                    WorkingMode.UBUNTU_ROOT -> arrayOf("-c", localBinDir().child("init-ubuntu-root").absolutePath)
-                    else -> arrayOf()
-                }
+                args = arrayOf("-c", initFile.absolutePath)
                 "/system/bin/sh"
             } else{
                 args = pendingCommand!!.args

@@ -216,7 +216,7 @@ object SetupWorker {
                 prepareEnvironment(context)
                 withContext(Dispatchers.Main) {
                     _setupState.value = SetupState(isActive = false, isSuccess = true)
-                    SessionManager.addNewSession(context)
+                    // SessionManager.addNewSession(context) removed as TerminalScreen manages sessions
                 }
             } catch (e: Exception) {
                 Timber.tag("SetupWorker").e("Reinstallation fehlgeschlagen: ${e.message}", e)
@@ -236,7 +236,7 @@ object SetupWorker {
         val list = ArrayList(SessionManager.sessions)
         list.forEach { SessionManager.removeSession(it) }
         DistroManager.currentProject = null
-        SessionManager.addNewSession(context)
+        // SessionManager.addNewSession(context) removed as TerminalScreen manages sessions
     }
 
     /**
@@ -830,7 +830,7 @@ object SetupWorker {
                 )
 
                 withContext(Dispatchers.Main) {
-                    SessionManager.addNewSession(context)
+                    // SessionManager.addNewSession(context) removed as TerminalScreen manages sessions
                 }
             } catch (e: Exception) {
                 Timber.tag("SetupWorker").e(e, "CMake installation failed")
