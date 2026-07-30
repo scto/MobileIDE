@@ -94,3 +94,5 @@ include(":features:terminal")
 // include(":features:terminal:mobileide-cli")
 // include(":features:terminal:proot")
 // include(":features:terminal:link2symlink")
+
+include(":features:plugin-store")

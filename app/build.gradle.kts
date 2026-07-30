@@ -382,6 +382,7 @@ dependencies {
 
     implementation(project(":features:layout-preview"))
     implementation(project(":features:terminal"))
+    implementation(project(":features:plugin-store"))
 
     // Core Library Desugaring (translates newer Java APIs for older Android versions)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
