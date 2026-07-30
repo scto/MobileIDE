@@ -200,7 +200,7 @@ private fun applyLegacyColorOverrides(terminalView: TerminalView, baseScheme: Te
 
 var showToolbar = mutableStateOf(Settings.toolbar)
 var showVirtualKeys = mutableStateOf(Settings.virtualKeys)
-var showHorizontalToolbar = mutableStateOf(Settings.toolbar)
+var showHorizontalToolbar = mutableStateOf(Settings.toolbar_in_horizontal)
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)

@@ -63,7 +63,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderProvider {
-    override var sessionBinder: SessionService.SessionBinder? = null
+    override var sessionBinder: SessionService.SessionBinder? by androidx.compose.runtime.mutableStateOf(null)
     private var isBound = false
 
     private val serviceConnection =
