@@ -472,7 +472,6 @@ object SetupWorker {
                 currentStep = 2
             )
             val nativeLibDir = context.applicationInfo.nativeLibraryDir
-            val prootDest = File(context.filesDir, "proot")
             val prootExec = if (prootDest.exists()) prootDest.absolutePath else File(binDir, "proot").absolutePath
 
             val pb = ProcessBuilder("sh", File(binDir, "setup").absolutePath, "true")
@@ -529,7 +528,7 @@ object SetupWorker {
                 sandboxTarTmp.delete()
             }
 
-            File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
+            // File(prefixDir, "local/.terminal_setup_ok_DO_NOT_REMOVE").delete()
 
             // Post-Install Trigger: Pause setup flow and prompt user for toolchain selection
             withContext(Dispatchers.Main) {
