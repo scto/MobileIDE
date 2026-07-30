@@ -472,8 +472,8 @@ object SetupWorker {
                 currentStep = 2
             )
             val nativeLibDir = context.applicationInfo.nativeLibraryDir
-            val libProot = File(nativeLibDir, "libproot.so")
-            val prootExec = if (libProot.exists()) libProot.absolutePath else File(binDir, "proot").absolutePath
+            val prootDest = File(context.filesDir, "proot")
+            val prootExec = if (prootDest.exists()) prootDest.absolutePath else File(binDir, "proot").absolutePath
 
             val pb = ProcessBuilder("sh", File(binDir, "setup").absolutePath, "true")
             val pbEnv = pb.environment()
@@ -494,25 +494,9 @@ object SetupWorker {
             pbEnv["PRIVATE_DIR"] = context.filesDir.absolutePath
             pbEnv["EXT_HOME"] = "${prefixDir.absolutePath}/local/${distroName}/root"
 
-            val loader64File = listOf(
-                File(nativeLibDir, "libproot-loader.so"),
-                File(nativeLibDir, "libloader.so")
-            ).firstOrNull { it.exists() }
-
-            val loader32File = listOf(
-                File(nativeLibDir, "libproot-loader32.so"),
-                File(nativeLibDir, "libloader32.so")
-            ).firstOrNull { it.exists() }
-
-            if (loader64File != null) {
-                loader64File.setExecutable(true, false)
-                pbEnv["PROOT_LOADER"] = loader64File.absolutePath
-            }
-            if (loader32File != null) {
-                loader32File.setExecutable(true, false)
-                pbEnv["PROOT_LOADER32"] = loader32File.absolutePath
-                pbEnv["PROOT_LOADER_32"] = loader32File.absolutePath
-            }
+            // Do NOT set PROOT_LOADER/PROOT_LOADER32 — let proot use its embedded loader.
+            // External loaders from jniLibs conflict with proot's ashmem_memfd extension
+            // and fail on Android 10+ due to W^X (Write XOR Execute) policy.
 
             pb.redirectErrorStream(true)
             val process = pb.start()
