@@ -381,10 +381,7 @@ dependencies {
     implementation(libs.appcompat)
 
     implementation(project(":features:layout-preview"))
-    // implementation(project(":features:proot"))
-    // implementation(project(":features:exec"))
     implementation(project(":features:terminal"))
-    // implementation(project(":features:lsp"))
 
     // Core Library Desugaring (translates newer Java APIs for older Android versions)
     coreLibraryDesugaring(libs.desugar.jdk.libs)

@@ -87,10 +87,7 @@ include(":plugins:prettier-lsp")
 include(":core:common")
 include(":features:layout-preview")
 // TODO Phase 2: entfernen
-// include(":features:proot")
-// include(":features:exec")
 include(":features:terminal")
-// include(":features:lsp")
 
 // include(":features:git")
 // include(":features:runner")
