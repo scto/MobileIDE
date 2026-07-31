@@ -89,7 +89,7 @@ include(":features:layout-preview")
 // TODO Phase 2: entfernen
 include(":features:terminal")
 
-// include(":features:git")
+include(":features:git")
 // include(":features:runner")
 // include(":features:terminal:mobileide-cli")
 // include(":features:terminal:proot")
