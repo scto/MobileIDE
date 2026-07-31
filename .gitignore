@@ -93,3 +93,18 @@ lint/tmp/
 #.aider*
 MobileIDE_backup.zip
 #assets/
+
+# OS junk / control-character files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+\#*\#
+.\#*
+*.swp
+*.swo
+
+# Stray control-character files (SOH, ETX, etc.)
+\001
+\002
+\003
