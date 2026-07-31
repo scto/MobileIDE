@@ -204,10 +204,11 @@
 ] @number
 
 ; should be highlighted the same as booleans
-[
-	(null_literal)
-	(boolean_literal)
-] @boolean
+(boolean_literal) @boolean
+
+; null keyword
+((simple_identifier) @boolean
+(#eq? @boolean "null"))
 
 (character_literal) @character
 
@@ -370,10 +371,5 @@
 ] @punctuation.delimiter
 
 ; NOTE: `interpolated_identifier`s can be highlighted in any way
-(string_literal
-	(interpolation_identifier_start) @punctuation.special
-	(interpolated_identifier) @none)
-(string_literal
-	(interpolation_expression_start) @punctuation.special
-	(interpolated_expression) @none
-	(interpolation_expression_end) @punctuation.special)
+(interpolated_identifier) @none
+(interpolated_expression) @none
