@@ -104,7 +104,6 @@
 (setter
 	("set") @function.builtin)
 
-(primary_constructor) @constructor
 (secondary_constructor
 	("constructor") @constructor)
 
@@ -273,9 +272,14 @@
 ;	"typeof" ; NOTE: It is reserved for future use
 ] @keyword
 
-("fun") @keyword.function
+"fun" @keyword.function
 
-(jump_expression) @keyword.return
+[
+	"return"
+	"break"
+	"continue"
+	"throw"
+] @keyword.return
 
 [
 	"if"

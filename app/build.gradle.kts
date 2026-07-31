@@ -350,6 +350,7 @@ dependencies {
     // // implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
     implementation(project(":features:extensions"))
+    implementation(project(":features:git"))
     implementation(project(":core:common"))
     implementation(project(":extension-languages"))
     implementation(libs.timber)
