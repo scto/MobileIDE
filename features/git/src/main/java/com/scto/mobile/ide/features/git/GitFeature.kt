@@ -43,7 +43,7 @@ import com.scto.mobile.ide.core.terminal.resources.R.string as strings
 import com.scto.mobile.ide.settings.Settings
 import com.scto.mobile.ide.settings.SettingsCategory
 import com.scto.mobile.ide.settings.SettingsRegistry
-import com.scto.mobile.ide.settings.git.GitSettings
+import com.scto.mobile.ide.features.git.settings.GitSettings
 import com.scto.mobile.ide.theme.gitAdded
 import com.scto.mobile.ide.theme.gitConflicted
 import com.scto.mobile.ide.theme.gitDeleted

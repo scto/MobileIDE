@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.settings.git
+package com.scto.mobile.ide.features.git.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
