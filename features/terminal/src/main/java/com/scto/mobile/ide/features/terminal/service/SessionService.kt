@@ -6,6 +6,7 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,8 @@ import com.termux.terminal.TerminalSessionClient
 
 class SessionService : Service() {
     private val sessions = linkedMapOf<String, TerminalSession>()
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var wakeLockHeld = false
     // Ordered list of session IDs for UI display
     val sessionOrder = mutableStateListOf<String>()
     // Map for storing workingMode per session
@@ -152,6 +155,7 @@ class SessionService : Service() {
     }
 
     override fun onDestroy() {
+        releaseWakeLock()
         sessions.keys.toList().forEach { cleanupSessionTemp(it) }
         sessions.forEach { s -> s.value.finishIfRunning() }
         super.onDestroy()
@@ -160,6 +164,7 @@ class SessionService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        acquireWakeLock()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 NOTIFICATION_ID, createNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
@@ -173,8 +178,13 @@ class SessionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             "ACTION_EXIT" -> {
+                releaseWakeLock()
                 sessions.forEach { s -> s.value.finishIfRunning() }
                 stopSelf()
+            }
+            ACTION_WAKE_LOCK -> {
+                if (wakeLockHeld) releaseWakeLock() else acquireWakeLock()
+                updateNotification()
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -193,11 +203,26 @@ class SessionService : Service() {
             this, 1, exitIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val wakeLockIntent = Intent(this, SessionService::class.java).apply {
+            action = ACTION_WAKE_LOCK
+        }
+        val wakeLockPendingIntent = PendingIntent.getService(
+            this, 2, wakeLockIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val wakeLockLabel = if (wakeLockHeld) "🔓 Release Wake Lock" else "🔒 Acquire Wake Lock"
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Termix")
+            .setContentTitle("MobileIDE Terminal")
             .setContentText(getNotificationContentText())
             .setSmallIcon(drawables.terminal)
             .setContentIntent(pendingIntent)
+            .addAction(
+                NotificationCompat.Action.Builder(
+                    null,
+                    wakeLockLabel,
+                    wakeLockPendingIntent
+                ).build()
+            )
             .addAction(
                 NotificationCompat.Action.Builder(
                     null,
@@ -211,6 +236,8 @@ class SessionService : Service() {
 
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "session_service_channel"
+    private val ACTION_WAKE_LOCK = "ACTION_WAKE_LOCK"
+    private val WAKE_LOCK_TAG = "MobileIDE::TerminalWakeLock"
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
@@ -231,9 +258,28 @@ class SessionService : Service() {
 
     private fun getNotificationContentText(): String {
         val count = sessions.size
+        val wakeLockStatus = if (wakeLockHeld) " \u2022 Wake Lock" else ""
         if (count == 1){
-            return "1 session running"
+            return "1 session running$wakeLockStatus"
         }
-        return "$count sessions running"
+        return "$count sessions running$wakeLockStatus"
+    }
+
+    private fun acquireWakeLock() {
+        if (wakeLockHeld) return
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG).apply {
+            acquire()
+        }
+        wakeLockHeld = true
+    }
+
+    private fun releaseWakeLock() {
+        if (!wakeLockHeld) return
+        wakeLock?.let {
+            if (it.isHeld) it.release()
+        }
+        wakeLock = null
+        wakeLockHeld = false
     }
 }
