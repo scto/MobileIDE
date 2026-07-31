@@ -544,6 +544,24 @@ fun SettingsScreen(
                     onClick = { navController.navigate("settings/extensions") },
                 )
             }
+
+            item(key = "git_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Source,
+                    title = "Git",
+                    subtitle = "Git-Benutzerdaten, Anmeldedaten und Submodule verwalten",
+                    onClick = { navController.navigate("settings/git") },
+                )
+            }
+
+            item(key = "lsp_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Dns,
+                    title = "Sprachserver (LSP)",
+                    subtitle = "Sprachserver verwalten, installieren und konfigurieren",
+                    onClick = { navController.navigate("settings/lsp") },
+                )
+            }
             item {
                 Text(
                     text = stringResource(R.string.settings_general),

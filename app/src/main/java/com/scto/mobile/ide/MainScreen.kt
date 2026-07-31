@@ -148,6 +148,9 @@ fun MainScreen(
         }
         composable("settings/editor") { EditorScreen(navController = navController, editorViewModel = mainViewModel) }
         composable("settings/lsp") { LspSettingsScreen(navController = navController) }
+        composable("settings/git") {
+            com.scto.mobile.ide.features.git.settings.GitSettings()
+        }
         composable("settings/extensions") {
             com.scto.mobile.ide.ui.settings.ExtensionSettingsScreen(navController = navController)
         }
