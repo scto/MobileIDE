@@ -164,9 +164,10 @@ fun MainScreen(
             )
         }
         composable("settings/terminal") {
-            com.scto.mobile.ide.features.terminal.ui.screens.settings.SettingsScreen(
+            val activity = LocalContext.current as android.app.Activity
+            com.scto.mobile.ide.features.terminal.ui.screens.settings.Settings(
                 navController = navController,
-                terminalView = remember { java.lang.ref.WeakReference(null) }
+                mainActivity = activity,
             )
         }
 
