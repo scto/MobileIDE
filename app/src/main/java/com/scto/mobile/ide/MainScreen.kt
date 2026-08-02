@@ -163,6 +163,12 @@ fun MainScreen(
                 },
             )
         }
+        composable("settings/terminal") {
+            com.scto.mobile.ide.features.terminal.ui.screens.settings.SettingsScreen(
+                navController = navController,
+                terminalView = remember { java.lang.ref.WeakReference(null) }
+            )
+        }
 
         composable("welcome") {
             WelcomeScreen(themeViewModel = themeViewModel, onWelcomeFinished = { navController.popBackStack() })
