@@ -271,6 +271,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
                             val setupState by SetupWorker.setupState.collectAsState()
 
                             LaunchedEffect(Unit) {
+                                com.scto.mobile.ide.commands.CoreCommandsInitializer.init()
                                 if (
                                     WelcomePreferences.isWelcomeCompleted(context) &&
                                         WorkspaceManager.isWorkspaceConfigured(context)

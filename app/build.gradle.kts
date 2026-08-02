@@ -347,7 +347,7 @@ dependencies {
     implementation(project(":core:apk-builder"))
     implementation(project(":core:tooling:tooling-api"))
     implementation(project(":core:tooling:tooling-impl"))
-    // // implementation(project(":core:commands"))
+    implementation(project(":core:commands"))
     implementation(project(":core:lsp"))
     implementation(project(":features:extensions"))
     // implementation(project(":features:git"))
