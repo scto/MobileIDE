@@ -139,11 +139,6 @@
 (call_expression
 	(simple_identifier) @function.call)
 
-; PascalCase calls (Composables / Constructors)
-((call_expression
-	(simple_identifier) @constructor)
-	(#match? @constructor "^[A-Z]"))
-
 ; object.function() or object.property.function()
 (call_expression
 	(navigation_expression
