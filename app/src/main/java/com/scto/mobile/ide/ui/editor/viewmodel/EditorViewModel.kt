@@ -741,11 +741,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             }
             "kotlin",
             "java" -> {
-                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "annotation")
-                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo "type"
+                TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo arrayOf("attribute", "annotation", "keyword.import", "namespace")
+                TextStyle.makeStyle(EditorColorScheme.HTML_TAG) applyTo arrayOf("keyword.modifier")
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_NAME) applyTo arrayOf("type", "type.builtin", "type.definition", "class", "class.name", "constructor")
                 TextStyle.makeStyle(EditorColorScheme.FUNCTION_NAME) applyTo
-                    arrayOf("function", "function.method", "constructor")
-                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_VAR) applyTo arrayOf("variable", "variable.builtin")
+                    arrayOf("function", "function.call", "function.method", "function.method.call", "function.builtin")
+                TextStyle.makeStyle(EditorColorScheme.IDENTIFIER_VAR) applyTo arrayOf("variable", "variable.builtin", "property", "parameter")
             }
             "python" -> {
                 TextStyle.makeStyle(EditorColorScheme.ATTRIBUTE_NAME) applyTo "decorator"

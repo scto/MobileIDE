@@ -83,11 +83,18 @@
 		"MutableList"
 ))
 
+"package" @keyword.import
+"import" @keyword.import
+
 (package_header
-	. (identifier)) @namespace
+	(identifier) @namespace)
+(package_header
+	(navigation_expression) @namespace)
 
 (import_header
-	"import" @include)
+	(identifier) @namespace)
+(import_header
+	(navigation_expression) @namespace)
 
 
 ; TODO: Seperate labeled returns/breaks/continue/super/this
@@ -97,7 +104,7 @@
 ;;; Function definitions
 
 (function_declaration
-	. (simple_identifier) @function)
+	(simple_identifier) @function)
 
 (getter
 	("get") @function.builtin)
@@ -130,13 +137,18 @@
 
 ; function()
 (call_expression
-	. (simple_identifier) @function)
+	(simple_identifier) @function.call)
+
+; PascalCase calls (Composables / Constructors)
+((call_expression
+	(simple_identifier) @constructor)
+	(#match? @constructor "^[A-Z]"))
 
 ; object.function() or object.property.function()
 (call_expression
 	(navigation_expression
 		(navigation_suffix
-			(simple_identifier) @function) . ))
+			(simple_identifier) @function.call)))
 
 (call_expression
 	. (simple_identifier) @function.builtin
@@ -260,7 +272,7 @@
 	(visibility_modifier)
 	(reification_modifier)
 	(inheritance_modifier)
-]@keyword
+]@keyword.modifier
 
 [
 	"val"
