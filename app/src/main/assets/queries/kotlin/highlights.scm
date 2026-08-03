@@ -35,7 +35,7 @@
 			(simple_identifier) @property)))
 
 ; id_1.id_2.id_3: `id_2` and `id_3` are assumed as object properties
-(_
+(navigation_expression
 	(navigation_suffix
 		(simple_identifier) @property))
 
