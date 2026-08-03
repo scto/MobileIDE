@@ -48,7 +48,7 @@ ARGS="$ARGS -L"
 
 chmod -R +x $LOCAL/bin
 
-SHELL_EXEC="${TERMIX_SHELL:-/bin/bash}"
+SHELL_EXEC="${MOBILEIDE_SHELL:-/bin/bash}"
 if [ ! -x "$SHELL_EXEC" ]; then
     SHELL_EXEC="/bin/bash"
 fi

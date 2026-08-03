@@ -100,7 +100,7 @@ object MkSession {
                 ShellType.ASH -> "/bin/ash"
                 else -> "/bin/ash"
             }
-            env.add("TERMIX_SHELL=$shellPath")
+            env.add("MOBILEIDE_SHELL=$shellPath")
 
             env.addAll(envVariables.map { "${it.key}=${it.value}" })
 
