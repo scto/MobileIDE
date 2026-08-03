@@ -856,6 +856,18 @@ private fun TerminalPaneContent(
                 .fillMaxWidth()
                 .weight(1f),
             update = { terminalView ->
+                // Sync the active terminal view reference with ColorSchemeManager
+                ColorSchemeManager.setTerminalView(terminalView)
+
+                // Dynamically update text size and font typeface
+                terminalView.setTextSize(
+                    dpToPx(
+                        Settings.terminal_font_size.toFloat(),
+                        terminalView.context
+                    )
+                )
+                terminalView.setTypeface(font)
+
                 val binder = mainActivityActivity.sessionBinder
                 if (binder != null && terminalView.mTermSession == null) {
                     val service = binder.getService()
@@ -871,6 +883,9 @@ private fun TerminalPaneContent(
                     terminalView.attachSession(session)
                     terminalView.setTerminalViewClient(client)
                 }
+
+                // Apply current color scheme to terminal emulator palette
+                ColorSchemeManager.applyCurrentSchemeToTerminal()
 
                 // Apply color scheme background - this runs when currentScheme changes
                 // If a background image is set, make terminal view transparent

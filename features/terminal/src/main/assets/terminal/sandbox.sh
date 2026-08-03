@@ -48,8 +48,13 @@ ARGS="$ARGS -L"
 
 chmod -R +x $LOCAL/bin
 
+SHELL_EXEC="${TERMIX_SHELL:-/bin/bash}"
+if [ ! -x "$SHELL_EXEC" ]; then
+    SHELL_EXEC="/bin/bash"
+fi
+
 if [ $# -gt 0 ]; then
-    $PROOT $ARGS /bin/bash --rcfile $LOCAL/bin/init -i -c "$*"
+    $PROOT $ARGS "$SHELL_EXEC" --rcfile $LOCAL/bin/init -i -c "$*"
 else
-    $PROOT $ARGS /bin/bash --rcfile $LOCAL/bin/init -i
+    $PROOT $ARGS "$SHELL_EXEC" --rcfile $LOCAL/bin/init -i
 fi

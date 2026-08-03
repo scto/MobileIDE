@@ -15,4 +15,6 @@ interface Command {
 
 abstract class BaseCommand : Command {
     override val icon: Any? = null
+    override val title: String = ""
+    override val description: String = ""
 }

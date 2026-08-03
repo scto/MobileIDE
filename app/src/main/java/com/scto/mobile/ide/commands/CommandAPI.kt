@@ -7,24 +7,7 @@ import io.github.rosemoe.sora.widget.CodeEditor
 import java.io.File
 import io.github.rosemoe.sora.lsp.editor.LspEditor
 
-interface CommandContext
-
 data class MobileIDECommandContext(val editorViewModel: EditorViewModel, val androidContext: Context) : CommandContext
-
-interface Command {
-    val id: String
-    val title: String
-    val description: String
-    val icon: Any?
-
-    suspend fun execute(context: CommandContext)
-}
-
-abstract class BaseCommand : Command {
-    override val icon: Any? = null
-    override val description: String = ""
-    override val title: String = ""
-}
 
 abstract class EditorCommand : BaseCommand() {
     final override suspend fun execute(context: CommandContext) {
