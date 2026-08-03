@@ -1,39 +1,37 @@
 package com.scto.mobile.ide.core.terminal.crashhandler
 
-import android.os.Looper
+import android.util.Log
+import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
+import java.io.PrintWriter
+import java.io.StringWriter
 import kotlin.system.exitProcess
 
 object CrashHandler : Thread.UncaughtExceptionHandler {
 
-    override fun uncaughtException(thread: Thread, ex: Throwable) {
-        runCatching {
+    private val defaultHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()
 
+    override fun uncaughtException(thread: Thread, ex: Throwable) {
+        logError(ex)
+        defaultHandler?.uncaughtException(thread, ex) ?: exitProcess(1)
+    }
+
+    fun logError(throwable: Throwable) {
+        runCatching {
+            val sw = StringWriter()
+            throwable.printStackTrace(PrintWriter(sw))
+            val stackTraceString = sw.toString()
+            Log.e("CrashHandler", "Uncaught Exception in thread ${Thread.currentThread().name}:\n$stackTraceString")
+            LogCatcher.e("CrashHandler", "Uncaught Exception: $stackTraceString")
+
+            application?.let { app ->
+                val crashFile = app.filesDir.child("crash.log")
+                crashFile.createFileIfNot().writeText(stackTraceString)
+            }
         }.onFailure {
             it.printStackTrace()
-            exitProcess(1)
-        }
-
-        if (Looper.myLooper() != null) {
-            while (true) {
-                try {
-                    Looper.loop()
-                    return
-                } catch (t: Throwable) {
-                    Thread{
-                        t.printStackTrace()
-                        logErrorOrExit(t)
-                    }.start()
-                }
-            }
         }
     }
-}
-
-fun logErrorOrExit(throwable: Throwable){
-    runCatching {
-        application!!.filesDir.child("crash.log").createFileIfNot().appendText(throwable.toString())
-    }.onFailure { it.printStackTrace();exitProcess(-1) }
 }
