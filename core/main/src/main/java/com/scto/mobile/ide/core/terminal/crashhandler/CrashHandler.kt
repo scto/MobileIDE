@@ -1,7 +1,6 @@
 package com.scto.mobile.ide.core.terminal.crashhandler
 
 import android.util.Log
-import com.scto.mobile.ide.core.common.utils.LogCatcher
 import com.scto.mobile.ide.core.terminal.libcommons.application
 import com.scto.mobile.ide.core.terminal.libcommons.child
 import com.scto.mobile.ide.core.terminal.libcommons.createFileIfNot
@@ -24,7 +23,6 @@ object CrashHandler : Thread.UncaughtExceptionHandler {
             throwable.printStackTrace(PrintWriter(sw))
             val stackTraceString = sw.toString()
             Log.e("CrashHandler", "Uncaught Exception in thread ${Thread.currentThread().name}:\n$stackTraceString")
-            LogCatcher.e("CrashHandler", "Uncaught Exception: $stackTraceString")
 
             application?.let { app ->
                 val crashFile = app.filesDir.child("crash.log")
