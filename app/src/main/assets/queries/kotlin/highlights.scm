@@ -356,7 +356,6 @@
 	"as"
 	"as?"
 	".."
-	"..<"
 	"->"
 ] @operator
 
@@ -373,7 +372,3 @@
 	":"
 	"::"
 ] @punctuation.delimiter
-
-; NOTE: `interpolated_identifier`s can be highlighted in any way
-(interpolated_identifier) @none
-(interpolated_expression) @none
