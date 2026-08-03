@@ -83,18 +83,17 @@
 		"MutableList"
 ))
 
-"package" @keyword.import
-"import" @keyword.import
+(package_header
+	"package" @keyword.import)
+
+(import_header
+	"import" @keyword.import)
 
 (package_header
 	(identifier) @namespace)
-(package_header
-	(navigation_expression) @namespace)
 
 (import_header
 	(identifier) @namespace)
-(import_header
-	(navigation_expression) @namespace)
 
 
 ; TODO: Seperate labeled returns/breaks/continue/super/this
