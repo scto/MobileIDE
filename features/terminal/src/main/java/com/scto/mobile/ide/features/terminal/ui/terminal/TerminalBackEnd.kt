@@ -54,6 +54,32 @@ class TerminalBackEnd(
     
     override fun onSessionFinished(finishedSession: TerminalSession) {
         onSessionCloseRequested?.invoke(finishedSession)
+        val act = activity ?: return
+        val binder = act.sessionBinder ?: return
+        val service = binder.getService()
+        val sessionId = binder.getSessionId(finishedSession) ?: service.currentSession.value.first
+
+        act.runOnUiThread {
+            val sessionKeys = service.sessionOrder.toList()
+            if (sessionKeys.size <= 1) {
+                if (Settings.close_last_session_behavior == CloseLastSessionBehavior.NEW_SESSION) {
+                    val newSessionId = generateUniqueSessionId(sessionKeys)
+                    val client = TerminalBackEnd(terminal, act)
+                    binder.createSession(newSessionId, client, act, workingMode = Settings.working_Mode)
+                    changeSession(act, newSessionId)
+                    binder.terminateSession(sessionId)
+                } else {
+                    binder.terminateSession(sessionId)
+                    if (service.sessionOrder.isEmpty()) {
+                        act.finish()
+                    }
+                }
+            } else {
+                val nextId = sessionKeys.firstOrNull { it != sessionId } ?: sessionKeys[0]
+                changeSession(act, nextId)
+                binder.terminateSession(sessionId)
+            }
+        }
     }
     
     override fun onCopyTextToClipboard(session: TerminalSession, text: String) {
