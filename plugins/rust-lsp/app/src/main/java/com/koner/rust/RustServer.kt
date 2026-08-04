@@ -8,8 +8,8 @@ import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.rk.file.child
 import com.rk.file.sandboxHomeDir
 import com.rk.icons.Icon
-import com.rk.lsp.LspConnectionConfig
-import com.rk.lsp.ScriptedLspServer
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.ScriptedLspServer
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URI
