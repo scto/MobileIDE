@@ -54,6 +54,9 @@ fun LspLogoBadge(languageName: String) {
             "bash",
             "shell",
             "sh" -> "SH" to Color(0xFF4CAF50)
+            "markdown",
+            "md" -> "MD" to Color(0xFF00838F)
+            "eslint" -> "ES" to Color(0xFF4B32C6)
             "xml" -> "XML" to Color(0xFF8D6E63)
             "java" -> "JAVA" to Color(0xFF5382A1)
             "kotlin" -> "KT" to Color(0xFF7F52FF)
@@ -120,7 +123,11 @@ fun LspSettingsScreen(navController: NavController) {
         }
     }
 
-    val integratedIds = setOf("html_lsp", "emmet_lsp", "css_lsp", "typescript_lsp", "bash_lsp", "xml_lsp")
+    val integratedIds = setOf(
+        "html_lsp", "emmet_lsp", "css_lsp", "typescript_lsp",
+        "bash_lsp", "eslint_lsp", "xml_lsp", "markdown_lsp",
+        "java_lsp", "kotlin_lsp", "python_lsp"
+    )
     val integratedServers = lspItems.filter { it.server.id in integratedIds }
     val extensionServers = lspItems.filter { it.server.id !in integratedIds }
 
@@ -307,6 +314,12 @@ fun LspServerRow(
                     "css_lsp" -> "vscode-css-language-server"
                     "emmet_lsp" -> "emmet-language-server"
                     "typescript_lsp" -> "typescript-language-server"
+                    "eslint_lsp" -> "vscode-eslint-language-server"
+                    "markdown_lsp" -> "vscode-markdown-language-server"
+                    "bash_lsp" -> "bash-language-server"
+                    "java_lsp" -> "jdtls"
+                    "kotlin_lsp" -> "kotlin-language-server"
+                    "python_lsp" -> "pyright-langserver"
                     else -> item.server.serverName
                 }
             Text(

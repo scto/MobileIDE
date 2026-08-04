@@ -119,6 +119,76 @@ object LspRegistry {
                 installScriptAsset = "typescript.sh"
             )
         )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "bash_lsp",
+                languageName = "Bash",
+                serverName = "bash-language-server",
+                supportedExtensions = listOf("sh", "bash"),
+                binaryName = "bash-language-server",
+                installScriptAsset = "bash.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "eslint_lsp",
+                languageName = "ESLint",
+                serverName = "vscode-eslint-language-server",
+                supportedExtensions = listOf("js", "jsx", "ts", "tsx"),
+                binaryName = "vscode-eslint-language-server",
+                installScriptAsset = "eslint.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "xml_lsp",
+                languageName = "XML",
+                serverName = "lemminx",
+                supportedExtensions = listOf("xml"),
+                binaryName = "lemminx",
+                installScriptAsset = "xml.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "markdown_lsp",
+                languageName = "Markdown",
+                serverName = "vscode-markdown-language-server",
+                supportedExtensions = listOf("md", "markdown"),
+                binaryName = "vscode-markdown-language-server",
+                installScriptAsset = "markdown.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "java_lsp",
+                languageName = "Java",
+                serverName = "jdtls",
+                supportedExtensions = listOf("java"),
+                binaryName = "jdtls",
+                installScriptAsset = "java.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "kotlin_lsp",
+                languageName = "Kotlin",
+                serverName = "kotlin-language-server",
+                supportedExtensions = listOf("kt", "kts"),
+                binaryName = "kotlin-language-server",
+                installScriptAsset = "kotlin.sh"
+            )
+        )
+        _extensionServers.add(
+            IntegratedLspServer(
+                id = "python_lsp",
+                languageName = "Python",
+                serverName = "pyright",
+                supportedExtensions = listOf("py"),
+                binaryName = "pyright-langserver",
+                installScriptAsset = "python.sh"
+            )
+        )
     }
 
     suspend fun updateConfiguration(context: Context) {
