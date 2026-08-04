@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:resources"))
     implementation(project(":core:components"))
+    implementation(project(":core:lsp"))
     // implementation(project(":features:proot"))
     // implementation(project(":features:exec"))
 }
