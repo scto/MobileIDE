@@ -13,7 +13,7 @@ object Emmet : ScriptedLspServer() {
     override val supportedExtensions = listOf("html", "htm", "htmx")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/emmet")
+    override val installScript = File(localBinDir(), "lsp/emmet.sh")
     override val installId = "Emmet language server"
 
     override suspend fun isInstalled(context: Context): Boolean {

@@ -13,7 +13,7 @@ object XML : ScriptedLspServer() {
     override val supportedExtensions = listOf("xml")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/xml")
+    override val installScript = File(localBinDir(), "lsp/xml.sh")
     override val installId = "XML language server"
 
     const val LATEST_VERSION = "0.31.0"

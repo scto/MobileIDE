@@ -13,7 +13,7 @@ object CSS : ScriptedLspServer() {
     override val supportedExtensions = listOf("css", "scss", "less")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/css")
+    override val installScript = File(localBinDir(), "lsp/css.sh")
     override val installId = "CSS language server"
 
     override suspend fun isInstalled(context: Context): Boolean {

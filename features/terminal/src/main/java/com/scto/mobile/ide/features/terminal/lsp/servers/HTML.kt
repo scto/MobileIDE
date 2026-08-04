@@ -13,7 +13,7 @@ object HTML : ScriptedLspServer() {
     override val supportedExtensions = listOf("html", "htm", "htmx")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/html")
+    override val installScript = File(localBinDir(), "lsp/html.sh")
     override val installId = "HTML language server"
 
     override suspend fun isInstalled(context: Context): Boolean {

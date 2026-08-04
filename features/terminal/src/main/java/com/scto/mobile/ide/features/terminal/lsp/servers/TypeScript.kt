@@ -13,7 +13,7 @@ object TypeScript : ScriptedLspServer() {
     override val supportedExtensions = listOf("ts", "tsx", "js", "jsx")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/typescript")
+    override val installScript = File(localBinDir(), "lsp/typescript.sh")
     override val installId = "TypeScript language server"
 
     override suspend fun isInstalled(context: Context): Boolean {

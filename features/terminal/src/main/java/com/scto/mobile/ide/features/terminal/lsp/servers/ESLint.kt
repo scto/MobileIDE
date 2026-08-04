@@ -13,7 +13,7 @@ object ESLint : ScriptedLspServer() {
     override val supportedExtensions = listOf("js", "jsx", "ts", "tsx")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/eslint")
+    override val installScript = File(localBinDir(), "lsp/eslint.sh")
     override val installId = "ESLint language server"
 
     override suspend fun isInstalled(context: Context): Boolean {

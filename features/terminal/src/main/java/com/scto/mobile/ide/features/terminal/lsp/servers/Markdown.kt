@@ -13,7 +13,7 @@ object Markdown : ScriptedLspServer() {
     override val supportedExtensions = listOf("md", "markdown")
     override val icon: Any? = null
 
-    override val installScript = File(localBinDir(), "lsp/markdown")
+    override val installScript = File(localBinDir(), "lsp/markdown.sh")
     override val installId = "Markdown language server"
 
     override suspend fun isInstalled(context: Context): Boolean {
