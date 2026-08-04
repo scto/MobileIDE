@@ -198,6 +198,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
 
         com.scto.mobile.ide.lsp.ScriptedLspServer.terminalLauncher =
             { activity: android.app.Activity, scriptFile: java.io.File, flags: List<String> ->
+                LogCatcher.i("LSP_Installer", "Launching terminal command for LSP installer: ${scriptFile.name} (flags: $flags)")
                 com.scto.mobile.ide.core.terminal.libcommons.pendingCommand =
                     com.scto.mobile.ide.core.terminal.libcommons.TerminalCommand(
                         shell = "bash",
@@ -206,9 +207,6 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
                         workingMode = 0,
                         workingDir = scriptFile.parentFile?.absolutePath ?: "/",
                     )
-                // Note: Since this requires navigating to the terminal screen, ideally we would broadcast an event or
-                // navigate via NavController.
-                // As a simple delegate, we just set the pending command which will be run when the terminal opens.
             }
 
         setContent {

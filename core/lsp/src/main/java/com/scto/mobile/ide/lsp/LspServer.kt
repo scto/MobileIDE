@@ -22,6 +22,12 @@ abstract class ScriptedLspServer : LspServer() {
     override fun update(activity: Activity) = launchInstaller(activity, "--update")
 
     protected fun launchInstaller(activity: Activity, vararg flags: String) {
+        val actionName = when {
+            flags.contains("--uninstall") -> "Uninstalling"
+            flags.contains("--update") -> "Updating"
+            else -> "Installing"
+        }
+        android.util.Log.i("LSP_Installer", "$actionName LSP server '$id' ($serverName) using script: ${installScript.absolutePath}")
         terminalLauncher?.invoke(activity, installScript, flags.toList())
     }
 
