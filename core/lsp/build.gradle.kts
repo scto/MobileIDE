@@ -32,5 +32,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.gson)
     implementation(libs.lsp4j)
+    implementation(libs.androidsvg)
     implementation(project(":features:extensions")) // lsp might depend on extension
 }
