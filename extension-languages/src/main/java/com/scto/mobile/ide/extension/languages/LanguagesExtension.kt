@@ -12,7 +12,20 @@ class LanguagesExtension(context: ExtensionContext) : ExtensionAPI(context) {
     }
 
     override fun onExtensionLoaded() {
-        // Register all language servers supported by this extension
+        LspRegistry.registerServer(BashLspServer())
+        LspRegistry.registerServer(CssLspServer())
+        LspRegistry.registerServer(EslintLspServer())
+        LspRegistry.registerServer(EmmetLspServer())
+        LspRegistry.registerServer(HtmlLspServer())
+        LspRegistry.registerServer(MarkdownLspServer())
+        LspRegistry.registerServer(TypeScriptLspServer())
+        LspRegistry.registerServer(XmlLspServer())
+        LspRegistry.registerServer(JavaLspServer())
+        LspRegistry.registerServer(KotlinLspServer())
+        LspRegistry.registerServer(PythonLspServer())
+        LspRegistry.registerServer(CppLspServer())
+        LspRegistry.registerServer(TomlLspServer())
+        LspRegistry.registerServer(YamlLspServer())
     }
 
     override fun onUpdated() {
