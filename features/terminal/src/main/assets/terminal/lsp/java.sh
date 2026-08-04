@@ -1,10 +1,11 @@
 set -e
 
-source "$(dirname "$0")/../utils"
+source "$(dirname "$0")/../utils" || source "$LOCAL/bin/utils"
 
 info 'Preparing...'
-apt-get update && apt-get upgrade -y
-apt-get install -y curl tar default-jdk
+pkg_update
+pkg_install curl tar
+install_jdk
 
 install() {
   info 'Installing Java language server (jdtls)...'
@@ -13,6 +14,7 @@ install() {
   tar -xzf jdtls.tar.gz -C /opt/jdtls
   rm jdtls.tar.gz
   chmod +x /opt/jdtls/bin/jdtls
+  mkdir -p /usr/local/bin
   ln -sf /opt/jdtls/bin/jdtls /usr/local/bin/jdtls
   info 'Java language server installed successfully.'
   exit 0

@@ -2,32 +2,31 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-
 info 'Preparing...'
-apt update && apt upgrade -y
+pkg_update
 
 install() {
   if ! command_exists node || ! command_exists npm; then
     install_nodejs
   fi
 
-  info "Installing TypeScript language server..."
+  info 'Installing TypeScript language server...'
   npm install -g --prefix /usr typescript typescript-language-server
   info 'TypeScript language server installed successfully.'
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 uninstall() {
-  info "Uninstalling TypeScript language server..."
-  npm uninstall -g --prefix /usr typescript typescript-language-server
+  info 'Uninstalling TypeScript language server...'
+  npm uninstall -g --prefix /usr typescript-language-server
   info 'TypeScript language server uninstalled successfully.'
   uninstall_nodejs
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
 
 update() {
-  info "Updating TypeScript language server..."
-  npm update -g --prefix /usr typescript typescript-language-server
+  info 'Updating TypeScript language server...'
+  npm update -g --prefix /usr typescript-language-server typescript
   info 'TypeScript language server updated successfully.'
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }

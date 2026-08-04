@@ -2,9 +2,8 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-
 info 'Preparing...'
-apt update && apt upgrade -y
+pkg_update
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -15,7 +14,7 @@ install() {
   npm install -g --prefix /usr bash-language-server
 
   info 'Installing ShellCheck...'
-  apt install -y shellcheck
+  pkg_install shellcheck || true
 
   info 'Bash language server installed successfully.'
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
@@ -41,4 +40,3 @@ case "$1" in
   --update) update;;
   *) install;;
 esac
-

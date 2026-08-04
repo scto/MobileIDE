@@ -2,9 +2,8 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-
 info 'Preparing...'
-apt update && apt upgrade -y
+pkg_update
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -39,4 +38,3 @@ case "$1" in
   --update) update;;
   *) install;;
 esac
-

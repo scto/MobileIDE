@@ -2,11 +2,9 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-
 info 'Preparing...'
-apt update && apt upgrade -y
+pkg_update
 
-# Legacy migration cleanup (python-lsp-server + pipx)
 legacy_cleanup() {
   if command_exists pipx && pipx list 2>/dev/null | grep -q "python-lsp-server"; then
     if ask "Legacy Python LSP (python-lsp-server via pipx) detected. Do you want to uninstall it before installing Pyright?"; then
@@ -19,8 +17,7 @@ legacy_cleanup() {
   if command_exists pipx; then
     if ask "pipx is installed. It was previously used for Python LSP. Do you want to remove pipx as well?"; then
       info "Uninstalling pipx..."
-      apt remove -y pipx
-      apt autoremove -y
+      pkg_remove pipx
       info "pipx uninstalled successfully."
     fi
   fi

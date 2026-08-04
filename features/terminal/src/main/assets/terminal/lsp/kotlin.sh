@@ -1,10 +1,11 @@
 set -e
 
-source "$(dirname "$0")/../utils"
+source "$(dirname "$0")/../utils" || source "$LOCAL/bin/utils"
 
 info 'Preparing...'
-apt-get update && apt-get upgrade -y
-apt-get install -y curl unzip default-jdk
+pkg_update
+pkg_install curl unzip
+install_jdk
 
 install() {
   info 'Installing Kotlin language server...'
@@ -15,6 +16,7 @@ install() {
   rm server.zip
   mv server kotlin-language-server || true
   chmod +x /opt/kotlin-language-server/bin/kotlin-language-server
+  mkdir -p /usr/local/bin
   ln -sf /opt/kotlin-language-server/bin/kotlin-language-server /usr/local/bin/kotlin-language-server
   info 'Kotlin language server installed successfully.'
   exit 0

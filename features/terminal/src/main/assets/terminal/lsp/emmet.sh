@@ -2,9 +2,8 @@ set -e
 
 source "$LOCAL/bin/utils"
 
-
 info 'Preparing...'
-apt update && apt upgrade -y
+pkg_update
 
 install() {
   if ! command_exists node || ! command_exists npm; then
@@ -13,7 +12,6 @@ install() {
 
   info 'Installing Emmet language server...'
   npm install -g --prefix /usr @olrtg/emmet-language-server
-
   info 'Emmet language server installed successfully.'
   read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
 }
