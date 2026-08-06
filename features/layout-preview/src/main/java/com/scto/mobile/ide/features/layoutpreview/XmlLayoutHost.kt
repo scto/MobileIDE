@@ -22,12 +22,26 @@ fun XmlLayoutHost(
     AndroidView(
         modifier = modifier.fillMaxSize(),
         factory = { context: Context ->
-            LayoutInflater.from(context).inflate(layoutRes, null, false).also {
-                it.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                onViewInflated?.invoke(it)
+            if (layoutRes > 0) {
+                try {
+                    LayoutInflater.from(context).inflate(layoutRes, null, false).also {
+                        it.layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        onViewInflated?.invoke(it)
+                    }
+                } catch (e: Exception) {
+                    android.widget.TextView(context).apply {
+                        text = "Kein XML-Layout vorhanden"
+                        gravity = android.view.Gravity.CENTER
+                    }
+                }
+            } else {
+                android.widget.TextView(context).apply {
+                    text = "Kein XML-Layout ausgewählt"
+                    gravity = android.view.Gravity.CENTER
+                }
             }
         },
         update = { /* bei Bedarf: Bindings aktualisieren */ }

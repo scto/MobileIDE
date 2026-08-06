@@ -237,6 +237,9 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
     // 构建结果状态
     var buildResult by remember { mutableStateOf<BuildResultState?>(null) }
 
+    var showComposePreview by remember { mutableStateOf(false) }
+    var showXmlPreview by remember { mutableStateOf(false) }
+
     // 检测是否为 Gradle/Android 项目 (含有 build.gradle 或 build.gradle.kts)
     val hasWebAppConfig =
         remember(projectPath) {
@@ -291,6 +294,8 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         }
     var showGradleTasksDialog by remember { mutableStateOf(false) }
     var showToolingBottomSheet by remember { mutableStateOf(false) }
+    var showDependencyUpdateDialog by remember { mutableStateOf(false) }
+    var availableDependencyUpdates by remember { mutableStateOf<List<com.scto.mobile.ide.ui.editor.dialogs.DependencyUpdate>>(emptyList()) }
     var cachedGradleTasks by remember {
         mutableStateOf<List<com.scto.mobile.ide.core.tooling.impl.GradleTask>>(emptyList())
     }
@@ -516,6 +521,31 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 if (isGradleProject) {
                                     IconButton(onClick = { showGradleTasksDialog = true }) {
                                         Icon(Icons.Outlined.Checklist, contentDescription = "Gradle Tasks")
+                                    }
+                                }
+                                val isComposeFile = activeFile?.name?.endsWith(".kt") == true
+                                val isXmlFile = activeFile?.name?.endsWith(".xml") == true
+
+                                if (isComposeFile || previewTargets.isNotEmpty()) {
+                                    FilledTonalIconButton(
+                                        onClick = { showComposePreview = true },
+                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                                        )
+                                    ) {
+                                        Text("Compose", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                if (isXmlFile) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    FilledTonalIconButton(
+                                        onClick = { showXmlPreview = true },
+                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                        )
+                                    ) {
+                                        Text("XML", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                                     }
                                 }
                                 IconButton(
@@ -770,6 +800,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                     onShowJumpLine = { isOpenJump = true },
                                     onShowCreate = { showCreateDialog = true },
                                     onShowColorPicker = { showColorPicker = true },
+                                    isShowPreview = showPreviewBottomSheet,
                                 )
                             }
                         }
@@ -788,10 +819,7 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 server = server,
                                 fileExtension = currentFileExt,
                                 onInstall = {
-                                    if (activity != null) {
-                                        server.install(activity)
-                                        navController.safeNavigate("terminal")
-                                    }
+                                    navigateToLspExtensionStore(navController)
                                     missingLspServer = null
                                 },
                                 onDismiss = {
@@ -916,12 +944,31 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         )
     }
 
-    if (showPreviewBottomSheet && previewTargets.isNotEmpty()) {
+    if (showComposePreview) {
+        val targets = remember(activeFile) {
+            val content = try {
+                if (activeFile != null && activeFile.exists() && activeFile.isFile) activeFile.readText() else ""
+            } catch (e: Exception) {
+                ""
+            }
+            com.scto.mobile.ide.features.layoutpreview.ComposePreviewScanner.scan(content)
+        }
         com.scto.mobile.ide.features.layoutpreview.ui.LayoutPreviewBottomSheet(
             projectPath = projectPath,
-            targets = previewTargets,
-            onDismiss = { showPreviewBottomSheet = false },
+            targets = targets,
+            onDismiss = { showComposePreview = false },
         )
+    }
+
+    if (showXmlPreview) {
+        ModalBottomSheet(onDismissRequest = { showXmlPreview = false }) {
+            Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.7f).padding(16.dp)) {
+                com.scto.mobile.ide.features.layoutpreview.XmlLayoutHost(
+                    layoutRes = 0,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
     }
 
     // 3. 构建结果弹窗
@@ -965,6 +1012,24 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
             )
         }
     }
+
+    if (showDependencyUpdateDialog) {
+        com.scto.mobile.ide.ui.editor.dialogs.DependencyUpdateDialog(
+            updates = availableDependencyUpdates,
+            onDismiss = { showDependencyUpdateDialog = false },
+            onConfirm = { selected ->
+                showDependencyUpdateDialog = false
+                scope.launch {
+                    val success = com.scto.mobile.ide.ui.editor.dialogs.DependencyUpdateChecker.applyUpdates(projectPath, selected)
+                    if (success) {
+                        snackbarHostState.showSnackbar("libs.versions.toml erfolgreich aktualisiert!")
+                    } else {
+                        snackbarHostState.showSnackbar("Fehler beim Aktualisieren der libs.versions.toml")
+                    }
+                }
+            }
+        )
+    }
 }
 
 // ---------------- 辅助函数 ----------------
@@ -982,6 +1047,7 @@ fun EditCode(
     onShowJumpLine: () -> Unit,
     onShowCreate: () -> Unit,
     onShowColorPicker: () -> Unit,
+    isShowPreview: Boolean = false,
 ) {
     val openFiles = viewModel.openFiles
     val activeFileIndex = viewModel.activeFileIndex
@@ -1569,6 +1635,19 @@ fun FileManagerDrawer(
                         modifier =
                             Modifier.fillMaxWidth()
                                 .clickable {
+                                    onConfigChange(fileTreeConfig.copy(showHiddenFiles = !fileTreeConfig.showHiddenFiles))
+                                }
+                                .padding(vertical = 8.dp),
+                    ) {
+                        Checkbox(checked = fileTreeConfig.showHiddenFiles, onCheckedChange = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Versteckte Dateien anzeigen (.file)")
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .clickable {
                                     onConfigChange(
                                         fileTreeConfig.copy(
                                             compactMiddlePackages = !fileTreeConfig.compactMiddlePackages
@@ -2122,7 +2201,15 @@ private suspend fun handleRunApk(
 ) {
     val success = viewModel.saveAllModifiedFiles(context, snackbarHostState)
     if (success) {
-        snackbarHostState.showSnackbar("Building APK via Gradle... Please wait.")
+        val targetDir = if (java.io.File(projectPath, "gradlew").exists()) {
+            projectPath
+        } else if (java.io.File(projectPath, "$folderName/gradlew").exists()) {
+            "$projectPath/$folderName"
+        } else {
+            projectPath
+        }
+
+        snackbarHostState.showSnackbar("Starte Gradle-Build im Verzeichnis: $targetDir")
 
         val builder = com.scto.mobile.ide.core.apkbuilder.ApkBuilder(context)
         val result =
@@ -2153,11 +2240,19 @@ private suspend fun handleRunApk(
                         }
                     val javaHomeExport =
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
-                    val compileCmd = "${javaHomeExport}cd $projectPath && bash ./gradlew assembleDebug"
+                    val targetDir = if (java.io.File(projectPath, "gradlew").exists()) {
+                        projectPath
+                    } else if (java.io.File(projectPath, "$folderName/gradlew").exists()) {
+                        "$projectPath/$folderName"
+                    } else {
+                        projectPath
+                    }
+                    val compileCmd = "${javaHomeExport}cd \"$targetDir\" && bash ./gradlew assembleDebug"
                     val cmd =
                         com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
                             context,
                             arrayOf("sh", "-c", compileCmd),
+                            workDir = targetDir,
                         )
                     pb.command(cmd)
                     pb.environment().putAll(com.scto.mobile.ide.features.terminal.ui.DistroManager.getProotEnv(context))
@@ -2299,7 +2394,7 @@ fun LspOverlayView(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable { onInstall() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         shape = RoundedCornerShape(12.dp),
@@ -2343,4 +2438,12 @@ fun LspOverlayView(
             }
         }
     }
+}
+
+/**
+ * Extracted navigation function for LSP extension management.
+ * Can easily be adapted to route directly to an Extension Store route in the future.
+ */
+fun navigateToLspExtensionStore(navController: NavController) {
+    navController.safeNavigate("settings/lsp")
 }

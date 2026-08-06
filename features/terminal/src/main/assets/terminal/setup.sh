@@ -204,6 +204,16 @@ touch "$SANDBOX_DIR/.cache/.packages_ensured"
 sh $LOCAL/bin/sandbox "update-command-not-found" >/dev/null 2>&1 || true
 
 if [ "$INSTALL_GRADLE" != "none" ] && [ "$INSTALL_GRADLE" != "apt" ]; then
+    if [ "$INSTALL_GRADLE" = "latest" ]; then
+        info "Resolving latest Gradle version from services.gradle.org..."
+        LATEST_GRADLE=$(wget -qO- https://services.gradle.org/versions/current | grep -o '"version": "[^"]*"' | head -n1 | cut -d'"' -f4)
+        if [ -n "$LATEST_GRADLE" ]; then
+            INSTALL_GRADLE="$LATEST_GRADLE"
+            info "Latest Gradle version is $INSTALL_GRADLE"
+        else
+            INSTALL_GRADLE="8.13"
+        fi
+    fi
     info "Installing custom Gradle version $INSTALL_GRADLE..."
     sh $LOCAL/bin/sandbox "apt-get install -y wget unzip && wget -q https://services.gradle.org/distributions/gradle-${INSTALL_GRADLE}-bin.zip -O /tmp/gradle.zip && mkdir -p /opt/gradle && unzip -o -d /opt/gradle /tmp/gradle.zip && ln -sf /opt/gradle/gradle-${INSTALL_GRADLE}/bin/gradle /usr/bin/gradle && rm /tmp/gradle.zip"
 fi

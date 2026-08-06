@@ -17,7 +17,8 @@ install() {
   mkdir -p /usr/local/bin
   ln -sf /opt/jdtls/bin/jdtls /usr/local/bin/jdtls
   info 'Java language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to continue..."
+  echo ""
 }
 
 uninstall() {
@@ -25,13 +26,13 @@ uninstall() {
   rm -f /usr/local/bin/jdtls
   rm -rf /opt/jdtls
   info 'Java language server uninstalled successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to continue..."
+  echo ""
 }
 
 update() {
   info 'Updating Java language server...'
   install
-  exit 0
 }
 
 case "$1" in

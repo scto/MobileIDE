@@ -59,6 +59,9 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
     var codeFolding by remember { mutableStateOf(prefs.getBoolean("editor_code_folding", true)) }
     var aiEnabled by remember { mutableStateOf(prefs.getBoolean("editor_ai_enabled", true)) }
     var editorType by remember { mutableStateOf(prefs.getString("editor_type", "treesitter") ?: "treesitter") }
+    var autoCloseBrackets by remember { mutableStateOf(prefs.getBoolean("editor_auto_close_brackets", true)) }
+    var showMipmap by remember { mutableStateOf(prefs.getBoolean("editor_show_mipmap", true)) }
+    var editorTheme by remember { mutableStateOf(prefs.getString("editor_theme", "Default") ?: "Default") }
 
     var showFormattersDialog by remember { mutableStateOf(false) }
 
@@ -103,6 +106,9 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
             putBoolean("editor_code_folding", codeFolding)
             putBoolean("editor_ai_enabled", aiEnabled)
             putString("editor_type", editorType)
+            putBoolean("editor_auto_close_brackets", autoCloseBrackets)
+            putBoolean("editor_show_mipmap", showMipmap)
+            putString("editor_theme", editorTheme)
         }
     }
 
@@ -177,14 +183,52 @@ fun EditorScreen(navController: NavController, editorViewModel: EditorViewModel?
                 }
             }
 
-            // 3. Intelligente Funktionen
-            EditorSectionHeader(title = "Intelligente Funktionen")
+            // 3. Intelligente Funktionen & Darstellung
+            EditorSectionHeader(title = "Intelligente Funktionen & Darstellung")
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Column {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Text(
+                        "Schriftgröße: ${fontSize.toInt()} sp",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                    Slider(
+                        value = fontSize,
+                        onValueChange = { fontSize = it },
+                        valueRange = 10f..32f,
+                        steps = 22,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 16.dp))
+                    NavigationSettingRow(
+                        title = "Editor Theme",
+                        description = "Aktuelles Farbschema: $editorTheme",
+                        onClick = {
+                            val themes = listOf("Default", "GitHub Dark", "Dracula", "Solarized", "Monokai", "VS Code")
+                            val nextIndex = (themes.indexOf(editorTheme) + 1) % themes.size
+                            editorTheme = themes[nextIndex]
+                        },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 16.dp))
+                    SwitchSettingRow(
+                        title = "Klammern & Anführungszeichen automatisch schließen",
+                        description = "Schließe (, [, {, \" und ' automatisch bei der Eingabe",
+                        checked = autoCloseBrackets,
+                        onCheckedChange = { autoCloseBrackets = it },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 16.dp))
+                    SwitchSettingRow(
+                        title = "Mipmap / Bildvorschau anzeigen",
+                        description = "Zeige Mipmaps und Bildvorschauen in der Seitenleiste/Editor",
+                        checked = showMipmap,
+                        onCheckedChange = { showMipmap = it },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 16.dp))
                     SwitchSettingRow(
                         title = "Tags automatisch schließen",
                         description = "HTML-Tags automatisch schließen",

@@ -86,6 +86,7 @@ data class FileTreeConfig(
     val alwaysSelectOpenedFile: Boolean = false,
     val showIndentGuides: Boolean = false,
     val rememberExpandedStates: Boolean = false, // 新增：记忆展开状态
+    val showHiddenFiles: Boolean = false,
 )
 
 enum class SortBy {
@@ -182,7 +183,8 @@ private fun FileTreeImpl(
 
     // Sort logic
     fun sortFiles(files: List<File>): List<File> {
-        return files.sortedWith(
+        val filteredFiles = if (config.showHiddenFiles) files else files.filter { !it.name.startsWith(".") }
+        return filteredFiles.sortedWith(
             Comparator { f1, f2 ->
                 // 1. Folders on top check
                 if (config.foldersAlwaysOnTop) {

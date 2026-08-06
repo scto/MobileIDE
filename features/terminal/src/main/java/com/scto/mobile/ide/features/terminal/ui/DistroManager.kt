@@ -37,7 +37,7 @@ object DistroManager {
 
     private fun getLibDir(context: Context): File = File(getLocalDir(context), "lib").apply { mkdirs() }
 
-    fun buildProotCommand(context: Context, command: Array<String>): List<String> {
+    fun buildProotCommand(context: Context, command: Array<String>, workDir: String = "/home"): List<String> {
         val distroName = getDistroName(context)
         Timber.tag("DistroManager").i("buildProotCommand: distro=$distroName, command=${command.joinToString(" ")}")
         val prefixDir = getPrefixDir(context)
@@ -84,8 +84,9 @@ object DistroManager {
         args.add("-r")
         args.add(distroDir.absolutePath)
 
+        val validWorkDir = if (File(workDir).exists()) workDir else "/home"
         args.add("-w")
-        args.add("/home")
+        args.add(validWorkDir)
 
         args.add("/usr/bin/env")
         args.add("-i")

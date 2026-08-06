@@ -147,6 +147,8 @@ data class EditorConfig(
     val highlightCurrentLine: Boolean = true,
     val highlightCurrentBlock: Boolean = true,
     val autoCloseBrackets: Boolean = true,
+    val editorTheme: String = "Default",
+    val showMipmap: Boolean = true,
 ) {
     fun getSymbolList(): List<String> = customSymbols.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 }
@@ -1191,6 +1193,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 highlightCurrentLine = prefs.getBoolean("editor_highlight_current_line", true),
                 highlightCurrentBlock = prefs.getBoolean("editor_highlight_current_block", true),
                 autoCloseBrackets = prefs.getBoolean("editor_auto_close_brackets", true),
+                editorTheme = prefs.getString("editor_theme", "Default") ?: "Default",
+                showMipmap = prefs.getBoolean("editor_show_mipmap", true),
             )
     }
 

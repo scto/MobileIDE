@@ -582,6 +582,54 @@ class GitManager(projectPath: String) {
 
             Pair(commits, refMap)
         }
+
+    suspend fun stashSave(message: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                Git.open(rootDir).use { git ->
+                    git.stashCreate().setIndexMessage(message).call()
+                    true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+
+    suspend fun stashPop(): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                Git.open(rootDir).use { git ->
+                    git.stashApply().setStashRef("refs/stash").call()
+                    git.stashDrop().setStashRef(0).call()
+                    true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
+
+    suspend fun fetch(auth: GitAuth?): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                Git.open(rootDir).use { git ->
+                    val cmd = git.fetch()
+                    if (auth != null) {
+                        if (auth.type == AuthType.HTTPS) {
+                            cmd.setCredentialsProvider(UsernamePasswordCredentialsProvider(auth.username, auth.token))
+                        } else {
+                            cmd.setTransportConfigCallback(prepareSshEnvironment(auth))
+                        }
+                    }
+                    cmd.call()
+                    true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
 }
 
 object RepositoryUtils {

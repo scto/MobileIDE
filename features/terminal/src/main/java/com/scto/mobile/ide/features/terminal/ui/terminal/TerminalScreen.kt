@@ -553,16 +553,18 @@ fun TerminalScreen(
                             }
 
                             mainActivityActivity.sessionBinder?.getService()?.let { service ->
-                                val sessionKeys = service.sessionOrder.toList()
+                                val sessionOrder = service.sessionOrder
+                                val currentSessionId = service.currentSession.value.first
                                 LazyColumn {
-                                    itemsIndexed(sessionKeys) { index, session_id ->
+                                    itemsIndexed(items = sessionOrder, key = { _, id -> id }) { index, session_id ->
                                         SelectableCard(
-                                            selected = session_id == service.currentSession.value.first,
+                                            selected = session_id == currentSessionId,
                                             onSelect = {
                                                 changeSession(
                                                     mainActivityActivity,
                                                     session_id
                                                 )
+                                                scope.launch { drawerState.close() }
                                             },
                                             onLongPress = {
                                                 showRenameDialogFor = session_id
@@ -582,7 +584,7 @@ fun TerminalScreen(
                                                             .size(24.dp)
                                                             .clip(RoundedCornerShape(6.dp))
                                                             .background(
-                                                                if (session_id == service.currentSession.value.first)
+                                                                if (session_id == currentSessionId)
                                                                     MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                                                                 else
                                                                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
@@ -592,7 +594,7 @@ fun TerminalScreen(
                                                         Text(
                                                             text = "${index + 1}",
                                                             style = MaterialTheme.typography.labelMedium,
-                                                            color = if (session_id == service.currentSession.value.first)
+                                                            color = if (session_id == currentSessionId)
                                                                 MaterialTheme.colorScheme.primary
                                                             else
                                                                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -604,30 +606,22 @@ fun TerminalScreen(
                                                 Text(
                                                     text = service.getDisplayTitle(session_id),
                                                     style = MaterialTheme.typography.bodyLarge,
-                                                    color = getSessionTextColor(service.getWorkingMode(session_id))
+                                                    color = getSessionTextColor(service.getWorkingMode(session_id)),
+                                                    modifier = Modifier.weight(1f)
                                                 )
 
-                                                if (session_id != service.currentSession.value.first) {
-                                                    Spacer(modifier = Modifier.weight(1f))
-
-                                                    IconButton(
-                                                        onClick = {
-                                                            println(session_id)
-                                                            mainActivityActivity.sessionBinder?.terminateSession(
-                                                                session_id
-                                                            )
-                                                        },
-                                                        modifier = Modifier.size(24.dp)
-                                                    ) {
-                                                    
-                                                        Icon(
-                                                            imageVector = Icons.Outlined.Delete,
-                                                            contentDescription = null,
-                                                            modifier = Modifier.size(20.dp)
-                                                        )
-                                                    }
+                                                IconButton(
+                                                    onClick = {
+                                                        handleCloseSession(session_id, currentSessionId)
+                                                    },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.Delete,
+                                                        contentDescription = null,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
                                                 }
-
                                             }
                                         }
                                     }

@@ -73,6 +73,8 @@ fun NewProjectScreen(navController: NavController) {
     var projectName by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(ProjectType.BASIC_COMPOSE_ACTIVITY) }
     var packageName by remember { mutableStateOf("com.example.myapp") }
+    var minSdk by remember { mutableStateOf("24") }
+    var targetSdk by remember { mutableStateOf("35") }
 
     var isScreenVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { isScreenVisible = true }
@@ -99,6 +101,8 @@ fun NewProjectScreen(navController: NavController) {
             projectName,
             packageName,
             selectedType,
+            minSdk,
+            targetSdk,
             onSuccess = { dir ->
                 isLoading = false
                 scope.launch {
@@ -260,6 +264,26 @@ fun NewProjectScreen(navController: NavController) {
                     keyboardType = KeyboardType.Ascii,
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CleanTextField(
+                        value = minSdk,
+                        onValueChange = { minSdk = it },
+                        placeholder = "minSdk (z.B. 24)",
+                        icon = Icons.Outlined.Speed,
+                        keyboardType = KeyboardType.Number,
+                        modifier = Modifier.weight(1f),
+                    )
+                    CleanTextField(
+                        value = targetSdk,
+                        onValueChange = { targetSdk = it },
+                        placeholder = "targetSdk (z.B. 35)",
+                        icon = Icons.Outlined.Android,
+                        keyboardType = KeyboardType.Number,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
@@ -381,6 +405,8 @@ private fun createNewProject(
     name: String,
     packageName: String,
     type: ProjectType,
+    minSdk: String = "24",
+    targetSdk: String = "35",
     onSuccess: (File) -> Unit,
     onError: (String) -> Unit,
 ) {
@@ -408,7 +434,7 @@ private fun createNewProject(
                     ProjectType.CMAKE_APP -> "CmakeApp"
                 }
 
-            extractTemplate(context, templateName, projectDir, name, packageName)
+            extractTemplate(context, templateName, projectDir, name, packageName, minSdk, targetSdk, type)
 
             withContext(Dispatchers.Main) { onSuccess(projectDir) }
         } catch (e: Exception) {
@@ -426,6 +452,9 @@ private fun extractTemplate(
     targetDir: File,
     projectName: String,
     packageName: String,
+    minSdk: String,
+    targetSdk: String,
+    type: ProjectType,
 ) {
     val assetManager = context.assets
     assetManager.open("templates/templates.zip").use { inputStream ->
@@ -466,6 +495,10 @@ private fun extractTemplate(
                             content = content.replace("\$packageName", packageName)
                             content = content.replace("\$packagename", packageName)
                             content = content.replace("\$projectName", projectName)
+                            content = content.replace("minSdk = 24", "minSdk = $minSdk")
+                            content = content.replace("targetSdk = 35", "targetSdk = $targetSdk")
+                            content = content.replace("minSdkVersion 24", "minSdkVersion $minSdk")
+                            content = content.replace("targetSdkVersion 35", "targetSdkVersion $targetSdk")
 
                             val jniPackageName = packageName.replace(".", "_")
                             content = content.replace("\$jniPackageName", jniPackageName)
@@ -487,6 +520,141 @@ private fun extractTemplate(
                     entry = zipInputStream.nextEntry
                 }
             }
+        }
+    }
+
+    // Ensure full Gradle wrapper files exist
+    val gradleWrapperDir = File(targetDir, "gradle/wrapper")
+    gradleWrapperDir.mkdirs()
+    val wrapperProps = File(gradleWrapperDir, "gradle-wrapper.properties")
+    if (!wrapperProps.exists()) {
+        wrapperProps.writeText(
+            """
+            distributionBase=GRADLE_USER_HOME
+            distributionPath=wrapper/dists
+            distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
+            zipStoreBase=GRADLE_USER_HOME
+            zipStorePath=wrapper/dists
+            """.trimIndent()
+        )
+    }
+
+    // Ensure Version Catalog libs.versions.toml exists
+    val tomlFile = File(targetDir, "gradle/libs.versions.toml")
+    if (!tomlFile.exists()) {
+        tomlFile.writeText(
+            """
+            [versions]
+            agp = "8.7.3"
+            kotlin = "2.0.21"
+            core-ktx = "1.15.0"
+            lifecycle-runtime = "2.8.7"
+            activity-compose = "1.9.3"
+            compose-bom = "2024.11.00"
+
+            [libraries]
+            androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+            androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime" }
+            androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+            androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+            androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+            androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+            androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+            androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+            [plugins]
+            android-application = { id = "com.android.application", version.ref = "agp" }
+            kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+            kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+            """.trimIndent()
+        )
+    }
+
+    // Add extra pages (Home, Settings, About) for Navigation Drawer & Bottom Nav templates
+    if (type == ProjectType.NAVIGATION_DRAWER_ACTIVITY || type == ProjectType.BOTTOM_NAVIGATION) {
+        val packageDir = File(targetDir, "app/src/main/java/${packageName.replace('.', '/')}")
+        val pagesDir = File(packageDir, "pages")
+        pagesDir.mkdirs()
+
+        val homeFile = File(pagesDir, "HomeScreen.kt")
+        if (!homeFile.exists()) {
+            homeFile.writeText(
+                """
+                package $packageName.pages
+
+                import androidx.compose.foundation.layout.*
+                import androidx.compose.material3.*
+                import androidx.compose.runtime.Composable
+                import androidx.compose.ui.Alignment
+                import androidx.compose.ui.Modifier
+                import androidx.compose.ui.unit.dp
+
+                @Composable
+                fun HomeScreen() {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Home Screen", style = MaterialTheme.typography.headlineMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text("Willkommen zu deiner Android App!")
+                        }
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val settingsFile = File(pagesDir, "SettingsScreen.kt")
+        if (!settingsFile.exists()) {
+            settingsFile.writeText(
+                """
+                package $packageName.pages
+
+                import androidx.compose.foundation.layout.*
+                import androidx.compose.material3.*
+                import androidx.compose.runtime.Composable
+                import androidx.compose.ui.Alignment
+                import androidx.compose.ui.Modifier
+                import androidx.compose.ui.unit.dp
+
+                @Composable
+                fun SettingsScreen() {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Einstellungen", style = MaterialTheme.typography.headlineMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text("App-Optionen und Konfiguration")
+                        }
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val aboutFile = File(pagesDir, "AboutScreen.kt")
+        if (!aboutFile.exists()) {
+            aboutFile.writeText(
+                """
+                package $packageName.pages
+
+                import androidx.compose.foundation.layout.*
+                import androidx.compose.material3.*
+                import androidx.compose.runtime.Composable
+                import androidx.compose.ui.Alignment
+                import androidx.compose.ui.Modifier
+                import androidx.compose.ui.unit.dp
+
+                @Composable
+                fun AboutScreen() {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Über diese App", style = MaterialTheme.typography.headlineMedium)
+                            Spacer(Modifier.height(8.dp))
+                            Text("Erstellt mit MobileIDE")
+                        }
+                    }
+                }
+                """.trimIndent()
+            )
         }
     }
 }

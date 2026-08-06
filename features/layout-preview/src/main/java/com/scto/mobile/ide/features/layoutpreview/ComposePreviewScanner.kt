@@ -9,7 +9,7 @@ data class ComposablePreviewTarget(
 object ComposePreviewScanner {
 
     private val composableRegex = Regex(
-        "(?m)(@Preview\\s+)?@Composable\\s+(?:private\\s+|protected\\s+|internal\\s+)?fun\\s+([a-zA-Z0-9_]+)\\s*\\(\\s*\\)"
+        "(?s)(?:@[A-Za-z0-9_]+\\s*\\([^)]*\\)\\s*)*@Composable\\s+(?:private\\s+|protected\\s+|internal\\s+)?fun\\s+([a-zA-Z0-9_]+)"
     )
 
     fun scan(fileText: String): List<ComposablePreviewTarget> {
@@ -19,10 +19,10 @@ object ComposePreviewScanner {
         val lines = fileText.lines()
 
         composableRegex.findAll(fileText).forEach { matchResult ->
-            val hasPreview = matchResult.groupValues[1].isNotBlank()
-            val funName = matchResult.groupValues[2]
+            val funName = matchResult.groupValues[1]
+            val matchedSegment = matchResult.value
+            val hasPreview = matchedSegment.contains("@Preview")
 
-            // Find line number
             val charIndex = matchResult.range.first
             var lineNum = 1
             var count = 0

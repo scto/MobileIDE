@@ -343,6 +343,7 @@ fun CodeEditorView(
                 view.props.singleDirectionDragging = false
                 view.typefaceText = editorTypeface
                 view.typefaceLineNumber = editorTypeface
+                view.setTextSize(editorConfig.fontSize)
                 view.isWordwrap = editorConfig.wordWrap
                 view.tabWidth = editorConfig.tabWidth
                 view.setFoldingEnabled(editorConfig.codeFolding)

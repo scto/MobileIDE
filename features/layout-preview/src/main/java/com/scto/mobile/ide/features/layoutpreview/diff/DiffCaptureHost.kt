@@ -93,7 +93,15 @@ fun XmlCaptureHost(
     AndroidView(
         modifier = modifier.fillMaxSize(),
         factory = { context ->
-            android.view.LayoutInflater.from(context).inflate(layoutRes, null, false)
+            if (layoutRes > 0) {
+                try {
+                    android.view.LayoutInflater.from(context).inflate(layoutRes, null, false)
+                } catch (e: Exception) {
+                    android.view.View(context)
+                }
+            } else {
+                android.view.View(context)
+            }
         },
         update = { view ->
             view.post {

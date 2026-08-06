@@ -161,7 +161,7 @@
     <string name="auto_save_5_minutes">Alle 5 Minuten</string>
     <string name="auto_save_10_minutes">Alle 10 Minuten</string>
 
-    <string name="projects_title">Web-Projekte</string>
+    <string name="projects_title">MobileIDE Projekte</string>
     <string name="projects_search_placeholder">Projekte suchen...</string>
     <string name="projects_new_project">Neues Projekt</string>
     <string name="projects_no_search_history">Kein Suchverlauf</string>

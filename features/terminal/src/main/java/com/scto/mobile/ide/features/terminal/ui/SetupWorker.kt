@@ -262,7 +262,7 @@ object SetupWorker {
             val optionsFile = File(prefixDir, "local/setup_options.properties")
             val generalPrefs = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
             val jdk = generalPrefs.getString("welcome_install_jdk_version", "17") ?: "17"
-            val gradle = generalPrefs.getString("welcome_install_gradle_version", "apt") ?: "apt"
+            val gradle = generalPrefs.getString("welcome_install_gradle_version", "latest") ?: "latest"
             val sdk = generalPrefs.getString("welcome_install_sdk_version", "35") ?: "35"
             val buildTools = generalPrefs.getString("welcome_install_build_tools_version", "35.0.0") ?: "35.0.0"
             val cmdline = generalPrefs.getBoolean("welcome_install_cmdline_tools", true)
@@ -415,10 +415,9 @@ object SetupWorker {
             var symlinkCreated = false
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 try {
-                    if (sandboxLink.exists() || java.nio.file.Files.isSymbolicLink(sandboxLink.toPath())) {
-                        sandboxLink.delete()
-                    }
-                    java.nio.file.Files.createSymbolicLink(sandboxLink.toPath(), distroDir.toPath())
+                    val linkPath = sandboxLink.toPath()
+                    java.nio.file.Files.deleteIfExists(linkPath)
+                    java.nio.file.Files.createSymbolicLink(linkPath, distroDir.toPath())
                     symlinkCreated = true
                 } catch (e: Exception) {
                     Timber.tag("SetupWorker").e(e, "Failed to create sandbox symlink via Files")

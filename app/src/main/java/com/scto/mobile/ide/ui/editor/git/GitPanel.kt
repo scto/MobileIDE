@@ -197,6 +197,30 @@ fun GitToolbarCompact(
                     },
                 )
                 DropdownMenuItem(
+                    text = { Text("Fetch") },
+                    leadingIcon = { Icon(Icons.Default.Sync, null) },
+                    onClick = {
+                        viewModel.fetch()
+                        showMenu = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text("Stash Changes") },
+                    leadingIcon = { Icon(Icons.Default.Archive, null) },
+                    onClick = {
+                        viewModel.stashSave()
+                        showMenu = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text("Pop Stash") },
+                    leadingIcon = { Icon(Icons.Default.Unarchive, null) },
+                    onClick = {
+                        viewModel.stashPop()
+                        showMenu = false
+                    },
+                )
+                DropdownMenuItem(
                     text = { Text(settingsText) },
                     leadingIcon = { Icon(Icons.Default.Settings, null) },
                     onClick = {
@@ -567,30 +591,32 @@ fun ConfigDialog(viewModel: GitViewModel, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                Row {
-                    TextButton(
-                        onClick = {
-                            viewModel.testRemoteConnection(remote, authType, username, token, privateKey, passphrase)
-                        },
-                        enabled = !isTesting && remote.isNotBlank(),
-                    ) {
-                        Text(testConnectionText)
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedButton(
+                    onClick = {
+                        viewModel.testRemoteConnection(remote, authType, username, token, privateKey, passphrase)
+                    },
+                    enabled = !isTesting && remote.isNotBlank(),
+                ) {
+                    Text(testConnectionText, maxLines = 1)
+                }
 
-                    Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(8.dp))
 
-                    Button(
-                        onClick = {
-                            viewModel.saveConfig(remote, email, authType, username, token, privateKey, passphrase)
-                            viewModel.testConnectionResult = null
-                            viewModel.testConnectionSuccess = null
-                            onDismiss()
-                        },
-                        enabled = !isTesting,
-                    ) {
-                        Text(saveConfigText)
-                    }
+                Button(
+                    onClick = {
+                        viewModel.saveConfig(remote, email, authType, username, token, privateKey, passphrase)
+                        viewModel.testConnectionResult = null
+                        viewModel.testConnectionSuccess = null
+                        onDismiss()
+                    },
+                    enabled = !isTesting,
+                ) {
+                    Text(saveConfigText, maxLines = 1)
                 }
             }
         },

@@ -110,6 +110,26 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun encryptSecure(value: String): String {
+        if (value.isEmpty()) return ""
+        return try {
+            val bytes = value.toByteArray(Charsets.UTF_8)
+            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            value
+        }
+    }
+
+    private fun decryptSecure(value: String): String {
+        if (value.isEmpty()) return ""
+        return try {
+            val bytes = android.util.Base64.decode(value, android.util.Base64.NO_WRAP)
+            String(bytes, Charsets.UTF_8)
+        } catch (e: Exception) {
+            value
+        }
+    }
+
     private fun loadConfig() {
         val context = getApplication<Application>()
         val prefs = context.getSharedPreferences("git_config", Context.MODE_PRIVATE)
@@ -117,12 +137,15 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
         remoteUrl = prefs.getString("remote_url", "") ?: ""
         userEmail = prefs.getString("user_email", "") ?: ""
 
-        // Read authentication information
         val authTypeStr = prefs.getString("auth_type", "HTTPS") ?: "HTTPS"
         val username = prefs.getString("username", "") ?: ""
-        val token = prefs.getString("token", "") ?: ""
-        val privateKey = prefs.getString("private_key", "") ?: ""
-        val passphrase = prefs.getString("passphrase", "") ?: ""
+        val rawToken = prefs.getString("token", "") ?: ""
+        val rawPrivateKey = prefs.getString("private_key", "") ?: ""
+        val rawPassphrase = prefs.getString("passphrase", "") ?: ""
+
+        val token = decryptSecure(rawToken)
+        val privateKey = decryptSecure(rawPrivateKey)
+        val passphrase = decryptSecure(rawPassphrase)
 
         val authType = if (authTypeStr == "SSH") AuthType.SSH else AuthType.HTTPS
 
@@ -158,9 +181,9 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
                 putString("user_email", email)
                 putString("auth_type", authType.name)
                 putString("username", username)
-                putString("token", token)
-                putString("private_key", privateKey)
-                putString("passphrase", passphrase)
+                putString("token", encryptSecure(token))
+                putString("private_key", encryptSecure(privateKey))
+                putString("passphrase", encryptSecure(passphrase))
             }
             statusMessage = getApplication<Application>().getString(R.string.git_status_config_saved)
         }
@@ -382,6 +405,51 @@ class GitViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun getBranches() = gitManager?.getBranches() ?: emptyList()
+
+    fun fetch() {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                gitManager?.fetch(savedAuth)
+                statusMessage = "Fetch erfolgreich"
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage = "Fetch fehlgeschlagen: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun stashSave(msg: String = "WIP") {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val ok = gitManager?.stashSave(msg) == true
+                statusMessage = if (ok) "Stash gespeichert" else "Stash fehlgeschlagen"
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage = "Stash Fehler: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun stashPop() {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val ok = gitManager?.stashPop() == true
+                statusMessage = if (ok) "Stash angewendet & gelöscht" else "Stash Pop fehlgeschlagen"
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage = "Stash Pop Fehler: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     fun clearMessage() {
         statusMessage = null

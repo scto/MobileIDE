@@ -98,8 +98,8 @@ extract_via_proot() {
     local cmd="(cd \"$target_dir\" && (tar -xzf \"$archive\" $tar_excludes $tar_opts || (gzip -dc \"$archive\" | tar -xf - $tar_excludes $tar_opts) || tar -xzf \"$archive\" $tar_excludes || (gzip -dc \"$archive\" | tar -xf - $tar_excludes) || tar -xzf \"$archive\" || tar -xf \"$archive\"))"
 
     set +e
-    $proot_bin $proot_args /system/bin/sh -c "$cmd" > "$log_file" 2>&1
-    local ret=$?
+    $proot_bin $proot_args /system/bin/sh -c "$cmd" 2>&1 | grep -v "not under" > "$log_file" || true
+    local ret=${PIPESTATUS[0]}
     set -e
     return $ret
 }
@@ -117,8 +117,8 @@ extract_via_tar_fallback() {
     local cmd="(cd \"$target_dir\" && (tar -xzf \"$archive\" $tar_excludes $tar_opts || (gzip -dc \"$archive\" | tar -xf - $tar_excludes $tar_opts) || tar -xzf \"$archive\" $tar_excludes || (gzip -dc \"$archive\" | tar -xf - $tar_excludes) || tar -xzf \"$archive\" || tar -xf \"$archive\"))"
 
     set +e
-    sh -c "$cmd" > "$log_file" 2>&1
-    local ret=$?
+    sh -c "$cmd" 2>&1 | grep -v "not under" > "$log_file" || true
+    local ret=${PIPESTATUS[0]}
     set -e
     return $ret
 }
@@ -127,7 +127,7 @@ extract_via_tar_fallback() {
 fix_alternatives_symlinks_inside_rootfs() {
     local target_dir="$1"
 
-    mkdir -p "$target_dir/var" "$target_dir/etc/alternatives" "$target_dir/usr/bin"
+    mkdir -p "$target_dir/var" "$target_dir/etc/alternatives" "$target_dir/usr/bin" "$target_dir/usr/sbin"
 
     if [ -f "$target_dir/usr/bin/mawk" ]; then
         ln -snf /usr/bin/mawk "$target_dir/etc/alternatives/awk" 2>/dev/null || true
@@ -135,6 +135,11 @@ fix_alternatives_symlinks_inside_rootfs() {
     elif [ -f "$target_dir/usr/bin/gawk" ]; then
         ln -snf /usr/bin/gawk "$target_dir/etc/alternatives/awk" 2>/dev/null || true
         ln -snf /etc/alternatives/awk "$target_dir/usr/bin/awk" 2>/dev/null || true
+    fi
+
+    if [ -f "$target_dir/usr/bin/debian-which" ]; then
+        ln -snf /usr/bin/debian-which "$target_dir/etc/alternatives/which" 2>/dev/null || true
+        ln -snf /etc/alternatives/which "$target_dir/usr/bin/which" 2>/dev/null || true
     fi
 
     ln -snf ../run "$target_dir/var/run" 2>/dev/null || true

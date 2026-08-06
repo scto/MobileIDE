@@ -14,6 +14,7 @@ import android.content.Context
 import android.os.Build
 import com.scto.mobile.ide.core.common.Constants
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Request
 import timber.log.Timber
 import java.io.File
@@ -134,10 +135,12 @@ object Downloader {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .protocols(listOf(Protocol.HTTP_1_1))
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .callTimeout(0, TimeUnit.MILLISECONDS)
+            .retryOnConnectionFailure(true)
             .followRedirects(true)
             .followSslRedirects(true)
             .build()

@@ -19,7 +19,8 @@ install() {
   mkdir -p /usr/local/bin
   ln -sf /opt/kotlin-language-server/bin/kotlin-language-server /usr/local/bin/kotlin-language-server
   info 'Kotlin language server installed successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to continue..."
+  echo ""
 }
 
 uninstall() {
@@ -27,13 +28,13 @@ uninstall() {
   rm -f /usr/local/bin/kotlin-language-server
   rm -rf /opt/kotlin-language-server
   info 'Kotlin language server uninstalled successfully.'
-  exit 0
+  read -n 1 -s -r -p "Press any key to continue..."
+  echo ""
 }
 
 update() {
   info 'Updating Kotlin language server...'
   install
-  exit 0
 }
 
 case "$1" in
