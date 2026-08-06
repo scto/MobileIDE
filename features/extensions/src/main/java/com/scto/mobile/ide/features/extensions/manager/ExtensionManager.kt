@@ -193,16 +193,21 @@ open class ExtensionManager(val context: Application) : CoroutineScope by Corout
 
             var performedUpdate = false
             if (targetDir.exists()) {
+                android.util.Log.i("ExtensionManager", "Updating extension: ${extensionInfo.id} (${extensionInfo.name})")
                 uninstallExtension(extensionInfo.id, update = true)
                 performedUpdate = true
+            } else {
+                android.util.Log.i("ExtensionManager", "Installing extension: ${extensionInfo.id} (${extensionInfo.name})")
             }
 
             val pm = context.packageManager
             val mobileideVersionCode = PackageInfoCompat.getLongVersionCode(pm.getPackageInfo(context.packageName, 0))
 
             if (extensionInfo.minAppVersion != null && mobileideVersionCode < extensionInfo.minAppVersion) {
+                android.util.Log.e("ExtensionManager", "Failed to install ${extensionInfo.id}: Outdated app client")
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_CLIENT)
             } else if (extensionInfo.maxAppVersion != null && mobileideVersionCode > extensionInfo.maxAppVersion) {
+                android.util.Log.e("ExtensionManager", "Failed to install ${extensionInfo.id}: Outdated extension")
                 return@withContext InstallResult.Error(ExtensionError.OUTDATED_EXTENSION)
             }
 
@@ -212,12 +217,19 @@ open class ExtensionManager(val context: Application) : CoroutineScope by Corout
                 LocalExtension(manifest = extensionInfo, installPath = targetDir.absolutePath)
             localExtensions[extensionInfo.id] = extension
 
+            if (performedUpdate) {
+                android.util.Log.i("ExtensionManager", "Successfully updated extension: ${extensionInfo.id}")
+            } else {
+                android.util.Log.i("ExtensionManager", "Successfully installed extension: ${extensionInfo.id}")
+            }
+
             InstallResult.Success(extension, performedUpdate)
         }
 
     suspend fun uninstallExtension(extensionId: ExtensionId, update: Boolean = false) =
         withContext(Dispatchers.IO) {
             try {
+                android.util.Log.i("ExtensionManager", "Uninstalling extension: $extensionId (isUpdate: $update)")
                 val extension =
                     localExtensions[extensionId] ?: return@withContext Result.failure(Exception("Extension not found"))
 
@@ -229,7 +241,7 @@ open class ExtensionManager(val context: Application) : CoroutineScope by Corout
                             loadedExtension?.api?.onUninstalled()
                         }
                     }
-                    .onFailure { android.util.Log.e("ExtensionManager", "Cleanup failed", it) }
+                    .onFailure { android.util.Log.e("ExtensionManager", "Cleanup failed for $extensionId", it) }
                 loadedExtensions[extension]?.scope?.cancel()
 
                 val extensionDir = File(extension.installPath)
@@ -242,8 +254,10 @@ open class ExtensionManager(val context: Application) : CoroutineScope by Corout
                 context.compiledDexDir().deleteWithPackageName(extension.manifest.id)
                 disabledPrefs.edit { remove(extensionId) }
 
+                android.util.Log.i("ExtensionManager", "Successfully uninstalled extension: $extensionId")
                 Result.success(Unit)
             } catch (err: Exception) {
+                android.util.Log.e("ExtensionManager", "Failed to uninstall extension: $extensionId", err)
                 Result.failure(Exception("Failed to uninstall extension: ${err.message}", err))
             }
         }
