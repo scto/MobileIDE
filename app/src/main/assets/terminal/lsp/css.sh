@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-source "$(dirname "$0")/../utils"
+source "$(dirname "$0")/../utils.sh"
 
 install() {
   if ! command_exists node || ! command_exists npm; then

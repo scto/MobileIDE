@@ -53,11 +53,25 @@ class TerminalBackEnd(
     }
     
     override fun onSessionFinished(finishedSession: TerminalSession) {
+        val exitCode = finishedSession.exitStatus
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i(
+            "TerminalSession",
+            "Session '${finishedSession.title}' finished with exit code: $exitCode"
+        )
         onSessionCloseRequested?.invoke(finishedSession)
         val act = activity ?: return
         val binder = act.sessionBinder ?: return
         val service = binder.getService()
         val sessionId = binder.getSessionId(finishedSession) ?: service.currentSession.value.first
+
+        // If process failed (exit code != 0), KEEP terminal open so user can inspect error output!
+        if (exitCode != 0) {
+            com.scto.mobile.ide.core.common.utils.LogCatcher.w(
+                "TerminalSession",
+                "Session finished with error exit code ($exitCode). Keeping session UI open for debugging."
+            )
+            return
+        }
 
         act.runOnUiThread {
             val sessionKeys = service.sessionOrder.toList()

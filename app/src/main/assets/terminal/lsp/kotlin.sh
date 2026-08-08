@@ -1,6 +1,6 @@
 set -e
 
-source "$(dirname "$0")/../utils"
+source "$(dirname "$0")/../utils.sh"
 
 info 'Preparing...'
 apt-get update && apt-get upgrade -y

@@ -27,6 +27,11 @@ abstract class ScriptedLspServer : LspServer() {
             flags.contains("--update") -> "Updating"
             else -> "Installing"
         }
+        try {
+            installScript.setExecutable(true, false)
+        } catch (e: Exception) {
+            android.util.Log.w("LSP_Installer", "Could not set executable permissions on ${installScript.absolutePath}: ${e.message}")
+        }
         android.util.Log.i("LSP_Installer", "$actionName LSP server '$id' ($serverName) using script: ${installScript.absolutePath}")
         terminalLauncher?.invoke(activity, installScript, flags.toList())
     }
