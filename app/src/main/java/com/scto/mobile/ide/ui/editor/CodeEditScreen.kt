@@ -480,7 +480,9 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
                                 GitPanel(
                                     projectPath = projectPath,
                                     viewModel = gitViewModel,
-                                    editorViewModel = viewModel, // 🔥 加上这一行
+                                    onOpenDiff = { projPath, file ->
+                                        viewModel.openDiff(projPath, file)
+                                    },
                                 )
                             }
                         }

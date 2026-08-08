@@ -90,7 +90,6 @@ include(":features:layout-preview")
 include(":features:terminal")
 
 include(":features:git")
-// include(":features:runner")
 // include(":features:terminal:mobileide-cli")
 // include(":features:terminal:proot")
 // include(":features:terminal:link2symlink")
