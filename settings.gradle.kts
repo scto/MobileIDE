@@ -72,10 +72,8 @@ include(":core:commands")
 include(":extension-languages")
 
 // Standalone installable plugin packages
-include(":plugins:java-lsp")
 include(":plugins:json-lsp")
 include(":plugins:kotlin-kmp-lsp")
-include(":plugins:kotlin-lsp")
 include(":plugins:lua-lsp")
 include(":plugins:python-lsp")
 include(":plugins:typst-lsp")
