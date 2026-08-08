@@ -86,12 +86,6 @@ include(":plugins:fsharp-lsp")
 include(":plugins:prettier-lsp")
 include(":core:common")
 include(":features:layout-preview")
-// TODO Phase 2: entfernen
 include(":features:terminal")
-
 include(":features:git")
-// include(":features:terminal:mobileide-cli")
-// include(":features:terminal:proot")
-// include(":features:terminal:link2symlink")
-
 include(":features:plugin-store")
