@@ -1,619 +1,457 @@
+/*
+ * MobileIDE - A powerful IDE for Android app development.
+ * Copyright (C) 2025  scto  <tschmid35@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.scto.mobile.ide.features.git
 
+import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.compose.ui.graphics.Color
+import androidx.core.content.edit
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.scto.mobile.ide.DefaultScope
-import com.scto.mobile.ide.events.Events
-import com.scto.mobile.ide.feature.FeatureRegistry
-import com.scto.mobile.ide.core.common.files.FileWrapper
-import com.scto.mobile.ide.resources.getFilledString
-import com.scto.mobile.ide.core.terminal.resources.getString
-import com.scto.mobile.ide.core.terminal.resources.R.string as strings
-import com.scto.mobile.ide.core.terminal.settings.Settings
-import com.scto.mobile.ide.feature.FeatureRegistry
-import com.scto.mobile.ide.core.common.utils.toast
-import java.io.ByteArrayOutputStream
-import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import com.scto.mobile.ide.features.git.R
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.ListBranchCommand
-import org.eclipse.jgit.api.errors.DetachedHeadException
-import org.eclipse.jgit.api.errors.InvalidRemoteException
-import org.eclipse.jgit.api.errors.TransportException
-import org.eclipse.jgit.diff.DiffFormatter
-import org.eclipse.jgit.lib.Constants
-import org.eclipse.jgit.lib.Repository
-import org.eclipse.jgit.lib.SubmoduleConfig.FetchRecurseSubmodulesMode
-import org.eclipse.jgit.revwalk.RevWalk
-import org.eclipse.jgit.transport.RemoteRefUpdate
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.eclipse.jgit.treewalk.CanonicalTreeParser
-import org.eclipse.jgit.treewalk.EmptyTreeIterator
-import org.eclipse.jgit.treewalk.FileTreeIterator
-import org.eclipse.jgit.treewalk.filter.PathFilter
+import org.eclipse.jgit.revwalk.RevCommit
 
-class GitViewModel : ViewModel() {
-    var currentRoot = mutableStateOf<File?>(null)
+class GitViewModel(application: Application) : AndroidViewModel(application) {
+    var isGitProject by mutableStateOf(false)
+    var changedFiles by mutableStateOf<List<GitFileChange>>(emptyList())
     var currentBranch by mutableStateOf("")
-    var changes = mutableStateMapOf<String, List<GitChange>>()
-    var commitMessages = mutableStateMapOf<String, String>()
-    var amends = mutableStateMapOf<String, Boolean>()
-
+    var commitLog by mutableStateOf<List<GitCommitUI>>(emptyList())
     var isLoading by mutableStateOf(false)
+    var statusMessage by mutableStateOf<String?>(null)
 
-    fun loadRepository(root: String) {
-        try {
-            currentRoot.value = File(root)
-            currentBranch = Git.open(currentRoot.value).currentHead()
-            syncChanges(currentRoot.value!!)
-            if (!amends.containsKey(root)) {
-                amends[root] = false
-            }
-            if (!commitMessages.containsKey(root)) {
-                commitMessages[root] = ""
-            }
-        } catch (e: Exception) {
-            toast(e.message)
-        }
+    // Configuration
+    var remoteUrl by mutableStateOf("")
+    var userEmail by mutableStateOf("")
+    var savedAuth by mutableStateOf<GitAuth?>(null)
+
+    private var gitManager: GitManager? = null
+    var testConnectionResult by mutableStateOf<String?>(null)
+    var testConnectionSuccess by mutableStateOf<Boolean?>(null)
+    var isTestingConnection by mutableStateOf(false)
+
+    private val laneColors =
+        listOf(
+            Color(0xFFFF5252),
+            Color(0xFF40C4FF),
+            Color(0xFFE040FB),
+            Color(0xFF69F0AE),
+            Color(0xFFFFAB40),
+            Color(0xFFFFD740),
+            Color(0xFF9E9E9E),
+            Color(0xFF795548),
+        )
+
+    fun initialize(projectPath: String) {
+        gitManager = GitManager(projectPath)
+        loadConfig()
+        refreshAll()
     }
 
-    fun getBranchList(): List<String> {
-        return try {
-            Git.open(currentRoot.value).use { git ->
-                val branches = mutableListOf<String>()
-                val refs = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call()
-                for (ref in refs) {
-                    val name = Repository.shortenRefName(ref.name)
-                    branches.add(name)
-                }
-                val current = git.currentHead()
-                if (current !in branches) {
-                    branches.add(0, current)
-                }
-                branches
-            }
-        } catch (e: Exception) {
-            toast(e.message)
-            emptyList()
-        }
-    }
-
-    private fun Git.currentHead(): String {
-        return try {
-            repository.branch
-        } catch (_: DetachedHeadException) {
-            val fullCommitId = repository.fullBranch
-            if (fullCommitId != null && fullCommitId.length >= 7) {
-                fullCommitId.take(7)
-            } else {
-                fullCommitId.toString()
-            }
-        }
-    }
-
-    fun toggleChange(change: GitChange) {
-        changes[currentRoot.value!!.absolutePath] =
-            changes[currentRoot.value!!.absolutePath]!!.map {
-                if (it.path == change.path) it.copy(isChecked = !it.isChecked) else it
-            }
-    }
-
-    fun addChange(change: GitChange) {
-        changes[currentRoot.value!!.absolutePath] =
-            changes[currentRoot.value!!.absolutePath]!!.map {
-                if (it.path == change.path) it.copy(isChecked = true) else it
-            }
-    }
-
-    fun removeChange(change: GitChange) {
-        changes[currentRoot.value!!.absolutePath] =
-            changes[currentRoot.value!!.absolutePath]!!.map {
-                if (it.path == change.path) it.copy(isChecked = false) else it
-            }
-    }
-
-    fun changeCommitMessage(message: String) {
-        commitMessages[currentRoot.value!!.absolutePath] = message
-    }
-
-    fun toggleAmend(amend: Boolean) {
-        amends[currentRoot.value!!.absolutePath] = amend
-    }
-
-    fun getChangeType(path: String): ChangeType? {
-        changes.forEach { (gitRoot, changes) ->
-            if (path.startsWith(gitRoot)) {
-                return changes.find { change -> change.absolutePath == path }?.type
-            }
-        }
-        return null
-    }
-
-    fun cloneRepository(
-        repoURL: String,
-        repoBranch: String,
-        targetDir: File,
-        progressCoordinator: ProgressCoordinator,
-        onComplete: (Boolean) -> Unit,
+    fun testRemoteConnection(
+        url: String,
+        authType: AuthType,
+        username: String,
+        token: String,
+        privateKey: String,
+        passphrase: String,
     ) {
         viewModelScope.launch {
-            var done = false
-            withContext(Dispatchers.IO) {
-                try {
-                    progressCoordinator.showDialog()
-                    Git.cloneRepository()
-                        .setURI(repoURL)
-                        .setBranch(BRANCH_PREFIX + repoBranch)
-                        .setDirectory(targetDir)
-                        .setCloneSubmodules(Settings.git_submodules)
-                        .setCredentialsProvider(
-                            UsernamePasswordCredentialsProvider(Settings.git_username, Settings.git_password)
-                        )
-                        .setProgressMonitor(progressCoordinator)
-                        .call()
-                    done = true
-                    DefaultScope.launch {
-                        Events.publish(GitEvent.RepositoryCloned(repoURL, repoBranch, FileWrapper(targetDir)))
-                    }
-                } catch (e: TransportException) {
-                    if (
-                        e.message?.contains("Auth", true) == true ||
-                            e.message?.contains("401") == true ||
-                            e.message?.contains("403") == true
-                    ) {
-                        toast(strings.git_auth_error)
-                    } else {
-                        toast(e.message)
-                    }
-                } catch (_: InvalidRemoteException) {
-                    toast(strings.invalid_repo_url)
-                } catch (e: Exception) {
-                    toast(e.message)
-                } finally {
-                    progressCoordinator.hideDialog()
-                    onComplete(done)
-                }
-            }
-        }
-    }
+            isTestingConnection = true
+            testConnectionSuccess = null
+            testConnectionResult = getApplication<Application>().getString(R.string.status_connecting)
 
-    fun checkout(branchName: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                Git.open(currentRoot.value).use { git ->
-                    if (branchName.startsWith("$GIT_ORIGIN/")) {
-                        val localBranchName = branchName.removePrefix("$GIT_ORIGIN/")
-                        val existingBranches = git.branchList().call().map { it.name }
-                        if (BRANCH_PREFIX + localBranchName !in existingBranches) {
-                            git.checkout()
-                                .setCreateBranch(true)
-                                .setName(localBranchName)
-                                .setStartPoint(branchName)
-                                .call()
-                        } else {
-                            git.checkout().setName(localBranchName).call()
-                        }
-                    } else {
-                        git.checkout().setName(branchName).call()
-                    }
-                    withContext(Dispatchers.Main) { currentBranch = git.repository.branch }
-                }
-                Events.publish(GitEvent.BranchCheckedOut(root = FileWrapper(currentRoot.value!!), name = branchName))
-            } catch (e: Exception) {
-                toast(e.message)
-            } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    toast(strings.checkout_complete)
-                    syncChanges(currentRoot.value!!)
-                }
-            }
-        }
-    }
+            val tempAuth = GitAuth(authType, username, token, privateKey, passphrase)
+            // If manager is null, create a temporary instance (for cases where init has not run yet)
+            val manager = gitManager ?: GitManager(getApplication<Application>().filesDir.absolutePath)
 
-    fun pull(): Job {
-        return viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                Git.open(currentRoot.value).use { git ->
-                    val pullResult =
-                        git.pull()
-                            .setRemote(GIT_ORIGIN)
-                            .setCredentialsProvider(
-                                UsernamePasswordCredentialsProvider(Settings.git_username, Settings.git_password)
-                            )
-                            .call()
-                    if (!pullResult.isSuccessful) {
-                        val errorMessage = buildString {
-                            pullResult.mergeResult?.let { mergeResult ->
-                                append("Merge status: ${mergeResult.mergeStatus}")
-                                if (!mergeResult.mergeStatus.isSuccessful) {
-                                    append(", Conflicts: ${mergeResult.conflicts?.keys?.joinToString() ?: "none"}")
-                                }
-                            }
-                            pullResult.rebaseResult?.let { rebaseResult ->
-                                if (isNotEmpty()) append("; ")
-                                append("Rebase status: ${rebaseResult.status}")
-                            }
-                        }
-                        toast(errorMessage)
-                    }
-                }
-                GitEvent.PullCompleted(
-                    root = FileWrapper(currentRoot.value!!),
-                    remote = GIT_ORIGIN,
-                    branch = currentBranch,
-                )
-            } catch (e: TransportException) {
-                if (
-                    e.message?.contains("Auth", true) == true ||
-                        e.message?.contains("401") == true ||
-                        e.message?.contains("403") == true
-                ) {
-                    toast(strings.git_auth_error)
+            val result = manager.testConnectivity(url, tempAuth)
+            testConnectionSuccess = result.isSuccess
+            testConnectionResult =
+                if (result.isSuccess) {
+                    getApplication<Application>().getString(R.string.git_test_success_refs, result.refsCount)
                 } else {
-                    toast(e.message)
+                    when (result.error) {
+                        GitConnectivityError.AUTH_FAILED ->
+                            getApplication<Application>().getString(R.string.git_auth_failed_token)
+                        GitConnectivityError.REPO_NOT_FOUND ->
+                            getApplication<Application>().getString(R.string.git_repo_not_found)
+                        GitConnectivityError.TIMEOUT ->
+                            getApplication<Application>().getString(R.string.git_connection_timeout)
+                        GitConnectivityError.UNKNOWN_HOST ->
+                            getApplication<Application>().getString(R.string.git_connection_unknown_host)
+                        GitConnectivityError.SSH_ENV_FAILED ->
+                            getApplication<Application>().getString(R.string.git_connection_ssh_env_failed)
+                        else ->
+                            getApplication<Application>()
+                                .getString(R.string.git_connection_failed, result.rawMessage.orEmpty())
+                    }
                 }
+            isTestingConnection = false
+        }
+    }
+
+    private fun encryptSecure(value: String): String {
+        if (value.isEmpty()) return ""
+        return try {
+            val bytes = value.toByteArray(Charsets.UTF_8)
+            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            value
+        }
+    }
+
+    private fun decryptSecure(value: String): String {
+        if (value.isEmpty()) return ""
+        return try {
+            val bytes = android.util.Base64.decode(value, android.util.Base64.NO_WRAP)
+            String(bytes, Charsets.UTF_8)
+        } catch (e: Exception) {
+            value
+        }
+    }
+
+    private fun loadConfig() {
+        val context = getApplication<Application>()
+        val prefs = context.getSharedPreferences("git_config", Context.MODE_PRIVATE)
+
+        remoteUrl = prefs.getString("remote_url", "") ?: ""
+        userEmail = prefs.getString("user_email", "") ?: ""
+
+        val authTypeStr = prefs.getString("auth_type", "HTTPS") ?: "HTTPS"
+        val username = prefs.getString("username", "") ?: ""
+        val rawToken = prefs.getString("token", "") ?: ""
+        val rawPrivateKey = prefs.getString("private_key", "") ?: ""
+        val rawPassphrase = prefs.getString("passphrase", "") ?: ""
+
+        val token = decryptSecure(rawToken)
+        val privateKey = decryptSecure(rawPrivateKey)
+        val passphrase = decryptSecure(rawPassphrase)
+
+        val authType = if (authTypeStr == "SSH") AuthType.SSH else AuthType.HTTPS
+
+        savedAuth =
+            GitAuth(
+                type = authType,
+                username = username,
+                token = token,
+                privateKey = privateKey,
+                passphrase = passphrase,
+            )
+    }
+
+    fun saveConfig(
+        remote: String,
+        email: String,
+        authType: AuthType,
+        username: String,
+        token: String,
+        privateKey: String,
+        passphrase: String,
+    ) {
+        viewModelScope.launch {
+            gitManager?.addRemote("origin", remote)
+            remoteUrl = remote
+            userEmail = email
+
+            savedAuth = GitAuth(authType, username, token, privateKey, passphrase)
+
+            val prefs = getApplication<Application>().getSharedPreferences("git_config", Context.MODE_PRIVATE)
+            prefs.edit {
+                putString("remote_url", remote)
+                putString("user_email", email)
+                putString("auth_type", authType.name)
+                putString("username", username)
+                putString("token", encryptSecure(token))
+                putString("private_key", encryptSecure(privateKey))
+                putString("passphrase", encryptSecure(passphrase))
+            }
+            statusMessage = getApplication<Application>().getString(R.string.git_status_config_saved)
+        }
+    }
+
+    fun refreshAll() {
+        viewModelScope.launch {
+            isLoading = true
+            val manager = gitManager ?: return@launch
+            isGitProject = manager.isGitRepo()
+            if (isGitProject) {
+                try {
+                    changedFiles = manager.getStatus()
+                    currentBranch = manager.getCurrentBranch()
+                    val (rawCommits, refMap) = manager.getCommitLog()
+                    commitLog = calculateGraph(rawCommits, refMap)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            isLoading = false
+        }
+    }
+
+    private fun calculateGraph(commits: List<RevCommit>, refMap: Map<String, List<GitRefUI>>): List<GitCommitUI> {
+        val result = mutableListOf<GitCommitUI>()
+        val slots = ArrayList<String?>()
+        val colorMap = HashMap<String, Int>()
+        var nextColorIndex = 0
+
+        commits.forEach { commit ->
+            val hash = commit.name
+            val parents = commit.parents.map { it.name }
+
+            var myLane = slots.indexOf(hash)
+            if (myLane == -1) {
+                myLane = slots.indexOf(null)
+                if (myLane == -1) {
+                    myLane = slots.size
+                    slots.add(hash)
+                } else {
+                    slots[myLane] = hash
+                }
+            }
+
+            var myColorIdx = colorMap[hash]
+            if (myColorIdx == null) {
+                myColorIdx = nextColorIndex++
+                colorMap[hash] = myColorIdx
+            }
+            val myColor = laneColors[myColorIdx % laneColors.size]
+
+            val parentLanes = mutableListOf<Int>()
+            if (parents.isNotEmpty()) {
+                val firstParent = parents[0]
+                slots[myLane] = firstParent
+                parentLanes.add(myLane)
+                colorMap[firstParent] = myColorIdx
+
+                for (i in 1 until parents.size) {
+                    val otherParent = parents[i]
+                    var otherLane = slots.indexOf(otherParent)
+
+                    if (otherLane == -1) {
+                        otherLane = slots.indexOf(null)
+                        if (otherLane == -1) {
+                            otherLane = slots.size
+                            slots.add(otherParent)
+                        } else {
+                            slots[otherLane] = otherParent
+                        }
+                        colorMap[otherParent] = (nextColorIndex++ % laneColors.size)
+                    }
+                    parentLanes.add(otherLane)
+                }
+            } else {
+                slots[myLane] = null
+            }
+
+            while (slots.isNotEmpty() && slots.last() == null) slots.removeAt(slots.lastIndex)
+
+            result.add(
+                GitCommitUI(
+                    hash = hash,
+                    shortHash = hash.substring(0, 7),
+                    message = commit.shortMessage.trim(),
+                    fullMessage = commit.fullMessage.trim(),
+                    author = commit.authorIdent.name,
+                    email = commit.authorIdent.emailAddress ?: "",
+                    time = commit.commitTime * 1000L,
+                    parents = parents,
+                    refs = refMap[hash] ?: emptyList(),
+                    lane = myLane,
+                    totalLanes = slots.size,
+                    childLanes = emptyList(),
+                    parentLanes = parentLanes,
+                    color = myColor,
+                )
+            )
+        }
+        return result
+    }
+
+    // --- Git Operations ---
+    fun initRepo() {
+        viewModelScope.launch {
+            gitManager?.initRepo()
+            refreshAll()
+        }
+    }
+
+    fun commit(msg: String, pushAfter: Boolean) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val author = savedAuth?.username?.ifEmpty { "AndroidUser" } ?: "AndroidUser"
+                val email = userEmail.ifEmpty { "user@ide.com" }
+                gitManager?.commitAll(msg, author, email)
+                if (pushAfter) push()
+                else statusMessage = getApplication<Application>().getString(R.string.git_status_commit_success)
+                refreshAll()
             } catch (e: Exception) {
-                toast(e.message)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_operation_failed, e.message)
             } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    toast(strings.pull_complete)
-                }
+                isLoading = false
             }
         }
     }
+
+    fun push() {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val auth =
+                    savedAuth
+                        ?: throw Exception(
+                            getApplication<Application>().getString(R.string.git_error_account_not_configured)
+                        )
+                gitManager?.push(auth)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_push_success)
+            } catch (e: Exception) {
+                statusMessage = getApplication<Application>().getString(R.string.git_status_push_failed, e.message)
+                e.printStackTrace()
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun pull() {
+        updateProject(false)
+    }
+
+    fun updateProject(rebase: Boolean) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val auth =
+                    savedAuth
+                        ?: throw Exception(
+                            getApplication<Application>().getString(R.string.git_error_account_not_configured)
+                        )
+                if (rebase) gitManager?.pullRebase(auth) else gitManager?.pull(auth)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_update_success)
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage = getApplication<Application>().getString(R.string.git_status_update_failed, e.message)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun createBranch(name: String) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                gitManager?.createBranch(name)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_branch_created, name)
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage =
+                    getApplication<Application>().getString(R.string.git_status_branch_create_failed, e.message)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun createTag(name: String, msg: String) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                gitManager?.createTag(name, msg)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_tag_created, name)
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage =
+                    getApplication<Application>().getString(R.string.git_status_tag_create_failed, e.message)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun checkout(name: String) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                gitManager?.checkout(name)
+                statusMessage = getApplication<Application>().getString(R.string.git_status_checked_out, name)
+                refreshAll()
+            } catch (e: Exception) {
+                statusMessage = getApplication<Application>().getString(R.string.git_status_checkout_failed, e.message)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    suspend fun getBranches() = gitManager?.getBranches() ?: emptyList()
 
     fun fetch() {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
+        viewModelScope.launch {
+            isLoading = true
             try {
-                Git.open(currentRoot.value).use { git ->
-                    git.fetch()
-                        .setRemote(GIT_ORIGIN)
-                        .setCredentialsProvider(
-                            UsernamePasswordCredentialsProvider(Settings.git_username, Settings.git_password)
-                        )
-                        .setRecurseSubmodules(
-                            if (Settings.git_recursive_submodules) {
-                                FetchRecurseSubmodulesMode.YES
-                            } else {
-                                FetchRecurseSubmodulesMode.ON_DEMAND
-                            }
-                        )
-                        .setCheckFetchedObjects(true)
-                        .setRemoveDeletedRefs(true)
-                        .call()
-                }
-                Events.publish(
-                    GitEvent.FetchCompleted(
-                        root = FileWrapper(currentRoot.value!!),
-                        remote = GIT_ORIGIN,
-                        branch = currentBranch,
-                    )
-                )
-            } catch (e: TransportException) {
-                if (
-                    e.message?.contains("Auth", true) == true ||
-                        e.message?.contains("401") == true ||
-                        e.message?.contains("403") == true
-                ) {
-                    toast(strings.git_auth_error)
-                } else {
-                    toast(e.message)
-                }
+                gitManager?.fetch(savedAuth)
+                statusMessage = "Fetch erfolgreich"
+                refreshAll()
             } catch (e: Exception) {
-                toast(e.message)
+                statusMessage = "Fetch fehlgeschlagen: ${e.message}"
             } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    toast(strings.fetch_complete)
-                }
+                isLoading = false
             }
         }
     }
 
-    fun syncChanges(root: String): Job {
-        return viewModelScope.launch {
-            if (!FeatureRegistry.isEnabled("enable_git")) return@launch
-
-            val gitRoot = findGitRoot(root)
-            if (gitRoot != null) {
-                syncChanges(File(gitRoot)).join()
-            }
-        }
-    }
-
-    fun syncChanges(root: File): Job {
-        return viewModelScope.launch(Dispatchers.IO) {
-            if (!FeatureRegistry.isEnabled("enable_git")) return@launch
-
-            withContext(Dispatchers.Main) { isLoading = true }
+    fun stashSave(msg: String = "WIP") {
+        viewModelScope.launch {
+            isLoading = true
             try {
-                val newChanges = mutableListOf<GitChange>()
-                Git.open(root).use { git ->
-                    val status = git.status().call()
-                    fun fullPath(relativePath: String) = File(root, relativePath).absoluteFile
-                    newChanges.addAll(status.added.map { GitChange(it, fullPath(it).absolutePath, ChangeType.ADDED) })
-                    newChanges.addAll(
-                        status.changed.map { GitChange(it, fullPath(it).absolutePath, ChangeType.MODIFIED) }
-                    )
-                    newChanges.addAll(
-                        status.modified.map { GitChange(it, fullPath(it).absolutePath, ChangeType.MODIFIED) }
-                    )
-                    newChanges.addAll(
-                        status.removed.map { GitChange(it, fullPath(it).absolutePath, ChangeType.DELETED) }
-                    )
-                    newChanges.addAll(
-                        status.missing.map { GitChange(it, fullPath(it).absolutePath, ChangeType.DELETED) }
-                    )
-                    newChanges.addAll(
-                        status.untracked.map { GitChange(it, fullPath(it).absolutePath, ChangeType.UNTRACKED) }
-                    )
-                    newChanges.addAll(
-                        status.conflicting.map { GitChange(it, fullPath(it).absolutePath, ChangeType.CONFLICTING) }
-                    )
-                }
-                val gitRoot = root.absolutePath
-                val oldChanges = changes[gitRoot]
-                val mergedChanges =
-                    if (oldChanges != null) {
-                        val oldMap = oldChanges.associateBy { it.path }
-                        newChanges.map { newChange ->
-                            oldMap[newChange.path]?.let { newChange.copy(isChecked = it.isChecked) } ?: newChange
-                        }
-                    } else {
-                        newChanges
-                    }
-                changes[gitRoot] = mergedChanges
-                viewModelScope.launch { Events.publish(GitEvent.WorkingTreeUpdated(FileWrapper(root), mergedChanges)) }
+                val ok = gitManager?.stashSave(msg) == true
+                statusMessage = if (ok) "Stash gespeichert" else "Stash fehlgeschlagen"
+                refreshAll()
             } catch (e: Exception) {
-                toast(e.message)
+                statusMessage = "Stash Fehler: ${e.message}"
             } finally {
-                withContext(Dispatchers.Main) { isLoading = false }
+                isLoading = false
             }
         }
     }
 
-    fun commit(): Job {
-        return viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
+    fun stashPop() {
+        viewModelScope.launch {
+            isLoading = true
             try {
-                val currentRoot = currentRoot.value!!
-                val message = commitMessages[currentRoot.absolutePath]
-                val amend = amends[currentRoot.absolutePath] ?: false
-
-                Git.open(currentRoot).use { git ->
-                    changes[currentRoot.absolutePath]!!
-                        .filter { it.isChecked }
-                        .forEach { change ->
-                            when (change.type) {
-                                ChangeType.ADDED -> git.add().addFilepattern(change.path).call()
-                                ChangeType.UNTRACKED -> git.add().addFilepattern(change.path).call()
-                                ChangeType.MODIFIED -> git.add().addFilepattern(change.path).call()
-                                ChangeType.DELETED -> git.rm().addFilepattern(change.path).call()
-                                else -> {}
-                            }
-                        }
-                    git.commit()
-                        .setAuthor(Settings.git_name, Settings.git_email)
-                        .setCommitter(Settings.git_name, Settings.git_email)
-                        .setMessage(message)
-                        .setAmend(amend)
-                        .call()
-                    toast(strings.commit_complete)
-                }
-                if (amend) {
-                    Events.publish(GitEvent.CommitAmended(root = FileWrapper(currentRoot), message = message.orEmpty()))
-                } else {
-                    Events.publish(GitEvent.CommitCreated(root = FileWrapper(currentRoot), message = message.orEmpty()))
-                }
+                val ok = gitManager?.stashPop() == true
+                statusMessage = if (ok) "Stash angewendet & gelöscht" else "Stash Pop fehlgeschlagen"
+                refreshAll()
             } catch (e: Exception) {
-                toast(e.message)
+                statusMessage = "Stash Pop Fehler: ${e.message}"
             } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    syncChanges(currentRoot.value!!)
-                }
+                isLoading = false
             }
         }
     }
 
-    fun getCommitCount(): Int {
-        try {
-            Git.open(currentRoot.value).use { git ->
-                val repo = git.repository
-                val branch = repo.branch
-                val localRef = repo.findRef(BRANCH_PREFIX + branch)
-                val remoteRef = repo.findRef("$REMOTE_PREFIX$GIT_ORIGIN/$branch")
-
-                RevWalk(repo).use { walk ->
-                    val localCommit = walk.parseCommit(localRef!!.objectId)
-                    walk.markStart(localCommit)
-                    if (remoteRef != null) {
-                        val remoteCommit = walk.parseCommit(remoteRef.objectId)
-                        walk.markUninteresting(remoteCommit)
-                    }
-                    return walk.count()
-                }
-            }
-        } catch (e: Exception) {
-            toast(e.message)
-            return -1
-        }
-    }
-
-    fun push(force: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                Git.open(currentRoot.value).use { git ->
-                    val pushResults =
-                        git.push()
-                            .setRemote(GIT_ORIGIN)
-                            .setCredentialsProvider(
-                                UsernamePasswordCredentialsProvider(Settings.git_username, Settings.git_password)
-                            )
-                            .setForce(force)
-                            .call()
-                    val errorMessage = buildString {
-                        for (result in pushResults) {
-                            for (update in result.remoteUpdates) {
-                                val ref = update.remoteName
-                                val status = update.status
-                                if (
-                                    status != RemoteRefUpdate.Status.OK && status != RemoteRefUpdate.Status.UP_TO_DATE
-                                ) {
-                                    if (isNotEmpty()) append("; ")
-                                    append("$ref: $status")
-                                    update.message?.let { append(" ($it)") }
-                                }
-                            }
-                        }
-                    }
-                    if (errorMessage.isNotEmpty()) {
-                        toast(errorMessage)
-                    } else {
-                        toast(strings.push_complete)
-                    }
-                }
-                Events.publish(
-                    GitEvent.PushCompleted(
-                        root = FileWrapper(currentRoot.value!!),
-                        remote = GIT_ORIGIN,
-                        branch = currentBranch,
-                        force = force,
-                    )
-                )
-            } catch (e: TransportException) {
-                if (
-                    e.message?.contains("Auth", true) == true ||
-                        e.message?.contains("401") == true ||
-                        e.message?.contains("403") == true
-                ) {
-                    toast(strings.git_auth_error)
-                } else {
-                    toast(e.message)
-                }
-            } catch (e: Exception) {
-                toast(e.message)
-            } finally {
-                withContext(Dispatchers.Main) { isLoading = false }
-            }
-        }
-    }
-
-    fun discard(change: GitChange) {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                val root = currentRoot.value
-                Git.open(root).use { git ->
-                    when (change.type) {
-                        ChangeType.MODIFIED,
-                        ChangeType.DELETED,
-                        ChangeType.RENAMED,
-                        ChangeType.CONFLICTING -> {
-                            git.checkout().addPath(change.path).call()
-                        }
-                        ChangeType.ADDED -> {
-                            git.rm().addFilepattern(change.path).call()
-                        }
-                        ChangeType.UNTRACKED -> {
-                            File(change.absolutePath).delete()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                toast(strings.discard_failed.getFilledString(e.message ?: ""))
-            } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    syncChanges(currentRoot.value!!)
-                }
-            }
-        }
-    }
-
-    fun getDiff(change: GitChange, onResult: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                val root = currentRoot.value
-                Git.open(root).use { git ->
-                    val repo = git.repository
-
-                    ByteArrayOutputStream().use { out ->
-                        DiffFormatter(out).use { formatter ->
-                            formatter.setRepository(repo)
-                            formatter.pathFilter = PathFilter.create(change.path)
-
-                            val headId = repo.resolve(Constants.HEAD + "^{" + Constants.TYPE_TREE + "}")
-                            val oldTree =
-                                if (headId != null) {
-                                    CanonicalTreeParser().apply { reset(repo.newObjectReader(), headId) }
-                                } else {
-                                    EmptyTreeIterator()
-                                }
-
-                            val newTree = FileTreeIterator(repo)
-                            formatter.scan(oldTree, newTree).forEach(formatter::format)
-
-                            withContext(Dispatchers.Main) {
-                                onResult(out.toString().ifBlank { strings.no_changes.getString() })
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                toast(e.message)
-            } finally {
-                withContext(Dispatchers.Main) { isLoading = false }
-            }
-        }
-    }
-
-    fun checkoutNew(branchName: String, branchBase: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { isLoading = true }
-            try {
-                Git.open(currentRoot.value).use { git ->
-                    if (branchBase.startsWith("$GIT_ORIGIN/")) {
-                        git.checkout().setName(branchName).setStartPoint(branchBase).setCreateBranch(true).call()
-                    } else {
-                        git.checkout()
-                            .setName(branchName)
-                            .setStartPoint(BRANCH_PREFIX + branchBase)
-                            .setCreateBranch(true)
-                            .call()
-                    }
-                    toast(strings.checkout_complete)
-                }
-                Events.publish(GitEvent.BranchCreated(FileWrapper(currentRoot.value!!), branchName, branchBase))
-            } catch (e: Exception) {
-                toast(e.message)
-            } finally {
-                withContext(Dispatchers.Main) {
-                    isLoading = false
-                    currentBranch = Git.open(currentRoot.value).currentHead()
-                    syncChanges(currentRoot.value!!)
-                }
-            }
-        }
-    }
-
-    companion object {
-        private const val BRANCH_PREFIX = Constants.R_HEADS // refs/heads/
-        private const val REMOTE_PREFIX = Constants.R_REMOTES // refs/remotes/
-        private const val GIT_ORIGIN = Constants.DEFAULT_REMOTE_NAME // origin
+    fun clearMessage() {
+        statusMessage = null
     }
 }

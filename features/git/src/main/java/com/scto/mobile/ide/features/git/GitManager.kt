@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.scto.mobile.ide.ui.editor.git
+package com.scto.mobile.ide.features.git
 
 import android.util.Log
 import java.io.File

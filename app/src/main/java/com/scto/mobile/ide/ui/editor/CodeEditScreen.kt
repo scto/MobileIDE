@@ -86,9 +86,9 @@ import com.scto.mobile.ide.ui.editor.components.EditorPanelLayout
 import com.scto.mobile.ide.ui.editor.components.EditorToolbar
 import com.scto.mobile.ide.ui.editor.components.JumpLinePanel
 import com.scto.mobile.ide.ui.editor.components.SearchPanel
-import com.scto.mobile.ide.ui.editor.git.GitPanel
-import com.scto.mobile.ide.ui.editor.git.GitViewModel
-import com.scto.mobile.ide.ui.editor.git.SidebarTab.*
+import com.scto.mobile.ide.features.git.GitPanel
+import com.scto.mobile.ide.features.git.GitViewModel
+import com.scto.mobile.ide.features.git.SidebarTab.*
 import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
 import java.io.File
 import kotlinx.coroutines.Dispatchers

@@ -20,7 +20,7 @@
  * GitModels.kt
  */
 
-package com.scto.mobile.ide.ui.editor.git
+package com.scto.mobile.ide.features.git
 
 import androidx.compose.ui.graphics.Color
 

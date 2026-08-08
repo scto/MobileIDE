@@ -39,7 +39,7 @@ import com.scto.mobile.ide.lsp.ProotStreamConnectionProvider
 import com.scto.mobile.ide.ui.editor.EditorColorSchemeManager
 import com.scto.mobile.ide.ui.editor.TextMateInitializer
 import com.scto.mobile.ide.ui.editor.components.MediaType
-import com.scto.mobile.ide.ui.editor.git.GitManager
+import com.scto.mobile.ide.features.git.GitManager
 import com.scto.mobile.ide.utils.BackupUtils
 import com.tom.rv2ide.treesitter.TSLanguage
 import com.tom.rv2ide.treesitter.java.TSLanguageJava

@@ -1,4 +1,4 @@
-package com.scto.mobile.ide.ui.editor.git.conflict
+package com.scto.mobile.ide.features.git.conflict
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*

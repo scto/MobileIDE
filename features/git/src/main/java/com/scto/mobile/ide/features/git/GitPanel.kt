@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.scto.mobile.ide.ui.editor.git
+package com.scto.mobile.ide.features.git
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,8 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scto.mobile.ide.R
-import com.scto.mobile.ide.ui.editor.viewmodel.EditorViewModel
+import com.scto.mobile.ide.features.git.R
 import java.io.File
 import kotlinx.coroutines.launch
 
@@ -58,7 +57,7 @@ fun GitPanel(
     projectPath: String,
     modifier: Modifier = Modifier,
     viewModel: GitViewModel,
-    editorViewModel: EditorViewModel,
+    onOpenDiff: (String, File) -> Unit = { _, _ -> },
 ) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -122,7 +121,7 @@ fun GitPanel(
                 EmptyGitState { viewModel.initRepo() }
             } else {
                 when (selectedTabIndex) {
-                    0 -> GitChangesPageCompact(viewModel, editorViewModel, projectPath)
+                    0 -> GitChangesPageCompact(viewModel, onOpenDiff, projectPath)
                     1 -> GitGraphListCompact(viewModel.commitLog)
                 }
             }
@@ -241,7 +240,7 @@ fun GitToolbarCompact(
 }
 
 @Composable
-fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewModel, projectPath: String) {
+fun GitChangesPageCompact(viewModel: GitViewModel, onOpenDiff: (String, File) -> Unit, projectPath: String) {
     var message by remember { mutableStateOf("") }
     var pushAfter by remember { mutableStateOf(false) }
 
@@ -276,7 +275,7 @@ fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewMo
         }
 
         if (showConflictResolverDialog) {
-            com.scto.mobile.ide.ui.editor.git.conflict.GitConflictResolutionDialog(
+            com.scto.mobile.ide.features.git.conflict.GitConflictResolutionDialog(
                 projectPath = projectPath,
                 onDismiss = { showConflictResolverDialog = false },
                 onMergeCompleted = {
@@ -316,7 +315,7 @@ fun GitChangesPageCompact(viewModel: GitViewModel, editorViewModel: EditorViewMo
                         file = file,
                         onClick = {
                             val targetFile = File(projectPath, file.filePath)
-                            editorViewModel.openDiff(projectPath, targetFile)
+                            onOpenDiff(projectPath, targetFile)
                         },
                     )
                 }

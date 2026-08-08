@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.scto.mobile.ide.ui.editor.git
+package com.scto.mobile.ide.features.git
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scto.mobile.ide.R
+import com.scto.mobile.ide.features.git.R
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
