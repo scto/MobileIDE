@@ -11,19 +11,11 @@ import java.net.URI
 import org.eclipse.lsp4j.ServerCapabilities
 
 fun localBinDir(): File {
-    val primaryDir = File(com.scto.mobile.ide.core.terminal.libcommons.localDir(), "bin")
-    if (primaryDir.exists()) {
-        com.scto.mobile.ide.core.common.utils.LogCatcher.i("LspRegistry", "Selected primary localBinDir (without files/): ${primaryDir.absolutePath}")
-        return primaryDir
+    val dir = File("/data/data/com.scto.mobile.ide/local/bin")
+    if (!dir.exists()) {
+        dir.mkdirs()
     }
-    val fallbackFilesDir = File(com.scto.mobile.ide.core.terminal.libcommons.application?.filesDir, "local/bin")
-    if (fallbackFilesDir.exists()) {
-        com.scto.mobile.ide.core.common.utils.LogCatcher.w("LspRegistry", "Primary dir not found. Using fallback files/ localBinDir: ${fallbackFilesDir.absolutePath}")
-        return fallbackFilesDir
-    }
-    primaryDir.mkdirs()
-    com.scto.mobile.ide.core.common.utils.LogCatcher.i("LspRegistry", "Created and selected primary localBinDir: ${primaryDir.absolutePath}")
-    return primaryDir
+    return dir
 }
 
 data class ExternalServerData(

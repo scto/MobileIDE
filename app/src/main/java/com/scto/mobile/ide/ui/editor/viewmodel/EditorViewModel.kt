@@ -1612,11 +1612,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                    lspEditor.connect()
-                } catch (_: Exception) {}
+                    val connected = lspEditor.connect()
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.i("EditorViewModel", "LSP connect result for ${realFile.name}: $connected")
+                } catch (e: Exception) {
+                    com.scto.mobile.ide.core.common.utils.LogCatcher.e("EditorViewModel", "LSP connect failed for ${realFile.name}: ${e.message}", e)
+                }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            com.scto.mobile.ide.core.common.utils.LogCatcher.e("EditorViewModel", "LSP setup error: ${e.message}", e)
         }
     }
 
