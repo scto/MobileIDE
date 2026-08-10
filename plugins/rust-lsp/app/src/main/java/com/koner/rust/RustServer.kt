@@ -3,11 +3,11 @@ package com.koner.rust
 import android.app.Activity
 import android.content.Context
 import com.koner.rust.utils.GithubReleasesApi
-import com.rk.exec.isTerminalInstalled
+import com.scto.mobile.ide.exec.isTerminalInstalled
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.child
-import com.rk.file.sandboxHomeDir
-import com.rk.icons.Icon
+import com.scto.mobile.ide.core.common.files.child
+import com.scto.mobile.ide.core.common.files.sandboxHomeDir
+import com.scto.mobile.ide.core.common.icons.Icon
 import com.scto.mobile.ide.lsp.LspConnectionConfig
 import com.scto.mobile.ide.lsp.ScriptedLspServer
 import kotlinx.coroutines.launch

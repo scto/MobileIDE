@@ -1,7 +1,7 @@
 package com.koner.prettier.utils
 
 import com.koner.prettier.PrettierSettings
-import com.rk.settings.Settings
+import com.scto.mobile.ide.settings.Settings
 
 fun buildArgs(settings: PrettierSettings): Array<String> {
     return buildList {

@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.annotation.Keep
 import com.scto.mobile.ide.features.extensions.ExtensionAPI
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.FileTypeManager
+import com.scto.mobile.ide.core.common.files.FileTypeManager
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
 import io.github.rosemoe.sora.langs.textmate.registry.provider.AssetsFileResolver

@@ -3,10 +3,10 @@ package com.koner.rust
 import androidx.annotation.Keep
 import com.scto.mobile.ide.features.extensions.ExtensionAPI
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.BuiltinFileType
-import com.rk.file.child
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.child
 import com.scto.mobile.ide.lsp.LspRegistry
-import com.rk.utils.getTempDir
+import com.scto.mobile.ide.core.common.files.getCacheDir as getTempDir
 import kotlinx.coroutines.runBlocking
 import java.io.File
 

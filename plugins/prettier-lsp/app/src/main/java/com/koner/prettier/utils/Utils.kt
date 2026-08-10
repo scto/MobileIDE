@@ -2,9 +2,9 @@ package com.koner.prettier.utils
 
 import com.koner.prettier.R
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.BuiltinFileType
-import com.rk.icons.Icon
-import com.rk.utils.isDarkTheme
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.utils.isDarkTheme
 
 val PRETTIER_EXTENSIONS =
     BuiltinFileType.JAVASCRIPT.extensions +

@@ -1,9 +1,9 @@
 package io.kiquar.plugin.fs
 
 import android.content.res.Resources
-import com.rk.file.FileType
-import com.rk.icons.Icon
-import com.rk.file.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileType
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
 
 class FSProjLanguage(resources: Resources) : FileType {
     override val extensions = listOf("fsproj")

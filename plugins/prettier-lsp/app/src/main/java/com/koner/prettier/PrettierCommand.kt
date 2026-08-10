@@ -1,11 +1,11 @@
 package com.koner.prettier
 
 import com.koner.prettier.utils.getPrettierIcon
-import com.rk.commands.EditorActionContext
-import com.rk.commands.EditorCommand
-import com.rk.editor.Editor
+import com.scto.mobile.ide.commands.EditorActionContext
+import com.scto.mobile.ide.commands.EditorCommand
+import com.scto.mobile.ide.editor.Editor
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.tabs.editor.EditorTab
+import com.scto.mobile.ide.tabs.editor.EditorTab
 import io.github.rosemoe.sora.text.TextRange
 
 class PrettierCommand(

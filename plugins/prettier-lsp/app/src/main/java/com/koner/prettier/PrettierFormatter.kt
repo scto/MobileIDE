@@ -1,9 +1,9 @@
 package com.koner.prettier
 
 import com.koner.prettier.utils.buildArgs
-import com.rk.exec.ubuntuProcess
+import com.scto.mobile.ide.exec.ubuntuProcess
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import io.github.rosemoe.sora.lang.format.Formatter
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.TextRange

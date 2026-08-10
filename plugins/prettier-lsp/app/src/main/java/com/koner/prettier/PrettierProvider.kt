@@ -2,9 +2,9 @@ package com.koner.prettier
 
 import com.koner.prettier.utils.PRETTIER_EXTENSIONS
 import com.koner.prettier.utils.getPrettierIcon
-import com.rk.editor.FormatterProvider
+import com.scto.mobile.ide.editor.FormatterProvider
 import com.scto.mobile.ide.features.extensions.ExtensionContext
-import com.rk.file.FileObject
+import com.scto.mobile.ide.core.common.files.FileObject
 import io.github.rosemoe.sora.lang.format.Formatter
 import java.io.File
 

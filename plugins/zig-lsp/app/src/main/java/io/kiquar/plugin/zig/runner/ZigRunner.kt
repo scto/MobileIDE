@@ -3,13 +3,13 @@ package io.kiquar.plugin.zig.runner
 import android.content.Context
 import android.app.Activity
 import android.content.res.Resources
-import com.rk.file.FileObject
-import com.rk.icons.Icon
-import com.rk.runner.Runner
-import com.rk.file.BuiltinFileType
-import com.rk.exec.launchTerminal
-import com.rk.exec.TerminalCommand
-import com.rk.activities.main.MainActivity
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.runner.Runner
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.exec.launchTerminal
+import com.scto.mobile.ide.exec.TerminalCommand
+import com.scto.mobile.ide.MainActivity
 
 class ZigRunner(
     val icon: Icon? = BuiltinFileType.ZIG.icon,

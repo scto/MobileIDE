@@ -4,12 +4,14 @@
   "name": "Python LSP",
   "mainClass": "com.scto.mobile.ide.plugin.python.Main",
   "version": "1.0.3",
-  "description": "Python Language Server Protocol support for Xed-Editor",
+  "description": "Python Language Server Protocol support for MobileIDE",
   "author": {
-    "displayName": "Xed-Editor",
-    "github": "Xed-Editor"
+    "displayName": "scto",
+    "github": "MobileIDE"
   },
-  "minAppVersion": 88,
+  "license": "MIT",
+  "tags": ["python", "lsp", "pyright", "ty"],
+  "minAppVersion": 95,
   "maxAppVersion": null,
-  "repository": "https://github.com/Xed-Editor/Python-LSP"
+  "repository": "https://github.com/scto/MobileIDE/plugins/python-lsp"
 }

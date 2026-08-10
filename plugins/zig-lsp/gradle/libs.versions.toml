@@ -1,8 +1,8 @@
 [versions]
 
 # kotlin and agp must be compatible with each other after update
-agp = "9.2.0"
-kotlin = "2.3.20"
+agp = "8.13.1"
+kotlin = "2.3.0"
 ksp = "2.3.2"
 kotlinReflect = "2.3.20"
 
