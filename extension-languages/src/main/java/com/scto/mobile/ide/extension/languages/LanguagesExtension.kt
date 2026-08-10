@@ -5,7 +5,7 @@ import com.scto.mobile.ide.features.extensions.ExtensionAPI
 import com.scto.mobile.ide.features.extensions.ExtensionContext
 import com.scto.mobile.ide.lsp.LspRegistry
 
-class LanguagesExtension(context: ExtensionContext) : ExtensionAPI(context) {
+class LanguagesExtension(context: ExtensionContext? = null) : ExtensionAPI(context) {
 
     override fun onInstalled() {
         // Initialization if needed

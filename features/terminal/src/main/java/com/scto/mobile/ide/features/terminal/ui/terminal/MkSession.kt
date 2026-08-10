@@ -60,6 +60,12 @@ object MkSession {
             copyAsset("utils.sh", localBinDir().child("utils"))
             copyAsset("universal_runner.sh", localBinDir().child("universal_runner"))
 
+            val lspBinDir = localBinDir().child("lsp").also { it.mkdirs() }
+            val lspAssets = try { assets.list("terminal/lsp") ?: emptyArray() } catch (e: Exception) { emptyArray() }
+            for (lspAsset in lspAssets) {
+                copyAsset("lsp/$lspAsset", lspBinDir.child(lspAsset))
+            }
+
 
             val tempDir = File(cacheDir, "tmp").also { it.mkdirs() }
             val sessionTmpDir = tempDir.child(session_id).also {
@@ -120,14 +126,17 @@ object MkSession {
                 env.addAll(it)
             }
 
+            val shell: String
             val args: Array<String>
 
-            val shell = if (pendingCommand == null) {
+            if (pendingCommand == null) {
+                shell = "/system/bin/sh"
                 args = arrayOf("-c", initFile.absolutePath)
-                "/system/bin/sh"
-            } else{
-                args = pendingCommand!!.args
-                pendingCommand!!.shell
+            } else {
+                val cmd = pendingCommand!!
+                val commandStr = (listOf(cmd.shell) + cmd.args.toList()).joinToString(" ")
+                shell = "/system/bin/sh"
+                args = arrayOf(initFile.absolutePath, commandStr)
             }
 
             pendingCommand = null

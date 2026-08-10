@@ -7,7 +7,7 @@ package com.scto.mobile.ide.features.extensions
 import android.app.Application
 import androidx.compose.runtime.Composable
 
-abstract class ExtensionAPI(protected val context: ExtensionContext) : Application.ActivityLifecycleCallbacks {
+abstract class ExtensionAPI(protected val context: ExtensionContext?) : Application.ActivityLifecycleCallbacks {
     /** Called only once when the extension is installed for the first time. */
     abstract fun onInstalled()
 

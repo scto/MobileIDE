@@ -107,7 +107,7 @@ android {
             isCrunchPngs = false
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("debug")
             resValue("string", "app_name", "MobileIDE")
         }
         debug {

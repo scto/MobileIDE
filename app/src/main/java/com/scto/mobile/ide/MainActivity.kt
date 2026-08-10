@@ -194,6 +194,11 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
             extensionManager.indexLocalExtensions()
             extensionManager.loadAllExtensions()
             com.scto.mobile.ide.lsp.LspRegistry.loadExternalServers(applicationContext)
+            try {
+                com.scto.mobile.ide.features.extensions.languages.LanguagesExtension(null).onExtensionLoaded()
+            } catch (e: Exception) {
+                LogCatcher.e("MainActivity", "Failed to load LanguagesExtension: ${e.message}")
+            }
         }
 
         com.scto.mobile.ide.lsp.ScriptedLspServer.terminalLauncher =
@@ -201,11 +206,11 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
                 LogCatcher.i("LSP_Installer", "Launching terminal command for LSP installer: ${scriptFile.name} (flags: $flags)")
                 com.scto.mobile.ide.core.terminal.libcommons.pendingCommand =
                     com.scto.mobile.ide.core.terminal.libcommons.TerminalCommand(
-                        shell = "bash",
+                        shell = "sh",
                         args = (listOf(scriptFile.absolutePath) + flags).toTypedArray(),
                         id = "lsp_installer_${scriptFile.name}",
-                        workingMode = 0,
-                        workingDir = scriptFile.parentFile?.absolutePath ?: "/",
+                        workingMode = com.scto.mobile.ide.core.terminal.model.WorkingMode.ALPINE,
+                        workingDir = "/home",
                     )
             }
 
