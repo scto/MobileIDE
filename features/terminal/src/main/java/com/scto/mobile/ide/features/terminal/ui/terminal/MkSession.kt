@@ -136,7 +136,7 @@ object MkSession {
                 val cmd = pendingCommand!!
                 val commandStr = (listOf(cmd.shell) + cmd.args.toList()).joinToString(" ")
                 shell = "/system/bin/sh"
-                args = arrayOf(initFile.absolutePath, commandStr)
+                args = arrayOf("-c", "${initFile.absolutePath} $commandStr")
             }
 
             pendingCommand = null

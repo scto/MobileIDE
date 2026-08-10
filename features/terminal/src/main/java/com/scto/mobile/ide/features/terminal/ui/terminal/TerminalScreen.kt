@@ -794,14 +794,15 @@ private fun TerminalPaneContent(
                         val currentSessionPair = binder.getService().currentSession.value
                         val currentSessionId = currentSessionPair?.first ?: "1"
                         val session = if (pendingCommand != null) {
+                            val cmdWorkingMode = pendingCommand!!.workingMode
                             binder.getService().currentSession.value = Pair(
-                                pendingCommand!!.id, pendingCommand!!.workingMode
+                                pendingCommand!!.id, cmdWorkingMode
                             )
                             binder.getSession(pendingCommand!!.id)
                                 ?: binder.createSession(
                                     pendingCommand!!.id,
                                     client,
-                                    mainActivityActivity, workingMode = Settings.working_Mode
+                                    mainActivityActivity, workingMode = cmdWorkingMode
                                 )
                         } else {
                             binder.getSession(currentSessionId)
