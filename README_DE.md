@@ -47,7 +47,7 @@ Das Projekt wurde in eine hochgradig modulare Struktur mit folgenden Kernmodulen
 
 *   `:app` - Hauptanwendung (UI-Bildschirme, Onboarding, Willkommenslogik, Projektauswahl, Einstellungen, Vorlagen-Extraktion).
 *   `:editor` - Code-Editor-Logik (basierend auf sora-editor, Verwaltung geöffneter Tabs und Editoraktionen).
-*   `:editor-lsp` - LSP (Language Server Protocol) Integration und Unterstützung für den Editor.
+*   `:features:lsp` - Konsolidierte LSP (Language Server Protocol) Integration, Editor-Bridge und integriertes Spracherweiterungs-Bundle (Kotlin, Java, Bash, XML).
 *   `:language-treesitter` - Syntaxhervorhebungs- und semantische Analyse-Engine via TreeSitter für Java, Kotlin, XML, Log und C++.
 *   `:core:main` - Zentrales Kern-IDE-Modul (Hauptnavigation und Theme-Konfigurationen).
 *   `:core:components` - Allgemeine UI-Komponenten, Jetpack Compose Einstellungs-Widgets und BottomSheet-Komponenten.

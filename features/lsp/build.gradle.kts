@@ -4,11 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mobile.ide.core.lsp"
+    namespace = "io.github.rosemoe.sora.lsp"
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
+        multiDexEnabled = true
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     compileOptions {
@@ -21,17 +23,21 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
 }
 
 dependencies {
-    implementation(libs.core.ktx)
+    compileOnly(project(":editor"))
+    implementation(project(":core:lsp"))
+    implementation(project(":features:extensions"))
+    api(libs.lsp4j)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.appcompat)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.okhttp)
-    implementation(libs.gson)
-    implementation(libs.lsp4j)
     implementation(libs.androidsvg)
-    implementation(project(":features:extensions")) // lsp might depend on extension
 }

@@ -55,7 +55,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "MobileIDE"
 
-include(":app",":editor",":editor-lsp",":language-treesitter")
+include(":app",":editor",":features:lsp",":language-treesitter")
 
 include(":core:main")
 include(":core:components")
@@ -68,8 +68,6 @@ include(":core:tooling:tooling-server")
 include(":features:extensions")
 include(":core:lsp")
 include(":core:commands")
-
-include(":extension-languages")
 
 // Standalone installable plugin packages
 include(":plugins:json-lsp")

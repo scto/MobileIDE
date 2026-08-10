@@ -322,7 +322,7 @@ dependencies {
     implementation(libs.androidsvg)
 
     // LSP support
-    implementation(project(":editor-lsp"))
+    implementation(project(":features:lsp"))
     implementation(libs.lsp4j)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.ui.ui)
@@ -352,7 +352,6 @@ dependencies {
     implementation(project(":features:extensions"))
     implementation(project(":features:git"))
     implementation(project(":core:common"))
-    implementation(project(":extension-languages"))
     implementation(libs.timber)
     implementation(libs.language.textmate)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

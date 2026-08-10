@@ -37,7 +37,7 @@ dependencies {
 
     // Editor dependencies for code runner settings and markdown rendering
     implementation(project(":editor"))
-    implementation(project(":editor-lsp"))
+    implementation(project(":features:lsp"))
 
     implementation(libs.appcompat)
     implementation(libs.material)

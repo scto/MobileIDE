@@ -28,7 +28,7 @@ The project has been refactored into a highly modular system consisting of the f
 
 *   `:app` - Main application entry point (UI screens, onboarding, welcome logic, project selection, setting screens, template extraction logic).
 *   `:editor` - Code editor logic (based on sora-editor integration, handles open file tabs, and editor actions).
-*   `:editor-lsp` - LSP (Language Server Protocol) integration and support for the editor.
+*   `:features:lsp` - Consolidated LSP (Language Server Protocol) integration, editor bridge, and built-in language extension bundle (Kotlin, Java, Bash, XML).
 *   `:language-treesitter` - Syntax highlighting and semantic parsing engine using TreeSitter for Java, Kotlin, XML, Log, and C++.
 *   `:core:main` - Central core IDE module (handles main navigation and theme configurations).
 *   `:core:components` - Common UI widgets, Jetpack Compose preference components, and bottom sheet widgets.
