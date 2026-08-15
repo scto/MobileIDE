@@ -141,4 +141,11 @@
 # BeanShell 极其依赖反射，混淆会导致“找不到构造函数”等运行时错误
 -keep class bsh.** { *; }
 
+# 5. 保护 MobileIDE LSP & Extension 核心与 API
+-keep class com.scto.mobile.ide.lsp.** { *; }
+-keep class com.scto.mobile.ide.core.lsp.** { *; }
+-keep class com.scto.mobile.ide.features.extensions.** { *; }
+-keep class com.scto.mobile.ide.features.lsp.** { *; }
+-keep class com.scto.mobile.ide.extension.** { *; }
+
 

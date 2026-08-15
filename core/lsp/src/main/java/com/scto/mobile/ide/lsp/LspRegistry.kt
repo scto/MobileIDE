@@ -2,6 +2,7 @@ package com.scto.mobile.ide.lsp
 
 import android.app.Activity
 import android.content.Context
+import androidx.annotation.Keep
 import androidx.compose.runtime.mutableStateListOf
 import com.scto.mobile.ide.features.extensions.api.MobileIDEExtensionPoint
 import com.google.gson.Gson
@@ -70,8 +71,8 @@ class IntegratedLspServer(
     override fun getConnectionConfig(): LspConnectionConfig {
         return LspConnectionConfig.Process(arrayOf(binaryName, "--stdio"))
     }
-}
 
+@Keep
 object LspRegistry {
     private val _extensionServers = mutableStateListOf<LspServer>()
     val extensionServers: List<LspServer>
