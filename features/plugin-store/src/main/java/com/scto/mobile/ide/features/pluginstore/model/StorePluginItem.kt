@@ -46,12 +46,16 @@ data class StorePluginItem(
     val dependencies: List<String> = emptyList(),
     val fileExtensions: List<String> = emptyList(),
     val sha256: String? = null,
+    val isAsset: Boolean = false,
     val status: PluginStatus = PluginStatus.NOT_INSTALLED,
     val installedVersion: String? = null,
     val isEnabled: Boolean = true,
     val downloadProgress: Float = 0f,
     val errorMessage: String? = null
 ) {
+    val sourceBadge: String
+        get() = if (isAsset) "Integriert" else "Store"
+
     val isCompatibleWithDevice: Boolean
         get() {
             if (arch.isEmpty()) return true

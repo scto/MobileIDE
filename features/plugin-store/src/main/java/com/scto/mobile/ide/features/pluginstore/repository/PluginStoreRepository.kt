@@ -32,56 +32,137 @@ class PluginStoreRepository(private val context: Context) {
         private const val TAG = "PluginStoreRepo"
         private const val DEFAULT_INDEX_URL =
             "https://raw.githubusercontent.com/scto/MobileIDE-Plugins/main/plugins-index.json"
+        private const val LOCAL_ASSET_CATALOG_PATH = "Plugins/LSP/catalog.json"
+        private const val LOCAL_ASSET_DIR_PATH = "Plugins/LSP"
     }
 
     private val extensionsDir: File
         get() = File(context.filesDir.parentFile, "local/extensions").apply { mkdirs() }
 
+    private val cachePluginsDir: File
+        get() = File(context.filesDir, "cache/plugins").apply { mkdirs() }
+
     private val installedJsonFile: File
         get() = File(extensionsDir, "installed.json")
 
-    suspend fun fetchPluginList(indexUrl: String = DEFAULT_INDEX_URL): List<StorePluginItem> =
+    private val catalogCacheFile: File
+        get() = File(context.cacheDir, "catalog_cache.json")
+
+    suspend fun fetchPluginList(remoteUrl: String = DEFAULT_INDEX_URL): List<StorePluginItem> =
         withContext(Dispatchers.IO) {
-            val remoteItems = mutableListOf<StorePluginItem>()
+            val assetItems = fetchAssetCatalog()
+            val remoteItems = fetchRemoteCatalog(remoteUrl)
+            val cachedItems = if (remoteItems.isEmpty()) fetchCachedCatalog() else emptyList()
 
-            // 1. Try fetching remote plugin index JSON
-            try {
-                val connection = (URL(indexUrl).openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 8000
-                    readTimeout = 8000
-                    requestMethod = "GET"
-                }
-                if (connection.responseCode == 200) {
-                    val jsonText = connection.inputStream.bufferedReader().use { it.readText() }
-                    remoteItems.addAll(parsePluginIndexJson(jsonText))
-                    Log.i(TAG, "Fetched ${remoteItems.size} plugins from remote repository.")
-                } else {
-                    Log.w(TAG, "Remote plugin index returned HTTP ${connection.responseCode}")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to fetch remote plugin index from $indexUrl. Falling back to local catalog: ${e.message}")
-            }
-
-            // 2. Fallback / Merge with local bundled plugins catalog
-            val bundledItems = fetchBundledPluginCatalog()
+            // Merge by plugin-id (Priority 1: Asset, Priority 2: Remote, Priority 3: Cache)
+            // In case of ID collision between asset and remote, higher version wins
             val mergedMap = LinkedHashMap<String, StorePluginItem>()
 
-            for (item in remoteItems) {
+            // First add cached
+            for (item in cachedItems) {
                 mergedMap[item.id] = item
             }
-            for (bundled in bundledItems) {
-                if (!mergedMap.containsKey(bundled.id)) {
-                    mergedMap[bundled.id] = bundled
+
+            // Then remote
+            for (item in remoteItems) {
+                val existing = mergedMap[item.id]
+                if (existing == null || isVersionGreater(item.version, existing.version)) {
+                    mergedMap[item.id] = item
                 }
             }
 
-            // 3. Resolve local installation status for all items via installed.json and filesystem
+            // Save remote/cached to cache file if remote was fetched
+            if (remoteItems.isNotEmpty()) {
+                saveCatalogToCache(remoteItems)
+            }
+
+            // Priority 1: Assets (Always present, compare version if present in remote)
+            for (assetItem in assetItems) {
+                val existing = mergedMap[assetItem.id]
+                if (existing == null || !isVersionGreater(existing.version, assetItem.version)) {
+                    mergedMap[assetItem.id] = assetItem
+                } else {
+                    // Remote has higher version than asset, but preserve isAsset or mark as Remote
+                    mergedMap[assetItem.id] = existing.copy(isAsset = false)
+                }
+            }
+
+            // Resolve local installation status for all items
             return@withContext mergedMap.values.map { item ->
                 resolveInstallationStatus(item)
             }
         }
 
-    private fun parsePluginIndexJson(jsonText: String): List<StorePluginItem> {
+    private fun fetchAssetCatalog(): List<StorePluginItem> {
+        return try {
+            val inputStream = context.assets.open(LOCAL_ASSET_CATALOG_PATH)
+            val jsonText = inputStream.bufferedReader().use { it.readText() }
+            parsePluginIndexJson(jsonText, defaultIsAsset = true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to load local asset catalog from $LOCAL_ASSET_CATALOG_PATH: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun fetchRemoteCatalog(indexUrl: String): List<StorePluginItem> {
+        if (indexUrl.isEmpty()) return emptyList()
+        return try {
+            val connection = (URL(indexUrl).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 8000
+                readTimeout = 8000
+                requestMethod = "GET"
+            }
+            if (connection.responseCode == 200) {
+                val jsonText = connection.inputStream.bufferedReader().use { it.readText() }
+                Log.i(TAG, "Fetched remote plugin index successfully.")
+                parsePluginIndexJson(jsonText, defaultIsAsset = false)
+            } else {
+                Log.w(TAG, "Remote plugin index returned HTTP ${connection.responseCode}")
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to fetch remote plugin catalog: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun fetchCachedCatalog(): List<StorePluginItem> {
+        if (!catalogCacheFile.exists()) return emptyList()
+        return try {
+            val jsonText = catalogCacheFile.readText()
+            parsePluginIndexJson(jsonText, defaultIsAsset = false)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read cached catalog: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun saveCatalogToCache(items: List<StorePluginItem>) {
+        try {
+            val root = JSONObject()
+            val array = JSONArray()
+            for (item in items) {
+                array.put(JSONObject().apply {
+                    put("id", item.id)
+                    put("name", item.name)
+                    put("version", item.version)
+                    put("description", item.description)
+                    put("category", item.type.name.lowercase())
+                    put("downloadUrl", item.downloadUrl)
+                    put("sizeBytes", item.size)
+                    put("sha256", item.sha256 ?: "")
+                    put("dependencies", JSONArray(item.dependencies))
+                    put("fileExtensions", JSONArray(item.fileExtensions))
+                })
+            }
+            root.put("plugins", array)
+            catalogCacheFile.writeText(root.toString(2))
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to save catalog to cache", e)
+        }
+    }
+
+    private fun parsePluginIndexJson(jsonText: String, defaultIsAsset: Boolean = false): List<StorePluginItem> {
         val list = mutableListOf<StorePluginItem>()
         try {
             val root = JSONObject(jsonText)
@@ -93,9 +174,12 @@ class PluginStoreRepository(private val context: Context) {
                 val version = obj.optString("version", "1.0.0")
                 val description = obj.optString("description", "")
                 val typeStr = obj.optString("category", obj.optString("type", "lsp"))
-                val downloadUrl = obj.optString("downloadUrl", "")
+                var downloadUrl = obj.optString("downloadUrl", "")
                 val size = obj.optLong("sizeBytes", obj.optLong("size", 0L))
                 val minAppVersion = obj.optInt("minAppVersion", 1)
+                val sha256 = obj.optString("sha256", "").ifBlank { null }
+
+                val isAsset = defaultIsAsset || (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://") && !downloadUrl.startsWith("asset://"))
 
                 val authorStr = obj.optString("author", "")
                 val authorObj = obj.optJSONObject("author")
@@ -152,7 +236,9 @@ class PluginStoreRepository(private val context: Context) {
                         tags = tagsList,
                         arch = archList,
                         dependencies = depList,
-                        fileExtensions = extList
+                        fileExtensions = extList,
+                        sha256 = sha256,
+                        isAsset = isAsset
                     )
                 )
             }
@@ -306,11 +392,42 @@ class PluginStoreRepository(private val context: Context) {
             val versionedTargetDir = File(rootPluginDir, item.version)
             versionedTargetDir.mkdirs()
 
-            if (item.downloadUrl.startsWith("asset://")) {
-                val assetPath = item.downloadUrl.removePrefix("asset://")
-                context.assets.open(assetPath).use { stream ->
-                    extractZipStream(stream, versionedTargetDir)
-                    extractZipStream(context.assets.open(assetPath), rootPluginDir)
+            val tempZip: File
+            val isAsset = item.isAsset || (!item.downloadUrl.startsWith("http://") && !item.downloadUrl.startsWith("https://"))
+
+            if (isAsset) {
+                // Asset installation flow: copy from APK assets to staging cache dir
+                val assetRelativePath = if (item.downloadUrl.startsWith("./")) {
+                    "$LOCAL_ASSET_DIR_PATH/${item.downloadUrl.removePrefix("./")}"
+                } else if (item.downloadUrl.startsWith("asset://")) {
+                    item.downloadUrl.removePrefix("asset://")
+                } else if (!item.downloadUrl.contains("/")) {
+                    "$LOCAL_ASSET_DIR_PATH/${item.downloadUrl}"
+                } else {
+                    item.downloadUrl
+                }
+
+                tempZip = File(cachePluginsDir, "${item.id}-${item.version}.zip")
+                if (tempZip.exists()) {
+                    tempZip.delete()
+                }
+
+                onProgress(0.1f)
+                context.assets.open(assetRelativePath).use { input ->
+                    FileOutputStream(tempZip).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                onProgress(0.5f)
+
+                // Verify SHA-256 from catalog.json if available
+                if (!item.sha256.isNullOrBlank()) {
+                    if (!verifySha256(tempZip, item.sha256)) {
+                        tempZip.delete()
+                        val msg = "SHA-256 Prüfsummen-Fehler bei Asset Plugin ${item.id}. Installation abgebrochen."
+                        Log.e(TAG, msg)
+                        return@withContext Result.failure(SecurityException(msg))
+                    }
                 }
             } else {
                 if (!item.downloadUrl.startsWith("https://")) {
@@ -319,7 +436,7 @@ class PluginStoreRepository(private val context: Context) {
                     return@withContext Result.failure(SecurityException(msg))
                 }
 
-                val tempZip = File(context.cacheDir, "${item.id}-${item.version}.zip")
+                tempZip = File(cachePluginsDir, "${item.id}-${item.version}.zip")
                 var existingLength = 0L
                 if (tempZip.exists()) {
                     existingLength = tempZip.length()
@@ -376,15 +493,18 @@ class PluginStoreRepository(private val context: Context) {
                         return@withContext Result.failure(SecurityException(msg))
                     }
                 }
-
-                tempZip.inputStream().use { stream ->
-                    extractZipStream(stream, versionedTargetDir)
-                }
-                tempZip.inputStream().use { stream ->
-                    extractZipStream(stream, rootPluginDir)
-                }
-                tempZip.delete()
             }
+
+            // Extract tempZip into target versioned directory and root directory with structure normalization
+            onProgress(0.8f)
+            tempZip.inputStream().use { stream ->
+                extractZipStreamNormalized(stream, versionedTargetDir)
+            }
+            tempZip.inputStream().use { stream ->
+                extractZipStreamNormalized(stream, rootPluginDir)
+            }
+            tempZip.delete()
+            onProgress(1.0f)
 
             // 4. Update installed.json record
             updateInstalledRecord(item.id, item.version, versionedTargetDir.absolutePath)
@@ -423,30 +543,71 @@ class PluginStoreRepository(private val context: Context) {
         }
     }
 
-    private fun extractZipStream(inputStream: InputStream, targetDir: File) {
+    private fun extractZipStreamNormalized(inputStream: InputStream, targetDir: File) {
+        val bytes = inputStream.readBytes()
+        var prefixToRemove: String? = null
+
+        // Pass 1: detect if all files are inside a single top-level directory and manifest.json/plugin.json is inside it
+        ZipInputStream(bytes.inputStream()).use { zis ->
+            var entry = zis.nextEntry
+            var topLevelDir: String? = null
+            var singleTopLevel = true
+            var foundManifestAtRoot = false
+
+            while (entry != null) {
+                val name = entry.name.replace('\\', '/')
+                if (name == "manifest.json" || name == "plugin.json") {
+                    foundManifestAtRoot = true
+                }
+                val parts = name.split('/').filter { it.isNotEmpty() }
+                if (parts.isNotEmpty()) {
+                    if (topLevelDir == null) {
+                        topLevelDir = parts[0]
+                    } else if (parts[0] != topLevelDir) {
+                        singleTopLevel = false
+                    }
+                }
+                entry = zis.nextEntry
+            }
+
+            if (!foundManifestAtRoot && singleTopLevel && topLevelDir != null) {
+                prefixToRemove = "$topLevelDir/"
+            }
+        }
+
+        // Pass 2: Extract and normalize path
         val canonicalTargetDir = targetDir.canonicalPath
-        ZipInputStream(inputStream).use { zis ->
+        ZipInputStream(bytes.inputStream()).use { zis ->
             var entry = zis.nextEntry
             while (entry != null) {
-                val outFile = File(targetDir, entry.name)
-
-                // Zip-Slip / Path-Traversal Prevention
-                val canonicalOutFile = outFile.canonicalPath
-                if (!canonicalOutFile.startsWith(canonicalTargetDir)) {
-                    throw SecurityException("Zip-Slip vulnerability detected: ${entry.name} targets outside $canonicalTargetDir")
+                var entryName = entry.name.replace('\\', '/')
+                if (prefixToRemove != null && entryName.startsWith(prefixToRemove)) {
+                    entryName = entryName.substring(prefixToRemove.length)
                 }
 
-                if (entry.isDirectory) {
-                    outFile.mkdirs()
-                } else {
-                    outFile.parentFile?.mkdirs()
-                    FileOutputStream(outFile).use { output ->
-                        zis.copyTo(output)
+                if (entryName.isNotEmpty()) {
+                    val outFile = File(targetDir, entryName)
+                    val canonicalOutFile = outFile.canonicalPath
+                    if (!canonicalOutFile.startsWith(canonicalTargetDir)) {
+                        throw SecurityException("Zip-Slip vulnerability detected: ${entry.name} targets outside $canonicalTargetDir")
+                    }
+
+                    if (entry.isDirectory || entryName.endsWith("/")) {
+                        outFile.mkdirs()
+                    } else {
+                        outFile.parentFile?.mkdirs()
+                        FileOutputStream(outFile).use { output ->
+                            zis.copyTo(output)
+                        }
                     }
                 }
                 entry = zis.nextEntry
             }
         }
+    }
+
+    private fun extractZipStream(inputStream: InputStream, targetDir: File) {
+        extractZipStreamNormalized(inputStream, targetDir)
     }
 
     private fun readManifestFromZipStream(inputStream: InputStream): String? {

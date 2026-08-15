@@ -33,6 +33,7 @@ data class PluginStoreUiState(
     val selectedCategory: CategoryFilter = CategoryFilter.ALL,
     val plugins: List<StorePluginItem> = emptyList(),
     val selectedDetailPlugin: StorePluginItem? = null,
+    val newBundledPluginsAvailableCount: Int = 0,
     val errorMessage: String? = null
 ) {
     val discoverPlugins: List<StorePluginItem>
@@ -106,10 +107,24 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
 
             try {
                 val list = manager.fetchCatalog()
+                val prefs = getApplication<Application>().getSharedPreferences("plugin_store_prefs", Application.MODE_PRIVATE)
+                val isFirstStart = prefs.getBoolean("is_first_start_after_update", true)
+                var uninstalledAssetCount = 0
+
+                if (isFirstStart) {
+                    val installedRecords = manager.getInstalledRecords().map { it.id }.toSet()
+                    val skippedPlugins = prefs.getStringSet("skipped_plugins", emptySet()) ?: emptySet()
+                    uninstalledAssetCount = list.count { item ->
+                        item.isAsset && !installedRecords.contains(item.id) && !skippedPlugins.contains(item.id)
+                    }
+                    prefs.edit().putBoolean("is_first_start_after_update", false).apply()
+                }
+
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isRefreshing = false,
-                    plugins = list
+                    plugins = list,
+                    newBundledPluginsAvailableCount = uninstalledAssetCount
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
