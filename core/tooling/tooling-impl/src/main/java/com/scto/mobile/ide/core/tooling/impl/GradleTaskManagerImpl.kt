@@ -115,19 +115,20 @@ object GradleTaskManagerImpl : GradleTaskManager {
             else -> ""
         }
 
+        val cleanProjectPath = projectPath.trim()
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
-        val gradlewFile = File(projectPath, "gradlew")
+        val gradlewFile = File(cleanProjectPath, "gradlew")
         val compileCmd = if (gradlewFile.exists()) {
-            "${javaHomeExport}cd $projectPath && bash ./gradlew tasks --all"
+            "${javaHomeExport}cd \"$cleanProjectPath\" && bash ./gradlew tasks --all"
         } else {
-            "${javaHomeExport}cd $projectPath && gradle tasks --all"
+            "${javaHomeExport}cd \"$cleanProjectPath\" && gradle tasks --all"
         }
 
-        val cmd = buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+        val cmd = buildProotCommand(context, arrayOf("sh", "-c", compileCmd), workDir = cleanProjectPath)
         
         try {
             val processBuilder = ProcessBuilder(cmd)
-            processBuilder.directory(File(projectPath))
+            processBuilder.directory(File(cleanProjectPath))
             processBuilder.environment().putAll(getProotEnv(context))
             val process = processBuilder.start()
             
@@ -190,15 +191,16 @@ object GradleTaskManagerImpl : GradleTaskManager {
             else -> ""
         }
 
+        val cleanProjectPath = projectPath.trim()
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
-        val gradlewFile = File(projectPath, "gradlew")
+        val gradlewFile = File(cleanProjectPath, "gradlew")
         val compileCmd = if (gradlewFile.exists()) {
-            "${javaHomeExport}cd $projectPath && bash ./gradlew $fullArgs"
+            "${javaHomeExport}cd \"$cleanProjectPath\" && bash ./gradlew $fullArgs"
         } else {
-            "${javaHomeExport}cd $projectPath && gradle $fullArgs"
+            "${javaHomeExport}cd \"$cleanProjectPath\" && gradle $fullArgs"
         }
 
-        val cmd = buildProotCommand(context, arrayOf("sh", "-c", compileCmd))
+        val cmd = buildProotCommand(context, arrayOf("sh", "-c", compileCmd), workDir = cleanProjectPath)
         
         var lineNum = 1
         val startLine = "Starting Gradle execution: $fullArgs"
@@ -208,7 +210,7 @@ object GradleTaskManagerImpl : GradleTaskManager {
 
         try {
             val processBuilder = ProcessBuilder(cmd)
-            processBuilder.directory(File(projectPath))
+            processBuilder.directory(File(cleanProjectPath))
             processBuilder.environment().putAll(getProotEnv(context))
             processBuilder.redirectErrorStream(true)
             val process = processBuilder.start()

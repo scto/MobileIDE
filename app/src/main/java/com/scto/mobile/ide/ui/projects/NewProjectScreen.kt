@@ -410,6 +410,9 @@ private fun createNewProject(
     onSuccess: (File) -> Unit,
     onError: (String) -> Unit,
 ) {
+    val cleanName = name.trim()
+    val cleanPackageName = packageName.trim()
+
     val wsPath = WorkspaceManager.getWorkspacePath(context)
     val appPkg = context.packageName
 
@@ -417,7 +420,7 @@ private fun createNewProject(
         try {
             val parentDir =
                 if (wsPath.contains("/Android/data/$appPkg")) context.getExternalFilesDir(null)!! else File(wsPath)
-            val projectDir = File(parentDir, name)
+            val projectDir = File(parentDir, cleanName)
             if (projectDir.exists()) {
                 withContext(Dispatchers.Main) { onError(context.getString(R.string.new_project_exists)) }
                 return@launch
@@ -434,7 +437,7 @@ private fun createNewProject(
                     ProjectType.CMAKE_APP -> "CmakeApp"
                 }
 
-            extractTemplate(context, templateName, projectDir, name, packageName, minSdk, targetSdk, type)
+            extractTemplate(context, templateName, projectDir, cleanName, cleanPackageName, minSdk, targetSdk, type)
 
             withContext(Dispatchers.Main) { onSuccess(projectDir) }
         } catch (e: Exception) {
@@ -456,6 +459,8 @@ private fun extractTemplate(
     targetSdk: String,
     type: ProjectType,
 ) {
+    val cleanProjectName = projectName.trim()
+    val cleanPackageName = packageName.trim()
     val assetManager = context.assets
     assetManager.open("templates/templates.zip").use { inputStream ->
         java.io.BufferedInputStream(inputStream).use { bufferedInputStream ->
@@ -477,7 +482,7 @@ private fun extractTemplate(
                             continue
                         }
                         val relativePath = entryName.substring(prefixToStrip.length)
-                        val packagePath = packageName.replace('.', '/')
+                        val packagePath = cleanPackageName.replace('.', '/')
                         val resolvedRelativePath = relativePath.replace("\$packagename", packagePath)
 
                         val targetFile = File(targetDir, resolvedRelativePath)
@@ -492,15 +497,15 @@ private fun extractTemplate(
                         val bytes = outputStream.toByteArray()
                         if (isTextFile(resolvedRelativePath)) {
                             var content = String(bytes, Charsets.UTF_8)
-                            content = content.replace("\$packageName", packageName)
-                            content = content.replace("\$packagename", packageName)
-                            content = content.replace("\$projectName", projectName)
+                            content = content.replace("\$packageName", cleanPackageName)
+                            content = content.replace("\$packagename", cleanPackageName)
+                            content = content.replace("\$projectName", cleanProjectName)
                             content = content.replace("minSdk = 24", "minSdk = $minSdk")
                             content = content.replace("targetSdk = 35", "targetSdk = $targetSdk")
                             content = content.replace("minSdkVersion 24", "minSdkVersion $minSdk")
                             content = content.replace("targetSdkVersion 35", "targetSdkVersion $targetSdk")
 
-                            val jniPackageName = packageName.replace(".", "_")
+                            val jniPackageName = cleanPackageName.replace(".", "_")
                             content = content.replace("\$jniPackageName", jniPackageName)
 
                             if (targetFile.name == "gradle.properties") {
@@ -523,21 +528,19 @@ private fun extractTemplate(
         }
     }
 
-    // Ensure full Gradle wrapper files exist
+    // Ensure full Gradle wrapper files exist and distributionUrl is normalized
     val gradleWrapperDir = File(targetDir, "gradle/wrapper")
     gradleWrapperDir.mkdirs()
     val wrapperProps = File(gradleWrapperDir, "gradle-wrapper.properties")
-    if (!wrapperProps.exists()) {
-        wrapperProps.writeText(
-            """
-            distributionBase=GRADLE_USER_HOME
-            distributionPath=wrapper/dists
-            distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
-            zipStoreBase=GRADLE_USER_HOME
-            zipStorePath=wrapper/dists
-            """.trimIndent()
-        )
-    }
+    wrapperProps.writeText(
+        """
+        distributionBase=GRADLE_USER_HOME
+        distributionPath=wrapper/dists
+        distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
+        zipStoreBase=GRADLE_USER_HOME
+        zipStorePath=wrapper/dists
+        """.trimIndent()
+    )
 
     // Ensure Version Catalog libs.versions.toml exists
     val tomlFile = File(targetDir, "gradle/libs.versions.toml")

@@ -2077,14 +2077,15 @@ private suspend fun performBuild(
                 } else null
             } ?: ""
 
+        val cleanProjectPath = projectPath.trim()
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
 
-        val gradlewFile = File(projectPath, "gradlew")
+        val gradlewFile = File(cleanProjectPath, "gradlew")
         val compileCmd =
             if (gradlewFile.exists()) {
-                "${javaHomeExport}cd $projectPath && bash ./gradlew assembleDebug"
+                "${javaHomeExport}cd \"$cleanProjectPath\" && bash ./gradlew assembleDebug"
             } else {
-                "${javaHomeExport}cd $projectPath && gradle assembleDebug"
+                "${javaHomeExport}cd \"$cleanProjectPath\" && gradle assembleDebug"
             }
 
         // Run command inside Alpine container via PRoot
@@ -2242,19 +2243,21 @@ private suspend fun handleRunApk(
                         }
                     val javaHomeExport =
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
-                    val targetDir = if (java.io.File(projectPath, "gradlew").exists()) {
-                        projectPath
-                    } else if (java.io.File(projectPath, "$folderName/gradlew").exists()) {
-                        "$projectPath/$folderName"
+                    val cleanPath = projectPath.trim()
+                    val targetDir = if (java.io.File(cleanPath, "gradlew").exists()) {
+                        cleanPath
+                    } else if (java.io.File(cleanPath, "$folderName/gradlew").exists()) {
+                        "$cleanPath/$folderName".trim()
                     } else {
-                        projectPath
+                        cleanPath
                     }
-                    val compileCmd = "${javaHomeExport}cd \"$targetDir\" && bash ./gradlew assembleDebug"
+                    val cleanTargetDir = targetDir.trim()
+                    val compileCmd = "${javaHomeExport}cd \"$cleanTargetDir\" && bash ./gradlew assembleDebug"
                     val cmd =
                         com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
                             context,
                             arrayOf("sh", "-c", compileCmd),
-                            workDir = targetDir,
+                            workDir = cleanTargetDir,
                         )
                     pb.command(cmd)
                     pb.environment().putAll(com.scto.mobile.ide.features.terminal.ui.DistroManager.getProotEnv(context))
