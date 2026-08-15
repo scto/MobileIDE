@@ -46,7 +46,8 @@ object MkSession {
             }
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
 
-            com.scto.mobile.ide.core.common.utils.TerminalAssetsExtractor.ensureAssetsExtracted(context)
+            val initFile = localBinDir().child("init-host")
+            com.scto.mobile.ide.core.common.utils.TerminalAssetsExtractor.ensureAssetsExtracted(activity)
 
 
             val tempDir = File(cacheDir, "tmp").also { it.mkdirs() }
