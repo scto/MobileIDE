@@ -195,7 +195,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
             extensionManager.loadAllExtensions()
             com.scto.mobile.ide.lsp.LspRegistry.loadExternalServers(applicationContext)
             try {
-                com.scto.mobile.ide.extension.languages.LanguagesExtension(null).onExtensionLoaded()
+                com.scto.mobile.ide.features.extensions.languages.LanguagesExtension(null).onExtensionLoaded()
             } catch (e: Exception) {
                 LogCatcher.e("MainActivity", "Failed to load LanguagesExtension: ${e.message}")
             }
