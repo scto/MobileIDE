@@ -104,7 +104,12 @@ Desktop.ini
 *.swp
 *.swo
 
-# Stray control-character files (SOH, ETX, etc.)
+# Stray control-character files (SOH, ETX, control characters)
 \001
 \002
 \003
+\004
+*\001*
+*\002*
+*\003*
+*\004*
