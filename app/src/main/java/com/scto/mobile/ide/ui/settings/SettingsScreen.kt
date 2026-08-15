@@ -545,6 +545,15 @@ fun SettingsScreen(
                 )
             }
 
+            item(key = "plugin_store_settings") {
+                SimpleSettingsCard(
+                    icon = Icons.Outlined.Storefront,
+                    title = "Plugin Store",
+                    subtitle = "LSP-Server, Erweiterungen und Themes herunterladen",
+                    onClick = { navController.navigate("settings/plugins") },
+                )
+            }
+
             item(key = "git_settings") {
                 SimpleSettingsCard(
                     icon = Icons.Outlined.Source,

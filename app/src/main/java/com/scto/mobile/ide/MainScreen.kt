@@ -154,6 +154,16 @@ fun MainScreen(
         composable("settings/extensions") {
             com.scto.mobile.ide.ui.settings.ExtensionSettingsScreen(navController = navController)
         }
+        composable("settings/plugins") {
+            com.scto.mobile.ide.features.pluginstore.ui.PluginStoreScreen(
+                onBackPress = { navController.popBackStack() }
+            )
+        }
+        composable("plugin_store") {
+            com.scto.mobile.ide.features.pluginstore.ui.PluginStoreScreen(
+                onBackPress = { navController.popBackStack() }
+            )
+        }
         composable("settings/theme") {
             ThemeSettingsScreen(
                 navController = navController,
