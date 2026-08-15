@@ -1,0 +1,3 @@
+[submodule "prettier-standalone"]
+	path = prettier-standalone
+	url = https://github.com/KonerDev/prettier-standalone

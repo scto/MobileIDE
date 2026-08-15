@@ -1,0 +1,20 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "com.koner.rust",
+  "name": "Rust LSP",
+  "mainClass": "com.koner.rust.Main",
+  "version": "1.0.2",
+  "description": " Xed-Editor extension that provides Rust language server (LSP) support.",
+  "author": {
+    "displayName": "KonerDev",
+    "github": "KonerDev"
+  },
+  "license": "MIT",
+  "tags": [
+    "rust",
+    "lsp"
+  ],
+  "minAppVersion": 99,
+  "maxAppVersion": null,
+  "repository": "https://github.com/KonerDev/xed-rust"
+}

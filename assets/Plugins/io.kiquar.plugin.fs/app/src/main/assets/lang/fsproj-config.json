@@ -1,0 +1,128 @@
+{
+	"comments": {
+		"lineComment": "//",
+		"blockComment": [
+			"<!--",
+			"-->"
+		]
+	},
+	"brackets": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["<", ">"],
+		["<!--", "-->"],
+		["<%", "%>"],
+		["${", "}"]
+	],
+	"autoClosingPairs": [
+		{
+			"open": "<",
+			"close": ">",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "</",
+			"close": ">",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "<!--",
+			"close": "-->",
+			"notIn": ["string"]
+		},
+		{
+			"open": "\"",
+			"close": "\"",
+			"notIn": ["string"]
+		},
+		{
+			"open": "'",
+			"close": "'",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "{",
+			"close": "}"
+		},
+		{
+			"open": "[",
+			"close": "]"
+		},
+		{
+			"open": "(",
+			"close": ")"
+		},
+		{
+			"open": "<!--",
+			"close": "-->"
+		},
+		{
+			"open": "<%",
+			"close": "%>"
+		},
+		{
+			"open": "${",
+			"close": "}"
+		}
+	],
+	"surroundingPairs": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["\"", "\""],
+		["'", "'"],
+		["<", ">"],
+		["<!--", "-->"],
+		["<%", "%>"],
+		["${", "}"]
+	],
+	"wordPattern": "([a-zA-Z0-9_\\-\\.:]+)",
+	"folding": {
+		"markers": {
+			"start": "^\\s*<!--\\s*#region\\b|^\\s*<Project|<PropertyGroup|<ItemGroup|<Target|<Import|<UsingTask",
+			"end": "^\\s*<!--\\s*#endregion\\b|^\\s*</Project>|</PropertyGroup>|</ItemGroup>|</Target>|</Import>|</UsingTask>"
+		},
+		"indentation": {
+			"increase": [
+				"^\\s*<\\w+[^>]*$",
+				"^\\s*<!--\\s*#region\\s*$"
+			],
+			"decrease": [
+				"^\\s*</\\w+>",
+				"^\\s*<!--\\s*#endregion\\s*$",
+				"^\\s*<\\w+[^>]*/>$"
+			]
+		}
+	},
+	"indentationRules": {
+		"decreaseIndentPattern": {
+			"pattern": "^\\s*</\\w+>|^\\s*<\\w+[^>]*/>$"
+		},
+		"increaseIndentPattern": {
+			"pattern": "^\\s*<\\w+(?![^>]*/>)[^>]*$"
+		}
+	},
+	"onEnterRules": [
+		{
+			"beforeText": "^\\s*<!--",
+			"afterText": "^(?!\\s*$)",
+			"action": {
+				"indent": "none",
+				"appendText": "   "
+			}
+		},
+		{
+			"beforeText": "^\\s*<\\w+[^>]*$",
+			"action": {
+				"indent": "increase"
+			}
+		},
+		{
+			"beforeText": "^\\s*</\\w+>",
+			"action": {
+				"indent": "decrease"
+			}
+		}
+	]
+}

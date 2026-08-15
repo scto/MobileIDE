@@ -1,0 +1,59 @@
+package com.scto.mobile.ide.plugin.python
+
+import android.app.Activity
+import android.content.Context
+import com.scto.mobile.ide.core.common.files.BuiltinFileType
+import com.scto.mobile.ide.core.common.files.FileObject
+import com.scto.mobile.ide.core.common.icons.Icon
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.LspServer
+import io.github.rosemoe.sora.event.ContentChangeEvent
+import io.github.rosemoe.sora.event.Unsubscribe
+import io.github.rosemoe.sora.lsp.events.EventType
+import io.github.rosemoe.sora.lsp.events.diagnostics.queryDocumentDiagnostics
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.eclipse.lsp4j.DocumentDiagnosticReport
+import java.io.File
+import java.net.URI
+
+class PythonServer(val lspPath: String) : LspServer() {
+    override val id: String = "rk.python"
+    override val languageName: String = "Python"
+    override val serverName: String = "ty"
+    override val supportedExtensions: List<String> = listOf("py")
+    override val icon: Icon? = BuiltinFileType.PYTHON.icon
+
+    override suspend fun isInstalled(context: Context): Boolean {
+        return true
+    }
+
+
+    override fun install(activity: Activity) {}
+
+    override fun uninstall(activity: Activity) {}
+
+    override suspend fun isUpdatable(context: Context): Boolean {
+        return false
+    }
+
+    override fun update(activity: Activity) {}
+
+
+    override fun getConnectionConfig(): LspConnectionConfig {
+        File(lspPath).setExecutable(true)
+        return LspConnectionConfig.Process(arrayOf(lspPath,"server"))
+    }
+
+    override val canBeUninstalled: Boolean = false
+
+    override suspend fun onInitialize(lspConnector: com.scto.mobile.ide.lsp.LspConnector) {
+        lspConnector.lspEditor?.requestManager?.didChangeConfiguration(
+            org.eclipse.lsp4j.DidChangeConfigurationParams(
+                mapOf("ty" to mapOf("diagnosticMode" to "workspace"))
+            )
+        )
+    }
+
+    override fun getInitializationOptions(uri: URI?): Any = mapOf("diagnosticMode" to "workspace")
+}

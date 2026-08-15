@@ -1,0 +1,24 @@
+{
+  "name": "prettier-standalone",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf ./../bin/ node_modules/",
+    "cli": "bun run ./index.ts",
+    "package:linux-x64": "bun build ./index.ts --compile --target=bun-linux-x64 --outfile ./../bin/prettier-linux-x64",
+    "package:linux-arm64": "bun build ./index.ts --compile --target=bun-linux-arm64 --outfile ./../bin/prettier-linux-arm64",
+    "package:linux-x64-musl": "bun build ./index.ts --compile --target=bun-linux-x64-musl --outfile ./../bin/prettier-linux-x64-musl",
+    "package:linux-arm64-musl": "bun build ./index.ts --compile --target=bun-linux-arm64-musl --outfile ./../bin/prettier-linux-arm64-musl",
+    "build": "npm run package:linux-x64 && npm run package:linux-arm64",
+    "test": "./test/integration_test.sh"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3 || ^6.0.0 || ^7.0.0"
+  },
+  "dependencies": {
+    "prettier": "^3.6.2"
+  }
+}

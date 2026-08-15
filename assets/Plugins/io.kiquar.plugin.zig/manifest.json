@@ -1,0 +1,17 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "io.kiquar.plugin.zig",
+  "name": "Zig Support",
+  "mainClass": "io.kiquar.plugin.zig.Main",
+  "version": "0.4.0",
+  "description": "Extension that provides Zig language and ZLS support.",
+  "author": {
+    "displayName": "KiquarSL",
+	"github": "KiquarSL"
+  },
+  "license": "MIT",
+  "tags": ["zig", "lsp", "zls", "zon"],
+  "minAppVersion": 95,
+  "maxAppVersion": null,
+  "repository": "https://github.com/KiquarSL/xed-zig"
+}

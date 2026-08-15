@@ -1,0 +1,1118 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"version": "0.1.0",
+	"name": "F#",
+	"scopeName": "source.fs",
+	"patterns": [
+		{
+			"include": "#ever_present_context"
+		},
+		{
+			"include": "#namespace_declaration"
+		},
+		{
+			"include": "#module_declaration"
+		},
+		{
+			"include": "#open_declaration"
+		},
+		{
+			"include": "#type_declaration"
+		},
+		{
+			"include": "#record_declaration"
+		},
+		{
+			"include": "#union_declaration"
+		},
+		{
+			"include": "#class_declaration"
+		},
+		{
+			"include": "#struct_declaration"
+		},
+		{
+			"include": "#interface_declaration"
+		},
+		{
+			"include": "#enum_declaration"
+		},
+		{
+			"include": "#member_definition"
+		},
+		{
+			"include": "#let_binding"
+		},
+		{
+			"include": "#function_definition"
+		},
+		{
+			"include": "#match_expression"
+		},
+		{
+			"include": "#function_expression"
+		},
+		{
+			"include": "#lambda_expression"
+		},
+		{
+			"include": "#computation_expression"
+		},
+		{
+			"include": "#computation_bang"
+		},
+		{
+			"include": "#quotation"
+		},
+		{
+			"include": "#active_pattern"
+		},
+		{
+			"include": "#unit_of_measure"
+		},
+		{
+			"include": "#type_annotation"
+		},
+		{
+			"include": "#type_constraint"
+		},
+		{
+			"include": "#attribute"
+		},
+		{
+			"include": "#block"
+		},
+		{
+			"include": "#evaluation_context"
+		}
+	],
+	"repository": {
+		"ever_present_context": {
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#line_continuation_character"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"begin": "\\(\\*",
+					"end": "\\*\\)",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.end.fsharp"
+						}
+					},
+					"name": "comment.block.nesting.fsharp",
+					"patterns": [
+						{
+							"include": "#comments"
+						}
+					]
+				},
+				{
+					"begin": "///",
+					"end": "$",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.fsharp"
+						}
+					},
+					"name": "comment.line.documentation.fsharp"
+				},
+				{
+					"begin": "//",
+					"end": "$",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.fsharp"
+						}
+					},
+					"name": "comment.line.double-slash.fsharp"
+				}
+			]
+		},
+		"line_continuation_character": {
+			"match": "\\\\\\n",
+			"name": "constant.character.escape.line-continuation.fsharp"
+		},
+		"keywords": {
+			"match": "\\b(abstract|and|as|assert|base|begin|class|default|delegate|do|done|downcast|downto|elif|else|end|exception|extern|false|finally|fixed|for|fun|function|global|if|in|inherit|inline|interface|internal|lazy|let|match|member|module|mutable|namespace|new|not|null|of|open|or|override|private|public|rec|return|select|static|struct|then|to|true|try|type|upcast|use|val|void|when|while|with|yield|atomic|break|checked|component|const|constraint|constructor|continue|eager|event|external|include|method|mixin|object|parallel|params|process|protected|pure|sealed|tailcall|trait|virtual|volatile|native|readonly|stdcall|cdecl|fastcall|var|unmanaged|fixed|fixedbuffer|auto|dynamic)\\b",
+			"name": "keyword.control.fsharp"
+		},
+		"primitive_types": {
+			"match": "\\b(bool|byte|sbyte|int16|uint16|int|uint|int32|uint32|int64|uint64|nativeint|unativeint|float|float32|double|single|decimal|char|string|unit|exn|list|option|array|seq|int8|uint8|int16|uint16|int32|uint32|int64|uint64|float|float32|nativeint|unativeint|obj|object|System\\.[A-Za-z.]+)\\b",
+			"name": "storage.type.fsharp"
+		},
+		"storage_modifiers": {
+			"match": "\\b(abstract|default|private|public|protected|static|inline|mutable|rec|with|override|new|virtual|sealed|open|lazy|extern|readonly|volatile|fixed|native|unmanaged|stdcall|cdecl|fastcall|tailcall|constraint|internal|private|protected|public|static|abstract|override|default|sealed|new|virtual|inline|mutable|rec|with|constraint)\\b",
+			"name": "storage.modifier.fsharp"
+		},
+		"namespace_declaration": {
+			"begin": "\\bnamespace\\s+([A-Za-z_][A-Za-z0-9_.']*)",
+			"end": "^(?=\\S)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.namespace.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"module_declaration": {
+			"begin": "\\bmodule\\s+(rec\\s+)?([A-Za-z_][A-Za-z0-9_.']*)",
+			"end": "(?==)|(?=with)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.fsharp"
+				},
+				"2": {
+					"name": "entity.name.type.module.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"open_declaration": {
+			"match": "\\bopen\\s+([A-Za-z_][A-Za-z0-9_.']*)",
+			"captures": {
+				"1": {
+					"name": "entity.name.type.module.fsharp"
+				}
+			}
+		},
+		"type_declaration": {
+			"begin": "\\btype\\s+([A-Za-z_][A-Za-z0-9_.']*)(?:<([^>]+)>)?",
+			"end": "(?==)|(?=with)|(?=and)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.fsharp"
+				},
+				"2": {
+					"name": "variable.parameter.generic.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#type_parameters"
+				},
+				{
+					"include": "#type_constraints"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"type_parameters": {
+			"begin": "<",
+			"end": ">",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.generics.begin.fsharp"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.generics.end.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"match": "[A-Za-z_][A-Za-z0-9_']*",
+					"name": "variable.parameter.generic.fsharp"
+				},
+				{
+					"match": ",",
+					"name": "punctuation.separator.generics.fsharp"
+				}
+			]
+		},
+		"type_constraints": {
+			"match": "\\bwhen\\s+([^=]+)",
+			"captures": {
+				"1": {
+					"name": "meta.type.constraint.fsharp"
+				}
+			}
+		},
+		"record_declaration": {
+			"begin": "\\btype\\s+([A-Za-z_][A-Za-z0-9_.']*)\\s*=\\s*\\{",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.record.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#record_fields"
+				},
+				{
+					"include": "#record_members"
+				}
+			]
+		},
+		"record_fields": {
+			"patterns": [
+				{
+					"match": "([a-zA-Z_][a-zA-Z0-9_']*)\\s*:\\s*([a-zA-Z_][a-zA-Z0-9_.']*(?:<[^>]+>)?)",
+					"captures": {
+						"1": {
+							"name": "variable.other.property.fsharp"
+						},
+						"2": {
+							"name": "storage.type.fsharp"
+						}
+					}
+				},
+				{
+					"match": "mutable\\s+([a-zA-Z_][a-zA-Z0-9_']*)\\s*:\\s*([a-zA-Z_][a-zA-Z0-9_.']*(?:<[^>]+>)?)",
+					"captures": {
+						"1": {
+							"name": "variable.other.property.fsharp"
+						},
+						"2": {
+							"name": "storage.type.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"record_members": {
+			"patterns": [
+				{
+					"begin": "\\bwith\\b",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#member_definition"
+						}
+					]
+				}
+			]
+		},
+		"record_copy_expression": {
+			"match": "\\{([a-zA-Z_][a-zA-Z0-9_.']*)\\s+with\\s+([a-zA-Z_][a-zA-Z0-9_']*)\\s*=\\s*([^}]+)\\}",
+			"captures": {
+				"1": {
+					"name": "variable.other.fsharp"
+				},
+				"2": {
+					"name": "variable.other.property.fsharp"
+				},
+				"3": {
+					"name": "meta.expression.fsharp"
+				}
+			}
+		},
+		"union_declaration": {
+			"begin": "\\btype\\s+([A-Za-z_][A-Za-z0-9_.']*)\\s*=\\s*\\|?\\s*([A-Za-z_][A-Za-z0-9_.']*)(?:\\s+of\\s+([^|]+))?",
+			"end": "(?=with)|(?=and)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.union.fsharp"
+				},
+				"2": {
+					"name": "entity.name.type.union.case.fsharp"
+				},
+				"3": {
+					"name": "storage.type.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\|\\s*([A-Za-z_][A-Za-z0-9_.']*)(?:\\s+of\\s+([^|]+))?",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.union.case.fsharp"
+						},
+						"2": {
+							"name": "storage.type.fsharp"
+						}
+					}
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"class_declaration": {
+			"begin": "\\bclass\\s+([A-Za-z_][A-Za-z0-9_.']*)(?:<([^>]+)>)?",
+			"end": "\\bend\\b",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.class.fsharp"
+				},
+				"2": {
+					"name": "variable.parameter.generic.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#class_body"
+				}
+			]
+		},
+		"class_body": {
+			"patterns": [
+				{
+					"include": "#member_definition"
+				},
+				{
+					"include": "#let_binding"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"struct_declaration": {
+			"begin": "\\bstruct\\s+([A-Za-z_][A-Za-z0-9_.']*)(?:<([^>]+)>)?",
+			"end": "\\bend\\b",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.struct.fsharp"
+				},
+				"2": {
+					"name": "variable.parameter.generic.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#class_body"
+				}
+			]
+		},
+		"interface_declaration": {
+			"begin": "\\binterface\\s+([A-Za-z_][A-Za-z0-9_.']*)(?:<([^>]+)>)?",
+			"end": "\\bend\\b|(?=with)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.interface.fsharp"
+				},
+				"2": {
+					"name": "variable.parameter.generic.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#interface_members"
+				}
+			]
+		},
+		"interface_members": {
+			"patterns": [
+				{
+					"include": "#member_definition"
+				}
+			]
+		},
+		"interface_implementation": {
+			"begin": "\\binterface\\s+([A-Za-z_][A-Za-z0-9_.']*)\\s+with\\b",
+			"end": "\\bend\\b",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.interface.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#member_definition"
+				}
+			]
+		},
+		"enum_declaration": {
+			"begin": "\\benum\\s+([A-Za-z_][A-Za-z0-9_.']*)\\s*=",
+			"end": "(?=with)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.type.enum.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\|\\s*([A-Za-z_][A-Za-z0-9_']*)\\s*=\\s*([0-9]+)",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.enum.case.fsharp"
+						},
+						"2": {
+							"name": "constant.numeric.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"member_definition": {
+			"begin": "\\b(member|override|default|abstract|static)\\s+(?:new\\s+)?([a-zA-Z_][a-zA-Z0-9_.']*)(?:\\s+with\\s+(get|set))?",
+			"end": "(?==)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.modifier.fsharp"
+				},
+				"2": {
+					"name": "entity.name.function.member.fsharp"
+				},
+				"3": {
+					"name": "keyword.control.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#function_parameters"
+				},
+				{
+					"include": "#type_annotation"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"member_property": {
+			"begin": "\\b(member|override|default|abstract|static)\\s+(?:val\\s+)?([a-zA-Z_][a-zA-Z0-9_']*)\\s*:\\s*([a-zA-Z_][a-zA-Z0-9_.']*(?:<[^>]+>)?)",
+			"end": "(?==)|(?=with)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.modifier.fsharp"
+				},
+				"2": {
+					"name": "entity.name.function.member.fsharp"
+				},
+				"3": {
+					"name": "storage.type.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"let_binding": {
+			"begin": "\\blet\\s+(rec\\s+)?([a-zA-Z_][a-zA-Z0-9_']*)",
+			"end": "(?==)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.fsharp"
+				},
+				"2": {
+					"name": "entity.name.variable.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#function_parameters"
+				},
+				{
+					"include": "#type_annotation"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"function_definition": {
+			"begin": "\\blet\\s+(rec\\s+)?([a-zA-Z_][a-zA-Z0-9_']*)\\s+([a-zA-Z_][a-zA-Z0-9_']*)",
+			"end": "(?==)|(?=;)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.fsharp"
+				},
+				"2": {
+					"name": "entity.name.function.fsharp"
+				},
+				"3": {
+					"name": "variable.parameter.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#function_parameters"
+				},
+				{
+					"include": "#type_annotation"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"function_parameters": {
+			"begin": "\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.parameters.begin.fsharp"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.parameters.end.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"match": ",",
+					"name": "punctuation.separator.parameters.fsharp"
+				},
+				{
+					"match": "\\b(?:\\?|\\[<[^>]+>\\])\\s*([a-zA-Z_][a-zA-Z0-9_']*)\\s*:\\s*([a-zA-Z_][a-zA-Z0-9_.']*(?:<[^>]+>)?)",
+					"captures": {
+						"1": {
+							"name": "variable.parameter.fsharp"
+						},
+						"2": {
+							"name": "storage.type.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"match_expression": {
+			"begin": "\\bmatch\\s+([^\\s]+)",
+			"end": "\\bwith\\b",
+			"beginCaptures": {
+				"1": {
+					"name": "variable.other.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"include": "#match_cases"
+				}
+			]
+		},
+		"match_cases": {
+			"patterns": [
+				{
+					"begin": "\\|\\s*([^\\s]+)",
+					"end": "->",
+					"beginCaptures": {
+						"1": {
+							"name": "entity.name.function.pattern.fsharp"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#pattern_matching"
+						}
+					]
+				}
+			]
+		},
+		"pattern_matching": {
+			"patterns": [
+				{
+					"match": "\\b_\\b",
+					"name": "constant.other.wildcard.fsharp"
+				},
+				{
+					"match": "([A-Z][A-Za-z0-9_']*)(?:\\s+of\\s+([^|]+))?",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.union.case.fsharp"
+						},
+						"2": {
+							"name": "variable.parameter.fsharp"
+						}
+					}
+				},
+				{
+					"match": "([a-zA-Z_][a-zA-Z0-9_']*)\\s+as\\s+([a-zA-Z_][a-zA-Z0-9_']*)",
+					"captures": {
+						"1": {
+							"name": "entity.name.function.pattern.fsharp"
+						},
+						"2": {
+							"name": "variable.parameter.fsharp"
+						}
+					}
+				},
+				{
+					"match": "\\bwhen\\b",
+					"name": "keyword.control.fsharp"
+				}
+			]
+		},
+		"function_expression": {
+			"begin": "\\bfunction\\b",
+			"end": "\\bwith\\b",
+			"patterns": [
+				{
+					"include": "#match_cases"
+				}
+			]
+		},
+		"lambda_expression": {
+			"begin": "\\bfun\\s+([a-zA-Z_][a-zA-Z0-9_']*)",
+			"end": "->",
+			"beginCaptures": {
+				"1": {
+					"name": "variable.parameter.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#lambda_parameters"
+				},
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"lambda_parameters": {
+			"match": "([a-zA-Z_][a-zA-Z0-9_']*)",
+			"name": "variable.parameter.fsharp"
+		},
+		"computation_expression": {
+			"begin": "\\b(seq|async|task|query|array|list)\\s*\\{",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.other.computation.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#computation_inner"
+				}
+			]
+		},
+		"computation_inner": {
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"include": "#computation_bang"
+				}
+			]
+		},
+		"computation_bang": {
+			"match": "\\b(let!|do!|return!|yield!|use!|match!|try!|while!|for!)\\b",
+			"name": "keyword.control.computation.fsharp"
+		},
+		"quotation": {
+			"patterns": [
+				{
+					"begin": "<@",
+					"end": "@>",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.quotation.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.quotation.end.fsharp"
+						}
+					},
+					"name": "string.quotation.fsharp",
+					"patterns": [
+						{
+							"include": "#evaluation_context"
+						}
+					]
+				},
+				{
+					"begin": "<@@",
+					"end": "@@>",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.quotation.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.quotation.end.fsharp"
+						}
+					},
+					"name": "string.quotation.typed.fsharp",
+					"patterns": [
+						{
+							"include": "#evaluation_context"
+						}
+					]
+				}
+			]
+		},
+		"active_pattern": {
+			"patterns": [
+				{
+					"match": "\\|\\((\\w+)\\)\\|",
+					"captures": {
+						"1": {
+							"name": "entity.name.function.active-pattern.fsharp"
+						}
+					}
+				},
+				{
+					"match": "\\|\\((\\w+)_(\\w+)\\)\\|",
+					"captures": {
+						"1": {
+							"name": "entity.name.function.active-pattern.partial.fsharp"
+						},
+						"2": {
+							"name": "entity.name.function.active-pattern.partial.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"unit_of_measure": {
+			"patterns": [
+				{
+					"match": "\\[<Measure>\\]",
+					"name": "meta.attribute.measure.fsharp"
+				},
+				{
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_']*)<([^>]+)>\\b",
+					"captures": {
+						"1": {
+							"name": "storage.type.fsharp"
+						},
+						"2": {
+							"name": "storage.type.unit-of-measure.fsharp"
+						}
+					}
+				},
+				{
+					"match": "\\b([a-zA-Z_][a-zA-Z0-9_']*)\\s*\\^\\s*([a-zA-Z_][a-zA-Z0-9_']*)\\b",
+					"captures": {
+						"1": {
+							"name": "constant.numeric.fsharp"
+						},
+						"2": {
+							"name": "storage.type.unit-of-measure.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"type_annotation": {
+			"match": "(:)\\s*([a-zA-Z_][a-zA-Z0-9_.']*(?:<[^>]+>)?)(?=\\s*(?:=|$|;|when))",
+			"captures": {
+				"1": {
+					"name": "keyword.operator.annotation.fsharp"
+				},
+				"2": {
+					"name": "storage.type.fsharp"
+				}
+			}
+		},
+		"type_constraint": {
+			"match": "\\b(when)\\s+([^=]+)",
+			"captures": {
+				"1": {
+					"name": "keyword.control.fsharp"
+				},
+				"2": {
+					"name": "meta.type.constraint.fsharp"
+				}
+			}
+		},
+		"attribute": {
+			"begin": "\\[<",
+			"end": ">\\]",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.attribute.begin.fsharp"
+				}
+			},
+			 "endCaptures": {
+				"0": {
+					"name": "punctuation.definition.attribute.end.fsharp"
+				}
+			},
+			"name": "meta.attribute.fsharp",
+			"patterns": [
+				{
+					"match": "([A-Za-z_][A-Za-z0-9_.']*)\\(([^)]*)\\)",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.attribute.fsharp"
+						},
+						"2": {
+							"name": "meta.attribute.arguments.fsharp"
+						}
+					}
+				},
+				{
+					"match": "([A-Za-z_][A-Za-z0-9_.']*)",
+					"name": "entity.name.type.attribute.fsharp"
+				},
+				{
+					"match": ",",
+					"name": "punctuation.separator.attribute.fsharp"
+				}
+			]
+		},
+		"block": {
+			"begin": "\\{",
+			"end": "\\}",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.block.begin.fsharp"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.block.end.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"string_literals": {
+			"patterns": [
+				{
+					"begin": "\"\"\"",
+					"end": "\"\"\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsharp"
+						}
+					},
+					"name": "string.quoted.double.verbatim.fsharp"
+				},
+				{
+					"begin": "@\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsharp"
+						}
+					},
+					"name": "string.quoted.double.verbatim.fsharp",
+					"patterns": [
+						{
+							"match": "\"\"",
+							"name": "constant.character.escape.fsharp"
+						}
+					]
+				},
+				{
+					"begin": "\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsharp"
+						}
+					},
+					"name": "string.quoted.double.fsharp",
+					"patterns": [
+						{
+							"include": "#escape_sequences"
+						}
+					]
+				},
+				{
+					"begin": "'",
+					"end": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.fsharp"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.fsharp"
+						}
+					},
+					"name": "string.quoted.single.fsharp",
+					"patterns": [
+						{
+							"include": "#escape_sequences"
+						}
+					]
+				}
+			]
+		},
+		"escape_sequences": {
+			"match": "\\\\(['\"?\\\\abfnrtv]|[0-7]{1,3}|x[0-9a-fA-F]{1,2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})",
+			"name": "constant.character.escape.fsharp"
+		},
+		"number_literals": {
+			"match": "(?<!\\w)(?:0[xX][0-9a-fA-F]+|0[bB][01]+|[0-9]+(?:\\.[0-9]*)?(?:[eEpP][+-]?[0-9]+)?)(?:[LluUfF]?)\\b",
+			"name": "constant.numeric.fsharp"
+		},
+		"operators": {
+			"patterns": [
+				{
+					"match": "(:=|->|::|\\|>|<\\||>>|<<|===|!==|>>>|>>>=|<<=|>>=|>>>|<<|>>|<=|>=|==|!=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|%=|&=|\\^=|\\|=|~=|\\?|:|,|;|\\+|-|\\*|/|%|&|\\||\\^|~|!|=|<|>|\\.|\\$|\\|)",
+					"name": "keyword.operator.fsharp"
+				},
+				{
+					"match": "\\b(\\+|-|\\*|/|%|&|\\||\\^|~|!|=|<|>|\\||\\$)\\b",
+					"name": "keyword.operator.custom.fsharp"
+				}
+			]
+		},
+		"evaluation_context": {
+			"patterns": [
+				{
+					"include": "#ever_present_context"
+				},
+				{
+					"include": "#keywords"
+				},
+				{
+					"include": "#primitive_types"
+				},
+				{
+					"include": "#storage_modifiers"
+				},
+				{
+					"include": "#attribute"
+				},
+				{
+					"include": "#string_literals"
+				},
+				{
+					"include": "#number_literals"
+				},
+				{
+					"include": "#operators"
+				},
+				{
+					"include": "#function_call"
+				},
+				{
+					"include": "#member_access"
+				},
+				{
+					"include": "#parentheses"
+				},
+				{
+					"include": "#square_brackets"
+				},
+				{
+					"include": "#pipe_operator"
+				},
+				{
+					"include": "#record_copy_expression"
+				},
+				{
+					"include": "#active_pattern"
+				}
+			]
+		},
+		"function_call": {
+			"begin": "([a-zA-Z_][a-zA-Z0-9_.']*)\\s*\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.function.call.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"member_access": {
+			"patterns": [
+				{
+					"match": "\\.[a-zA-Z_][a-zA-Z0-9_.']*",
+					"name": "variable.other.property.fsharp"
+				},
+				{
+					"match": "\\.([a-zA-Z_][a-zA-Z0-9_']*)",
+					"captures": {
+						"1": {
+							"name": "variable.other.property.fsharp"
+						}
+					}
+				}
+			]
+		},
+		"parentheses": {
+			"begin": "\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.begin.fsharp"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.end.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"square_brackets": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.brackets.begin.fsharp"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.brackets.end.fsharp"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				}
+			]
+		},
+		"pipe_operator": {
+			"match": "(?<=\\w)\\s+(\\|>|>|>>|<<|\\|>|\\|>|\\|>|\\|>)\\s+",
+			"captures": {
+				"1": {
+					"name": "keyword.operator.pipe.fsharp"
+				}
+			}
+		}
+	}
+}

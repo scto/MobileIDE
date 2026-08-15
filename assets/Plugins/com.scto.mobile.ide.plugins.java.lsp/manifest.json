@@ -1,0 +1,18 @@
+{
+  "$schema": "schema/schema.json",
+  "id": "com.scto.mobile.ide.plugins.java.lsp",
+  "name": "Java Language Support (JDTLS)",
+  "mainClass": "com.scto.mobile.ide.plugins.java.lsp.Main",
+  "version": "1.1.0",
+  "description": "MobileIDE extension for Java LSP",
+  "author": {
+    "displayName": "scto",
+    "github": "scto"
+  },
+  "minAppVersion": 87,
+  "maxAppVersion": null,
+  "repository": "https://github.com/scto/MobileIDE/Plugins/java-lsp",
+  "license": "MIT",
+  "tags": ["java", "lsp", "editor"],
+  "hasSettings": false
+}
