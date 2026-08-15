@@ -617,6 +617,21 @@ private fun PluginItemCard(
 
 @Composable
 private fun StatusBadge(plugin: StorePluginItem) {
+    if (!plugin.isCompatibleWithDevice) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f)
+        ) {
+            Text(
+                text = "Nicht kompatibel mit deinem Gerät",
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+        return
+    }
+
     val (text, color) = when (plugin.status) {
         PluginStatus.INSTALLED -> "Installiert" to Color(0xFF10B981)
         PluginStatus.UPDATE_AVAILABLE -> "Update v${plugin.version}" to Color(0xFFF59E0B)

@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.plugin.rust",
+  "name": "Rust Language Support (rust-analyzer)",
+  "version": "1.2.0",
+  "category": "language",
+  "description": "Language Server Protocol integration for Rust via rust-analyzer.",
+  "author": "KonerDev",
+  "minAppVersion": "0.0.1",
+  "arch": ["arm64-v8a", "x86_64"],
+  "entryScript": "lsp/rust.sh",
+  "dependencies": [],
+  "fileExtensions": [".rs"]
+}

@@ -44,6 +44,7 @@ data class StorePluginItem(
     val tags: List<String> = emptyList(),
     val arch: List<String> = emptyList(),
     val dependencies: List<String> = emptyList(),
+    val fileExtensions: List<String> = emptyList(),
     val sha256: String? = null,
     val status: PluginStatus = PluginStatus.NOT_INSTALLED,
     val installedVersion: String? = null,
@@ -51,6 +52,13 @@ data class StorePluginItem(
     val downloadProgress: Float = 0f,
     val errorMessage: String? = null
 ) {
+    val isCompatibleWithDevice: Boolean
+        get() {
+            if (arch.isEmpty()) return true
+            val supported = android.os.Build.SUPPORTED_ABIS.map { it.lowercase() }
+            return arch.any { supported.contains(it.lowercase()) }
+        }
+
     val sizeFormatted: String
         get() = when {
             size <= 0 -> ""

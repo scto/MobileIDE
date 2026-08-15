@@ -2451,5 +2451,5 @@ fun LspOverlayView(
  * Can easily be adapted to route directly to an Extension Store route in the future.
  */
 fun navigateToLspExtensionStore(navController: NavController) {
-    navController.safeNavigate("settings/lsp")
+    navController.safeNavigate("settings/plugins")
 }

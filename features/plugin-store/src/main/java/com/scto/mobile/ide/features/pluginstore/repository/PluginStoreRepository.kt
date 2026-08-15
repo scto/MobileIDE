@@ -130,6 +130,14 @@ class PluginStoreRepository(private val context: Context) {
                     }
                 }
 
+                val extList = mutableListOf<String>()
+                val extArr = obj.optJSONArray("fileExtensions")
+                if (extArr != null) {
+                    for (j in 0 until extArr.length()) {
+                        extList.add(extArr.getString(j))
+                    }
+                }
+
                 list.add(
                     StorePluginItem(
                         id = id,
@@ -143,7 +151,8 @@ class PluginStoreRepository(private val context: Context) {
                         minAppVersion = minAppVersion,
                         tags = tagsList,
                         arch = archList,
-                        dependencies = depList
+                        dependencies = depList,
+                        fileExtensions = extList
                     )
                 )
             }
