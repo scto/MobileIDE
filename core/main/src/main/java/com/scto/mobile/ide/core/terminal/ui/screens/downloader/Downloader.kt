@@ -688,9 +688,19 @@ private fun installUbuntuRootfsIfNeeded(onInstallLog: (String) -> Unit) {
     }
 }
 
+private fun hasExtractedRootfsForDistro(distroName: String): Boolean {
+    val dir = File(localDir(), distroName)
+    val hasEtc = dir.child("etc").exists() || dir.child("root").child("etc").exists()
+    val hasBinOrUsr = dir.child("usr").exists() || dir.child("bin").exists()
+    return hasEtc && hasBinOrUsr
+}
+
 private fun hasExtractedUbuntuRootfs(): Boolean {
-    val ubuntuDir = File(localDir(), "ubuntu")
-    return ubuntuDir.child("etc").exists() || ubuntuDir.child("root").child("etc").exists()
+    return hasExtractedRootfsForDistro("ubuntu")
+}
+
+private fun hasExtractedAlpineRootfs(): Boolean {
+    return hasExtractedRootfsForDistro("alpine")
 }
 
 private fun cleanupUbuntuUbuntuiveIfPresent(rootfsUbuntuive: File, onInstallLog: (String) -> Unit) {

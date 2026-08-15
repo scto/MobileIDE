@@ -127,7 +127,7 @@ extract_via_tar_fallback() {
 fix_alternatives_symlinks_inside_rootfs() {
     local target_dir="$1"
 
-    mkdir -p "$target_dir/var" "$target_dir/etc/alternatives" "$target_dir/usr/bin" "$target_dir/usr/sbin"
+    mkdir -p "$target_dir/var" "$target_dir/etc/alternatives" "$target_dir/usr/bin" "$target_dir/usr/sbin" "$target_dir/home" "$target_dir/root" "$target_dir/tmp"
 
     if [ -f "$target_dir/usr/bin/mawk" ]; then
         ln -snf /usr/bin/mawk "$target_dir/etc/alternatives/awk" 2>/dev/null || true
@@ -144,6 +144,24 @@ fix_alternatives_symlinks_inside_rootfs() {
 
     ln -snf ../run "$target_dir/var/run" 2>/dev/null || true
     ln -snf ../lock "$target_dir/var/lock" 2>/dev/null || true
+}
+
+# Validierung nach der Extraktion: stellt sicher, dass wesentliche Systempfade existieren
+validate_extracted_rootfs() {
+    local target_dir="$1"
+    local distro_name="$2"
+
+    mkdir -p "$target_dir/home" "$target_dir/root" "$target_dir/tmp"
+
+    if [ ! -d "$target_dir/etc" ] && [ ! -d "$target_dir/root/etc" ]; then
+        echo "ERROR  RootFS für $distro_name ist unvollständig (etc fehlt in $target_dir)" >&2
+        return 1
+    fi
+    if [ ! -d "$target_dir/usr" ] && [ ! -d "$target_dir/bin" ]; then
+        echo "ERROR  RootFS für $distro_name ist unvollständig (usr/bin fehlt in $target_dir)" >&2
+        return 1
+    fi
+    return 0
 }
 
 # Loggt die letzten N Zeilen einer Logdatei bei Fehlern

@@ -9,6 +9,32 @@ import java.io.FileOutputStream
 object TerminalAssetsExtractor {
     private const val TAG = "TerminalAssetsExtractor"
 
+    /**
+     * Verifies if a distro rootfs (e.g. "ubuntu" or "alpine") has been completely extracted.
+     */
+    fun isDistroFullyExtracted(context: Context, distroName: String): Boolean {
+        val prefixDir = context.filesDir.parentFile ?: return false
+        val distroDir = File(prefixDir, "local/$distroName")
+        if (!distroDir.exists() || !distroDir.isDirectory) return false
+
+        val hasEtc = File(distroDir, "etc").isDirectory || File(distroDir, "root/etc").isDirectory
+        val hasBinOrUsr = File(distroDir, "usr").isDirectory || File(distroDir, "bin").isDirectory
+        val hasHome = File(distroDir, "home").isDirectory || File(distroDir, "root").isDirectory
+
+        return hasEtc && hasBinOrUsr && hasHome
+    }
+
+    /**
+     * Ensures mandatory container fallback directories (/home, /root, /tmp) exist for a distro.
+     */
+    fun ensureDistroDirectoriesExist(context: Context, distroName: String) {
+        val prefixDir = context.filesDir.parentFile ?: return
+        val distroDir = File(prefixDir, "local/$distroName").apply { mkdirs() }
+        File(distroDir, "home").mkdirs()
+        File(distroDir, "root").mkdirs()
+        File(distroDir, "tmp").mkdirs()
+    }
+
     fun ensureAssetsExtracted(context: Context, force: Boolean = false) {
         try {
             val prefixDir = context.filesDir.parentFile ?: return
@@ -45,6 +71,9 @@ object TerminalAssetsExtractor {
             val missingOrNotExecutable = requiredScripts.any { !it.exists() || !it.canExecute() }
 
             if (!force && markerFile.exists() && !missingOrNotExecutable) {
+                // Always reinforce distro directory existence as a safety guard
+                ensureDistroDirectoriesExist(context, "ubuntu")
+                ensureDistroDirectoriesExist(context, "alpine")
                 return
             }
 
@@ -75,13 +104,12 @@ object TerminalAssetsExtractor {
                 targetFile.setExecutable(true, false)
             }
 
-            // 3. Ensure distro home and root directories exist for default distros
-            val distroName = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
+            // 3. Ensure distro home, root, and tmp directories exist
+            val selectedDistro = context.getSharedPreferences("MobileIDE_Settings", Context.MODE_PRIVATE)
                 .getString("selected_distro", "ubuntu") ?: "ubuntu"
-            val distroDir = File(localDir, distroName).apply { mkdirs() }
-            File(distroDir, "home").mkdirs()
-            File(distroDir, "root").mkdirs()
-            File(distroDir, "tmp").mkdirs()
+            ensureDistroDirectoriesExist(context, selectedDistro)
+            ensureDistroDirectoriesExist(context, "ubuntu")
+            ensureDistroDirectoriesExist(context, "alpine")
 
             markerFile.createNewFile()
             Log.i(TAG, "Asset extraction completed successfully.")
