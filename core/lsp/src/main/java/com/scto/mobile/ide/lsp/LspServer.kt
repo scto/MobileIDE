@@ -27,11 +27,27 @@ abstract class ScriptedLspServer : LspServer() {
             flags.contains("--update") -> "Updating"
             else -> "Installing"
         }
+
+        // Validate installScript exists and is executable; auto-extract if missing
+        var attempts = 0
+        while ((!installScript.exists() || !installScript.canExecute()) && attempts < 3) {
+            attempts++
+            android.util.Log.w("LSP_Installer", "Install script '${installScript.absolutePath}' missing or not executable. Triggering asset extraction (attempt $attempts)...")
+            com.scto.mobile.ide.core.common.utils.TerminalAssetsExtractor.ensureAssetsExtracted(activity, force = true)
+            try { Thread.sleep(300) } catch (_: Exception) {}
+        }
+
         try {
             installScript.setExecutable(true, false)
         } catch (e: Exception) {
             android.util.Log.w("LSP_Installer", "Could not set executable permissions on ${installScript.absolutePath}: ${e.message}")
         }
+
+        if (!installScript.exists()) {
+            android.util.Log.e("LSP_Installer", "CRITICAL: Install script '${installScript.absolutePath}' still missing after extraction!")
+            return
+        }
+
         android.util.Log.i("LSP_Installer", "$actionName LSP server '$id' ($serverName) using script: ${installScript.absolutePath}")
         terminalLauncher?.invoke(activity, installScript, flags.toList())
     }

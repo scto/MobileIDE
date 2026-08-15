@@ -77,6 +77,7 @@ android {
     androidResources {
         noCompress.add("tar.gz")
         noCompress.add("tar.xz")
+        noCompress.add("sh")
     }
 
     dependenciesInfo {

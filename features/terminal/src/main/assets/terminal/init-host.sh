@@ -4,11 +4,11 @@
 DISTRO="${MOBILEIDE_DISTRO:-ubuntu}"
 DISTRO_DIR="$PREFIX/local/$DISTRO"
 
-mkdir -p "$DISTRO_DIR"
+mkdir -p "$DISTRO_DIR" "$DISTRO_DIR/home" "$DISTRO_DIR/root"
 
 # Ensure local directories exist
 LOCAL="$PREFIX/local"
-mkdir -p "$LOCAL/bin" "$LOCAL/lib"
+mkdir -p "$LOCAL/bin" "$LOCAL/lib" "$LOCAL/lsp"
 
 # Check/copy proot and shared libraries
 if [ ! -e "$LOCAL/bin/proot" ]; then

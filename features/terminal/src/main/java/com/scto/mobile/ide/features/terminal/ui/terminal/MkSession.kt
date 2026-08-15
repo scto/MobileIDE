@@ -46,25 +46,7 @@ object MkSession {
             }
             val workingDir = pendingCommand?.workingDir ?: defaultWorkingDir
 
-            fun copyAsset(name: String, dest: File) {
-                dest.createFileIfNot()
-                dest.writeText(assets.open("terminal/$name").bufferedReader().use { it.readText() })
-                dest.setExecutable(true)
-            }
-
-            val initFile = localBinDir().child("init-host")
-            copyAsset("init-host.sh", initFile)
-            copyAsset("init.sh", localBinDir().child("init"))
-            copyAsset("setup.sh", localBinDir().child("setup"))
-            copyAsset("sandbox.sh", localBinDir().child("sandbox"))
-            copyAsset("utils.sh", localBinDir().child("utils"))
-            copyAsset("universal_runner.sh", localBinDir().child("universal_runner"))
-
-            val lspBinDir = localBinDir().child("lsp").also { it.mkdirs() }
-            val lspAssets = try { assets.list("terminal/lsp") ?: emptyArray() } catch (e: Exception) { emptyArray() }
-            for (lspAsset in lspAssets) {
-                copyAsset("lsp/$lspAsset", lspBinDir.child(lspAsset))
-            }
+            com.scto.mobile.ide.core.common.utils.TerminalAssetsExtractor.ensureAssetsExtracted(context)
 
 
             val tempDir = File(cacheDir, "tmp").also { it.mkdirs() }

@@ -190,6 +190,7 @@ class MainActivity : androidx.appcompat.app.AppCompatActivity(), SessionBinderPr
         // Install plugins bundled in assets/bundled_plugins/ (e.g. java_lsp, kotlin_lsp)
         // These are installed once on first run and updated when the asset version is newer.
         lifecycleScope.launch(Dispatchers.IO) {
+            com.scto.mobile.ide.core.common.utils.TerminalAssetsExtractor.ensureAssetsExtracted(applicationContext)
             com.scto.mobile.ide.core.common.utils.BundledPluginLoader.install(application)
             extensionManager.indexLocalExtensions()
             extensionManager.loadAllExtensions()
