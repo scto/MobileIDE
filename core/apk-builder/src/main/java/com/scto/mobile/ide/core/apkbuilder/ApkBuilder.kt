@@ -32,9 +32,31 @@ class ApkBuilder(private val context: Context) {
         onProgress: (BuildProgress) -> Unit = {}
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
-            val gradlew = File(projectDir, "gradlew")
+            val cleanProjectDir = File(projectDir.absolutePath.trim())
+            val pathForLog = cleanProjectDir.absolutePath.replace(" ", "[SPACE]")
+            Timber.tag(TAG).i("Validating build directory: \"$pathForLog\"")
+
+            if (!cleanProjectDir.exists() || !cleanProjectDir.isDirectory) {
+                val msg = "Projektverzeichnis ungültig oder existiert nicht: \"$cleanProjectDir\""
+                Timber.tag(TAG).e(msg)
+                onProgress(BuildProgress.Error(msg))
+                return@withContext Result.failure(IllegalArgumentException(msg))
+            }
+
+            val hasSettingsGradle = File(cleanProjectDir, "settings.gradle").exists() || File(cleanProjectDir, "settings.gradle.kts").exists()
+            if (!hasSettingsGradle) {
+                val msg = "Projektverzeichnis ungültig oder Gradle-Build-Dateien fehlen: \"${cleanProjectDir.name}\" enthält keine settings.gradle oder settings.gradle.kts"
+                Timber.tag(TAG).e(msg)
+                onProgress(BuildProgress.Error(msg))
+                return@withContext Result.failure(IllegalStateException(msg))
+            }
+
+            val gradlew = File(cleanProjectDir, "gradlew")
             if (!gradlew.exists()) {
-                return@withContext Result.failure(IllegalStateException("gradlew not found in project directory"))
+                val msg = "gradlew Executable im Projektverzeichnis nicht gefunden"
+                Timber.tag(TAG).e(msg)
+                onProgress(BuildProgress.Error(msg))
+                return@withContext Result.failure(IllegalStateException(msg))
             }
             if (!gradlew.canExecute()) {
                 gradlew.setExecutable(true)
@@ -44,7 +66,7 @@ class ApkBuilder(private val context: Context) {
 
             val task = "assemble$buildType"
             val pb = ProcessBuilder()
-            pb.directory(projectDir)
+            pb.directory(cleanProjectDir)
             pb.redirectErrorStream(true) // merge stderr and stdout
 
             if (configureProcessBuilder != null) {
@@ -65,10 +87,18 @@ class ApkBuilder(private val context: Context) {
             val process = pb.start()
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
+            var wrapperDownloadErrorDetected = false
+            var wrapperErrorMessage = ""
 
             while (reader.readLine().also { line = it } != null) {
                 line?.let { output ->
                     Timber.tag(TAG).d("Gradle: $output")
+
+                    if (output.contains("FileNotFoundException") && (output.contains("distributions") || output.contains("gradle"))) {
+                        wrapperDownloadErrorDetected = true
+                        wrapperErrorMessage = "Gradle-Wrapper Download fehlgeschlagen: Die Gradle-Distribution konnte nicht heruntergeladen werden. Bitte Internetverbindung prüfen."
+                    }
+
                     // Basic progress heuristics
                     val progress = when {
                         output.contains("> Task :app:preBuild") -> 0.2f
@@ -80,7 +110,7 @@ class ApkBuilder(private val context: Context) {
                     if (progress > 0) {
                         onProgress(BuildProgress.Step(output.trim(), progress))
                     } else if (output.contains("FAILED") || output.contains("Exception")) {
-                        onProgress(BuildProgress.Step(output.trim(), -1f)) // Just log, don't fail yet
+                        onProgress(BuildProgress.Step(output.trim(), -1f)) // Just log
                     }
                 }
             }
@@ -89,16 +119,17 @@ class ApkBuilder(private val context: Context) {
             if (exitCode == 0) {
                 onProgress(BuildProgress.Step("Build Successful!", 1.0f))
                 
-                // Find the APK
                 val buildTypeLower = buildType.lowercase()
                 val apkPaths = listOf(
                     "app/build/outputs/apk/$buildTypeLower/app-$buildTypeLower.apk",
-                    "build/outputs/apk/$buildTypeLower/app-$buildTypeLower.apk"
+                    "build/outputs/apk/$buildTypeLower/app-$buildTypeLower.apk",
+                    "app/build/outputs/apk/Fdroid/$buildTypeLower/app-Fdroid-$buildTypeLower.apk",
+                    "app/build/outputs/apk/Fdroid/$buildTypeLower/MobileIDE-0.0.1-$buildTypeLower.apk"
                 )
                 
                 var foundApk: File? = null
                 for (path in apkPaths) {
-                    val file = File(projectDir, path)
+                    val file = File(cleanProjectDir, path)
                     if (file.exists()) {
                         foundApk = file
                         break
@@ -114,7 +145,11 @@ class ApkBuilder(private val context: Context) {
                     Result.failure(IllegalStateException(msg))
                 }
             } else {
-                val msg = "Gradle build failed with exit code $exitCode"
+                val msg = if (wrapperDownloadErrorDetected) {
+                    wrapperErrorMessage
+                } else {
+                    "Gradle build failed with exit code $exitCode"
+                }
                 onProgress(BuildProgress.Error(msg))
                 Result.failure(RuntimeException(msg))
             }

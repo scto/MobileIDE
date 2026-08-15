@@ -205,8 +205,8 @@ object GradleTaskManagerImpl : GradleTaskManager {
         var lineNum = 1
         val startLine = "Starting Gradle execution: $fullArgs"
         val startLog = GradleLogLine.parse(lineNum++, startLine)
-        emit(startLog)
-        ToolingLogManagerImpl.log(com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD, "INFO", startLine)
+        val pathForLog = cleanProjectPath.replace(" ", "[SPACE]")
+        ToolingLogManagerImpl.log(com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD, "INFO", "Executing in working directory \"$pathForLog\": $startLine")
 
         try {
             val processBuilder = ProcessBuilder(cmd)

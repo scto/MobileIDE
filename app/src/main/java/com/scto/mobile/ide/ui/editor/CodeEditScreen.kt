@@ -2095,11 +2095,12 @@ private suspend fun performBuild(
                 arrayOf("sh", "-c", compileCmd),
             )
 
-        com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command: ${cmd.joinToString(" ")}")
+        val pathForLog = cleanProjectPath.replace(" ", "[SPACE]")
+        com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command in working directory \"$pathForLog\": ${cmd.joinToString(" ")}")
 
         try {
             val processBuilder = ProcessBuilder(cmd)
-            processBuilder.directory(File(projectPath))
+            processBuilder.directory(File(cleanProjectPath))
 
             // Set PRoot environment variables so native loader works properly
             val env = processBuilder.environment()
