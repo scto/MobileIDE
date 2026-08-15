@@ -12,28 +12,37 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-enum class FilterTab {
-    ALL,
-    LSP,
-    THEMES,
+enum class MainTab {
+    DISCOVER,
     INSTALLED
+}
+
+enum class CategoryFilter {
+    ALL,
+    LANGUAGES,
+    THEMES,
+    FORMATTERS,
+    TOOLS
 }
 
 data class PluginStoreUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
+    val mainTab: MainTab = MainTab.DISCOVER,
     val searchQuery: String = "",
-    val selectedTab: FilterTab = FilterTab.ALL,
+    val selectedCategory: CategoryFilter = CategoryFilter.ALL,
     val plugins: List<StorePluginItem> = emptyList(),
+    val selectedDetailPlugin: StorePluginItem? = null,
     val errorMessage: String? = null
 ) {
-    val filteredPlugins: List<StorePluginItem>
+    val discoverPlugins: List<StorePluginItem>
         get() = plugins.filter { item ->
-            val matchesTab = when (selectedTab) {
-                FilterTab.ALL -> true
-                FilterTab.LSP -> item.type == PluginType.LSP
-                FilterTab.THEMES -> item.type == PluginType.THEME
-                FilterTab.INSTALLED -> item.status == PluginStatus.INSTALLED || item.status == PluginStatus.UPDATE_AVAILABLE
+            val matchesCat = when (selectedCategory) {
+                CategoryFilter.ALL -> true
+                CategoryFilter.LANGUAGES -> item.type == PluginType.LSP
+                CategoryFilter.THEMES -> item.type == PluginType.THEME
+                CategoryFilter.FORMATTERS -> item.type == PluginType.FORMATTER
+                CategoryFilter.TOOLS -> item.type == PluginType.TOOL || item.type == PluginType.UNKNOWN
             }
 
             val matchesSearch = if (searchQuery.isBlank()) {
@@ -46,7 +55,33 @@ data class PluginStoreUiState(
                         item.tags.any { it.lowercase().contains(q) }
             }
 
-            matchesTab && matchesSearch
+            matchesCat && matchesSearch
+        }
+
+    val installedPlugins: List<StorePluginItem>
+        get() = plugins.filter { item ->
+            val isInst = item.status == PluginStatus.INSTALLED || item.status == PluginStatus.UPDATE_AVAILABLE
+            val matchesSearch = if (searchQuery.isBlank()) {
+                true
+            } else {
+                val q = searchQuery.trim().lowercase()
+                item.name.lowercase().contains(q) ||
+                        item.description.lowercase().contains(q) ||
+                        item.id.lowercase().contains(q) ||
+                        item.tags.any { it.lowercase().contains(q) }
+            }
+            isInst && matchesSearch
+        }
+
+    val groupedDiscoverPlugins: Map<String, List<StorePluginItem>>
+        get() = discoverPlugins.groupBy { item ->
+            when (item.type) {
+                PluginType.LSP -> "Sprachen & LSP Server"
+                PluginType.THEME -> "Themes & Farben"
+                PluginType.FORMATTER -> "Formatter & Code Style"
+                PluginType.TOOL -> "Tools & Debugger"
+                else -> "Weitere Erweiterungen"
+            }
         }
 }
 
@@ -80,18 +115,40 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isRefreshing = false,
-                    errorMessage = e.message ?: "Failed to load plugins catalog"
+                    errorMessage = e.message ?: "Katalog konnte nicht geladen werden"
                 )
             }
         }
+    }
+
+    fun setMainTab(tab: MainTab) {
+        _uiState.value = _uiState.value.copy(mainTab = tab)
+    }
+
+    fun setSelectedCategory(cat: CategoryFilter) {
+        _uiState.value = _uiState.value.copy(selectedCategory = cat)
     }
 
     fun setSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
     }
 
-    fun setSelectedTab(tab: FilterTab) {
-        _uiState.value = _uiState.value.copy(selectedTab = tab)
+    fun selectDetailPlugin(plugin: StorePluginItem?) {
+        _uiState.value = _uiState.value.copy(selectedDetailPlugin = plugin)
+    }
+
+    fun togglePluginEnabled(plugin: StorePluginItem) {
+        val updated = _uiState.value.plugins.map { item ->
+            if (item.id == plugin.id) {
+                item.copy(isEnabled = !item.isEnabled)
+            } else item
+        }
+        _uiState.value = _uiState.value.copy(
+            plugins = updated,
+            selectedDetailPlugin = if (_uiState.value.selectedDetailPlugin?.id == plugin.id) {
+                _uiState.value.selectedDetailPlugin?.copy(isEnabled = !plugin.isEnabled)
+            } else _uiState.value.selectedDetailPlugin
+        )
     }
 
     fun installPlugin(item: StorePluginItem) {
@@ -115,7 +172,7 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
                 updatePluginStatus(
                     item.id,
                     PluginStatus.ERROR,
-                    errorMsg = result.exceptionOrNull()?.message ?: "Installation failed"
+                    errorMsg = result.exceptionOrNull()?.message ?: "Installation fehlgeschlagen"
                 )
             }
         }
@@ -135,7 +192,7 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
                 updatePluginStatus(
                     item.id,
                     PluginStatus.ERROR,
-                    errorMsg = result.exceptionOrNull()?.message ?: "Update failed"
+                    errorMsg = result.exceptionOrNull()?.message ?: "Update fehlgeschlagen"
                 )
             }
         }
@@ -150,7 +207,7 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
                 updatePluginStatus(
                     item.id,
                     PluginStatus.ERROR,
-                    errorMsg = result.exceptionOrNull()?.message ?: "Uninstall failed"
+                    errorMsg = result.exceptionOrNull()?.message ?: "Deinstallation fehlgeschlagen"
                 )
             }
         }
@@ -173,6 +230,15 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
                 )
             } else plugin
         }
-        _uiState.value = _uiState.value.copy(plugins = updated)
+        val updatedDetail = if (_uiState.value.selectedDetailPlugin?.id == pluginId) {
+            _uiState.value.selectedDetailPlugin?.copy(
+                status = status,
+                downloadProgress = progress,
+                installedVersion = installedVer ?: _uiState.value.selectedDetailPlugin?.installedVersion,
+                errorMessage = errorMsg
+            )
+        } else _uiState.value.selectedDetailPlugin
+
+        _uiState.value = _uiState.value.copy(plugins = updated, selectedDetailPlugin = updatedDetail)
     }
 }

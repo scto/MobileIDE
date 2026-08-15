@@ -43,9 +43,11 @@ data class StorePluginItem(
     val minAppVersion: Int = 1,
     val tags: List<String> = emptyList(),
     val arch: List<String> = emptyList(),
+    val dependencies: List<String> = emptyList(),
     val sha256: String? = null,
     val status: PluginStatus = PluginStatus.NOT_INSTALLED,
     val installedVersion: String? = null,
+    val isEnabled: Boolean = true,
     val downloadProgress: Float = 0f,
     val errorMessage: String? = null
 ) {

@@ -2,6 +2,7 @@ package com.scto.mobile.ide.features.pluginstore.repository
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import com.scto.mobile.ide.features.pluginstore.model.PluginAuthor
 import com.scto.mobile.ide.features.pluginstore.model.PluginStatus
 import com.scto.mobile.ide.features.pluginstore.model.PluginType
@@ -10,9 +11,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -53,12 +54,12 @@ class PluginStoreRepository(private val context: Context) {
                 if (connection.responseCode == 200) {
                     val jsonText = connection.inputStream.bufferedReader().use { it.readText() }
                     remoteItems.addAll(parsePluginIndexJson(jsonText))
-                    Timber.tag(TAG).i("Fetched ${remoteItems.size} plugins from remote repository.")
+                    Log.i(TAG, "Fetched ${remoteItems.size} plugins from remote repository.")
                 } else {
-                    Timber.tag(TAG).w("Remote plugin index returned HTTP ${connection.responseCode}")
+                    Log.w(TAG, "Remote plugin index returned HTTP ${connection.responseCode}")
                 }
             } catch (e: Exception) {
-                Timber.tag(TAG).w(e, "Failed to fetch remote plugin index from $indexUrl. Falling back to local catalog.")
+                Log.w(TAG, "Failed to fetch remote plugin index from $indexUrl. Falling back to local catalog: ${e.message}")
             }
 
             // 2. Fallback / Merge with local bundled plugins catalog
@@ -121,6 +122,14 @@ class PluginStoreRepository(private val context: Context) {
                     }
                 }
 
+                val depList = mutableListOf<String>()
+                val depArr = obj.optJSONArray("dependencies")
+                if (depArr != null) {
+                    for (j in 0 until depArr.length()) {
+                        depList.add(depArr.getString(j))
+                    }
+                }
+
                 list.add(
                     StorePluginItem(
                         id = id,
@@ -133,12 +142,13 @@ class PluginStoreRepository(private val context: Context) {
                         size = size,
                         minAppVersion = minAppVersion,
                         tags = tagsList,
-                        arch = archList
+                        arch = archList,
+                        dependencies = depList
                     )
                 )
             }
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Error parsing plugin index JSON")
+            Log.e(TAG, "Error parsing plugin index JSON", e)
         }
         return list
     }
@@ -171,7 +181,7 @@ class PluginStoreRepository(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Timber.tag(TAG).w(e, "Error scanning bundled_plugins assets")
+            Log.w(TAG, "Error scanning bundled_plugins assets", e)
         }
         return catalog
     }
@@ -193,7 +203,7 @@ class PluginStoreRepository(private val context: Context) {
                 )
             }
         } catch (e: Exception) {
-            Timber.tag(TAG).w(e, "Error reading installed.json")
+            Log.w(TAG, "Error reading installed.json", e)
         }
         return list
     }
@@ -269,11 +279,20 @@ class PluginStoreRepository(private val context: Context) {
             // 1. ABI Architecture Check BEFORE download
             if (!isAbiCompatible(item.arch)) {
                 val msg = "Incompatible CPU architecture (${item.arch.joinToString()}) for device ABIs (${Build.SUPPORTED_ABIS.joinToString()})"
-                Timber.tag(TAG).e(msg)
+                Log.e(TAG, msg)
                 return@withContext Result.failure(IllegalArgumentException(msg))
             }
 
-            // 2. Prepare target versioned directory
+            // 2. Storage space check BEFORE download
+            val freeSpace = context.filesDir.freeSpace
+            val requiredSpace = if (item.size > 0) (item.size * 1.5).toLong() else 20 * 1024 * 1024L
+            if (freeSpace < requiredSpace) {
+                val msg = "Knapper Speicherplatz: ${freeSpace / (1024 * 1024)} MB frei, mind. ${requiredSpace / (1024 * 1024)} MB benötigt."
+                Log.e(TAG, msg)
+                return@withContext Result.failure(IOException(msg))
+            }
+
+            // 3. Prepare target versioned directory
             val rootPluginDir = File(extensionsDir, item.id)
             val versionedTargetDir = File(rootPluginDir, item.version)
             versionedTargetDir.mkdirs()
@@ -285,21 +304,50 @@ class PluginStoreRepository(private val context: Context) {
                     extractZipStream(context.assets.open(assetPath), rootPluginDir)
                 }
             } else {
+                if (!item.downloadUrl.startsWith("https://")) {
+                    val msg = "Insecure HTTP downloadUrl rejected. HTTPS is strictly required for security."
+                    Log.e(TAG, msg)
+                    return@withContext Result.failure(SecurityException(msg))
+                }
+
+                val tempZip = File(context.cacheDir, "${item.id}-${item.version}.zip")
+                var existingLength = 0L
+                if (tempZip.exists()) {
+                    existingLength = tempZip.length()
+                }
+
                 val connection = (URL(item.downloadUrl).openConnection() as HttpURLConnection).apply {
                     connectTimeout = 15000
                     readTimeout = 15000
+                    if (existingLength > 0) {
+                        setRequestProperty("Range", "bytes=$existingLength-")
+                    }
                 }
-                if (connection.responseCode != 200) {
-                    return@withContext Result.failure(Exception("HTTP error ${connection.responseCode} downloading plugin"))
+
+                val isPartial = connection.responseCode == 206
+                val isFull = connection.responseCode == 200
+
+                if (!isPartial && !isFull) {
+                    if (tempZip.exists()) tempZip.delete()
+                    return@withContext Result.failure(Exception("HTTP Fehler ${connection.responseCode} beim Herunterladen"))
                 }
-                val totalLength = connection.contentLengthLong
-                val tempZip = File(context.cacheDir, "${item.id}-${item.version}.zip")
+
+                val appendMode = isPartial && existingLength > 0
+                val totalLength = if (isPartial) {
+                    existingLength + connection.contentLengthLong
+                } else {
+                    connection.contentLengthLong
+                }
+
+                var downloaded = if (appendMode) existingLength else 0L
+                if (!appendMode && tempZip.exists()) {
+                    tempZip.delete()
+                }
 
                 connection.inputStream.use { input ->
-                    FileOutputStream(tempZip).use { output ->
+                    FileOutputStream(tempZip, appendMode).use { output ->
                         val buffer = ByteArray(8192)
                         var bytesRead: Int
-                        var downloaded = 0L
                         while (input.read(buffer).also { bytesRead = it } > 0) {
                             output.write(buffer, 0, bytesRead)
                             downloaded += bytesRead
@@ -314,7 +362,9 @@ class PluginStoreRepository(private val context: Context) {
                 if (!item.sha256.isNullOrBlank()) {
                     if (!verifySha256(tempZip, item.sha256)) {
                         tempZip.delete()
-                        return@withContext Result.failure(SecurityException("SHA-256 checksum mismatch for plugin ${item.id}"))
+                        val msg = "SHA-256 checksum mismatch for plugin ${item.id}. Download aborted and file deleted."
+                        Log.e(TAG, msg)
+                        return@withContext Result.failure(SecurityException(msg))
                     }
                 }
 
@@ -327,13 +377,13 @@ class PluginStoreRepository(private val context: Context) {
                 tempZip.delete()
             }
 
-            // 3. Update installed.json record
+            // 4. Update installed.json record
             updateInstalledRecord(item.id, item.version, versionedTargetDir.absolutePath)
 
-            Timber.tag(TAG).i("Successfully installed plugin ${item.id} v${item.version} at ${versionedTargetDir.absolutePath}")
+            Log.i(TAG, "Successfully installed plugin ${item.id} v${item.version} at ${versionedTargetDir.absolutePath}")
             Result.success(Unit)
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to install plugin ${item.id}")
+            Log.e(TAG, "Failed to install plugin ${item.id}", e)
             Result.failure(e)
         }
     }
@@ -345,10 +395,10 @@ class PluginStoreRepository(private val context: Context) {
                 targetDir.deleteRecursively()
             }
             removeInstalledRecord(item.id)
-            Timber.tag(TAG).i("Successfully uninstalled plugin ${item.id}")
+            Log.i(TAG, "Successfully uninstalled plugin ${item.id}")
             Result.success(Unit)
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to uninstall plugin ${item.id}")
+            Log.e(TAG, "Failed to uninstall plugin ${item.id}", e)
             Result.failure(e)
         }
     }
@@ -365,10 +415,18 @@ class PluginStoreRepository(private val context: Context) {
     }
 
     private fun extractZipStream(inputStream: InputStream, targetDir: File) {
+        val canonicalTargetDir = targetDir.canonicalPath
         ZipInputStream(inputStream).use { zis ->
             var entry = zis.nextEntry
             while (entry != null) {
                 val outFile = File(targetDir, entry.name)
+
+                // Zip-Slip / Path-Traversal Prevention
+                val canonicalOutFile = outFile.canonicalPath
+                if (!canonicalOutFile.startsWith(canonicalTargetDir)) {
+                    throw SecurityException("Zip-Slip vulnerability detected: ${entry.name} targets outside $canonicalTargetDir")
+                }
+
                 if (entry.isDirectory) {
                     outFile.mkdirs()
                 } else {
