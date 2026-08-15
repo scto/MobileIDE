@@ -330,6 +330,127 @@
       "downloadUrl": "./io.kiquar.plugin.zig-0.4.0.zip",
       "sha256": "cab2c1be280789432547df3ce2ab97f317fc1572e03c0a17cbcd5ca94752ecfa",
       "sizeBytes": 558972
+    },
+    {
+      "id": "com.scto.mobile.ide.css_lsp",
+      "name": "CSS Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "CSS, SCSS, LESS language server powered by vscode-css-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/css.sh",
+      "fileExtensions": [
+        "css",
+        "scss",
+        "less"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.css_lsp-1.0.0.zip",
+      "sha256": "7b6201c92067b1acb332b6cffa8f0f1714178a0c6be2bf845515a3ee81a9b5fc",
+      "sizeBytes": 340
+    },
+    {
+      "id": "com.scto.mobile.ide.emmet_lsp",
+      "name": "Emmet Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "Emmet completion language server powered by emmet-ls (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/emmet.sh",
+      "fileExtensions": [
+        "html",
+        "css",
+        "jsx",
+        "tsx"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.emmet_lsp-1.0.0.zip",
+      "sha256": "d1cf8ab9d21586289eb14d03a3735741fd6c4eb228c18de5db7036551923202f",
+      "sizeBytes": 334
+    },
+    {
+      "id": "com.scto.mobile.ide.eslint_lsp",
+      "name": "ESLint Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "JavaScript/TypeScript linter powered by vscode-eslint-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/eslint.sh",
+      "fileExtensions": [
+        "js",
+        "jsx",
+        "ts",
+        "tsx"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.eslint_lsp-1.0.0.zip",
+      "sha256": "0863d1e48ffee662ca2ab5b607d338a5ca2c0dc9d7d225060e7921120936f1e0",
+      "sizeBytes": 342
+    },
+    {
+      "id": "com.scto.mobile.ide.html_lsp",
+      "name": "HTML Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "HTML language server powered by vscode-html-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/html.sh",
+      "fileExtensions": [
+        "html",
+        "htm"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.html_lsp-1.0.0.zip",
+      "sha256": "cbc46e79025d5901aeecd10d4405c41b1f6c89945d2efe00307f80f68ec348cf",
+      "sizeBytes": 330
+    },
+    {
+      "id": "com.scto.mobile.ide.markdown_lsp",
+      "name": "Markdown Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "Markdown language server powered by marksman/vscode-markdown-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/markdown.sh",
+      "fileExtensions": [
+        "md",
+        "markdown"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.markdown_lsp-1.0.0.zip",
+      "sha256": "eb996da5578da786ecd36f05bde978156f72e4d6b8caa37110961ff5132b99ad",
+      "sizeBytes": 339
+    },
+    {
+      "id": "com.scto.mobile.ide.typescript_lsp",
+      "name": "TypeScript & JavaScript Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "TypeScript and JavaScript language server powered by typescript-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/typescript.sh",
+      "fileExtensions": [
+        "ts",
+        "tsx",
+        "js",
+        "jsx"
+      ],
+      "dependencies": [
+        "runtime-node"
+      ],
+      "downloadUrl": "./com.scto.mobile.ide.typescript_lsp-1.0.0.zip",
+      "sha256": "df15998c597130eabbba6b8112c6d4cc77d680ab6f0c6642a0ddb93a3e5bf45c",
+      "sizeBytes": 345
     }
   ]
 }

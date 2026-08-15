@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.markdown_lsp",
+  "name": "Markdown Language Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "Markdown language server powered by marksman/vscode-markdown-language-server (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/markdown.sh",
+  "fileExtensions": [
+    "md",
+    "markdown"
+  ]
+}

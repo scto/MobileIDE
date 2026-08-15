@@ -1,0 +1,14 @@
+{
+  "id": "com.scto.mobile.ide.css_lsp",
+  "name": "CSS Language Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "CSS, SCSS, LESS language server powered by vscode-css-language-server (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/css.sh",
+  "fileExtensions": [
+    "css",
+    "scss",
+    "less"
+  ]
+}

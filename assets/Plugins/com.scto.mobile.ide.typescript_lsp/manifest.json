@@ -1,0 +1,15 @@
+{
+  "id": "com.scto.mobile.ide.typescript_lsp",
+  "name": "TypeScript & JavaScript Language Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "TypeScript and JavaScript language server powered by typescript-language-server (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/typescript.sh",
+  "fileExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "jsx"
+  ]
+}

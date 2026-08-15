@@ -1,0 +1,15 @@
+{
+  "id": "com.scto.mobile.ide.emmet_lsp",
+  "name": "Emmet Language Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "Emmet completion language server powered by emmet-ls (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/emmet.sh",
+  "fileExtensions": [
+    "html",
+    "css",
+    "jsx",
+    "tsx"
+  ]
+}

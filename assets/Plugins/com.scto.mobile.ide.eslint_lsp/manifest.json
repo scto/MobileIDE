@@ -1,0 +1,15 @@
+{
+  "id": "com.scto.mobile.ide.eslint_lsp",
+  "name": "ESLint Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "JavaScript/TypeScript linter powered by vscode-eslint-language-server (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/eslint.sh",
+  "fileExtensions": [
+    "js",
+    "jsx",
+    "ts",
+    "tsx"
+  ]
+}

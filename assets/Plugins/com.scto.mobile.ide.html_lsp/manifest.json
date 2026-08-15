@@ -1,0 +1,13 @@
+{
+  "id": "com.scto.mobile.ide.html_lsp",
+  "name": "HTML Language Support",
+  "version": "1.0.0",
+  "category": "language",
+  "description": "HTML language server powered by vscode-html-language-server (requires nodejs).",
+  "author": "com.scto.mobile.ide",
+  "entryScript": "lsp/html.sh",
+  "fileExtensions": [
+    "html",
+    "htm"
+  ]
+}
