@@ -34,4 +34,5 @@ dependencies {
     implementation(libs.lsp4j)
     implementation(libs.androidsvg)
     implementation(project(":features:extensions")) // lsp might depend on extension
+    implementation(project(":core:common"))
 }
