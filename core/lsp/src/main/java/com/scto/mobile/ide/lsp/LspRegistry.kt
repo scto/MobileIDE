@@ -71,6 +71,7 @@ class IntegratedLspServer(
     override fun getConnectionConfig(): LspConnectionConfig {
         return LspConnectionConfig.Process(arrayOf(binaryName, "--stdio"))
     }
+}
 
 @Keep
 object LspRegistry {
