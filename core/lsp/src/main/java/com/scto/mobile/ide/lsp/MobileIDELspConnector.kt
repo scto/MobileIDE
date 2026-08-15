@@ -1,6 +1,4 @@
-package com.scto.mobile.ide.core.common.lsp
-
-import com.scto.mobile.ide.lsp.LspConnector
+package com.scto.mobile.ide.lsp
 
 class MobileIDELspConnector : LspConnector {
     // Native MobileIDE LSP bindings go here
