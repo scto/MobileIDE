@@ -1,5 +1,7 @@
-RESET='\033[0m'
+#!/bin/sh
+# utils.sh - Shared utility functions for MobileIDE terminal and LSP installers
 
+RESET='\033[0m'
 BOLD_BLUE='\033[1;34m'
 BOLD_YELLOW='\033[1;33m'
 BOLD_RED='\033[1;31m'
@@ -26,7 +28,8 @@ ask() {
 
   while true; do
     printf "\n${BLUE_BG}  ?  ${RESET} ${BOLD_BLUE}%s${RESET}\n" "$prompt"
-    read -rp "[y/N]: " response
+    printf "%s" "[y/N]: "
+    read -r response
     case "$response" in
       [Yy]|[Yy][Ee][Ss])
         return 0
@@ -112,10 +115,10 @@ install_jdk() {
   fi
   info "Installing OpenJDK..."
   if command_exists apk; then
-    apk add --no-cache openjdk17 || apk add --no-cache openjdk11
+    apk add --no-cache openjdk17 || apk add --no-cache openjdk11 || apk add --no-cache openjdk21
   elif command_exists apt-get || command_exists apt; then
-    pkg_install default-jdk || pkg_install openjdk-17-jdk
+    pkg_install default-jdk || pkg_install openjdk-17-jdk || pkg_install openjdk-21-jdk
   elif command_exists pkg; then
-    pkg install -y openjdk-17
+    pkg install -y openjdk-17 || pkg install -y openjdk-21
   fi
 }

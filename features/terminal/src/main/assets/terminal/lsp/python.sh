@@ -1,6 +1,14 @@
 set -e
 
-source "$LOCAL/bin/utils"
+if [ -f "$(dirname "$0")/../utils" ]; then
+  . "$(dirname "$0")/../utils"
+elif [ -f "$LOCAL/bin/utils" ]; then
+  . "$LOCAL/bin/utils"
+elif [ -f "/data/data/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/data/com.scto.mobile.ide/local/bin/utils"
+elif [ -f "/data/user/0/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/user/0/com.scto.mobile.ide/local/bin/utils"
+fi
 
 info 'Preparing...'
 pkg_update
@@ -33,7 +41,7 @@ install() {
   info "Installing Pyright language server..."
   npm install -g --prefix /usr pyright
   info 'Pyright language server installed successfully.'
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 uninstall() {
@@ -41,14 +49,14 @@ uninstall() {
   npm uninstall -g --prefix /usr pyright
   info 'Pyright language server uninstalled successfully.'
   uninstall_nodejs
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 update() {
   info "Updating Pyright language server..."
   npm update -g --prefix /usr pyright
   info 'Pyright language server updated successfully.'
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 case "$1" in

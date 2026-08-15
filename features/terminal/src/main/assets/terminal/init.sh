@@ -12,7 +12,11 @@ export EXTERNAL_STORAGE="/sdcard"
 export PROJECTS="$MOBILEIDE_WORKSPACE"
 export DOTNET_GCHeapHardLimit=1C0000000
 
-source "$LOCAL/bin/utils"
+if [ -f "$LOCAL/bin/utils" ]; then
+  . "$LOCAL/bin/utils"
+elif [ -f "/data/data/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/data/com.scto.mobile.ide/local/bin/utils"
+fi
 
 if [ -f "$LOCAL/.sandbox_degraded" ]; then
     warn "Running in degraded mode. Some features may not work"

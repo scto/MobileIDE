@@ -6,7 +6,11 @@ if [ ! -f "$file" ]; then
   exit 1
 fi
 
-source "$LOCAL/bin/utils"
+if [ -f "$LOCAL/bin/utils" ]; then
+  . "$LOCAL/bin/utils"
+elif [ -f "/data/data/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/data/com.scto.mobile.ide/local/bin/utils"
+fi
 
 run_code() {
     echo -e "\e[32;1m[✓]\e[37m Compilation successful! Running...\e[0m"

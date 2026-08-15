@@ -86,6 +86,7 @@ object TerminalAssetsExtractor {
                 "terminal/setup.sh" to File(binDir, "setup"),
                 "terminal/sandbox.sh" to File(binDir, "sandbox"),
                 "terminal/utils.sh" to File(binDir, "utils"),
+                "terminal/utils.sh" to File(binDir, "utils.sh"),
                 "terminal/shared_extraction.sh" to File(binDir, "shared_extraction.sh"),
                 "terminal/universal_runner.sh" to File(binDir, "universal_runner"),
                 "terminal/termux-x11.sh" to File(binDir, "termux-x11")

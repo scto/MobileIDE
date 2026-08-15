@@ -1,6 +1,14 @@
 set -e
 
-source "$LOCAL/bin/utils"
+if [ -f "$(dirname "$0")/../utils" ]; then
+  . "$(dirname "$0")/../utils"
+elif [ -f "$LOCAL/bin/utils" ]; then
+  . "$LOCAL/bin/utils"
+elif [ -f "/data/data/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/data/com.scto.mobile.ide/local/bin/utils"
+elif [ -f "/data/user/0/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/user/0/com.scto.mobile.ide/local/bin/utils"
+fi
 
 info 'Preparing...'
 pkg_update
@@ -19,7 +27,7 @@ install() {
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server installed successfully.'
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 uninstall() {
@@ -32,7 +40,7 @@ uninstall() {
     pkg_remove default-jdk || pkg_remove openjdk17 || pkg_remove openjdk-17
     info "OpenJDK uninstalled successfully."
   fi
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 update() {
@@ -42,7 +50,7 @@ update() {
   curl -L -o "server.jar" "https://download.eclipse.org/staging/2025-09/plugins/org.eclipse.lemminx.uber-jar_${LLEMINX_VERSION}.jar"
   echo "$LLEMINX_VERSION" > version.txt
   info 'LemMinX language server updated successfully.'
-  read -n 1 -s -r -p "Press any key to close the terminal"; exit 0
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
 }
 
 case "$1" in

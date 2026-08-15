@@ -1,6 +1,14 @@
 set -e
 
-source "$(dirname "$0")/../utils" || source "$LOCAL/bin/utils"
+if [ -f "$(dirname "$0")/../utils" ]; then
+  . "$(dirname "$0")/../utils"
+elif [ -f "$LOCAL/bin/utils" ]; then
+  . "$LOCAL/bin/utils"
+elif [ -f "/data/data/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/data/com.scto.mobile.ide/local/bin/utils"
+elif [ -f "/data/user/0/com.scto.mobile.ide/local/bin/utils" ]; then
+  . "/data/user/0/com.scto.mobile.ide/local/bin/utils"
+fi
 
 info 'Preparing...'
 pkg_update
@@ -17,7 +25,7 @@ install() {
   mkdir -p /usr/local/bin
   ln -sf /opt/jdtls/bin/jdtls /usr/local/bin/jdtls
   info 'Java language server installed successfully.'
-  read -n 1 -s -r -p "Press any key to continue..."
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
   echo ""
 }
 
@@ -26,7 +34,7 @@ uninstall() {
   rm -f /usr/local/bin/jdtls
   rm -rf /opt/jdtls
   info 'Java language server uninstalled successfully.'
-  read -n 1 -s -r -p "Press any key to continue..."
+printf "\n%s\n" "Press Enter to continue..."; read -r _unused 2>/dev/null || true
   echo ""
 }
 
