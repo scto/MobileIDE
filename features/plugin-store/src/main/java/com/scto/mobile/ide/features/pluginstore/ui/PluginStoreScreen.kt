@@ -104,6 +104,7 @@ fun PluginStoreScreen(
                         PluginItemCard(
                             plugin = plugin,
                             onInstall = { viewModel.installPlugin(plugin) },
+                            onUpdate = { viewModel.updatePlugin(plugin) },
                             onUninstall = { viewModel.uninstallPlugin(plugin) }
                         )
                     }
@@ -199,6 +200,7 @@ private fun FilterTabChip(
 private fun PluginItemCard(
     plugin: StorePluginItem,
     onInstall: () -> Unit,
+    onUpdate: () -> Unit,
     onUninstall: () -> Unit
 ) {
     Card(
@@ -352,7 +354,7 @@ private fun PluginItemCard(
 
                     PluginStatus.UPDATE_AVAILABLE -> {
                         Button(
-                            onClick = onInstall,
+                            onClick = onUpdate,
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                         ) {

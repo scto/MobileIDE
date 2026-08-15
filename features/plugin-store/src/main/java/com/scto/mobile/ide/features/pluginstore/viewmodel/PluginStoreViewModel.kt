@@ -3,10 +3,10 @@ package com.scto.mobile.ide.features.pluginstore.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.scto.mobile.ide.features.pluginstore.manager.PluginStoreManager
 import com.scto.mobile.ide.features.pluginstore.model.PluginStatus
 import com.scto.mobile.ide.features.pluginstore.model.PluginType
 import com.scto.mobile.ide.features.pluginstore.model.StorePluginItem
-import com.scto.mobile.ide.features.pluginstore.repository.PluginStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,7 +52,7 @@ data class PluginStoreUiState(
 
 class PluginStoreViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = PluginStoreRepository(application)
+    private val manager = PluginStoreManager(application)
 
     private val _uiState = MutableStateFlow(PluginStoreUiState())
     val uiState: StateFlow<PluginStoreUiState> = _uiState.asStateFlow()
@@ -70,7 +70,7 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
             )
 
             try {
-                val list = repository.fetchPluginList()
+                val list = manager.fetchCatalog()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isRefreshing = false,
@@ -96,9 +96,16 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
 
     fun installPlugin(item: StorePluginItem) {
         viewModelScope.launch {
+            val depCheck = manager.checkDependencies(item)
+            if (depCheck.hasMissingDependencies) {
+                val warning = "Hinweis: Benötigte Runtimes fehlen in der Sandbox: ${depCheck.missingRuntimes.joinToString(", ")}"
+                updatePluginStatus(item.id, PluginStatus.ERROR, errorMsg = warning)
+                return@launch
+            }
+
             updatePluginStatus(item.id, PluginStatus.DOWNLOADING, progress = 0.05f)
 
-            val result = repository.installPlugin(item) { progress ->
+            val result = manager.installPlugin(item) { progress ->
                 updatePluginStatus(item.id, PluginStatus.DOWNLOADING, progress = progress)
             }
 
@@ -114,9 +121,29 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun updatePlugin(item: StorePluginItem) {
+        viewModelScope.launch {
+            updatePluginStatus(item.id, PluginStatus.DOWNLOADING, progress = 0.05f)
+
+            val result = manager.updatePlugin(item) { progress ->
+                updatePluginStatus(item.id, PluginStatus.DOWNLOADING, progress = progress)
+            }
+
+            if (result.isSuccess) {
+                updatePluginStatus(item.id, PluginStatus.INSTALLED, installedVer = item.version)
+            } else {
+                updatePluginStatus(
+                    item.id,
+                    PluginStatus.ERROR,
+                    errorMsg = result.exceptionOrNull()?.message ?: "Update failed"
+                )
+            }
+        }
+    }
+
     fun uninstallPlugin(item: StorePluginItem) {
         viewModelScope.launch {
-            val result = repository.uninstallPlugin(item)
+            val result = manager.uninstallPlugin(item)
             if (result.isSuccess) {
                 updatePluginStatus(item.id, PluginStatus.NOT_INSTALLED, installedVer = null)
             } else {
