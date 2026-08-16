@@ -40,7 +40,20 @@ fun ToolingBottomSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val coreCategories = remember {
+        listOf(
+            ToolingLogCategory.INSTALL,
+            ToolingLogCategory.BUILD,
+            ToolingLogCategory.LSP,
+            ToolingLogCategory.DIAGNOSE,
+            ToolingLogCategory.IDE_LOGS,
+            ToolingLogCategory.DEBUG,
+            ToolingLogCategory.DOCS,
+            ToolingLogCategory.AI
+        )
+    }
     var activeCategory by remember { mutableStateOf(ToolingLogCategory.BUILD) }
+    val selectedIndex = coreCategories.indexOf(activeCategory).coerceAtLeast(0)
 
     Column(
         modifier = modifier
@@ -50,11 +63,11 @@ fun ToolingBottomSheet(
             .padding(16.dp)
     ) {
         ScrollableTabRow(
-            selectedTabIndex = activeCategory.ordinal,
+            selectedTabIndex = selectedIndex,
             edgePadding = 0.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
-            ToolingLogCategory.values().forEach { category ->
+            coreCategories.forEach { category ->
                 Tab(
                     selected = activeCategory == category,
                     onClick = { activeCategory = category },

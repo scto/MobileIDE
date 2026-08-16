@@ -231,9 +231,9 @@ fun EditorPanelLayout(
                             .alpha(contentAlpha)
                 ) {
                     when (tabs[selectedTabIndex]) {
-                        PanelPage.TERMINAL_LOGS -> ToolingLogPanel(category = ToolingLogCategory.TERMINAL_ERRORS)
+                        PanelPage.TERMINAL_LOGS -> ToolingLogPanel(category = ToolingLogCategory.INSTALL)
                         PanelPage.DIAGNOSTICS -> DiagnosticsPanel(viewModel)
-                        PanelPage.IDE_LOG -> ToolingLogPanel(category = ToolingLogCategory.IDE_LOG)
+                        PanelPage.IDE_LOG -> ToolingLogPanel(category = ToolingLogCategory.IDE_LOGS)
                         PanelPage.BUILD_LOG -> {
                             val activeProject = WorkspaceManager.getWorkspacePath(LocalContext.current)
                             BuildAndTasksPanel(projectPath = activeProject)
@@ -320,6 +320,17 @@ private fun PanelTopBar(viewModel: EditorViewModel, hasActiveEditor: Boolean, sh
                 // 🔥 修复报错: 先检查是否是 CodeEditorState 再访问 lspEditor
                 val activeTab = viewModel.openFiles.getOrNull(viewModel.activeFileIndex)
                 val lspConnected = if (activeTab is CodeEditorState) activeTab.lspEditor != null else false
+
+                LaunchedEffect(lspConnected, activeTab) {
+                    if (lspEnabled && hasActiveEditor && !lspConnected && activeTab is CodeEditorState) {
+                        val fileName = activeTab.file.name
+                        com.scto.mobile.ide.core.tooling.impl.ToolingLogManagerImpl.log(
+                            com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.LSP,
+                            "ERROR",
+                            "[LSP ERROR] LSP connect fehlgeschlagen oder nicht initialisiert (Datei: $fileName)"
+                        )
+                    }
+                }
 
                 Box(
                     modifier =

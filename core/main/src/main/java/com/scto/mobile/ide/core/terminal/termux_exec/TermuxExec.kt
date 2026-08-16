@@ -117,6 +117,24 @@ fun runBashScript(
 }
 
 fun launchInternalTerminal(context: Context, terminalCommand: TerminalCommand) {
+    val channel = com.scto.mobile.ide.core.tooling.api.LogRouter.classify(
+        terminalCommand.shell,
+        terminalCommand.args,
+        terminalCommand.id
+    )
+    val cmdStr = (listOf(terminalCommand.shell) + terminalCommand.args.toList()).joinToString(" ")
+    val category = when (channel) {
+        com.scto.mobile.ide.core.tooling.api.LogChannel.INSTALL -> com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.INSTALL
+        com.scto.mobile.ide.core.tooling.api.LogChannel.BUILD -> com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.BUILD
+        com.scto.mobile.ide.core.tooling.api.LogChannel.LSP -> com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.LSP
+        com.scto.mobile.ide.core.tooling.api.LogChannel.DIAGNOSE -> com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.DIAGNOSE
+        com.scto.mobile.ide.core.tooling.api.LogChannel.IDE_LOGS -> com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.IDE_LOGS
+    }
+    android.util.Log.i(
+        "TerminalRunner",
+        "[$category] Launching TerminalCommand [${terminalCommand.id}]: $cmdStr"
+    )
+
     pendingCommand = terminalCommand
     context.startActivity(Intent(context, MainActivity::class.java))
 }
