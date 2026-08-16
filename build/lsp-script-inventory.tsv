@@ -1,0 +1,20 @@
+repo	install_skript	server_binary	groesse_mb	version_gradle	aktion
+xed-bash	assets/lsp/bash.sh	bash-language-server	0.01	1.0.0	integriert (built-in)
+xed-css	assets/lsp/css.sh	vscode-css-language-server	0.01	1.0.0	integriert (built-in)
+xed-emmet	assets/lsp/emmet.sh	emmet-language-server	0.01	1.0.0	integriert (built-in)
+xed-eslint	assets/lsp/eslint.sh	vscode-eslint-language-server	0.01	1.0.0	integriert (built-in)
+xed-fs	app/src/main/assets/fs-lsp-installer.sh	fsharp-language-server	0.29	0.1.0	migriert zu com.scto.mobile.ide.plugin.fs
+xed-go	app/src/main/assets/gopls-installer.sh	gopls	0.33	0.2.0	migriert zu com.scto.mobile.ide.plugin.go
+xed-go-tools	app/src/main/assets/install-gopls.sh	gopls	8.02	0.2.0	migriert zu com.scto.mobile.ide.plugin.go.tools
+xed-html	assets/lsp/html.sh	vscode-html-language-server	0.01	1.0.0	integriert (built-in)
+xed-java	assets/lsp/java.sh	jdtls	0.01	1.0.0	integriert (built-in)
+xed-json	app/src/main/assets/json-lsp-installer.sh	vscode-json-language-server	5.97	1.0.2	migriert zu com.scto.mobile.ide.plugin.json
+xed-kmp-lsp	app/src/main/assets/kmp-lsp-installer.sh	kmp-lsp	0.30	0.1.2	entkoppelt (catalog entry)
+xed-kotlin	app/src/main/assets/kotlin-lsp-installer.sh	intellij-server	0.35	0.2.1	entkoppelt (catalog entry)
+xed-lua	app/src/main/assets/lua-lsp-installer.sh	emmylua_ls	57.24	1.0.2	migriert zu com.scto.mobile.ide.plugin.lua
+xed-markdown	assets/lsp/markdown.sh	vscode-markdown-language-server	0.01	1.0.0	integriert (built-in)
+xed-prettier	app/src/main/assets/prettier-installer.sh	prettier	0.29	1.0.0	migriert zu com.scto.mobile.ide.plugin.prettier
+xed-python	app/src/main/assets/python-lsp-installer.sh	pyright-langserver	42.06	1.0.3	migriert zu com.scto.mobile.ide.plugin.python
+xed-rust	app/src/main/assets/rust-lsp.sh	rust-analyzer	0.33	1.0.2	migriert zu com.scto.mobile.ide.plugin.rust
+xed-typst	app/src/main/assets/typst-lsp.sh	typst-lsp	1.12	1.2.3	migriert zu com.scto.mobile.ide.plugin.typst
+xed-zig	app/src/main/assets/zig-installer.sh	zls	0.56	0.4.0	migriert zu com.scto.mobile.ide.plugin.zig

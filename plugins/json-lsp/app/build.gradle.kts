@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mobile.ide.xededitor"
+    namespace = "com.scto.mobile.ide.plugin.json"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.scto.mobile.ide.demo"
+        applicationId = "com.scto.mobile.ide.plugin.json"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

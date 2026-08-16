@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mobile.ide.plugins.python"
+    namespace = "com.scto.mobile.ide.plugin.python"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.scto.mobile.ide.plugins.python"
+        applicationId = "com.scto.mobile.ide.plugin.python"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

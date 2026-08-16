@@ -1,0 +1,10 @@
+modul	package_ist	version_manifest	version_gradle	agp_version	jvmToolchain	rootProject_name	zip_name	catalog_id	migration_status	build_status
+fsharp-lsp	com.scto.mobile.ide.plugin.fs	0.1.0	0.1.0	8.13.1	21	MobileIDE Plugin: F# Support	com.scto.mobile.ide.plugin.fs-0.1.0.zip	com.scto.mobile.ide.plugin.fs	MIGRIERT	SUCCESSFUL
+go-lsp	com.scto.mobile.ide.plugin.go	0.2.0	0.2.0	8.13.1	21	MobileIDE Plugin: Go Support	com.scto.mobile.ide.plugin.go-0.2.0.zip	com.scto.mobile.ide.plugin.go	MIGRIERT	SUCCESSFUL
+json-lsp	com.scto.mobile.ide.plugin.json	1.0.2	1.0.2	8.13.1	21	MobileIDE Plugin: JSON Support	com.scto.mobile.ide.plugin.json-1.0.2.zip	com.scto.mobile.ide.plugin.json	MIGRIERT	SUCCESSFUL
+lua-lsp	com.scto.mobile.ide.plugin.lua	1.0.2	1.0.2	8.13.1	21	MobileIDE Plugin: Lua Support	com.scto.mobile.ide.plugin.lua-1.0.2.zip	com.scto.mobile.ide.plugin.lua	MIGRIERT	SUCCESSFUL
+prettier-lsp	com.scto.mobile.ide.plugin.prettier	1.0.0	1.0.0	8.13.1	21	MobileIDE Plugin: Prettier Support	com.scto.mobile.ide.plugin.prettier-1.0.0.zip	com.scto.mobile.ide.plugin.prettier	MIGRIERT	SUCCESSFUL
+python-lsp	com.scto.mobile.ide.plugin.python	1.0.3	1.0.3	8.13.1	21	MobileIDE Plugin: Python Support	com.scto.mobile.ide.plugin.python-1.0.3.zip	com.scto.mobile.ide.plugin.python	MIGRIERT	SUCCESSFUL
+rust-lsp	com.scto.mobile.ide.plugin.rust	1.0.2	1.0.2	8.13.1	21	MobileIDE Plugin: Rust Support	com.scto.mobile.ide.plugin.rust-1.0.2.zip	com.scto.mobile.ide.plugin.rust	MIGRIERT	SUCCESSFUL
+typst-lsp	com.scto.mobile.ide.plugin.typst	1.2.3	1.2.3	8.13.1	21	MobileIDE Plugin: Typst Support	com.scto.mobile.ide.plugin.typst-1.2.3.zip	com.scto.mobile.ide.plugin.typst	MIGRIERT	SUCCESSFUL
+zig-lsp	com.scto.mobile.ide.plugin.zig	0.4.0	0.4.0	8.13.1	21	MobileIDE Plugin: Zig Support	com.scto.mobile.ide.plugin.zig-0.4.0.zip	com.scto.mobile.ide.plugin.zig	MIGRIERT	SUCCESSFUL

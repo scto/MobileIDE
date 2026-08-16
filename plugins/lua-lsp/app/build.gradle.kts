@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mobile.ide.demo"
+    namespace = "com.scto.mobile.ide.plugin.lua"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.scto.mobile.ide.demo"
+        applicationId = "com.scto.mobile.ide.plugin.lua"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

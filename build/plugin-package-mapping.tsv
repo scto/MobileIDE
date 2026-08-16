@@ -1,0 +1,10 @@
+plugin_id	quelle_mapping	status
+com.scto.mobile.ide.plugin.fs	io.kiquar.plugin.fs -> com.scto.mobile.ide.plugin.fs	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.go	io.kiquar.plugin.go -> com.scto.mobile.ide.plugin.go	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.json	com.scto.mobile.ide.xededitor / com.scto.mobile.ide.json_lsp -> com.scto.mobile.ide.plugin.json	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.lua	com.scto.mobile.ide.demo -> com.scto.mobile.ide.plugin.lua	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.prettier	com.koner.prettier -> com.scto.mobile.ide.plugin.prettier	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.python	com.scto.mobile.ide.plugins.python / com.scto.mobile.ide.python_lsp -> com.scto.mobile.ide.plugin.python	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.rust	com.koner.rust -> com.scto.mobile.ide.plugin.rust	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.typst	com.koner.typst -> com.scto.mobile.ide.plugin.typst	VERIFIZIERT_NEU
+com.scto.mobile.ide.plugin.zig	io.kiquar.plugin.zig -> com.scto.mobile.ide.plugin.zig	VERIFIZIERT_NEU
