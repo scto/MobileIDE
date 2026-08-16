@@ -2077,7 +2077,7 @@ private suspend fun performBuild(
                 } else null
             } ?: ""
 
-        val cleanProjectPath = projectPath.trim()
+        val cleanProjectPath = com.scto.mobile.ide.core.apkbuilder.PathTranslator.toSandboxPath(projectPath.trim())
         val javaHomeExport = if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
 
         val gradlewFile = File(cleanProjectPath, "gradlew")
@@ -2093,14 +2093,16 @@ private suspend fun performBuild(
             com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
                 context,
                 arrayOf("sh", "-c", compileCmd),
+                workDir = cleanProjectPath,
             )
 
         val pathForLog = cleanProjectPath.replace(" ", "[SPACE]")
         com.scto.mobile.ide.core.common.utils.LogCatcher.i("Build", "Executing PRoot command in working directory \"$pathForLog\": ${cmd.joinToString(" ")}")
 
         try {
+            val hostProjectPath = com.scto.mobile.ide.core.apkbuilder.PathTranslator.toHostPath(cleanProjectPath)
             val processBuilder = ProcessBuilder(cmd)
-            processBuilder.directory(File(cleanProjectPath))
+            processBuilder.directory(if (File(cleanProjectPath).exists()) File(cleanProjectPath) else File(hostProjectPath))
 
             // Set PRoot environment variables so native loader works properly
             val env = processBuilder.environment()
@@ -2245,14 +2247,14 @@ private suspend fun handleRunApk(
                     val javaHomeExport =
                         if (javaHomeInContainer.isNotEmpty()) "export JAVA_HOME=$javaHomeInContainer && " else ""
                     val cleanPath = projectPath.trim()
-                    val targetDir = if (java.io.File(cleanPath, "gradlew").exists()) {
+                    val rawTargetDir = if (java.io.File(cleanPath, "gradlew").exists()) {
                         cleanPath
                     } else if (java.io.File(cleanPath, "$folderName/gradlew").exists()) {
-                        "$cleanPath/$folderName".trim()
+                        "$cleanPath/$folderName"
                     } else {
                         cleanPath
                     }
-                    val cleanTargetDir = targetDir.trim()
+                    val cleanTargetDir = com.scto.mobile.ide.core.apkbuilder.PathTranslator.toSandboxPath(rawTargetDir.trim())
                     val compileCmd = "${javaHomeExport}cd \"$cleanTargetDir\" && bash ./gradlew assembleDebug"
                     val cmd =
                         com.scto.mobile.ide.features.terminal.ui.DistroManager.buildProotCommand(
