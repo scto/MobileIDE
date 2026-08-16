@@ -1677,7 +1677,9 @@ fun TerminalSettingsItem(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val distros = listOf("ubuntu", "alpine")
+                    val distros = com.scto.mobile.ide.features.terminal.ui.components.TerminalEnvironmentOption.entries.filter { 
+                        it != com.scto.mobile.ide.features.terminal.ui.components.TerminalEnvironmentOption.ANDROID 
+                    }.map { it.name.lowercase() }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         distros.forEach { distro ->
                             FilterChip(
