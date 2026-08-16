@@ -123,6 +123,7 @@ object InputMode {
 object LayoutMode {
     const val CLASSIC = 0   // Original Material drawer + TopAppBar
     const val TAB_BAR = 1   // Horizontal tab bar mode
+    const val DESKTOP = 2   // Desktop mode: side-by-side split panes
 }
 
 object CloseLastSessionBehavior {
@@ -749,6 +750,23 @@ fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActi
                 },
                 onClick = {
                     selectedLayoutMode = LayoutMode.TAB_BAR
+                    Settings.layout_mode = selectedLayoutMode
+                })
+
+            SettingsCard(
+                title = { Text("Desktop-Modus (Nebeneinander)") },
+                description = { Text("Zeigt alle aktiven Terminal-Sitzungen in dynamischen Split-Panes nebeneinander an.") },
+                startWidget = {
+                    RadioButton(
+                        modifier = Modifier.padding(start = 8.dp),
+                        selected = selectedLayoutMode == LayoutMode.DESKTOP,
+                        onClick = {
+                            selectedLayoutMode = LayoutMode.DESKTOP
+                            Settings.layout_mode = selectedLayoutMode
+                        })
+                },
+                onClick = {
+                    selectedLayoutMode = LayoutMode.DESKTOP
                     Settings.layout_mode = selectedLayoutMode
                 })
         }

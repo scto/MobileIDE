@@ -98,6 +98,7 @@ import com.scto.mobile.ide.features.terminal.service.SessionService
 import com.scto.mobile.ide.features.terminal.service.sessionBinder
 import com.scto.mobile.ide.features.terminal.ui.components.InputDialog
 import com.scto.mobile.ide.features.terminal.ui.components.SessionTabBar
+import com.scto.mobile.ide.features.terminal.ui.components.TerminalDesktopSplit
 import com.scto.mobile.ide.features.terminal.ui.components.TerminalEnvironmentOption
 import com.scto.mobile.ide.features.terminal.ui.components.TerminalEnvironmentSegmentedSelector
 import com.scto.mobile.ide.features.terminal.ui.components.terminalEnvironmentDescriptionRes
@@ -471,7 +472,25 @@ fun TerminalScreen(
             )
         }
 
-        if (isTabBarMode) {
+        val isDesktopMode = Settings.layout_mode == LayoutMode.DESKTOP
+
+        if (isDesktopMode) {
+            Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+                val service = mainActivityActivity.sessionBinder?.getService()
+                val sessionKeys = service?.sessionOrder?.toList() ?: emptyList()
+                val currentSessionId = service?.currentSession?.value?.first ?: ""
+
+                TerminalDesktopSplit(
+                    sessionKeys = sessionKeys,
+                    currentSessionId = currentSessionId,
+                    service = service,
+                    onSelectSession = { id -> changeSession(mainActivityActivity, id) },
+                    onCloseSession = { id -> handleCloseSession(id, currentSessionId) },
+                    onAddSession = { openAddSessionDialog() },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        } else if (isTabBarMode) {
             Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
                 val service = mainActivityActivity.sessionBinder?.getService()
                 val sessionKeys = service?.sessionOrder?.toList() ?: emptyList()

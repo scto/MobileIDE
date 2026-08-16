@@ -9,6 +9,7 @@ object InputMode {
 object LayoutMode {
     const val CLASSIC = 0   // Original Material drawer + TopAppBar
     const val TAB_BAR = 1   // Horizontal tab bar mode
+    const val DESKTOP = 2   // Desktop mode: side-by-side split panes
 }
 
 object CloseLastSessionBehavior {
