@@ -63,6 +63,10 @@ object DistroManager {
                 args.add(it)
             }
         }
+        if (File("/storage/emulated/0").exists()) {
+            args.add("-b")
+            args.add("/storage/emulated/0:/sdcard")
+        }
 
         val tmpDir = File(distroDir, "tmp").apply { mkdirs() }
         args.add("-b")

@@ -32,12 +32,22 @@ class ApkBuilder(private val context: Context) {
         onProgress: (BuildProgress) -> Unit = {}
     ): Result<File> = withContext(Dispatchers.IO) {
         try {
-            val cleanProjectDir = File(projectDir.absolutePath.trim())
-            val pathForLog = cleanProjectDir.absolutePath.replace(" ", "[SPACE]")
-            Timber.tag(TAG).i("Validating build directory: \"$pathForLog\"")
+            val hostPath = projectDir.absolutePath.trim()
+            val sandboxPath = PathTranslator.toSandboxPath(hostPath)
+            
+            val hostExists = File(hostPath).exists()
+            val sandboxExists = File(sandboxPath).exists()
 
-            if (!cleanProjectDir.exists() || !cleanProjectDir.isDirectory) {
-                val msg = "Projektverzeichnis ungültig oder existiert nicht: \"$cleanProjectDir\""
+            Timber.tag(TAG).i("Path Validation: Host: \"$hostPath\" (HOST_EXISTS=$hostExists), Sandbox: \"$sandboxPath\" (SANDBOX_EXISTS=$sandboxExists)")
+
+            val cleanProjectDir = when {
+                sandboxExists -> File(sandboxPath)
+                hostExists -> File(hostPath)
+                else -> File(sandboxPath)
+            }
+
+            if (!hostExists && !sandboxExists) {
+                val msg = "Projektverzeichnis ungültig oder existiert nicht. Host: \"$hostPath\", Sandbox: \"$sandboxPath\""
                 Timber.tag(TAG).e(msg)
                 onProgress(BuildProgress.Error(msg))
                 return@withContext Result.failure(IllegalArgumentException(msg))

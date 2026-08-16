@@ -48,4 +48,6 @@ dependencies {
     implementation(libs.bouncycastle.pkix)
     implementation(libs.android.tools.apksig)
     implementation(libs.arsclib)
+
+    testImplementation(libs.junit)
 }
