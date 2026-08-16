@@ -604,7 +604,7 @@ fun TerminalScreen(
                                                 }
 
                                                 Text(
-                                                    text = service.getDisplayTitle(session_id),
+                                                    text = "${index + 1} · ${service.getDisplayTitle(session_id)}",
                                                     style = MaterialTheme.typography.bodyLarge,
                                                     color = getSessionTextColor(service.getWorkingMode(session_id)),
                                                     modifier = Modifier.weight(1f)
