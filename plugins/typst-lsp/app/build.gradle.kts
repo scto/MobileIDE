@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.koner.typst"
+    namespace = "com.scto.mobile.ide.plugin.typst"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.koner.typst"
+        applicationId = "com.scto.mobile.ide.plugin.typst"
         minSdk = 26
 
         //noinspection ExpiredTargetSdkVersion
@@ -224,7 +224,7 @@ val copyPluginToAssets by tasks.registering(Copy::class) {
 
     val zipTask = tasks.named<Zip>("createFinalZip").get()
     from(zipTask.archiveFile)
-    into(File(rootDir, "../../app/src/main/assets/bundled_plugins"))
+    into(File(rootDir, "../../app/src/main/assets/assets/Plugins/LSP"))
 }
 
 tasks.named("createFinalZip").configure {

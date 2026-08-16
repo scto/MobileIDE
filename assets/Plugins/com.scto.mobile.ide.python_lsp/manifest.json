@@ -1,13 +1,15 @@
 {
+  "$schema": "schema/schema.json",
   "id": "com.scto.mobile.ide.python_lsp",
-  "name": "Python Language Support",
-  "mainClass": "com.scto.mobile.ide.extension.languages.PythonLspExtension",
-  "version": "1.0.0",
-  "description": "Provides Python language intelligence using Pyright.",
+  "name": "Python LSP",
+  "mainClass": "com.scto.mobile.ide.python_lsp.Main",
+  "version": "1.0.3",
+  "description": "Python Language Server Protocol support for MobileIDE",
   "author": {
-    "displayName": "MobileIDE"
+    "displayName": "MobileIDE",
+    "github": "MobileIDE"
   },
-  "repository": "https://github.com/scto/MobileIDE",
-  "license": "GPLv3",
-  "tags": ["lsp", "python"]
+  "minAppVersion": 88,
+  "maxAppVersion": null,
+  "repository": "https://github.com/MobileIDE/Python-LSP"
 }

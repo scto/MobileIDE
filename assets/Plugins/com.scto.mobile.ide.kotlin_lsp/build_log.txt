@@ -1,0 +1,38 @@
+Picked up _JAVA_OPTIONS: -Xmx8G -Djava.awt.headless=true -Dorg.gradle.jvmargs=-Xmx8G
+
+> Configure project :app
+w: file:///data/data/com.termux/files/home/Plugins/xed-kotlin/app/build.gradle.kts:115:69: Unchecked cast of 'Map<*, *>!' to 'Map<String, Any>'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:packageRelease'.
+> Could not create task ':app:compileReleaseJavaWithJavac'.
+   > Failed to calculate the value of task ':app:compileReleaseJavaWithJavac' property 'javaCompiler'.
+      > Cannot find a Java installation on your machine (Linux 6.1.157-android14-11-gbd23337e42e7-ab14791245 aarch64) matching: {languageVersion=21, vendor=any vendor, implementation=vendor-specific, nativeImageCapable=false}. Some toolchain resolvers had internal failures: foojay (Service 'SystemInfo' is not available (os=Linux 6.1.157-android14-11-gbd23337e42e7-ab14791245 aarch64, enabled=false).).
+
+* Try:
+> Learn more about toolchain auto-detection and auto-provisioning at https://docs.gradle.org/9.5.1/userguide/toolchains.html#sec:auto_detection.
+> Learn more about toolchain repositories at https://docs.gradle.org/9.5.1/userguide/toolchains.html#sub:download_repositories.
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 9s
+Picked up _JAVA_OPTIONS: -Xmx8G -Djava.awt.headless=true -Dorg.gradle.jvmargs=-Xmx8G
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+A problem occurred configuring project ':app'.
+> Could not create task ':app:createFinalZip'.
+   > No apk files found, run ./gradlew assembleRelease first
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 3s

@@ -2,16 +2,15 @@ package com.scto.mobile.ide.plugins.java.lsp
 
 import android.app.Activity
 import android.content.Context
-import com.scto.mobile.ide.exec.isTerminalInstalled
-import com.scto.mobile.ide.core.common.files.child
-import com.scto.mobile.ide.core.common.files.sandboxHomeDir
-import com.scto.mobile.ide.core.common.icons.Icon
-import com.scto.mobile.ide.lsp.LspConnectionConfig
-import com.scto.mobile.ide.lsp.ProcessConnection
-import com.scto.mobile.ide.lsp.ScriptedLspServer
-import java.io.File
-
 import com.scto.mobile.ide.plugins.java.lsp.utils.JdtlsApi
+import com.rk.exec.isTerminalInstalled
+import com.rk.file.child
+import com.rk.file.sandboxHomeDir
+import com.rk.icons.Icon
+import com.rk.lsp.LspConnectionConfig
+import com.rk.lsp.ProcessConnection
+import com.rk.lsp.ScriptedLspServer
+import java.io.File
 
 class JavaServer(override val icon: Icon, override val installScript: File) : ScriptedLspServer() {
     override val id = "java"

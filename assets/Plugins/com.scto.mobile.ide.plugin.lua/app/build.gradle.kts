@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.scto.mobile.ide.demo"
+    namespace = "com.rk.demo"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.scto.mobile.ide.demo"
+        applicationId = "com.scto.mobile.ide.plugin.lua"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
@@ -32,10 +32,10 @@ android {
     }
     compileOptions {
         // Should match with Xed-Editor
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin { jvmToolchain(21) }
+    kotlin { jvmToolchain(17) }
     buildFeatures {
         compose = true
     }
@@ -158,7 +158,7 @@ tasks.register<Delete>("cleanApkOutputs") {
 
 tasks.named("preBuild").configure {
     dependsOn("cleanApkOutputs")
-    dependsOn("downloadLatestJar")
+    // // // // // // // // dependsOn("downloadLatestJar")
 }
 
 // --------------- generate the final zip file -----------------
@@ -216,22 +216,4 @@ tasks.register<Zip>("createFinalZip") {
 
     destinationDirectory.set(File(rootDir, "output"))
 }
-
-// --------------- copy final zip to MobileIDE assets -----------------
-
-val copyPluginToAssets by tasks.registering(Copy::class) {
-    outputs.upToDateWhen { false }
-    description = "Copies the generated plugin ZIP archive to MobileIDE's assets directory."
-    group = "build"
-    dependsOn("createFinalZip")
-
-    val zipTask = tasks.named<Zip>("createFinalZip").get()
-    from(zipTask.archiveFile)
-    into(File(rootDir, "../../app/src/main/assets/bundled_plugins"))
-}
-
-tasks.named("createFinalZip").configure {
-    finalizedBy(copyPluginToAssets)
-}
-
 

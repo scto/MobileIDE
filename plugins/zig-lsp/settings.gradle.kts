@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ZigExtension"
+rootProject.name = "MobileIDE Plugin: Zig Support"
 include(":app")
  

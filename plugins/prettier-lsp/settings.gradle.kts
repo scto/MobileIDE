@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Prettier (Xed)"
+rootProject.name = "MobileIDE Plugin: Prettier Support"
 include(":app")
  

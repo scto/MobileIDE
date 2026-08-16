@@ -10,7 +10,12 @@
     "github": "MobileIDE"
   },
   "license": "MIT",
-  "tags": ["python", "lsp", "pyright", "ty"],
+  "tags": [
+    "python",
+    "lsp",
+    "pyright",
+    "ty"
+  ],
   "minAppVersion": 95,
   "maxAppVersion": null,
   "repository": "https://github.com/scto/MobileIDE/plugins/python-lsp"

@@ -1,18 +1,22 @@
 {
   "$schema": "schema/schema.json",
   "id": "com.scto.mobile.ide.plugins.java.lsp",
-  "name": "Java Language Support (JDTLS)",
+  "name": "Java LSP",
   "mainClass": "com.scto.mobile.ide.plugins.java.lsp.Main",
   "version": "1.1.0",
-  "description": "MobileIDE extension for Java LSP",
+  "description": "Xed-Editor extension for Java LSP",
   "author": {
-    "displayName": "scto",
-    "github": "scto"
+    "displayName": "andr0d1v",
+    "github": "andr0d1v"
   },
   "minAppVersion": 87,
   "maxAppVersion": null,
-  "repository": "https://github.com/scto/MobileIDE/Plugins/java-lsp",
+  "repository": "https://github.com/andr0d1v/xed-java-lsp",
   "license": "MIT",
-  "tags": ["java", "lsp", "editor"],
+  "tags": [
+    "java",
+    "lsp",
+    "editor"
+  ],
   "hasSettings": false
 }

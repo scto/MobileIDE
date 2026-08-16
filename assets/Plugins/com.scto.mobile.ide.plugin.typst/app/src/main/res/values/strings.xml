@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compile_document_pdf">Compile document (PDF)</string>
+    <string name="compile_document_html">Compile document (HTML)</string>
+    <string name="compile_document_png">Compile document (PNG)</string>
+    <string name="compile_document_svg">Compile document (SVG)</string>
+    <string name="preview_document">Preview document</string>
+    <string name="cli_not_installed">Typst CLI is not installed</string>
+
+    <string name="install_cli">Install CLI</string>
+    <string name="uninstall_cli">Uninstall CLI</string>
+    <string name="update_cli">Update CLI</string>
+
+    <string name="install_dialog">Install Typst?</string>
+    <string name="install_dialog_desc">Do you want to install Typst CLI now?</string>
+
+    <string name="update_dialog">Update Typst?</string>
+    <string name="update_dialog_desc">There is a new update available. Do you want to update Typst CLI now?</string>
+
+    <string name="uninstall_dialog">Uninstall Typst?</string>
+    <string name="uninstall_confirm_dialog_desc">Are you sure you want to uninstall Typst CLI?</string>
+    <string name="uninstall_question_dialog_desc">Would you also like to uninstall Typst CLI? You can also keep it installed without the extension.</string>
+
+    <string name="later">Later</string>
+    <string name="keep">Keep</string>
+
+    <string name="preview_error">Preview error: %s</string>
+    <string name="compile_error">Compile error: %s</string>
+    <string name="compile_success">Compiled successfully to %s</string>
+</resources>

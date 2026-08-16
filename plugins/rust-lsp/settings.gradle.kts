@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "xed-rust"
+rootProject.name = "MobileIDE Plugin: Rust Support"
 include(":app")
  

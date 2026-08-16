@@ -6,12 +6,18 @@
   "version": "0.1.2",
   "description": "Extension that provides kmp-lsp",
   "author": {
-    "displayName": "scto",
-	"github": "MobileIDE"
+    "displayName": "KiquarSL",
+    "github": "KiquarSL"
   },
   "license": "MIT",
-  "tags": ["kotlin", "java", "swift", "lsp", "kmp-lsp"],
+  "tags": [
+    "kotlin",
+    "java",
+    "swift",
+    "lsp",
+    "kmp-lsp"
+  ],
   "minAppVersion": 95,
   "maxAppVersion": null,
-  "repository": "https://github.com/scto/MobileIDE/Pkugins/kotlin-kmp-lsp"
+  "repository": "https://github.com/KiquarSL/xed-kmp-lsp"
 }

@@ -227,7 +227,7 @@ val copyPluginToAssets by tasks.registering(Copy::class) {
 
     val zipTask = tasks.named<Zip>("createFinalZip").get()
     from(zipTask.archiveFile)
-    into(File(rootDir, "../../app/src/main/assets/bundled_plugins"))
+    into(File(rootDir, "../../app/src/main/assets/assets/Plugins/LSP"))
 }
 
 tasks.named("createFinalZip").configure {

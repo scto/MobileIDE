@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Go-Extension"
+rootProject.name = "MobileIDE Plugin: Go Support"
 include(":app")
  

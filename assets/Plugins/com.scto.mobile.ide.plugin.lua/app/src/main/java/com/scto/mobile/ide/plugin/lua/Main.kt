@@ -4,14 +4,14 @@ import android.app.Activity
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.Keep
-import com.scto.mobile.ide.extension.ActivityProvider
-import com.scto.mobile.ide.extension.ExtensionAPI
-import com.scto.mobile.ide.extension.ExtensionContext
-import com.scto.mobile.ide.core.common.files.child
-import com.scto.mobile.ide.lsp.LspRegistry
-import com.scto.mobile.ide.core.common.utils.dialog
-import com.scto.mobile.ide.core.common.utils.logInfo
-import com.scto.mobile.ide.core.common.utils.toast
+import com.rk.extension.ActivityProvider
+import com.rk.extension.ExtensionAPI
+import com.rk.extension.ExtensionContext
+import com.rk.file.child
+import com.rk.lsp.LspRegistry
+import com.rk.utils.dialog
+import com.rk.utils.logInfo
+import com.rk.utils.toast
 import java.io.File
 
 @Keep

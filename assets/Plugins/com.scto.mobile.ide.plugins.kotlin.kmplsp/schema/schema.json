@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "MobileIDE extension",
+  "title": "Xed-Editor extension",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,7 +13,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "MobileIDE extension schema URL. This property enables theme validation and auto-completion"
+      "description": "Xed-Editor extension schema URL. This property enables theme validation and auto-completion"
     },
     "id": {
       "type": "string",
@@ -47,12 +47,12 @@
     "minAppVersion": {
       "type": ["integer", "null"],
       "default": null,
-      "description": "Minimum MobileIDE version code supported. null means no minimum restriction"
+      "description": "Minimum Xed-Editor version code supported. null means no minimum restriction"
     },
     "maxAppVersion": {
       "type": ["integer", "null"],
       "default": null,
-      "description": "Maximum MobileIDE version code supported. null means no maximum restriction"
+      "description": "Maximum Xed-Editor version code supported. null means no maximum restriction"
     },
     "repository": {
       "type": "string",

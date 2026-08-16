@@ -3,10 +3,10 @@ package com.scto.mobile.ide.plugin.lua
 import android.app.Activity
 import android.content.Context
 import android.os.Build
-import com.scto.mobile.ide.core.common.files.BuiltinFileType
-import com.scto.mobile.ide.core.common.icons.Icon
-import com.scto.mobile.ide.lsp.LspConnectionConfig
-import com.scto.mobile.ide.lsp.LspServer
+import com.rk.file.BuiltinFileType
+import com.rk.icons.Icon
+import com.rk.lsp.LspConnectionConfig
+import com.rk.lsp.LspServer
 import java.io.File
 
 class LuaServer(val lspPath: String) : LspServer() {

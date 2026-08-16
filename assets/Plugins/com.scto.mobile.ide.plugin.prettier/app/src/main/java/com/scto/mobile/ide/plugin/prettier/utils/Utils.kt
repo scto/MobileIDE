@@ -1,0 +1,38 @@
+package com.scto.mobile.ide.plugin.prettier.utils
+
+import com.scto.mobile.ide.plugin.prettier.R
+import com.rk.extension.ExtensionContext
+import com.rk.file.BuiltinFileType
+import com.rk.icons.Icon
+import com.rk.utils.isDarkTheme
+
+val PRETTIER_EXTENSIONS =
+    BuiltinFileType.JAVASCRIPT.extensions +
+        BuiltinFileType.TYPESCRIPT.extensions +
+        BuiltinFileType.JSX.extensions +
+        BuiltinFileType.TSX.extensions +
+        BuiltinFileType.CSS.extensions +
+        BuiltinFileType.SCSS.extensions +
+        BuiltinFileType.LESS.extensions +
+        BuiltinFileType.HTML.extensions +
+        BuiltinFileType.JSON.extensions +
+        BuiltinFileType.MARKDOWN.extensions +
+        BuiltinFileType.YAML.extensions +
+        "vue" +
+        "hbs" +
+        "handlebars" +
+        "graphql" +
+        "gql" +
+        "mdx" +
+        "mjml"
+
+fun getPrettierIcon(context: ExtensionContext): Icon.ExternalResourceIcon {
+    val dark = isDarkTheme(context.appContext)
+    val icon =
+        if (dark) {
+            R.drawable.prettier_icon_dark
+        } else {
+            R.drawable.prettier_icon_light
+        }
+    return Icon.ExternalResourceIcon(icon, context.resources)
+}

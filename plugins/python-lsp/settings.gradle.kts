@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Python LSP"
+rootProject.name = "MobileIDE Plugin: Python Support"
 include(":app")
  

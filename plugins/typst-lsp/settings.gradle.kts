@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "xed-typst"
+rootProject.name = "MobileIDE Plugin: Typst Support"
 include(":app")
  

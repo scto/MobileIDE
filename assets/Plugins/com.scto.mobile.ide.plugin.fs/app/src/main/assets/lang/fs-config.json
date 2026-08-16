@@ -1,0 +1,120 @@
+{
+	"comments": {
+		"lineComment": "//",
+		"blockComment": [
+			"(*",
+			"*)"
+		]
+	},
+	"brackets": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["(*", "*)"]
+	],
+	"autoClosingPairs": [
+		{
+			"open": "[",
+			"close": "]"
+		},
+		{
+			"open": "{",
+			"close": "}"
+		},
+		{
+			"open": "(",
+			"close": ")"
+		},
+		{
+			"open": "(*",
+			"close": "*)",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "\"",
+			"close": "\"",
+			"notIn": ["string"]
+		},
+		{
+			"open": "@\"",
+			"close": "\"",
+			"notIn": ["string"]
+		},
+		{
+			"open": "\"\"\"",
+			"close": "\"\"\"",
+			"notIn": ["string"]
+		},
+		{
+			"open": "'",
+			"close": "'",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "[<",
+			"close": ">]",
+			"notIn": ["string", "comment"]
+		}
+	],
+	"surroundingPairs": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["\"", "\""],
+		["@\"", "\""],
+		["\"\"\"", "\"\"\""],
+		["'", "'"],
+		["(*", "*)"],
+		["[<", ">]"],
+		["<", ">"],
+		["`", "`"]
+	],
+	"wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)",
+	"folding": {
+		"markers": {
+			"start": "^\\s*//\\s*#region\\b|^\\s*\\(\\*\\s*#region\\b",
+			"end": "^\\s*//\\s*#endregion\\b|^\\s*\\(\\*\\s*#endregion\\b"
+		},
+		"offSide": true,
+		"indentation": {
+			"increase": [
+				"^\\s*(let\\s+.*=.*$|match\\s+.*with\\s*$|function\\s*$|try\\s*$|if\\s+.*then\\s*$|else\\s*$|elif\\s+.*then\\s*$|for\\s+.*do\\s*$|while\\s+.*do\\s*$|using\\s+.*do\\s*$|lock\\s+.*do\\s*$|type\\s+.*=\\s*$|module\\s+.*=\\s*$|namespace\\s+.*$|\\{[^}]*$|\\([^)]*$|\\[[^\\]]*$)"
+			],
+			"decrease": [
+				"^\\s*$",
+				"^\\s*\\}"
+			]
+		}
+	},
+	"indentationRules": {
+		"decreaseIndentPattern": {
+			"pattern": "^\\s*[\\}\\]\\)]|^\\s*$"
+		},
+		"increaseIndentPattern": {
+			"pattern": "^\\s*(let\\s+.*=.*$|match\\s+.*with\\s*$|function\\s*$|try\\s*$|if\\s+.*then\\s*$|else\\s*$|elif\\s+.*then\\s*$|for\\s+.*do\\s*$|while\\s+.*do\\s*$|type\\s+.*=\\s*$|module\\s+.*=\\s*$|namespace\\s+.*$)"
+		}
+	},
+	"onEnterRules": [
+		{
+			"beforeText": "^\\s*//|\\s//\\s",
+			"action": {
+				"indent": "none",
+				"appendText": "// "
+			}
+		},
+		{
+			"beforeText": "^\\s*\\(\\*",
+			"afterText": "^(?!\\s*$)",
+			"action": {
+				"indent": "none",
+				"appendText": "   "
+			}
+		},
+		{
+			"beforeText": "^\\s*$",
+			"action": {
+				"indent": "increase"
+			}
+		}
+	]
+}

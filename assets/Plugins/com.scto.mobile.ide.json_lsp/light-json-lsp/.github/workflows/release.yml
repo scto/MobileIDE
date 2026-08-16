@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: light-json-lsp-x86_64-linux.tar.gz
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            archive: light-json-lsp-aarch64-linux.tar.gz
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            archive: light-json-lsp-x86_64-macos.tar.gz
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            archive: light-json-lsp-aarch64-macos.tar.gz
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup target add ${{ matrix.target }}
+
+      - name: Install cross-compilation tools
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo dpkg --add-architecture arm64
+          # Pin existing ubuntu.sources to amd64 only
+          if grep -q '^Architectures:' /etc/apt/sources.list.d/ubuntu.sources; then
+            sudo sed -i 's/^Architectures:.*$/Architectures: amd64/' /etc/apt/sources.list.d/ubuntu.sources
+          else
+            sudo sed -i 's/^Types: /Architectures: amd64\n&/' /etc/apt/sources.list.d/ubuntu.sources
+          fi
+          # Add arm64 sources pointing to ports.ubuntu.com
+          printf 'Types: deb\nURIs: http://ports.ubuntu.com/\nSuites: noble noble-updates noble-security\nComponents: main restricted universe\nArchitectures: arm64\n' | sudo tee /etc/apt/sources.list.d/arm64.sources
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu libssl-dev:arm64
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
+          echo "OPENSSL_DIR=/usr" >> "$GITHUB_ENV"
+          echo "OPENSSL_INCLUDE_DIR=/usr/include" >> "$GITHUB_ENV"
+          echo "OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf ../../../${{ matrix.archive }} light-json-lsp
+          cd ../../..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.tar.gz"
+          generate_release_notes: true

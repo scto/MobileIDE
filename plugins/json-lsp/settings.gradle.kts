@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JSON-LSP"
+rootProject.name = "MobileIDE Plugin: JSON Support"
 include(":app")
  

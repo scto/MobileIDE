@@ -24,6 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "xed-fs"
+rootProject.name = "MobileIDE Plugin: F# Support"
 include(":app")
  

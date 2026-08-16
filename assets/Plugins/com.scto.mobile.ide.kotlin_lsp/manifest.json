@@ -1,13 +1,21 @@
 {
+  "$schema": "schema/schema.json",
   "id": "com.scto.mobile.ide.kotlin_lsp",
-  "name": "Kotlin Language Support",
-  "mainClass": "com.scto.mobile.ide.extension.languages.KotlinLspExtension",
-  "version": "1.0.0",
-  "description": "Provides Kotlin language intelligence.",
+  "name": "Kotlin JetBrains LSP",
+  "mainClass": "com.scto.mobile.ide.kotlin_lsp.Main",
+  "version": "0.2.1",
+  "description": "Extension that provides Kotlin and LSP by JetBrains. (Unstable)",
   "author": {
-    "displayName": "MobileIDE"
+    "displayName": "KiquarSL",
+    "github": "KiquarSL"
   },
-  "repository": "https://github.com/scto/MobileIDE",
-  "license": "GPLv3",
-  "tags": ["lsp", "kotlin"]
+  "license": "MIT",
+  "tags": [
+    "kotlin",
+    "lsp",
+    "jet-brains"
+  ],
+  "minAppVersion": 95,
+  "maxAppVersion": null,
+  "repository": "https://github.com/KiquarSL/xed-kotlin"
 }

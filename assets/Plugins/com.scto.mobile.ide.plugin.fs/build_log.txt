@@ -1,0 +1,4 @@
+Picked up _JAVA_OPTIONS: -Xmx8G -Djava.awt.headless=true -Dorg.gradle.jvmargs=-Xmx8G
+no main manifest attribute, in /data/data/com.termux/files/home/Plugins/xed-fsharp/gradle/wrapper/gradle-wrapper.jar
+Picked up _JAVA_OPTIONS: -Xmx8G -Djava.awt.headless=true -Dorg.gradle.jvmargs=-Xmx8G
+no main manifest attribute, in /data/data/com.termux/files/home/Plugins/xed-fsharp/gradle/wrapper/gradle-wrapper.jar

@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.koner.prettier"
+    namespace = "com.scto.mobile.ide.plugin.prettier"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.koner.prettier"
+        applicationId = "com.scto.mobile.ide.plugin.prettier"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
