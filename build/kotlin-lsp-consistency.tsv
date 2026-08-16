@@ -1,0 +1,4 @@
+Quelle	Skript	Zielverzeichnis	Binary	Version	Endungen	Registrierung (LspRegistry-Id)	Konflikt?
+built-in (:features:lsp)	local/bin/lsp/kotlin.sh	/opt/kotlin-language-server (/usr/local/bin)	kotlin-language-server	GitHub Release (Latest)	.kt, .kts	kotlin_lsp	Nein (Built-in Standard)
+Plugin xed-kotlin	kotlin-lsp-installer.sh	$HOME/.lsp/kotlin/bin/	intellij-server	JetBrains 262.8190.0	.kt, .kts	xed_kotlin_lsp	Nein (Gepuffert via Plugin Katalog)
+Plugin xed-kmp-lsp	kmp-lsp-installer.sh	$HOME/.lsp/kmp-lsp/	kmp-lsp + kmp-jar-indexer	v0.24.0 (Rust Hessesian)	.kt, .java, .swift	xed_kmp_lsp	Entschärft (Dedup / Entkoppelt)
