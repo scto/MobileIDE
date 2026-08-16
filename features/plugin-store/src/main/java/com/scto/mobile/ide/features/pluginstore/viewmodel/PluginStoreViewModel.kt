@@ -171,8 +171,10 @@ class PluginStoreViewModel(application: Application) : AndroidViewModel(applicat
             val depCheck = manager.checkDependencies(item)
             if (depCheck.hasMissingDependencies) {
                 val warning = "Hinweis: Benötigte Runtimes fehlen in der Sandbox: ${depCheck.missingRuntimes.joinToString(", ")}"
-                updatePluginStatus(item.id, PluginStatus.ERROR, errorMsg = warning)
-                return@launch
+                android.util.Log.w(
+                    "PluginStore",
+                    "[$warning]. Installation wird fortgesetzt..."
+                )
             }
 
             updatePluginStatus(item.id, PluginStatus.DOWNLOADING, progress = 0.05f)

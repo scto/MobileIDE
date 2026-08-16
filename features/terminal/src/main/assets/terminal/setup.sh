@@ -159,7 +159,7 @@ if [ -f "$LOCAL/setup_options.properties" ]; then
 fi
 
 # Build packages list
-packages="bash-completion command-not-found sudo xkb-data libjemalloc-dev"
+packages="bash-completion command-not-found sudo xkb-data libjemalloc-dev nodejs npm"
 if [ "$INSTALL_GIT" = "true" ]; then
     packages="$packages git"
 fi
