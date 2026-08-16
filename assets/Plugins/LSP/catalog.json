@@ -84,6 +84,79 @@
       "sizeBytes": 525
     },
     {
+      "id": "com.scto.mobile.ide.css_lsp",
+      "name": "CSS Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "CSS, SCSS, LESS language server powered by vscode-css-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/css.sh",
+      "fileExtensions": [
+        "css",
+        "scss",
+        "less"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.css_lsp-1.0.0.zip",
+      "sha256": "7b6201c92067b1acb332b6cffa8f0f1714178a0c6be2bf845515a3ee81a9b5fc",
+      "sizeBytes": 340
+    },
+    {
+      "id": "com.scto.mobile.ide.emmet_lsp",
+      "name": "Emmet Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "Emmet completion language server powered by emmet-ls (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/emmet.sh",
+      "fileExtensions": [
+        "html",
+        "css",
+        "jsx",
+        "tsx"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.emmet_lsp-1.0.0.zip",
+      "sha256": "d1cf8ab9d21586289eb14d03a3735741fd6c4eb228c18de5db7036551923202f",
+      "sizeBytes": 334
+    },
+    {
+      "id": "com.scto.mobile.ide.eslint_lsp",
+      "name": "ESLint Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "JavaScript/TypeScript linter powered by vscode-eslint-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/eslint.sh",
+      "fileExtensions": [
+        "js",
+        "jsx",
+        "ts",
+        "tsx"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.eslint_lsp-1.0.0.zip",
+      "sha256": "0863d1e48ffee662ca2ab5b607d338a5ca2c0dc9d7d225060e7921120936f1e0",
+      "sizeBytes": 342
+    },
+    {
+      "id": "com.scto.mobile.ide.html_lsp",
+      "name": "HTML Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "HTML language server powered by vscode-html-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/html.sh",
+      "fileExtensions": [
+        "html",
+        "htm"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.html_lsp-1.0.0.zip",
+      "sha256": "cbc46e79025d5901aeecd10d4405c41b1f6c89945d2efe00307f80f68ec348cf",
+      "sizeBytes": 330
+    },
+    {
       "id": "com.scto.mobile.ide.java_lsp",
       "name": "Java Language Support (JDTLS)",
       "version": "1.0.0",
@@ -116,6 +189,40 @@
       "sizeBytes": 542
     },
     {
+      "id": "com.scto.mobile.ide.json_lsp",
+      "name": "Json LSP",
+      "version": "1.0.2",
+      "category": "LSP",
+      "description": "JSON Language Server Protocol extension for MobileIDE",
+      "author": {
+        "displayName": "MobileIDE",
+        "github": "MobileIDE"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.json_lsp-1.0.2.zip",
+      "sha256": "826301eb3489727478248ecd414be502f728e54c7ba4866b58518aea286f8c3c",
+      "sizeBytes": 5969549
+    },
+    {
+      "id": "com.scto.mobile.ide.kotlin_lsp",
+      "name": "Kotlin JetBrains LSP",
+      "version": "0.2.1",
+      "category": "LSP",
+      "description": "Extension that provides Kotlin and LSP by JetBrains. (Unstable)",
+      "author": {
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.kotlin_lsp-0.2.1.zip",
+      "sha256": "d90452ea6b2e64c838bea8a5400191be9d9f2d10a4f37401f1382c053642def9",
+      "sizeBytes": 348544
+    },
+    {
       "id": "com.scto.mobile.ide.kotlin_lsp",
       "name": "Kotlin Language Support",
       "version": "1.0.0",
@@ -130,6 +237,74 @@
       "downloadUrl": "./com.scto.mobile.ide.kotlin_lsp-1.0.0.zip",
       "sha256": "6a57f7fb640313607f25ceff94a25555ccd3076cfb907fa8f98f3d54ea0f70f5",
       "sizeBytes": 518
+    },
+    {
+      "id": "com.scto.mobile.ide.markdown_lsp",
+      "name": "Markdown Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "Markdown language server powered by marksman/vscode-markdown-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/markdown.sh",
+      "fileExtensions": [
+        "md",
+        "markdown"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.markdown_lsp-1.0.0.zip",
+      "sha256": "eb996da5578da786ecd36f05bde978156f72e4d6b8caa37110961ff5132b99ad",
+      "sizeBytes": 339
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.fs",
+      "name": "F# Support",
+      "version": "0.1.0",
+      "category": "LSP",
+      "description": " MobileIDE extension for the F# language.",
+      "author": {
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.fs-0.1.0.zip",
+      "sha256": "5c50b3ef41ad5fc4e1b0723963cca40e9cbf9a6ffd5bb639e916f7080a07e48b",
+      "sizeBytes": 294184
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.go",
+      "name": "Go Support",
+      "version": "0.2.0",
+      "category": "LSP",
+      "description": "Extension that provides Go and GoPls (LSP)",
+      "author": {
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.go-0.2.0.zip",
+      "sha256": "1f2873a9a7b8e139dcd1a48df66a0614cac66a3bf1381731f619c86a2583ee82",
+      "sizeBytes": 328927
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.go.tools",
+      "name": "Go Tools",
+      "version": "0.2.0",
+      "category": "LSP",
+      "description": "Install golang and gopls",
+      "author": {
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.go.tools-0.2.0.zip",
+      "sha256": "c66d4d6eb669c27c97ae7119bfad5a0498de691f5faf2bae60cff8a37bdd4d37",
+      "sizeBytes": 8020484
     },
     {
       "id": "com.scto.mobile.ide.plugin.json",
@@ -150,7 +325,7 @@
     },
     {
       "id": "com.scto.mobile.ide.plugin.lua",
-      "name": "Lua LSP",
+      "name": "Lua-LSP",
       "version": "1.0.2",
       "category": "LSP",
       "description": "A fast lua lsp",
@@ -162,8 +337,25 @@
       "fileExtensions": [],
       "dependencies": [],
       "downloadUrl": "./com.scto.mobile.ide.plugin.lua-1.0.2.zip",
-      "sha256": "3de568bd298c11e773a6c3ccf35710c8da7b6f57ea11518076a7acc9a50a6e8a",
-      "sizeBytes": 64745503
+      "sha256": "dc478015b8f8f234a27ecd3c75c8573c51ea0485edc73cac33dfbe3045ff15db",
+      "sizeBytes": 57241123
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.prettier",
+      "name": "Prettier",
+      "version": "1.0.0",
+      "category": "LSP",
+      "description": "Xed-Editor extension adding automatic code formatting with Prettier.",
+      "author": {
+        "displayName": "KonerDev",
+        "github": "KonerDev"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.prettier-1.0.0.zip",
+      "sha256": "af384752e6371a1f08f51ec2329d9169b00a7b244151afa41e502f4b90b96cc4",
+      "sizeBytes": 285062
     },
     {
       "id": "com.scto.mobile.ide.plugin.python",
@@ -183,21 +375,72 @@
       "sizeBytes": 42060742
     },
     {
+      "id": "com.scto.mobile.ide.plugin.rust",
+      "name": "Rust LSP",
+      "version": "1.0.2",
+      "category": "LSP",
+      "description": " Xed-Editor extension that provides Rust language server (LSP) support.",
+      "author": {
+        "displayName": "KonerDev",
+        "github": "KonerDev"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.rust-1.0.2.zip",
+      "sha256": "e55e9e120d06de3652287df11d57a0fb537c71d2a6a53ae6d2e8b269d5c4a6c6",
+      "sizeBytes": 325266
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.typst",
+      "name": "Typst Support",
+      "version": "1.2.3",
+      "category": "LSP",
+      "description": " Xed-Editor extension for the Typst language.",
+      "author": {
+        "displayName": "KonerDev",
+        "github": "KonerDev"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.typst-1.2.3.zip",
+      "sha256": "b3ff7cf76fef5cc28e244336c6443cd882050dff95374f33068e6e8d750d15b7",
+      "sizeBytes": 1119972
+    },
+    {
+      "id": "com.scto.mobile.ide.plugin.zig",
+      "name": "Zig Support",
+      "version": "0.4.0",
+      "category": "LSP",
+      "description": "Extension that provides Zig language and ZLS support.",
+      "author": {
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.plugin.zig-0.4.0.zip",
+      "sha256": "5d4946334ad187bf3ccac8ffbd7b76abe2d1640aaaa710178303b0726f12ff60",
+      "sizeBytes": 564069
+    },
+    {
       "id": "com.scto.mobile.ide.plugins.java.lsp",
-      "name": "Java Language Support (JDTLS)",
+      "name": "Java LSP",
       "version": "1.1.0",
       "category": "LSP",
-      "description": "MobileIDE extension for Java LSP",
+      "description": "Xed-Editor extension for Java LSP",
       "author": {
-        "displayName": "scto",
-        "github": "scto"
+        "displayName": "andr0d1v",
+        "github": "andr0d1v"
       },
       "entryScript": "",
       "fileExtensions": [],
       "dependencies": [],
       "downloadUrl": "./com.scto.mobile.ide.plugins.java.lsp-1.1.0.zip",
-      "sha256": "8a631bdb8b22821ff198fc5a694b94660eb420f884ecd8a2f4075377170a92b0",
-      "sizeBytes": 7800843
+      "sha256": "7290c507ae6fae360ff842f2a97e7327878d84cbea717977368cf3004f7f2153",
+      "sizeBytes": 286435
     },
     {
       "id": "com.scto.mobile.ide.plugins.kotlin.kmplsp",
@@ -206,15 +449,15 @@
       "category": "LSP",
       "description": "Extension that provides kmp-lsp",
       "author": {
-        "displayName": "scto",
-        "github": "MobileIDE"
+        "displayName": "KiquarSL",
+        "github": "KiquarSL"
       },
       "entryScript": "",
       "fileExtensions": [],
       "dependencies": [],
       "downloadUrl": "./com.scto.mobile.ide.plugins.kotlin.kmplsp-0.1.2.zip",
-      "sha256": "95346a2001897adca050044bf85fd69c0d227f3b208e4146c0c1eda708e579f9",
-      "sizeBytes": 7811666
+      "sha256": "43caca3affc65af87af242fe7f3c3e94962cd832c295ae469ddb8c07d78378d8",
+      "sizeBytes": 302108
     },
     {
       "id": "com.scto.mobile.ide.python_lsp",
@@ -233,6 +476,23 @@
       "sizeBytes": 367
     },
     {
+      "id": "com.scto.mobile.ide.python_lsp",
+      "name": "Python LSP",
+      "version": "1.0.3",
+      "category": "LSP",
+      "description": "Python Language Server Protocol support for MobileIDE",
+      "author": {
+        "displayName": "MobileIDE",
+        "github": "MobileIDE"
+      },
+      "entryScript": "",
+      "fileExtensions": [],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.python_lsp-1.0.3.zip",
+      "sha256": "4e8a3066e5496e53f194991896d8747e4e5c624dcbf437cf528cd7454a4392c3",
+      "sizeBytes": 34555968
+    },
+    {
       "id": "com.scto.mobile.ide.toml_lsp",
       "name": "TOML Language Support",
       "version": "1.0.0",
@@ -247,6 +507,25 @@
       "downloadUrl": "./com.scto.mobile.ide.toml_lsp-1.0.0.zip",
       "sha256": "dd92ccd0fe4e17d934de70ecfef9d20ccf62cd6d30eff6fe1095539991d4e5cc",
       "sizeBytes": 368
+    },
+    {
+      "id": "com.scto.mobile.ide.typescript_lsp",
+      "name": "TypeScript & JavaScript Language Support",
+      "version": "1.0.0",
+      "category": "language",
+      "description": "TypeScript and JavaScript language server powered by typescript-language-server (requires nodejs).",
+      "author": "com.scto.mobile.ide",
+      "entryScript": "lsp/typescript.sh",
+      "fileExtensions": [
+        "ts",
+        "tsx",
+        "js",
+        "jsx"
+      ],
+      "dependencies": [],
+      "downloadUrl": "./com.scto.mobile.ide.typescript_lsp-1.0.0.zip",
+      "sha256": "df15998c597130eabbba6b8112c6d4cc77d680ab6f0c6642a0ddb93a3e5bf45c",
+      "sizeBytes": 345
     },
     {
       "id": "com.scto.mobile.ide.xml_lsp",
@@ -330,127 +609,6 @@
       "downloadUrl": "./io.kiquar.plugin.zig-0.4.0.zip",
       "sha256": "cab2c1be280789432547df3ce2ab97f317fc1572e03c0a17cbcd5ca94752ecfa",
       "sizeBytes": 558972
-    },
-    {
-      "id": "com.scto.mobile.ide.css_lsp",
-      "name": "CSS Language Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "CSS, SCSS, LESS language server powered by vscode-css-language-server (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/css.sh",
-      "fileExtensions": [
-        "css",
-        "scss",
-        "less"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.css_lsp-1.0.0.zip",
-      "sha256": "7b6201c92067b1acb332b6cffa8f0f1714178a0c6be2bf845515a3ee81a9b5fc",
-      "sizeBytes": 340
-    },
-    {
-      "id": "com.scto.mobile.ide.emmet_lsp",
-      "name": "Emmet Language Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "Emmet completion language server powered by emmet-ls (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/emmet.sh",
-      "fileExtensions": [
-        "html",
-        "css",
-        "jsx",
-        "tsx"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.emmet_lsp-1.0.0.zip",
-      "sha256": "d1cf8ab9d21586289eb14d03a3735741fd6c4eb228c18de5db7036551923202f",
-      "sizeBytes": 334
-    },
-    {
-      "id": "com.scto.mobile.ide.eslint_lsp",
-      "name": "ESLint Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "JavaScript/TypeScript linter powered by vscode-eslint-language-server (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/eslint.sh",
-      "fileExtensions": [
-        "js",
-        "jsx",
-        "ts",
-        "tsx"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.eslint_lsp-1.0.0.zip",
-      "sha256": "0863d1e48ffee662ca2ab5b607d338a5ca2c0dc9d7d225060e7921120936f1e0",
-      "sizeBytes": 342
-    },
-    {
-      "id": "com.scto.mobile.ide.html_lsp",
-      "name": "HTML Language Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "HTML language server powered by vscode-html-language-server (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/html.sh",
-      "fileExtensions": [
-        "html",
-        "htm"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.html_lsp-1.0.0.zip",
-      "sha256": "cbc46e79025d5901aeecd10d4405c41b1f6c89945d2efe00307f80f68ec348cf",
-      "sizeBytes": 330
-    },
-    {
-      "id": "com.scto.mobile.ide.markdown_lsp",
-      "name": "Markdown Language Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "Markdown language server powered by marksman/vscode-markdown-language-server (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/markdown.sh",
-      "fileExtensions": [
-        "md",
-        "markdown"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.markdown_lsp-1.0.0.zip",
-      "sha256": "eb996da5578da786ecd36f05bde978156f72e4d6b8caa37110961ff5132b99ad",
-      "sizeBytes": 339
-    },
-    {
-      "id": "com.scto.mobile.ide.typescript_lsp",
-      "name": "TypeScript & JavaScript Language Support",
-      "version": "1.0.0",
-      "category": "language",
-      "description": "TypeScript and JavaScript language server powered by typescript-language-server (requires nodejs).",
-      "author": "com.scto.mobile.ide",
-      "entryScript": "lsp/typescript.sh",
-      "fileExtensions": [
-        "ts",
-        "tsx",
-        "js",
-        "jsx"
-      ],
-      "dependencies": [
-        "runtime-node"
-      ],
-      "downloadUrl": "./com.scto.mobile.ide.typescript_lsp-1.0.0.zip",
-      "sha256": "df15998c597130eabbba6b8112c6d4cc77d680ab6f0c6642a0ddb93a3e5bf45c",
-      "sizeBytes": 345
     }
   ]
 }
