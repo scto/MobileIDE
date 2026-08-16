@@ -61,14 +61,15 @@ fun ToolingBottomSheet(
                     text = {
                         Text(
                             text = when (category) {
-                                ToolingLogCategory.TERMINAL_ERRORS -> "Terminal Logs"
-                                ToolingLogCategory.PROJECT_DIAGNOSIS -> "Diagnosis"
-                                ToolingLogCategory.IDE_LOG -> "IDE Log"
-                                ToolingLogCategory.BUILD -> "Build / Tasks"
+                                ToolingLogCategory.INSTALL -> "Install"
+                                ToolingLogCategory.BUILD -> "Build"
                                 ToolingLogCategory.LSP -> "LSP"
+                                ToolingLogCategory.DIAGNOSE -> "Diagnose"
+                                ToolingLogCategory.IDE_LOGS -> "IDE Logs"
                                 ToolingLogCategory.AI -> "AI"
                                 ToolingLogCategory.DEBUG -> "Debug"
                                 ToolingLogCategory.DOCS -> "Docs"
+                                else -> category.displayName
                             }
                         )
                     }

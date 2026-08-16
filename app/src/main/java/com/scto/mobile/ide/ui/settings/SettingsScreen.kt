@@ -124,7 +124,10 @@ fun SettingsScreen(
     }
     var autoSaveInterval by remember { mutableLongStateOf(generalPrefs.getLong("auto_save_interval", 0L)) }
 
-    var selectedDistro by remember { mutableStateOf(generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu") }
+    var selectedDistro by remember {
+        val saved = generalPrefs.getString("selected_distro", "ubuntu") ?: "ubuntu"
+        mutableStateOf(if (saved.equals("debian", ignoreCase = true)) "alpine" else saved)
+    }
 
     var showAutoSaveDialog by remember { mutableStateOf(false) }
     var previousLspEnabled by remember { mutableStateOf(lspEnabled) }
@@ -1674,7 +1677,7 @@ fun TerminalSettingsItem(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    val distros = listOf("ubuntu", "debian")
+                    val distros = listOf("ubuntu", "alpine")
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         distros.forEach { distro ->
                             FilterChip(

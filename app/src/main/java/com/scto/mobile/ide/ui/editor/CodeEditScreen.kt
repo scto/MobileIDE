@@ -315,6 +315,21 @@ fun CodeEditScreen(folderName: String, navController: NavController, viewModel: 
         }
     var showPreviewBottomSheet by remember { mutableStateOf(false) }
 
+    androidx.activity.compose.BackHandler(
+        enabled = showToolingBottomSheet || showPreviewBottomSheet || drawerState.isOpen || isOpenSearch || isOpenJump
+    ) {
+        when {
+            showToolingBottomSheet -> showToolingBottomSheet = false
+            showPreviewBottomSheet -> showPreviewBottomSheet = false
+            isOpenSearch -> {
+                viewModel.stopSearch()
+                isOpenSearch = false
+            }
+            isOpenJump -> isOpenJump = false
+            drawerState.isOpen -> scope.launch { drawerState.close() }
+        }
+    }
+
     LaunchedEffect(projectPath) {
         if (isGradleProject) {
             withContext(Dispatchers.IO) {
