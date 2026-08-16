@@ -1,1 +1,184 @@
-[]
+[
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.scto.mobile.ide.plugin.json",
+    "name": "JSON LSP",
+    "mainClass": "com.scto.mobile.ide.plugin.json.Main",
+    "version": "1.0.2",
+    "description": "JSON Language Server Protocol extension for Xed-Editor",
+    "author": {
+      "displayName": "Xed-Editor",
+      "github": "Xed-Editor"
+    },
+    "minAppVersion": 87,
+    "maxAppVersion": null,
+    "repository": "https://github.com/Xed-Editor/JSON-LSP"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.scto.mobile.ide.plugin.lua",
+    "name": "Lua LSP",
+    "mainClass": "com.scto.mobile.ide.plugin.lua.Main",
+    "version": "1.0.2",
+    "description": "A fast lua lsp",
+    "author": {
+      "displayName": "RohitKushvaha01",
+      "github": "RohitKushvaha01"
+    },
+    "minAppVersion": 87,
+    "maxAppVersion": null,
+    "repository": "https://github.com/RohitKushvaha01/Lua-LSP"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.scto.mobile.ide.plugin.python",
+    "name": "Python LSP",
+    "mainClass": "com.scto.mobile.ide.plugin.python.Main",
+    "version": "1.0.3",
+    "description": "Python Language Server Protocol support for MobileIDE",
+    "author": {
+      "displayName": "scto",
+      "github": "MobileIDE"
+    },
+    "license": "MIT",
+    "tags": [
+      "python",
+      "lsp",
+      "pyright",
+      "ty"
+    ],
+    "minAppVersion": 95,
+    "maxAppVersion": null,
+    "repository": "https://github.com/scto/MobileIDE/plugins/python-lsp"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.koner.typst",
+    "name": "Typst Support",
+    "mainClass": "com.koner.typst.Main",
+    "version": "1.2.3",
+    "description": " Xed-Editor extension for the Typst language.",
+    "author": {
+      "displayName": "KonerDev",
+      "github": "KonerDev"
+    },
+    "license": "MIT",
+    "tags": [
+      "typst",
+      "lsp",
+      "highlighting"
+    ],
+    "minAppVersion": 95,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KonerDev/xed-typst"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "io.kiquar.plugin.go",
+    "name": "Go Support",
+    "mainClass": "io.kiquar.plugin.go.Main",
+    "version": "0.2.0",
+    "description": "Extension that provides Go and GoPls (LSP)",
+    "author": {
+      "displayName": "KiquarSL",
+      "github": "KiquarSL"
+    },
+    "license": "MIT",
+    "tags": [
+      "go",
+      "golang",
+      "lsp",
+      "gopls"
+    ],
+    "minAppVersion": 95,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KiquarSL/xed-go"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.koner.rust",
+    "name": "Rust LSP",
+    "mainClass": "com.koner.rust.Main",
+    "version": "1.0.2",
+    "description": " Xed-Editor extension that provides Rust language server (LSP) support.",
+    "author": {
+      "displayName": "KonerDev",
+      "github": "KonerDev"
+    },
+    "license": "MIT",
+    "tags": [
+      "rust",
+      "lsp"
+    ],
+    "minAppVersion": 99,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KonerDev/xed-rust"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "io.kiquar.plugin.zig",
+    "name": "Zig Support",
+    "mainClass": "io.kiquar.plugin.zig.Main",
+    "version": "0.4.0",
+    "description": "Extension that provides Zig language and ZLS support.",
+    "author": {
+      "displayName": "KiquarSL",
+      "github": "KiquarSL"
+    },
+    "license": "MIT",
+    "tags": [
+      "zig",
+      "lsp",
+      "zls",
+      "zon"
+    ],
+    "minAppVersion": 95,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KiquarSL/xed-zig"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "io.kiquar.plugin.fs",
+    "name": "F# Support",
+    "mainClass": "io.kiquar.plugin.fs.Main",
+    "version": "0.1.0",
+    "description": " MobileIDE extension for the F# language.",
+    "author": {
+      "displayName": "KiquarSL",
+      "github": "KiquarSL"
+    },
+    "license": "MIT",
+    "tags": [
+      "fsharp",
+      "F#",
+      ".NET",
+      "dotnet",
+      "highlighting"
+    ],
+    "minAppVersion": 95,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KiquarSL/xed-fs"
+  },
+  {
+    "$schema": "schema/schema.json",
+    "id": "com.koner.prettier",
+    "name": "Prettier",
+    "mainClass": "com.koner.prettier.Main",
+    "version": "1.0.0",
+    "description": "Xed-Editor extension adding automatic code formatting with Prettier.",
+    "license": "MIT",
+    "tags": [
+      "prettier",
+      "formatting",
+      "formatter"
+    ],
+    "author": {
+      "displayName": "KonerDev",
+      "github": "KonerDev"
+    },
+    "minAppVersion": 101,
+    "maxAppVersion": null,
+    "repository": "https://github.com/KonerDev/xed-prettier",
+    "hasSettings": true
+  }
+]
