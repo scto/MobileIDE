@@ -34,9 +34,9 @@
 
 ## Phase 3 – Modul-Scaffold
 
-- [ ] `:core:main`, `:features:extensions`, `:editor`, `:editor-lsp`, `:language-textmate` in `settings.gradle.kts`
-- [ ] Kein Modulname kollidiert (alte Module existieren noch, aber eindeutige Namen)
-- [ ] Dummy-Tests grün (beweist, dass die Modul-Plumbing funktioniert)
+- [x] `:core:main`, `:features:extensions`, `:editor`, `:editor-lsp`, `:language-textmate` in `settings.gradle.kts`
+- [x] Kein Modulname kollidiert (alte Module existieren noch, aber eindeutige Namen)
+- [x] Dummy-Tests grün (beweist, dass die Modul-Plumbing funktioniert)
 
 ## Phase 4 – core/main (größte Phase!)
 

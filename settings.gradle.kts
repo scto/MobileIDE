@@ -56,6 +56,8 @@ dependencyResolutionManagement {
 rootProject.name = "MobileIDE"
 
 include(":app",":editor",":features:lsp",":language-treesitter")
+include(":editor-lsp")
+include(":language-textmate")
 
 include(":core:main")
 include(":core:components")

@@ -21,4 +21,10 @@
 - **Katalog-Ergänzungen:** `kotlinx-serialization-json` (1.10.0) im Versionskatalog ergänzt; `lsp4j`, `monarch`, `regex-onig`, `semver`, `gson`, `okhttp` bereits vorhanden.
 - **Build-Prüfung:** `./gradlew assembleDebug :core:apk-builder:testDebugUnitTest :core:tooling:tooling-api:test` erfolgreich und grün.
 
+## Phase 3 – Modul-Scaffold
+- **Neue Module:** `:editor-lsp` und `:language-textmate` in `settings.gradle.kts` sowie Ordnerstruktur registriert.
+- **Build-Dateien:** Grundgerüste für `:editor-lsp` und `:language-textmate` mit Namespace `com.scto.mobile.ide.*` erstellt.
+- **Plumbing-Nachweis:** `./gradlew :core:main:assembleDebug :features:extensions:assembleDebug :editor-lsp:assembleDebug :language-textmate:assembleDebug` erfolgreich in 12m 15s. Dummy-Tests in `:editor-lsp` und `:language-textmate` grün.
+
+
 
