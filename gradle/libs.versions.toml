@@ -81,6 +81,7 @@ monarchJson = "1.0.2"
 regexOnig = "1.0.3"
 regexRe2j = "1.0.2"
 
+kotlinxSerializationJson = "1.10.0"
 semver = "3.1.0"
 androidsvg = "1.4"
 browser = "1.8.0"
@@ -247,6 +248,7 @@ regex-onig = { module = "io.github.dingyi222666.regex-lib:regex-lib-oniguruma", 
 regex-re2j = { module = "io.github.dingyi222666.regex-lib:regex-lib-re2j", version.ref = "regexRe2j" }
 
 semver = { module = "io.github.z4kn4fein:semver", version.ref = "semver" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 androidsvg = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvg" }
 
 [plugins]

@@ -27,10 +27,10 @@
 
 ## Phase 2 – Toolchain
 
-- [ ] Vorher/Nachher-Tabelle der Versionen im Report
-- [ ] AGP/Kotlin-Entscheidung begründet (angleichen ODER MobileIDE-Versionen mit Build-Anpassung)
-- [ ] NUR benötigte Katalog-Einträge ergänzt — kein kompletter Xed-Katalog kopiert
-- [ ] Build grün OHNE dass alte Module betroffen sind
+- [x] Vorher/Nachher-Tabelle der Versionen im Report
+- [x] AGP/Kotlin-Entscheidung begründet (angleichen ODER MobileIDE-Versionen mit Build-Anpassung)
+- [x] NUR benötigte Katalog-Einträge ergänzt — kein kompletter Xed-Katalog kopiert
+- [x] Build grün OHNE dass alte Module betroffen sind
 
 ## Phase 3 – Modul-Scaffold
 

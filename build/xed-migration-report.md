@@ -16,3 +16,9 @@
 - **Paket-Mapping:** In `build/xed-package-mapping.tsv` dokumentiert (ausnahmslos `com.rk` -> `com.scto.mobile.ide`).
 - **Adapter-Klassen:** `MainActivity` und `MainViewModel` werden konsequent auf den Adapter `XedHost` umgeleitet.
 
+## Phase 2 – Toolchain & Versionskatalog
+- **AGP/Kotlin-Entscheidung:** Wir verbleiben auf der stabilen MobileIDE-Toolchain (AGP 8.13.1, Kotlin 2.3.0, compileSdk 36) und passen die Modul-Build-Dateien selektiv an.
+- **Katalog-Ergänzungen:** `kotlinx-serialization-json` (1.10.0) im Versionskatalog ergänzt; `lsp4j`, `monarch`, `regex-onig`, `semver`, `gson`, `okhttp` bereits vorhanden.
+- **Build-Prüfung:** `./gradlew assembleDebug :core:apk-builder:testDebugUnitTest :core:tooling:tooling-api:test` erfolgreich und grün.
+
+
