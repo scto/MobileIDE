@@ -1600,7 +1600,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                                 val col = (diag.range?.start?.character ?: 0) + 1
                                 val msg = "${realFile.name}:$line:$col: ${diag.message}"
                                 com.scto.mobile.ide.core.tooling.impl.ToolingLogManagerImpl.log(
-                                    com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.PROJECT_DIAGNOSIS,
+                                    com.scto.mobile.ide.core.tooling.api.ToolingLogCategory.DIAGNOSE,
                                     level,
                                     msg,
                                 )

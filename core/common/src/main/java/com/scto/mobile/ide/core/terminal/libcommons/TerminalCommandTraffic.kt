@@ -7,10 +7,11 @@ data class TerminalCommand(
     val shell: String,
     val args: Array<String> = arrayOf(),
     val id: String,
-    val workingMode:Int,
+    val workingMode: Int,
     val terminatePreviousSession: Boolean = true,
     val workingDir: String,
-    val env: Array<String> = arrayOf()
+    val env: Array<String> = arrayOf(),
+    val channelName: String = "INSTALL"
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

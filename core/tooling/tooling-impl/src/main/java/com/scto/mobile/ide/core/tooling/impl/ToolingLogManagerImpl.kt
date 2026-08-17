@@ -1,5 +1,6 @@
 package com.scto.mobile.ide.core.tooling.impl
 
+import com.scto.mobile.ide.core.tooling.api.LogChannel
 import com.scto.mobile.ide.core.tooling.api.ToolingLogCategory
 import com.scto.mobile.ide.core.tooling.api.ToolingLogEntry
 import com.scto.mobile.ide.core.tooling.api.ToolingLogManager
@@ -38,14 +39,11 @@ object ToolingLogManagerImpl : ToolingLogManager {
     fun handleLogEntry(level: String, tag: String, message: String) {
         val category = when {
             tag == "Build" || tag == "ApkBuilder" -> ToolingLogCategory.BUILD
+            tag == "SetupWorker" || tag == "PluginInstaller" || tag == "LspInstaller" -> ToolingLogCategory.INSTALL
             tag.contains("LSP", ignoreCase = true) || tag.contains("LanguageServer", ignoreCase = true) -> ToolingLogCategory.LSP
-            tag == "SetupWorker" || tag == "Terminal" || tag == "DistroManager" -> ToolingLogCategory.TERMINAL_ERRORS
-            tag == "Diagnostics" || tag == "ProjectDiagnostics" -> ToolingLogCategory.PROJECT_DIAGNOSIS
-            level == "ERROR" -> ToolingLogCategory.IDE_LOG
-            else -> null
+            tag == "Diagnostics" || tag == "ProjectDiagnostics" -> ToolingLogCategory.DIAGNOSE
+            else -> ToolingLogCategory.IDE_LOGS
         }
-        if (category != null) {
-            log(category, level, message)
-        }
+        log(category, level, message)
     }
 }
