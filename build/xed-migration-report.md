@@ -10,4 +10,9 @@
 - **Build-Status:** `BUILD SUCCESSFUL` (`./gradlew assembleDebug :core:apk-builder:testDebugUnitTest :core:tooling:tooling-api:test`)
 - **Aktiver Unit-Test-Stand:** 16 Tests in `:core:apk-builder` grün, `:core:tooling:tooling-api` grün.
 
----
+## Phase 1 – Inventar & BFS
+- **Inventar:** 52 Quelldateien (.kt) in `core/main/{extension,feature,lsp,search}` + `features/extensions`.
+- **Abhängigkeits-BFS:** In `build/xed-bfs-dependencies.tsv` erfasst und doppelgeprüft.
+- **Paket-Mapping:** In `build/xed-package-mapping.tsv` dokumentiert (ausnahmslos `com.rk` -> `com.scto.mobile.ide`).
+- **Adapter-Klassen:** `MainActivity` und `MainViewModel` werden konsequent auf den Adapter `XedHost` umgeleitet.
+

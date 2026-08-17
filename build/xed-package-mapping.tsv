@@ -1,0 +1,33 @@
+quelle_package	ziel_package
+com.rk	com.scto.mobile.ide
+com.rk.xededitor.BuildConfig	com.scto.mobile.ide.BuildConfig
+com.rk.extension	com.scto.mobile.ide.extension
+com.rk.feature	com.scto.mobile.ide.feature
+com.rk.lsp	com.scto.mobile.ide.lsp
+com.rk.search	com.scto.mobile.ide.search
+com.rk.file	com.scto.mobile.ide.file
+com.rk.filetree	com.scto.mobile.ide.filetree
+com.rk.tabs	com.scto.mobile.ide.tabs
+com.rk.tabs.editor	com.scto.mobile.ide.tabs.editor
+com.rk.tabs.base	com.scto.mobile.ide.tabs.base
+com.rk.tabs.image	com.scto.mobile.ide.tabs.image
+com.rk.events	com.scto.mobile.ide.events
+com.rk.settings	com.scto.mobile.ide.settings
+com.rk.settings.lsp	com.scto.mobile.ide.settings.lsp
+com.rk.settings.extension	com.scto.mobile.ide.settings.extension
+com.rk.settings.editor	com.scto.mobile.ide.settings.editor
+com.rk.settings.language	com.scto.mobile.ide.settings.language
+com.rk.resources	com.scto.mobile.ide.resources
+com.rk.components	com.scto.mobile.ide.components
+com.rk.theme	com.scto.mobile.ide.theme
+com.rk.icons	com.scto.mobile.ide.icons
+com.rk.utils	com.scto.mobile.ide.utils
+com.rk.editor	com.scto.mobile.ide.editor
+com.rk.commands	com.scto.mobile.ide.commands
+com.rk.project	com.scto.mobile.ide.project
+com.rk.common	com.scto.mobile.ide.common
+com.rk.color	com.scto.mobile.ide.color
+com.rk.xed	com.scto.mobile.ide.xed
+com.rk.activities.main	com.scto.mobile.ide.ui.main (Adapter -> XedHost)
+com.rk.crashhandler	com.scto.mobile.ide.crashhandler
+io.github.rosemoe.sora	io.github.rosemoe.sora (Framework)

@@ -1,0 +1,12 @@
+quelle_datei	import	kategorie	mobileide_pendant	ziel_datei	phase
+core/main/extension/api/ExtensionActivity.kt	com.rk.xededitor.MainActivity	ADAPTER	XedHost	integration/XedHost.kt	Phase 4
+core/main/extension/api/ExtensionActivityRegistry.kt	com.rk.activities.main.MainActivity	ADAPTER	XedHost	integration/XedHost.kt	Phase 4
+core/main/extension/api/DynamicRoute.kt	com.rk.extension.ExtensionFeature	PRIMÄR	com.scto.mobile.ide.extension.ExtensionFeature	features/extensions/ExtensionFeature.kt	Phase 5
+core/main/lsp/LspServer.kt	com.rk.terminal.TerminalLauncher	ADAPTER	TermuxExec / LogRouter	integration/XedTerminalLauncher.kt	Phase 4 / Phase 8
+core/main/lsp/LspRegistry.kt	com.rk.file.FileObject	TRANSITIV	com.scto.mobile.ide.file.FileObject	core/main/file/FileObject.kt	Phase 4
+core/main/lsp/LspPersistence.kt	com.rk.lsp.LspServer	PRIMÄR	com.scto.mobile.ide.lsp.LspServer	core/main/lsp/LspServer.kt	Phase 4
+core/main/search/SearchViewModel.kt	com.rk.activities.main.MainViewModel	ADAPTER	XedHost / EditorViewModel	integration/XedHost.kt	Phase 4
+core/main/search/CodeSearchDialog.kt	com.rk.tabs.editor.CodeEditorCompose	ADAPTER	CodeEditScreen / soraX-Editor	integration/CodeEditScreen.kt	Phase 7
+features/extensions/manager/ExtensionManager.kt	com.rk.extension.model.Manifest	PRIMÄR	com.scto.mobile.ide.extension.model.Manifest	core/main/extension/model/Manifest.kt	Phase 4
+features/extensions/ui/XedInstallDialog.kt	com.rk.resources.strings	TRANSITIV	com.scto.mobile.ide.resources.strings	core/main/resources/strings.kt	Phase 4
+features/extensions/settings/extension/MarkdownViewer.kt	com.rk.components.compose.theme	TRANSITIV	com.scto.mobile.ide.components.compose.theme	core/main/components/theme.kt	Phase 4
