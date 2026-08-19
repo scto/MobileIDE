@@ -1,0 +1,267 @@
+package com.scto.mobile.ide.filetree
+
+
+
+
+
+import android.content.Context
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.blankj.utilcode.util.StringUtils.getString
+import com.scto.mobile.ide.activities.main.MainActivity
+import com.scto.mobile.ide.activities.main.filterWithFiles
+import com.scto.mobile.ide.activities.main.ui.drawerStateRef
+import com.scto.mobile.ide.components.PropertiesDialog
+import com.scto.mobile.ide.components.SingleInputDialog
+import com.scto.mobile.ide.drawer.DrawerViewModel
+import com.scto.mobile.ide.events.Events
+import com.scto.mobile.ide.events.FileEvent
+import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.file.FileOperations
+import com.scto.mobile.ide.file.FileValidation
+import com.scto.mobile.ide.settings.Settings
+import com.scto.mobile.ide.utils.errorDialog
+import com.scto.mobile.ide.utils.toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+
+
+
+
+
+
+
+
+
+
+@Composable
+fun FileActionDialogs(
+    drawerViewModel: DrawerViewModel,
+    viewModel: FileTreeViewModel,
+    scope: CoroutineScope,
+    context: Context,
+) {
+    if (viewModel.showRenameDialog) {
+        val file = viewModel.renameFile ?: return
+        SingleInputDialog(
+            title = if (file.isFile()) stringResource(com.scto.mobile.ide.core.main.R.string.rename_file) else stringResource(com.scto.mobile.ide.core.main.R.string.rename_folder),
+            inputLabel = stringResource(id = com.scto.mobile.ide.core.main.R.string.new_name),
+            inputValue = viewModel.renameValue,
+            errorMessage = viewModel.renameError,
+            confirmEnabled = viewModel.renameValue.isNotBlank() && viewModel.renameValue != file.getName(),
+            confirmText = stringResource(com.scto.mobile.ide.core.main.R.string.rename),
+            onInputValueChange = {
+                viewModel.renameValue = it
+                viewModel.renameError = null
+
+                if (it.contains(FileValidation.INVALID_NAME_CHARS)) {
+                    viewModel.renameError = context.getString(com.scto.mobile.ide.core.main.R.string.invalid_characters)
+                }
+            },
+            onConfirm = {
+                val newName = viewModel.renameValue
+                scope.launch {
+                    val oldPath = file.getAbsolutePath()
+                    val mainViewModel = XedHost?.viewModel
+                    val tabsToRename =
+                        mainViewModel?.editorTabs?.filterWithFiles { _, file ->
+                            file.getAbsolutePath() == oldPath
+                        } ?: emptyList()
+
+                    val success = file.renameTo(newName)
+                    if (!success) {
+                        toast(com.scto.mobile.ide.core.main.R.string.rename_failed)
+                        return@launch
+                    }
+
+                    Events.publish(FileEvent.Renamed(file, oldPath))
+
+                    val parentFile = file.getParentFile() ?: return@launch
+                    viewModel.updateCache(parentFile)
+
+                    tabsToRename.forEach {
+                        it.title = newName
+                        it.file = parentFile.getChild(newName)
+                    }
+                }
+            },
+            onFinish = { viewModel.closeRenameDialog() },
+        )
+    }
+
+    if (viewModel.showDeleteConfirmation) {
+        val files = viewModel.deleteFiles ?: return
+        val root = viewModel.deleteRoot
+        DeleteConfirmationDialog(
+            files = files,
+            onConfirm = {
+                scope.launch {
+                    for (file in files) {
+                        val path = file.getAbsolutePath()
+                        viewModel.withFileOperation {
+                            FileOperations.deleteFile(file)
+                                .onFailure { toast(it.message ?: com.scto.mobile.ide.core.main.R.string.delete_failed.getString()) }
+                                .onSuccess {
+                                    Events.publish(FileEvent.Deleted(path))
+                                    val parentFile = file.getParentFile()
+                                    if (parentFile != null) {
+                                        viewModel.updateCache(file.getParentFile()!!)
+                                    }
+
+                                    if (file == root) {
+                                        drawerViewModel.removeFileTreeTab(file, true)
+                                    }
+
+                                    XedHost?.viewModel?.also { viewModel ->
+                                        viewModel.tabs.forEachIndexed { index, tab ->
+                                            if (tab.file == file) {
+                                                viewModel.tabManager.removeTab(index)
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+                viewModel.closeDeleteConfirmation()
+            },
+            onDismiss = { viewModel.closeDeleteConfirmation() },
+        )
+    }
+
+    if (viewModel.showPropertiesDialog) {
+        val file = viewModel.propertyFile ?: return
+        PropertiesDialog(file = file, onDismiss = { viewModel.closePropertiesDialog() })
+    }
+
+    if (viewModel.showCreateDialog) {
+        val file = viewModel.createParentFile ?: return
+        val root = viewModel.createRoot
+        SingleInputDialog(
+            title =
+                if (viewModel.isCreateFile) stringResource(com.scto.mobile.ide.core.main.R.string.new_file) else stringResource(com.scto.mobile.ide.core.main.R.string.new_folder),
+            inputLabel =
+                if (viewModel.isCreateFile) stringResource(id = com.scto.mobile.ide.core.main.R.string.file_name)
+                else stringResource(id = com.scto.mobile.ide.core.main.R.string.folder_name),
+            inputValue = viewModel.createValue,
+            errorMessage = viewModel.createError,
+            confirmEnabled = viewModel.createValue.isNotBlank(),
+            confirmText = stringResource(com.scto.mobile.ide.core.main.R.string.create),
+            onInputValueChange = {
+                viewModel.createValue = it
+                viewModel.createError = null
+
+                if (
+                    viewModel.isCreateFile && it.contains(FileValidation.INVALID_NAME_CHARS) ||
+                        !viewModel.isCreateFile && it.contains(FileValidation.INVALID_FOLDER_PATH_CHARS)
+                ) {
+                    viewModel.createError = context.getString(com.scto.mobile.ide.core.main.R.string.invalid_characters)
+                }
+            },
+            onConfirm = {
+                scope.launch {
+                    runCatching {
+                        if (!file.canWrite()) {
+                            toast(com.scto.mobile.ide.core.main.R.string.permission_denied)
+                            return@launch
+                        }
+                        if (!file.hasChild(viewModel.createValue)) {
+                            val newChild = file.createChild(viewModel.isCreateFile, viewModel.createValue)
+
+                            if (newChild == null) {
+                                if (viewModel.isCreateFile) {
+                                    toast(com.scto.mobile.ide.core.main.R.string.file_creation_failed)
+                                } else {
+                                    toast(com.scto.mobile.ide.core.main.R.string.folder_creation_failed)
+                                }
+                            } else {
+                                Events.publish(FileEvent.Created(newChild))
+                            }
+
+                            if (viewModel.isCreateFile && newChild != null && Settings.auto_open_new_files) {
+                                XedHost
+                                    ?.viewModel
+                                    ?.editorManager
+                                    ?.openFile(
+                                        newChild,
+                                        projectRoot = root,
+                                        checkDuplicate = true,
+                                        switchToTab = true,
+                                    )
+                                drawerStateRef.get()?.close()
+                            }
+                        } else {
+                            val msg =
+                                if (viewModel.isCreateFile) com.scto.mobile.ide.core.main.R.string.file_already_exists
+                                else com.scto.mobile.ide.core.main.R.string.folder_already_exists
+                            toast(msg.getFilledString(viewModel.createValue))
+                        }
+
+                        viewModel.updateCache(file)
+                        viewModel.createValue = ""
+                    }
+                        .onFailure { errorDialog(throwable = it) }
+                }
+            },
+            onFinish = { viewModel.closeCreateDialog() },
+        )
+    }
+
+    if (viewModel.showCloseProjectConfirmation) {
+        val root = viewModel.projectConfirmationRoot ?: return
+        ProjectCloseConfirmationDialog(
+            projectName = root.getAppropriateName(),
+            onConfirm = {
+                drawerViewModel.removeFileTreeTab(root)
+                viewModel.closeCloseProjectConfirmation()
+            },
+            onDismiss = { viewModel.closeCloseProjectConfirmation() },
+        )
+    }
+}
+
+@Composable
+fun ProjectCloseConfirmationDialog(projectName: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(com.scto.mobile.ide.core.main.R.string.close)) },
+        text = { Column { Text(text = stringResource(com.scto.mobile.ide.core.main.R.string.close_current_project).fillPlaceholders(projectName)) } },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(com.scto.mobile.ide.core.main.R.string.close)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(com.scto.mobile.ide.core.main.R.string.cancel)) } },
+    )
+}
+
+@Composable
+fun DeleteConfirmationDialog(files: List<FileObject>, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(com.scto.mobile.ide.core.main.R.string.delete)) },
+        text = {
+            Column {
+                val text =
+                    if (files.size == 1) {
+                        stringResource(com.scto.mobile.ide.core.main.R.string.ask_deletion_one).fillPlaceholders(files.first().getName())
+                    } else {
+                        stringResource(com.scto.mobile.ide.core.main.R.string.ask_deletion_many).fillPlaceholders(files.size)
+                    }
+                Text(text)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            ) {
+                Text(stringResource(com.scto.mobile.ide.core.main.R.string.delete))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(com.scto.mobile.ide.core.main.R.string.cancel)) } },
+    )
+}

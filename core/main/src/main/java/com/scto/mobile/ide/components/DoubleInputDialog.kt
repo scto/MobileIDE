@@ -1,5 +1,9 @@
 package com.scto.mobile.ide.components
 
+
+
+
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,9 +29,18 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import com.scto.mobile.ide.core.terminal.resources.R.string as strings
+import com.scto.mobile.ide.icons.Error
+import com.scto.mobile.ide.icons.XedIcons
+
+
+
+
+
+
+
+
+
+
 
 @Composable
 fun DoubleInputDialog(
@@ -41,8 +54,9 @@ fun DoubleInputDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit = {},
     onFinish: () -> Unit = {},
+    message: @Composable (() -> Unit)? = null,
     singleLineMode: Boolean = true,
-    confirmText: String = stringResource(strings.apply),
+    confirmText: String = stringResource(com.scto.mobile.ide.core.main.R.string.apply),
     confirmEnabled: Boolean = true,
     firstErrorMessage: String? = null,
     secondErrorMessage: String? = null,
@@ -65,6 +79,8 @@ fun DoubleInputDialog(
         title = { Text(text = title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                message?.invoke()
+
                 OutlinedTextField(
                     value = firstTextFieldValue,
                     singleLine = singleLineMode,
@@ -83,8 +99,8 @@ fun DoubleInputDialog(
                         if (firstErrorMessage != null) {
                             {
                                 Icon(
-                                    Icons.Filled.Warning,
-                                    stringResource(strings.error),
+                                    XedIcons.Error,
+                                    stringResource(com.scto.mobile.ide.core.main.R.string.error),
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             }
@@ -111,8 +127,8 @@ fun DoubleInputDialog(
                         if (secondErrorMessage != null) {
                             {
                                 Icon(
-                                    Icons.Filled.Warning,
-                                    stringResource(strings.error),
+                                    XedIcons.Error,
+                                    stringResource(com.scto.mobile.ide.core.main.R.string.error),
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             }
@@ -148,7 +164,7 @@ fun DoubleInputDialog(
                     onFinish()
                 }
             ) {
-                Text(stringResource(id = strings.cancel))
+                Text(stringResource(id = com.scto.mobile.ide.core.main.R.string.cancel))
             }
         },
     )

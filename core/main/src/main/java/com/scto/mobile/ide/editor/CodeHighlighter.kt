@@ -1,0 +1,33 @@
+package com.scto.mobile.ide.editor
+
+
+
+
+
+import android.content.Context
+import com.scto.mobile.ide.file.FileTypeManager
+import io.github.rosemoe.sora.lsp.editor.text.MarkdownCodeHighlighterRegistry
+import io.github.rosemoe.sora.lsp.editor.text.withEditorHighlighter
+
+
+
+
+
+
+
+
+
+
+
+object CodeHighlighter {
+    fun registerMarkdownCodeHighlighter(context: Context) {
+        MarkdownCodeHighlighterRegistry.global.withEditorHighlighter { languageName ->
+            val textmateScope =
+                FileTypeManager.fromMarkdownName(languageName).textmateScope ?: return@withEditorHighlighter null
+
+            val language = LanguageManager.createLanguageBlocking(textmateScope)
+            val colorScheme = ThemeManager.createColorSchemeBlocking(context, null)
+            language to colorScheme
+        }
+    }
+}

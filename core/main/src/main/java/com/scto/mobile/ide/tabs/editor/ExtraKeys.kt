@@ -1,0 +1,161 @@
+package com.scto.mobile.ide.tabs.editor
+
+
+
+
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.dp
+import com.scto.mobile.ide.activities.main.MainActivity
+import com.scto.mobile.ide.commands.ActionContext
+import com.scto.mobile.ide.commands.CommandProvider
+import com.scto.mobile.ide.commands.ToggleableCommand
+import com.scto.mobile.ide.components.compose.utils.holdable
+import com.scto.mobile.ide.icons.Icon
+import com.scto.mobile.ide.icons.XedIcon
+import com.scto.mobile.ide.settings.Settings
+
+
+
+
+
+
+
+
+
+
+
+private data class ExtraKey(
+    val label: String,
+    val icon: Icon,
+    val isOn: Boolean = false,
+    val enabled: Boolean,
+    val repeatOnHold: Boolean = false,
+    val onLongClick: () -> Boolean,
+    val onClick: () -> Unit,
+)
+
+@Composable
+fun ExtraKeys(editorTab: EditorTab) {
+    val commandIds by remember { derivedStateOf { Settings.extra_keys_commands.split("|").toTypedArray() } }
+    val commands by remember { derivedStateOf { commandIds.mapNotNull { id -> CommandProvider.getForId(id) } } }
+
+    val commandExtraKeys = commands.map { command ->
+        ExtraKey(
+            label = command.getLabel(),
+            icon = if (command.preferText) Icon.TextIcon(command.getLabel()) else command.getIcon(),
+            isOn = command is ToggleableCommand && command.isOn(),
+            enabled = command.isEnabled() && command.isSupported(),
+            repeatOnHold = command.repeatOnHold,
+            onLongClick = { command.onLongClick(ActionContext(XedHost!!)) },
+            onClick = { command.performCommand(ActionContext(XedHost!!)) },
+        )
+    }
+
+    val isEditable by remember { derivedStateOf { editorTab.editorState.editable } }
+    val symbols = Settings.extra_keys_symbols
+    val symbolExtraKeys = symbols.map {
+        ExtraKey(
+            label = it.toString(),
+            icon = Icon.TextIcon(it.toString()),
+            enabled = isEditable,
+            onClick = {
+                val editor = editorTab.editorState.editor.get() ?: return@ExtraKey
+                val insertChar = it.toString()
+
+                if (insertChar == "\t") {
+                    if (editor.snippetController.isInSnippet()) {
+                        editor.snippetController.shiftToNextTabStop()
+                    } else {
+                        editor.indentOrCommitTab()
+                    }
+                } else {
+                    editor.insertText(insertChar, 1)
+                }
+            },
+            onLongClick = { false },
+        )
+    }
+
+    val extraKeys = commandExtraKeys + symbolExtraKeys
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (Settings.split_extra_keys) {
+            KeyRow(commandExtraKeys)
+            KeyRow(symbolExtraKeys)
+        } else {
+            KeyRow(extraKeys)
+        }
+    }
+}
+
+@Composable
+private fun KeyRow(extraKeys: List<ExtraKey>) {
+    LazyRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(extraKeys, key = { it.label }) { KeyButton(it) }
+    }
+}
+
+@Composable
+private fun KeyButton(key: ExtraKey) {
+    val hapticFeedback = LocalHapticFeedback.current
+
+    val keyContentColor =
+        when {
+            key.isOn && key.enabled -> MaterialTheme.colorScheme.primary
+            key.isOn -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            key.enabled -> MaterialTheme.colorScheme.onSurface
+            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier =
+            Modifier.size(32.dp, 32.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .then(
+                    if (Settings.extra_keys_bg) {
+                        Modifier.background(
+                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = if (key.enabled) 1f else 0.5f)
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .holdable(
+                    enabled = key.enabled,
+                    repeatOnHold = key.repeatOnHold,
+                    onLongClick = key.onLongClick,
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        key.onClick()
+                    },
+                ),
+    ) {
+        XedIcon(
+            icon = key.icon,
+            modifier = Modifier.size(16.dp),
+            contentDescription = key.label,
+            tint = keyContentColor,
+        )
+    }
+}

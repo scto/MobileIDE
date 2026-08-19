@@ -1,0 +1,86 @@
+package com.scto.mobile.ide.lsp
+
+
+
+
+
+import android.util.Log
+import com.scto.mobile.ide.SandboxedProcessRegistry
+import com.scto.mobile.ide.settings.Settings
+import java.io.InputStream
+import java.io.OutputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+
+
+
+
+
+
+
+
+
+
+
+class ProcessConnection(private val cmd: Array<String>, instance: LspServerInstance) :
+    BaseLspConnectionProvider(instance) {
+
+    private var process: Process? = null
+    private var loggingInput: InputStream? = null
+    private var loggingOutput: OutputStream? = null
+
+    private var scope: CoroutineScope? = null
+
+    override val inputStream: InputStream
+        get() = loggingInput ?: throw IllegalStateException("Process not running")
+
+    override val outputStream: OutputStream
+        get() = loggingOutput ?: throw IllegalStateException("Process not running")
+
+    override val isClosed: Boolean
+        get() = process == null || process?.isAlive == false
+
+    override fun start() {
+        if (process != null) return
+        scope = CoroutineScope(Dispatchers.IO)
+        val provider =
+            SandboxedProcessRegistry.provider ?: throw IllegalStateException("PRoot Sandbox is not registered")
+        runBlocking { process = provider(cmd.toList(), null, listOf()) }
+
+        loggingInput =
+            LoggingInputStream(process!!.inputStream) { json ->
+                Log.d("ProcessConnection", "[stdout] $json")
+                if (Settings.record_rpc) {
+                    instance.addLog(LspLogEntry(MessageSource.RPC, null, "→ $json"))
+                }
+            }
+        loggingOutput =
+            LoggingOutputStream(process!!.outputStream) { json ->
+                Log.d("ProcessConnection", "[stdin] $json")
+                if (Settings.record_rpc) {
+                    instance.addLog(LspLogEntry(MessageSource.RPC, null, "← $json"))
+                }
+            }
+
+        scope!!.launch {
+            runCatching {
+                process!!.errorStream.bufferedReader().forEachLine { line ->
+                    Log.e("ProcessConnection", "[stderr] $line")
+                    instance.addLog(LspLogEntry(MessageSource.Runtime, null, line))
+                }
+            }
+        }
+    }
+
+    override fun close() {
+        scope?.cancel()
+        scope = null
+        process?.destroy()
+        process = null
+        loggingInput = null
+        loggingOutput = null
+    }
+}

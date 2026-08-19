@@ -1,0 +1,325 @@
+package com.scto.mobile.ide.crashhandler
+
+
+
+
+
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.os.Process
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.pm.PackageInfoCompat
+import com.blankj.utilcode.util.StringUtils.getString
+import com.scto.mobile.ide.crashhandler.CrashHandler.logErrorOrExit
+import com.scto.mobile.ide.editor.Editor
+import com.scto.mobile.ide.theme.GitColorScheme
+import com.scto.mobile.ide.theme.XedTheme
+import com.scto.mobile.ide.utils.SourceCodeProvider
+import com.scto.mobile.ide.utils.copyToClipboard
+import com.scto.mobile.ide.utils.openUrl
+import com.scto.mobile.ide.utils.origin
+import com.scto.mobile.ide.core.main.BuildConfig
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.text.SimpleDateFormat
+import java.util.Date
+import kotlin.system.exitProcess
+
+
+
+
+
+
+
+
+
+
+
+class CrashActivity : ComponentActivity() {
+    companion object {
+        fun Context.isModified(): Boolean {
+            val signatures =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    packageManager
+                        .getPackageInfo(packageName, android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES)
+                        .signingInfo
+                        ?.apkContentsSigners
+                } else {
+                    @Suppress("DEPRECATION")
+                    packageManager
+                        .getPackageInfo(packageName, android.content.pm.PackageManager.GET_SIGNATURES)
+                        .signatures
+                }
+
+            if (signatures == null) {
+                return true
+            }
+
+            for (signature in signatures) {
+                val cert =
+                    CertificateFactory.getInstance("X.509").generateCertificate(signature.toByteArray().inputStream())
+                        as X509Certificate
+                val sha256 = MessageDigest.getInstance("SHA-256").digest(cert.encoded)
+                val hex = sha256.joinToString(":") { "%02X".format(it) }
+
+                if (hex.equals(assets.open("hash").bufferedReader().use { it.readText() }, ignoreCase = true)) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        fun start(
+            context: Context,
+            extensionId: String,
+            extensionName: String,
+            extensionVersion: String,
+            extensionAuthor: String,
+            repository: String?,
+            error: Throwable,
+        ) {
+            val intent =
+                Intent(context, CrashActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    putExtra("is_extension_crash", true)
+                    putExtra("extension_id", extensionId)
+                    putExtra("extension_name", extensionName)
+                    putExtra("extension_version", extensionVersion)
+                    putExtra("extension_author", extensionAuthor)
+                    putExtra("repository", repository)
+                    putExtra("thread", Thread.currentThread().name)
+                    putExtra("force_crash", false)
+                    putExtra("msg", error.message)
+
+                    var cause = error.cause?.toString() ?: error.toString()
+                    val prefix = "java.lang.Throwable:"
+                    if (cause.startsWith(prefix)) {
+                        cause = cause.removePrefix(prefix)
+                    }
+                    putExtra("error_cause", cause)
+
+                    val stringWriter = StringWriter()
+                    val printWriter = PrintWriter(stringWriter)
+                    error.printStackTrace(printWriter)
+                    putExtra("stacktrace", stringWriter.toString())
+                }
+            context.startActivity(intent)
+        }
+    }
+
+    fun isMainThreadCrashed(): Boolean {
+        return intent.getStringExtra("thread").toString().lowercase() == "main"
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        runCatching {
+            enableEdgeToEdge()
+            val crashText = buildCrashReport()
+
+            setContent {
+                val context = LocalContext.current
+
+                XedTheme {
+                    Scaffold(
+                        topBar = {
+                            Column {
+                                val mainThreadCrashed = remember(intent) { isMainThreadCrashed() }
+
+                                TopAppBar(
+                                    navigationIcon = {
+                                        IconButton(
+                                            onClick = {
+                                                if (mainThreadCrashed) {
+                                                    runCatching {
+                                                        // Close all activities
+                                                        finishAffinity()
+
+                                                        // Kill the app process
+                                                        Process.killProcess(Process.myPid())
+                                                        exitProcess(0)
+                                                    }
+                                                } else {
+                                                    onBackPressedDispatcher.onBackPressed()
+                                                }
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector =
+                                                    if (mainThreadCrashed) {
+                                                        Icons.Default.Close
+                                                    } else {
+                                                        Icons.AutoMirrored.Filled.ArrowBack
+                                                    },
+                                                contentDescription = "Back",
+                                            )
+                                        }
+                                    },
+                                    title = { Text(com.scto.mobile.ide.core.main.R.string.error.getString()) },
+                                    actions = {
+                                        TextButton(
+                                            onClick = {
+                                                runCatching { copyToClipboard("crash_report", crashText, true) }
+                                                    .onFailure { logErrorOrExit(it) }
+                                            }
+                                        ) {
+                                            Text(stringResource(com.scto.mobile.ide.core.main.R.string.copy))
+                                        }
+
+                                        val showReport = remember {
+                                            intent.getBooleanExtra("force_crash", false).not()
+                                        }
+
+                                        if (showReport) {
+                                            TextButton(
+                                                onClick = {
+                                                    runCatching { reportLogs(crashText, context) }
+                                                        .onFailure { logErrorOrExit(it) }
+                                                }
+                                            ) {
+                                                Text(stringResource(com.scto.mobile.ide.core.main.R.string.report_issue))
+                                            }
+                                        }
+                                    },
+                                )
+                                HorizontalDivider()
+                            }
+                        }
+                    ) { paddingValues ->
+                        val selectionColors = LocalTextSelectionColors.current
+                        val isDarkMode = isSystemInDarkTheme()
+                        val colorScheme = MaterialTheme.colorScheme
+                        val gitColorScheme = GitColorScheme.create()
+
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize().padding(paddingValues),
+                            factory = { context ->
+                                Editor(context).apply {
+                                    setTextSize(10f)
+                                    setText(crashText)
+                                    editable = false
+                                    isWordwrap = false
+                                    setThemeColors(
+                                        isDarkMode = isDarkMode,
+                                        selectionColors = selectionColors,
+                                        colorScheme = colorScheme,
+                                        gitColorScheme = gitColorScheme,
+                                    )
+                                }
+                            },
+                            update = { editor -> editor.setText(crashText) },
+                        )
+                    }
+                }
+            }
+        }
+            .onFailure {
+                logErrorOrExit(it)
+                it.printStackTrace()
+                runCatching { finishAffinity() }
+                exitProcess(1)
+            }
+    }
+
+    private fun reportLogs(crashText: String, context: Context) {
+        val repo = intent.getStringExtra("repository")
+        val baseUrl =
+            if (!repo.isNullOrEmpty()) {
+                repo.removeSuffix("/")
+            } else {
+                "https://github.com/Xed-Editor/Xed-Editor"
+            }
+        if (SourceCodeProvider.fromUrl(baseUrl) != SourceCodeProvider.GitHub) {
+            context.openUrl(baseUrl)
+            return
+        }
+
+        val issueUrl =
+            "$baseUrl/issues/new?title=Crash%20Report&body=" +
+                URLEncoder.encode("``` \n$crashText\n ```", StandardCharsets.UTF_8.toString())
+        context.openUrl(issueUrl)
+    }
+
+    private fun buildCrashReport(): String {
+        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+        val versionName = packageInfo.versionName
+        val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+
+        val runtime = Runtime.getRuntime()
+        val usedMem = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) // MB
+        val maxMem = runtime.maxMemory() / (1024 * 1024)
+
+        return buildString {
+            val isExtension = intent.getBooleanExtra("is_extension_crash", false)
+            if (isExtension) {
+                append("Extension crashed").appendLine().appendLine()
+
+                append("Extension ID: ").append(intent.getStringExtra("extension_id")).appendLine()
+                append("Extension name: ").append(intent.getStringExtra("extension_name")).appendLine()
+                append("Extension version: ").append(intent.getStringExtra("extension_version")).appendLine()
+                append("Extension author: ").append(intent.getStringExtra("extension_author")).appendLine()
+                appendLine()
+            } else {
+                append("Unexpected crash occurred").appendLine().appendLine()
+            }
+
+            append("Thread: ").append(intent.getStringExtra("thread")).appendLine()
+            append("App version: ").append(versionName).appendLine()
+            append("Version code: ").append(versionCode).appendLine()
+            append("Modified: ").append(isModified()).appendLine()
+            append("Commit hash: ").append(BuildConfig.GIT_COMMIT_HASH.substring(0, 8)).appendLine()
+            append("Package name: ").append(application!!.packageName).appendLine()
+            append("Commit date: ").append(BuildConfig.GIT_COMMIT_DATE).appendLine()
+            append("Origin: ").append(origin()).appendLine()
+            append("Unix Time: ").append(System.currentTimeMillis()).appendLine()
+            append("Local time: ").append(SimpleDateFormat.getDateTimeInstance().format(Date())).appendLine()
+            append("Android version: ").append(Build.VERSION.RELEASE).appendLine()
+            append("SDK version: ").append(Build.VERSION.SDK_INT).appendLine()
+            append("Brand: ").append(Build.BRAND).appendLine()
+            append("Manufacturer: ").append(Build.MANUFACTURER).appendLine()
+            append("Target SDK: ").append(application!!.applicationInfo.targetSdkVersion.toString()).appendLine()
+            append("Model: ").append(Build.MODEL).appendLine()
+            append("Used memory: ").append(usedMem).append("MB").appendLine()
+            append("Max memory: ").append(maxMem).append("MB").appendLine()
+
+            appendLine()
+
+            append("Error message: ").append(intent.getStringExtra("msg")).appendLine()
+            append("Error cause: ").append(intent.getStringExtra("error_cause")).appendLine()
+            append("Error stacktrace: ").appendLine().append(intent.getStringExtra("stacktrace"))
+        }
+    }
+}

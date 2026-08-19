@@ -1,0 +1,36 @@
+package com.scto.mobile.ide.commands.editor
+
+
+
+
+
+import android.view.KeyEvent
+import com.blankj.utilcode.util.StringUtils.getString
+import com.scto.mobile.ide.commands.EditorActionContext
+import com.scto.mobile.ide.commands.EditorCommand
+import com.scto.mobile.ide.commands.KeyCombination
+import com.scto.mobile.ide.icons.Icon
+
+
+
+
+
+
+
+
+
+
+
+class SelectWordCommand : EditorCommand() {
+    override val id: String = "editor.select_word"
+
+    override fun getLabel(): String = com.scto.mobile.ide.core.main.R.string.select_word.getString()
+
+    override fun action(context: EditorActionContext) {
+        context.editor.selectCurrentWord()
+    }
+
+    override fun getIcon(): Icon = Icon.ResourceIcon(com.scto.mobile.ide.core.main.R.drawable.select)
+
+    override val defaultKeybinds: KeyCombination = KeyCombination(keyCode = KeyEvent.KEYCODE_W, ctrl = true)
+}

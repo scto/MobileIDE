@@ -1,0 +1,126 @@
+package com.scto.mobile.ide.icons.pack
+
+
+
+
+
+import com.scto.mobile.ide.extension.model.PackageAuthor
+import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.file.FileType
+import com.scto.mobile.ide.file.FileTypeManager
+import java.io.File
+import kotlinx.serialization.Serializable
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Serializable
+data class IconPackManifest(
+    val id: IconPackId,
+    val name: String,
+    val author: PackageAuthor = PackageAuthor.UNKNOWN,
+    val version: String = "1.0.0",
+    val description: String? = null,
+    val tags: List<String> = emptyList(),
+    val repository: String? = null,
+    val license: String? = null,
+    val minAppVersion: Int? = null,
+    val applyTint: Boolean = false,
+    val icons: IconPackList,
+)
+
+@Serializable
+data class IconPackList(
+    val defaultFile: IconPackPath,
+    val defaultFolder: IconPackPath,
+    val defaultFolderExpanded: IconPackPath,
+    val folderNames: Map<String, IconPackPath> = emptyMap(),
+    val folderNamesExpanded: Map<String, IconPackPath> = emptyMap(),
+    val fileNames: Map<String, IconPackPath> = emptyMap(),
+    val fileExtensions: Map<String, IconPackPath> = emptyMap(),
+    val languageNames: Map<String, IconPackPath> = emptyMap(),
+)
+
+data class IconPack(val manifest: IconPackManifest, val installDir: File) {
+    fun getIconFileForFile(file: FileObject, isExpanded: Boolean = false): File? {
+        val fileName = file.getName()
+        val isDirectory = file.isDirectory()
+        return getIconFileForName(fileName, isDirectory, isExpanded)
+    }
+
+    fun getIconFileForName(fileName: String, isDirectory: Boolean, isExpanded: Boolean = false): File? {
+        val path =
+            if (isDirectory) {
+                if (isExpanded) {
+                    // First use folderNamesExpanded, then defaultFolderExpanded
+                    manifest.icons.folderNamesExpanded[fileName.lowercase()]
+                        ?.let { installDir.resolve(it) }
+                        ?.takeIf { it.exists() } ?: installDir.resolve(manifest.icons.defaultFolderExpanded)
+                } else {
+                    // First use folderNames, then defaultFolder
+                    manifest.icons.folderNames[fileName.lowercase()]
+                        ?.let { installDir.resolve(it) }
+                        ?.takeIf { it.exists() } ?: installDir.resolve(manifest.icons.defaultFolder)
+                }
+            } else {
+                // First use fileNames, then fileExtensions, then languageNames, then defaultFile
+                val ext = fileName.substringAfterLast(".", "")
+
+                manifest.icons.fileNames[fileName.lowercase()]?.let { installDir.resolve(it) }?.takeIf { it.exists() }
+                    ?: manifest.icons.fileExtensions[ext.lowercase()]
+                        ?.let { installDir.resolve(it) }
+                        ?.takeIf { it.exists() }
+                    ?: manifest.icons.languageNames[FileTypeManager.fromExtension(ext).name.lowercase()]
+                        ?.let { installDir.resolve(it) }
+                        ?.takeIf { it.exists() }
+                    ?: installDir.resolve(manifest.icons.defaultFile)
+            }
+
+        // If no icon was working (even the fallback ones)
+        if (!path.exists()) return null
+
+        return path
+    }
+
+    fun getIconFileForExt(fileExtension: String): File? {
+        val path =
+            // First use fileExtensions, then languageNames, then defaultFile
+            manifest.icons.fileExtensions[fileExtension.lowercase()]
+                ?.let { installDir.resolve(it) }
+                ?.takeIf { it.exists() }
+                ?: manifest.icons.languageNames[FileTypeManager.fromExtension(fileExtension).name.lowercase()]
+                    ?.let { installDir.resolve(it) }
+                    ?.takeIf { it.exists() }
+                ?: installDir.resolve(manifest.icons.defaultFile)
+
+        // If no icon was working (even the fallback ones)
+        if (!path.exists()) return null
+
+        return path
+    }
+
+    fun getIconFileForFileType(fileType: FileType): File? {
+        val extension = fileType.extensions.firstOrNull()?.lowercase()
+        val typeName = fileType.name.lowercase()
+
+        val path =
+            // First use fileExtensions, then languageNames, then defaultFile
+            extension?.let { manifest.icons.fileExtensions[it] }?.let { installDir.resolve(it) }?.takeIf { it.exists() }
+                ?: manifest.icons.languageNames[typeName]?.let { installDir.resolve(it) }?.takeIf { it.exists() }
+                ?: installDir.resolve(manifest.icons.defaultFile)
+
+        // If no icon was working (even the fallback ones)
+        if (!path.exists()) return null
+
+        return path
+    }
+}

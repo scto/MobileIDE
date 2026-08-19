@@ -1,3 +1,11 @@
+package com.scto.mobile.ide.activities.settings
+
+
+
+
+
+
+
 /*
  * MobileIDE - A powerful IDE for Android app development.
  * Copyright (C) 2025  scto  <tschmid35@gmail.com>
@@ -16,7 +24,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.scto.mobile.ide.activities.settings
+
+
+
+
+
+
+
+
 
 sealed class SettingsRoutes(val route: String) {
     data object Settings : SettingsRoutes("settings")

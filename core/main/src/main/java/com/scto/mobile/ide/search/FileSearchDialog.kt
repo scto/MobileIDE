@@ -1,0 +1,187 @@
+package com.scto.mobile.ide.search
+
+
+
+
+
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.scto.mobile.ide.activities.main.MainViewModel
+import com.scto.mobile.ide.components.XedDialog
+import com.scto.mobile.ide.components.compose.utils.addIf
+import com.scto.mobile.ide.file.FileObject
+import com.scto.mobile.ide.file.toFileWrapper
+import com.scto.mobile.ide.filetree.FileIcon
+import com.scto.mobile.ide.filetree.getAppropriateName
+import com.scto.mobile.ide.tabs.editor.EditorTab
+import com.scto.mobile.ide.utils.getFileColor
+import com.scto.mobile.ide.utils.rememberNumberFormatter
+import java.io.File
+
+
+
+
+
+
+
+
+
+
+
+@Composable
+fun FileSearchDialog(
+    mainViewModel: MainViewModel,
+    searchViewModel: SearchViewModel,
+    projectFile: FileObject,
+    onFinish: () -> Unit,
+    onSelect: (FileObject, FileObject) -> Unit,
+) {
+    val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
+
+    val editorTab = mainViewModel.currentTab as? EditorTab
+    val textFieldState =
+        rememberTextFieldState(
+            editorTab?.editorState?.editor?.get()?.getSelectedText() ?: searchViewModel.fileSearchQuery
+        )
+
+    LaunchedEffect(textFieldState.text) { searchViewModel.fileSearchQuery = textFieldState.text.toString() }
+
+    LaunchedEffect(searchViewModel.isIndexing(projectFile), searchViewModel.fileSearchQuery) {
+        searchViewModel.launchFileSearch(context, projectFile)
+    }
+
+    val viewportHeight = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() }
+    XedDialog(onDismissRequest = onFinish, modifier = Modifier.imePadding()) {
+        Column(modifier = Modifier.animateContentSize().height(viewportHeight * 0.8f)) {
+            TextField(
+                state = textFieldState,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                placeholder = { Text(text = stringResource(com.scto.mobile.ide.core.main.R.string.enter_name)) },
+                supportingText = {
+                    Text(
+                        text = stringResource(com.scto.mobile.ide.core.main.R.string.searching_in).fillPlaceholders(projectFile.getAppropriateName()),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, bottom = 0.dp, end = 16.dp),
+            ) {
+                if (searchViewModel.isIndexing(projectFile) || searchViewModel.isSearchingFiles) {
+                    CircularProgressIndicator(modifier = Modifier.size(9.dp), strokeWidth = 2.dp)
+                }
+                val numberFormatter = rememberNumberFormatter()
+                val resultCount by remember {
+                    derivedStateOf { numberFormatter.format(searchViewModel.fileSearchResults.size) }
+                }
+                Text(
+                    stringResource(
+                            when {
+                                searchViewModel.isIndexing(projectFile) -> com.scto.mobile.ide.core.main.R.string.indexing
+                                searchViewModel.fileSearchResults.isNotEmpty() -> com.scto.mobile.ide.core.main.R.string.results
+                                else -> com.scto.mobile.ide.core.main.R.string.no_results
+                            }
+                        )
+                        .fillPlaceholders(resultCount)
+                )
+            }
+
+            LaunchedEffect(Unit) { focusRequester.requestFocus() }
+
+            LazyColumn(modifier = Modifier.padding(vertical = 8.dp)) {
+                items(items = searchViewModel.fileSearchResults, key = { it }) { codeLine ->
+                    Box(modifier = Modifier.animateItem()) {
+                        SearchItem(File(codeLine.path).toFileWrapper(), projectFile, onFinish, onSelect)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SearchItem(
+    fileObject: FileObject,
+    projectFile: FileObject,
+    onDismissRequest: () -> Unit,
+    onSelect: (FileObject, FileObject) -> Unit,
+) {
+    val isHidden = fileObject.getName().startsWith(".") || fileObject.getAbsolutePath().contains("/.")
+    val fileNameColor = getFileColor(fileObject) ?: Color.Unspecified
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            Modifier.fillMaxWidth()
+                .clickable(
+                    enabled = true,
+                    onClick = {
+                        onDismissRequest()
+                        onSelect(projectFile, fileObject)
+                    },
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Box(modifier = Modifier.addIf(isHidden) { alpha(0.5f) }) { FileIcon(file = fileObject) }
+
+        Column(modifier = Modifier.padding(start = 8.dp)) {
+            Text(
+                text = fileObject.getAppropriateName(),
+                color = fileNameColor,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = "." + fileObject.getAbsolutePath().removePrefix(projectFile.getAbsolutePath()),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            )
+        }
+    }
+}

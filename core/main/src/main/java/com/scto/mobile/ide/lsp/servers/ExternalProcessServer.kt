@@ -1,0 +1,52 @@
+package com.scto.mobile.ide.lsp.servers
+
+
+
+
+
+import android.app.Activity
+import android.content.Context
+import com.scto.mobile.ide.file.FileTypeManager
+import com.scto.mobile.ide.lsp.LspConnectionConfig
+import com.scto.mobile.ide.lsp.LspServer
+import kotlin.random.Random
+
+
+
+
+
+
+
+
+
+
+
+// DO not put this in lsp registry
+data class ExternalProcessServer(
+    val command: String,
+    override val supportedExtensions: List<String>,
+    override val id: String = "${supportedExtensions.firstOrNull()}_${Random.nextInt()}",
+) : LspServer() {
+    override val languageName = supportedExtensions.firstOrNull()?.let { FileTypeManager.fromExtension(it).title } ?: ""
+    override val serverName = command
+    override val icon = supportedExtensions.firstOrNull()?.let { FileTypeManager.fromExtension(it).icon }
+    override val canBeUninstalled = false
+
+    override suspend fun isInstalled(context: Context) = true
+
+    override fun install(activity: Activity) {}
+
+    override fun uninstall(activity: Activity) {}
+
+    override suspend fun hasUpdate(context: Context) = false
+
+    override fun update(activity: Activity) {}
+
+    override fun getConnectionConfig(): LspConnectionConfig {
+        return LspConnectionConfig.Process(
+            arrayOf("bash", "-c", "[ -f ~/.bashrc ] && source ~/.bashrc; [ -f /initrc ] && source /initrc; $command")
+        )
+    }
+
+    override fun toString() = serverName
+}
